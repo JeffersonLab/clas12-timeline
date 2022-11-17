@@ -1,7 +1,7 @@
 rf    rftime_electron_FD_mean    -0.010  0.010   ns
 rf    rftime_electron_FD_sigma   0       0.070   ns
 
-ltcc  ltcc_elec_nphe_sec         12      14      counts
+ltcc  ltcc_elec_nphe_sec         11      14      counts
 
 htcc  htcc_nphe_sec              11      13      counts
 
