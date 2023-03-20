@@ -1,1 +1,53 @@
-rga-sp18.txt
+rf    rftime_electron_FD_mean    -0.010  0.010   ns
+rf    rftime_electron_FD_sigma   0       0.070   ns
+
+ltcc  ltcc_elec_nphe_sec         11      14      counts
+
+htcc  htcc_nphe_sec              11      13      counts
+
+ftof  ftof_edep_p1a_midangles    8.75    10.75   MeV
+ftof  ftof_edep_p1b_midangles    10.5    12.5    MeV
+ftof  ftof_edep_p2               8.75    10.75   MeV
+ftof  ftof_time_p1a_mean         -0.030  0.030   ns
+ftof  ftof_time_p1a_sigma        0       0.135   ns
+ftof  ftof_time_p1b_mean         -0.020  0.020   ns
+ftof  ftof_time_p1b_sigma        0       0.075   ns
+ftof  ftof_time_p2_mean          -0.070  0.070   ns
+ftof  ftof_time_p2_sigma         0       0.350   ns
+
+ft    ftc_pi0_mass_mean          134     136     MeV
+ft    ftc_pi0_mass_sigma         0       5       MeV
+ft    fth_MIPS_energy            layer1  0.9     1.9       MeV
+ft    fth_MIPS_energy            layer2  2.3     3.3       MeV
+ft    fth_MIPS_time_mean         layer1  -0.5    0.5       ns
+ft    fth_MIPS_time_mean         layer2  -0.5    0.5       ns
+ft    fth_MIPS_time_sigma        layer1  0       1.4       ns
+ft    fth_MIPS_time_sigma        layer2  0       1.2       ns
+
+ec    ec_Sampling                0.23    0.25    unitless
+ec    ec_gg_m_mean               0.129   0.133   GeV
+ec    ec_gg_m_sigma              0       0.015   GeV
+ec    ec_pim_time_mean           -0.040  0.040   ns
+ec    ec_pim_time_sigma          -0.200  0.200   ns
+ec    ec_pip_time_mean           -0.040  0.040   ns
+ec    ec_pip_time_sigma          -0.200  0.200   ns
+
+ctof  ctof_edep                  5.6     6.4     MeV
+ctof  ctof_time_mean             -0.020  0.020   ns
+ctof  ctof_time_sigma            0       0.115   ns
+
+cnd   cnd_dEdz_mean              1.75    2.25    MeV/cm
+cnd   cnd_dEdz_sigma             0       0.300   MeV/cm
+cnd   cnd_time_neg_vtP_mean      -0.100  0.100   ns
+cnd   cnd_time_neg_vtP_sigma     0       0.300   ns
+cnd   cnd_zdiff_mean             -0.4    0.4     cm
+cnd   cnd_zdiff_sigma            0       4       cm
+
+dc    dc_residuals_sec_sl_mean   R1      -0.010  0.010     cm
+dc    dc_residuals_sec_sl_mean   R2      -0.010  0.010     cm
+dc    dc_residuals_sec_sl_mean   R3      -0.010  0.010     cm
+dc    dc_residuals_sec_sl_sigma  R1      0       0.0400    cm
+dc    dc_residuals_sec_sl_sigma  R2      0       0.0400    cm
+dc    dc_residuals_sec_sl_sigma  R3      0       0.0400    cm
+
+rich  rich_time_fwhm_max         0       1       ns
