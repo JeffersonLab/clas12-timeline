@@ -84,7 +84,14 @@ cutsFile.eachLine { line ->
       if(det=='rf') addCut(sec)
       else if(det=='ftof') addCut(sec)
       else if(det=='ltcc' && (secnum==3 || secnum==5)) addCut(sec)
-      else if(det=='htcc') addCut(sec)
+      else if(det=='htcc') {
+        if(timeline.contains("vtimediff")) {
+          [(1..4),(1..2)].combinations().each{ ring, side ->
+            addCut([sec, 'ring'+ring, 'side'+side].join(' '))
+          }
+        }
+        else addCut(sec)
+      }
       else if(det=='ec') {
         if(timeline=='ec_Sampling') addCut(sec)
         else if(secnum==1) addCut(lastWord(timeline)) // sector independent
