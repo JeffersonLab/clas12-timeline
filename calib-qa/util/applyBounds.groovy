@@ -79,29 +79,33 @@ cutsFile.eachLine { line ->
     (1..3).each{ layernum -> addCut('layer'+layernum+' '+lastWord(timeline)) }
   }
   else { // sector dependent detectors
-    (1..6).each{ secnum ->
-      def sec = 'sec'+secnum
-      if(det=='rf') addCut(sec)
-      else if(det=='ftof') addCut(sec)
-      else if(det=='ltcc' && (secnum==3 || secnum==5)) addCut(sec)
+    (1..6).each{ sec ->
+      if(det=='rf') addCut('sec'+sec)
+      else if(det=='ftof') addCut('sec'+sec)
+      else if(det=='ltcc' && (sec==3 || sec==5)) addCut('sec'+sec)
       else if(det=='htcc') {
         if(timeline.contains("vtimediff")) {
-          [(1..4),(1..2)].combinations().each{ ring, side ->
-            addCut([sec, 'ring'+ring, 'side'+side].join(' '))
-          }
+          def rings = (1..4).collect()
+          def sides = (1..2).collect()
+          if(timeline.contains("sector_ring"))
+            rings.each{ ring -> addCut(['sector', sec, 'ring', ring].join(' ')) }
+          else if(timeline.contains("sector"))
+            addCut(['sector', sec].join(' '))
+          else
+            [rings,sides].combinations().each{ ring, side -> addCut(['sector', sec, 'ring', ring, 'side', side].join(' ')) }
         }
-        else addCut(sec)
+        else addCut('sec'+sec)
       }
       else if(det=='ec') {
-        if(timeline=='ec_Sampling') addCut(sec)
-        else if(secnum==1) addCut(lastWord(timeline)) // sector independent
+        if(timeline=='ec_Sampling') addCut('sec'+sec)
+        else if(sec==1) addCut(lastWord(timeline)) // sector independent
       }
       else if(det=='dc') {
-        (1..6).each{ slnum ->
-          def sl = 'sl'+slnum // super layer
-          if(spec=='R1' && (slnum==1 || slnum==2)) addCut(sec+' '+sl)
-          else if(spec=='R2' && (slnum==3 || slnum==4)) addCut(sec+' '+sl)
-          else if(spec=='R3' && (slnum==5 || slnum==6)) addCut(sec+' '+sl)
+        (1..6).each{ sl ->
+          def plotname = 'sec'+sec+' '+'sl'+sl
+          if(spec=='R1' && (sl==1 || sl==2)) addCut(plotname)
+          else if(spec=='R2' && (sl==3 || sl==4)) addCut(plotname)
+          else if(spec=='R3' && (sl==5 || sl==6)) addCut(plotname)
         }
       }
     }
