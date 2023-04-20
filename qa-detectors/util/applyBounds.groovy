@@ -50,6 +50,7 @@ def tok
 if(!(cutsFile.exists())) throw new Exception("cuts file $cutsFile not found")
 def lastWord = { str -> str.tokenize('_')[-1] }
 cutsFile.eachLine { line ->
+  line = line.replaceAll(/#.*/,'')
   tok = line.tokenize(' ')
   if(tok.size()==0) return
   cutPath = tok[0..-4]

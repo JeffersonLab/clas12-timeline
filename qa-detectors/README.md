@@ -27,13 +27,17 @@ bounds. The bounds are specified by text files in [the `cuts` directory](cuts)
 - Then call `util/runQA.sh [dataset]`
 
 ## Files
-- `cuts/*.txt` defines the calibration QA cuts, delimited by spaces, with columns:
-  - detector name
-  - hipo file name
-  - (optional) additional specifier(s)
-  - lower bound
-  - upper bound
-  - units
+- `cuts/*.txt` defines the calibration QA cuts
+  - comments can be added using the symbol `#`
+    - this is useful for commenting out timelines, especially when debugging a
+      particular timeline
+  - each line should have the following columns, delimited by spaces:
+    - detector name
+    - hipo file name
+    - (optional) additional specifier(s)
+    - lower bound
+    - upper bound
+    - units
 - `datasetList.txt` is a list of datasets with columns:
   - dataset name, referred to as `dataset` below
   - location of input calibration timelines, relative to `$TIMELINEDIR`
