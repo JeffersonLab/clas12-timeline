@@ -3,9 +3,9 @@ rf    rftime_electron_FD_sigma   0       0.070   ns
 
 ltcc  ltcc_elec_nphe_sec         11      14      counts
 
-htcc  htcc_nphe_sec              11      13      counts
-htcc  htcc_vtimediff_mean        -1      1       ns
-htcc  htcc_vtimediff_sigma       0       1       ns
+htcc  htcc_nphe_sec                11      13      counts
+htcc  htcc_vtimediff_sector_mean   -1      1       ns
+htcc  htcc_vtimediff_sector_sigma  0       1       ns
 
 ftof  ftof_edep_p1a_midangles    8.75    10.75   MeV
 ftof  ftof_edep_p1b_midangles    10.5    12.5    MeV
