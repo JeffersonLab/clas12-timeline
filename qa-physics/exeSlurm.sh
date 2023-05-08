@@ -30,8 +30,14 @@ if [ $usetape -eq 1 ]; then
   datadir=$(echo $datadir | sed 's/^\/cache/\/mss/g')
 fi
 
-# build list of files, and cleanup outdat and outmon directories
-joblist=joblist.${dataset}.slurm
+# make directories
+mkdir -p outdat/trash
+mkdir -p outmon/trash
+mkdir -p slurm
+
+# build list of files, and cleanup outdat and outmon directories, moving
+# old files to the `trash` subdirectory
+joblist=slurm/joblist.${dataset}.slurm
 > $joblist
 for rundir in `ls -d ${datadir}/*/ | sed 's/\/$//'`; do
   run=$(echo $rundir | sed 's/^.*\/0*//g')
@@ -46,14 +52,15 @@ for rundir in `ls -d ${datadir}/*/ | sed 's/\/$//'`; do
       cmd="run-groovy $CLASQA_JAVA_OPTS monitorRead.groovy $rundir dst"
     fi
     echo "$cmd" >> $joblist
-    rm -v outdat/*${run}.dat
-    rm -v outmon/*${run}.hipo
+    for runfile in outdat/data_table_${run}.dat outmon/monitor_${run}.hipo; do
+      [ -f $runfile ] && mv -v $runfile $(echo $runfile | sed 's;^out...;&/trash;;')
+    done
   fi
 done
 
 
 # write job descriptor
-slurm=job.${dataset}.slurm
+slurm=slurm/job.${dataset}.slurm
 > $slurm
 
 function app { echo "$1" >> $slurm; }

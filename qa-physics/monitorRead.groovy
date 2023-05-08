@@ -149,10 +149,11 @@ else if(RG=="RGF") FCmode = 0
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-
+// make outut directories
+"mkdir -p outdat".execute()
+"mkdir -p outmon".execute()
 
 // prepare output table for electron count and FC charge
-"mkdir -p outdat".execute()
 def datfile = new File("outdat/data_table_${runnum}.dat")
 def datfileWriter = datfile.newWriter(false)
 

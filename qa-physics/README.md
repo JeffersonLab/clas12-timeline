@@ -30,10 +30,6 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     not using this feature, change `CLASQAWWW` to any local directory; if you
     don't want to edit `env.sh`, then simply create the directory `../www`,
     which is the default value of `CLASQAWWW`
-3. make output directories:
-   * `mkdir outdat`
-   * `mkdir outmon`
-   * alternatively, you can make symlinks
 
 ## PASS1 Procedure for Automatic QA
 * prepare run-group dependent settings in `monitorRead.groovy`
