@@ -41,7 +41,7 @@ flowchart TB
       monitorPlot --> timelineFiles
 
       qaPlot[qaPlot.groovy]:::auto
-      createEpochs[create/edit<br>epochs.$dataset.txt<br>see mkTree.sh]:::manual
+      createEpochs[create or edit<br>epochs/epochs.$dataset.txt<br>see mkTree.sh]:::manual
       monitorElec{{outmon.$dataset/monitorElec.hipo}}:::data
       outdatFiles --> qaPlot
       outdatFiles --> createEpochs
