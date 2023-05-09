@@ -202,11 +202,11 @@ generate QA timelines, and a `json` file which is used for the manual followup Q
 
 * Determine epoch lines
   * At the moment, this step is manual, but could be automated in a future release
-  * You need to generate `epochs.${dataset}.txt`, which is a list epoch boundary lines
+  * You need to generate `epochs/epochs.${dataset}.txt`, which is a list epoch boundary lines
     * Each line should contain two numbers: the first run of the epoch, and the last run
       of the epoch
     * If you do not want to use epoch lines, execute 
-      `echo "0 1000000" > epochs.${dataset}.txt`; this is a trick to ensure every run is
+      `echo "0 1000000" > epochs/epochs.${dataset}.txt`; this is a trick to ensure every run is
       in a single epoch
   * To help determine where to draw the epoch boundaries, execute `mkTree.sh $dataset`
     * this script, in conjunction with `readTree.C`, will build a `ROOT` tree and draw
@@ -220,7 +220,7 @@ generate QA timelines, and a `json` file which is used for the manual followup Q
         manually, but could be automated in a future release
 
 * `groovy qaCut.groovy $dataset [$useFT]`
-  * reads `outmon/monitorElec.hipo`, along with `epochs.${dataset}.txt`, to build
+  * reads `outmon/monitorElec.hipo`, along with `epochs/epochs.${dataset}.txt`, to build
     timelines for the online monitor
   * if `$useFT` is set, it will use FT electrons instead
   * the runs are organized into epochs, wherein each:
