@@ -22,6 +22,7 @@ def runnum, filenum, eventNumMin, eventNumMax, sector
 def nElec, nElecFT
 def fcStart, fcStop
 def ufcStart, ufcStop
+def aveLivetime
 def fcCharge
 def ufcCharge
 def trigRat
@@ -76,6 +77,7 @@ dataFile.eachLine { line ->
   fcStop = tok[r++].toBigDecimal()
   ufcStart = tok[r++].toBigDecimal()
   ufcStop = tok[r++].toBigDecimal()
+  aveLivetime = tok[r++].toBigDecimal()
 
 
   // if we are using the FT electrons, simply set nElec to nElecFT, since
@@ -102,7 +104,12 @@ dataFile.eachLine { line ->
   //if(fcCharge<=0) errPrint("fcCharge = ${fcCharge} <= 0")
   //if(ufcCharge<=0) errPrint("ufcCharge = ${ufcCharge} <= 0")
   trigRat = fcCharge!=0 ? nElec/fcCharge : 0
-  liveTime = ufcCharge!=0 ? fcCharge/ufcCharge : 0
+  livetimeFromFCratio = ufcCharge!=0 ? fcCharge/ufcCharge : 0
+
+  // choose which livetime to plot
+  livetime = aveLivetime // directly from scaler bank
+  //livetime = livetimeFromFCratio // from gated/ungated FC charge
+  println "LIVETIME: aveLivetime, livetimeFromFCratio, diff = ${aveLivetime}, ${livetimeFromFCratio}, ${aveLivetime-livetimeFromFCratio}"
 
   // add points to graphs
   s = sector-1
@@ -111,7 +118,7 @@ dataFile.eachLine { line ->
     grA[s].addPoint(filenum,trigRat,0,0)
     grN[s].addPoint(filenum,nElec,0,0)
     grF[s].addPoint(filenum,fcCharge,0,0)
-    grT[s].addPoint(filenum,liveTime,0,0)
+    grT[s].addPoint(filenum,livetime,0,0)
   }
 
 } // eo loop through data_table.dat
