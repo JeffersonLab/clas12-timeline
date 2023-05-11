@@ -39,7 +39,7 @@ def defineGraph = { name,ytitle ->
     return g
   }
 }
-def grA, grN, grF, grT
+def grA, grN, grF, grU, grT
 
 // define output hipo file
 def outHipo = new TDirectory()
@@ -53,6 +53,7 @@ def writePlots = { run ->
   writeHipo(grA)
   writeHipo(grN)
   writeHipo(grF)
+  writeHipo(grU)
   writeHipo(grT)
 }
 
@@ -92,7 +93,8 @@ dataFile.eachLine { line ->
     if(runnumTmp>0) writePlots(runnumTmp)
     grA = defineGraph("grA","${electronT} Normalized Yield N/F")
     grN = defineGraph("grN","${electronT} Yield N")
-    grF = defineGraph("grF","Faraday cup charge F [nC]")
+    grF = defineGraph("grF","Gated Faraday Cup charge F [nC]")
+    grU = defineGraph("grU","Ungated Faraday Cup charge F [nC]")
     grT = defineGraph("grT","Live Time")
     runnumTmp = runnum
   }
@@ -107,8 +109,8 @@ dataFile.eachLine { line ->
   livetimeFromFCratio = ufcCharge!=0 ? fcCharge/ufcCharge : 0
 
   // choose which livetime to plot
-  livetime = aveLivetime // average `livetime`, directly from scaler bank
-  //livetime = livetimeFromFCratio // from gated/ungated FC charge
+  //livetime = aveLivetime // average `livetime`, directly from scaler bank
+  livetime = livetimeFromFCratio // from gated/ungated FC charge
   //println "LIVETIME: aveLivetime, livetimeFromFCratio, diff = ${aveLivetime}, ${livetimeFromFCratio}, ${aveLivetime-livetimeFromFCratio}"
 
   // add points to graphs
@@ -118,6 +120,7 @@ dataFile.eachLine { line ->
     grA[s].addPoint(filenum,trigRat,0,0)
     grN[s].addPoint(filenum,nElec,0,0)
     grF[s].addPoint(filenum,fcCharge,0,0)
+    grU[s].addPoint(filenum,ufcCharge,0,0)
     grT[s].addPoint(filenum,livetime,0,0)
   }
 

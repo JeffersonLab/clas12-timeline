@@ -188,6 +188,7 @@ sectors.each { s ->
 def grA,grA_good,grA_bad
 def grN,grN_good,grN_bad
 def grF,grF_good,grF_bad
+def grU,grU_good,grU_bad
 def grT,grT_good,grT_bad
 def histA_good, histA_bad
 def nGood,nBad
@@ -236,7 +237,9 @@ sectors.each { s ->
     insertEpochPlot(epochPlotTree[sectorIt][epochIt],
       "grN",defineEpochPlot("grN_epoch","Number ${electronT}s N",sectorIt,epochIt))
     insertEpochPlot(epochPlotTree[sectorIt][epochIt],
-      "grF",defineEpochPlot("grF_epoch","Faraday cup charge F [nC]",sectorIt,epochIt))
+      "grF",defineEpochPlot("grF_epoch","Gated Faraday Cup charge F [nC]",sectorIt,epochIt))
+    insertEpochPlot(epochPlotTree[sectorIt][epochIt],
+      "grU",defineEpochPlot("grU_epoch","Ungated Faraday Cup charge F [nC]",sectorIt,epochIt))
     insertEpochPlot(epochPlotTree[sectorIt][epochIt],
       "grT",defineEpochPlot("grT_epoch","Live Time",sectorIt,epochIt))
   }
@@ -344,6 +347,7 @@ def addGraphsToHipo = { hipoFile ->
       grA_good,grA_bad,
       grN_good,grN_bad,
       grF_good,grF_bad,
+      grU_good,grU_bad,
       grT_good,grT_bad,
       histA_good,histA_bad,
       lineMedian, lineCutLo, lineCutHi
@@ -401,7 +405,7 @@ def listVar = { valList, wgtList, mu ->
 
   
 // subroutine to convert a graph into a list of values
-def listA, listN, listF, listT, listOne, listWgt
+def listA, listN, listF, listU, listT, listOne, listWgt
 def graph2list = { graph ->
   def lst = []
   graph.getDataSize(0).times { i -> lst.add(graph.getDataY(i)) }
@@ -415,7 +419,7 @@ def totN, totF, totA, totU, totT
 def totFacc = sectors.collect{0}
 def reluncN, reluncF
 def NF,NFerrH,NFerrL,LT
-def valN,valF,valA
+def valN,valF,valU,valA
 def defectList = []
 def badfile
 inList.each { obj ->
@@ -433,10 +437,12 @@ inList.each { obj ->
       grA = inTdir.getObject(obj)
       grN = inTdir.getObject(obj.replaceAll("grA","grN"))
       grF = inTdir.getObject(obj.replaceAll("grA","grF"))
+      grU = inTdir.getObject(obj.replaceAll("grA","grU"))
       grT = inTdir.getObject(obj.replaceAll("grA","grT"))
       listA = graph2list(grA)
       listN = graph2list(grN)
       listF = graph2list(grF)
+      listU = graph2list(grU)
       listT = graph2list(grT)
       listOne = []
       listA.size().times{listOne<<1}
@@ -448,10 +454,9 @@ inList.each { obj ->
       // get totals
       totN = listN.sum()
       totF = listF.sum()
-      totA = totN/totF
-      totU = 0
-      listF.size().times{ totU += listF[it] / listT[it] }
-      totT = totF / totU
+      totU = listU.sum()
+      totA = totN / totF
+      totT = totF / totU // FIXME?????
 
       // accumulated charge (units converted nC -> mC)
       // - should be same for all sectors
@@ -477,8 +482,10 @@ inList.each { obj ->
       grA.getDataSize(0).times { i ->
         valN = grN.getDataY(i)
         valF = grF.getDataY(i)
+        valU = grU.getDataY(i)
         grN.setError(i,0,Math.sqrt(valN))
         grF.setError(i,0,Math.sqrt(valF))
+        grU.setError(i,0,Math.sqrt(valU))
         grA.setError(i,0,
           (valN/valF) * Math.sqrt(
             1/valN + 1/valF - 2 * corrNF * Math.sqrt(valN*valF) / (valN*valF)
@@ -491,6 +498,7 @@ inList.each { obj ->
       (grA_good,grA_bad) = splitGraph(grA)
       (grN_good,grN_bad) = splitGraph(grN)
       (grF_good,grF_bad) = splitGraph(grF)
+      (grU_good,grU_bad) = splitGraph(grU)
       (grT_good,grT_bad) = splitGraph(grT)
 
       // loop through points in grA and fill good and bad graphs
@@ -553,19 +561,23 @@ inList.each { obj ->
           copyPoint(grA,grA_bad,i)
           copyPoint(grN,grN_bad,i)
           copyPoint(grF,grF_bad,i)
+          copyPoint(grU,grU_bad,i)
           copyPoint(grT,grT_bad,i)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grA_bad'],grA,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grN_bad'],grN,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grF_bad'],grF,i,runnum)
+          addEpochPlotPoint(epochPlotTree[sector][epoch]['grU_bad'],grU,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grT_bad'],grT,i,runnum)
         } else {
           copyPoint(grA,grA_good,i)
           copyPoint(grN,grN_good,i)
           copyPoint(grF,grF_good,i)
+          copyPoint(grU,grU_good,i)
           copyPoint(grT,grT_good,i)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grA_good'],grA,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grN_good'],grN,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grF_good'],grF,i,runnum)
+          addEpochPlotPoint(epochPlotTree[sector][epoch]['grU_good'],grU,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grT_good'],grT,i,runnum)
         }
       }
