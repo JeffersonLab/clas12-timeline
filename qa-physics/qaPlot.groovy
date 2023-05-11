@@ -107,9 +107,9 @@ dataFile.eachLine { line ->
   livetimeFromFCratio = ufcCharge!=0 ? fcCharge/ufcCharge : 0
 
   // choose which livetime to plot
-  livetime = aveLivetime // directly from scaler bank
+  livetime = aveLivetime // average `livetime`, directly from scaler bank
   //livetime = livetimeFromFCratio // from gated/ungated FC charge
-  println "LIVETIME: aveLivetime, livetimeFromFCratio, diff = ${aveLivetime}, ${livetimeFromFCratio}, ${aveLivetime-livetimeFromFCratio}"
+  //println "LIVETIME: aveLivetime, livetimeFromFCratio, diff = ${aveLivetime}, ${livetimeFromFCratio}, ${aveLivetime-livetimeFromFCratio}"
 
   // add points to graphs
   s = sector-1
