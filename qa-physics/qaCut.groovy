@@ -254,7 +254,8 @@ def outHipoN = new TDirectory()
 def outHipoU = new TDirectory()
 def outHipoF = new TDirectory()
 def outHipoFA = new TDirectory()
-def outHipoT = new TDirectory()
+def outHipoLTT = new TDirectory()
+def outHipoLTA = new TDirectory()
 def outHipoSigmaN = new TDirectory()
 def outHipoSigmaF = new TDirectory()
 def outHipoRhoNF = new TDirectory()
@@ -307,7 +308,8 @@ def TLN = defineTimeline("Number of ${electronT}s N","N","N")
 def TLU = defineTimeline("Ungated Faraday Cup Charge [mC]","Charge","F")
 def TLF = defineTimeline("Faraday Cup Charge [mC]","Charge","F")
 def TLFA = defineTimeline("Accumulated Faraday Cup Charge [mC]","Charge","F")
-def TLT = defineTimeline("Live Time","Live Time","LT")
+def TLTT = defineTimeline("Live Time, from Total Gated FC Charge / Total Ungated FC Charge","Live Time","LT")
+def TLTA = defineTimeline("Live Time, from Average RUN::scaler::livetime","Live Time","LT")
 def TLsigmaN = defineTimeline("${electronT} Yield sigmaN / aveN","sigmaN/aveN","sigmaN")
 def TLsigmaF = defineTimeline("Faraday Cup Charge sigmaF / aveF","sigmaF/aveF","sigmaF")
 def TLrhoNF = defineTimeline("Correlation Coefficient rho_{NF}","rho_{NF}","rhoNF")
@@ -415,7 +417,7 @@ def graph2list = { graph ->
 // loop over runs, apply the QA cuts, and fill 'good' and 'bad' graphs
 def muN, muF
 def varN, varF 
-def totN, totF, totA, totU, totT
+def totN, totF, totA, totU, totLT, aveLT
 def totFacc = sectors.collect{0}
 def reluncN, reluncF
 def NF,NFerrH,NFerrL,LT
@@ -456,7 +458,10 @@ inList.each { obj ->
       totF = listF.sum()
       totU = listU.sum()
       totA = totN / totF
-      totT = totF / totU // FIXME?????
+
+      // compute livetime
+      totLT = totF / totU // from total FC charge
+      aveLT = listT.size()>0 ? listT.sum() / listT.size() : 0 // average livetime for the run
 
       // accumulated charge (units converted nC -> mC)
       // - should be same for all sectors
@@ -603,7 +608,8 @@ inList.each { obj ->
       addGraphsToHipo(outHipoU)
       addGraphsToHipo(outHipoF)
       addGraphsToHipo(outHipoFA)
-      addGraphsToHipo(outHipoT)
+      addGraphsToHipo(outHipoLTT)
+      addGraphsToHipo(outHipoLTA)
       addGraphsToHipo(outHipoSigmaN)
       addGraphsToHipo(outHipoSigmaF)
       addGraphsToHipo(outHipoRhoNF)
@@ -623,7 +629,8 @@ inList.each { obj ->
       TLU[sector-1].addPoint(runnum,totU/1e6,0,0) // (converted nC->mC)
       TLF[sector-1].addPoint(runnum,totF/1e6,0,0) // (converted nC->mC)
       TLFA[sector-1].addPoint(runnum,totFacc[sector-1],0,0)
-      TLT[sector-1].addPoint(runnum,totT,0,0)
+      TLTT[sector-1].addPoint(runnum,totLT,0,0)
+      TLTA[sector-1].addPoint(runnum,aveLT,0,0)
       TLsigmaN[sector-1].addPoint(runnum,reluncN,0,0)
       TLsigmaF[sector-1].addPoint(runnum,reluncF,0,0)
       TLrhoNF[sector-1].addPoint(runnum,corrNF,0,0)
@@ -700,10 +707,11 @@ writeTimeline(outHipoA,TLA,"${electronN}_yield_normalized_values")
 writeTimeline(outHipoN,TLN,"${electronN}_yield_values")
 writeTimeline(outHipoSigmaN,TLsigmaN,"${electronN}_yield_stddev")
 if(!useFT) {
-  writeTimeline(outHipoU,TLU,"ungated_faraday_cup_charge",true)
-  writeTimeline(outHipoF,TLF,"faraday_cup_charge",true)
-  writeTimeline(outHipoFA,TLFA,"accumulated_faraday_cup_charge",true)
-  writeTimeline(outHipoT,TLT,"live_time",true)
+  writeTimeline(outHipoU,TLU,"faraday_cup_charge_ungated",true)
+  writeTimeline(outHipoF,TLF,"faraday_cup_charge_gated",true)
+  writeTimeline(outHipoFA,TLFA,"faraday_cup_charge_gated_accumulated",true)
+  writeTimeline(outHipoLTT,TLTT,"live_time_from_fc_charge_totals",true)
+  writeTimeline(outHipoLTA,TLTA,"live_time_average",true)
   writeTimeline(outHipoSigmaF,TLsigmaF,"faraday_cup_stddev",true)
 }
 //writeTimeline(outHipoRhoNF,TLrhoNF,"faraday_cup_vs_${electronN}_yield_correlation",true)
