@@ -74,7 +74,7 @@ flowchart TB
       parse --> qaTable
       
       inspect[manual inspection<br>- view qaTable.dat<br>- view online monitor]:::manual
-      qaLoc --> inspect
+      qaTable --> inspect
       inspect --> edit{edit?}
 
       modify[modify.sh]:::manual
