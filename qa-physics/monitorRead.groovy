@@ -120,27 +120,34 @@ else if(RG=="RGF") {
   else System.err << "ERROR: unknown beam energy\n"
 }
 
-// gated FC charge determination
-// - 0: use workaround method: ungated FC charge * average livetime
-//      - needed if cooked with 6.5.3 or below, or without the recharge option
-// - 1: use RUN::scaler:fcupgated - should be ok if data cooked with recharge option
-// - 2: use REC::Event:beamCharge - useful if RUN::scaler is unavailable
-def FCmode = 1
+/* gated FC charge determination: `rechargeMode`
+ * - 0: recharge option was OFF during cook
+ *   - calculate DAQ-gated FC charge as: `ungated FC charge * average livetime`
+ *   - typically applies to data cooked with version 6.5.3 or below
+ *   - typically used as a fallback if there are "spikes" in gated charge, for data cooked with recharge ON
+ * - 1: recharge option was ON during cook
+ *   - calculate DAQ-gated FC charge directly from `RUN::scaler:fcupgated`
+ * - 2: special case
+ *   - calculate DAQ-gated FC charge from `REC::Event:beamCharge`
+ *   - useful if `RUN::scaler` is unavailable
+ */
+def rechargeMode = 1 // default assumes recharge was ON
 if(RG=="RGA") {
-  FCmode = 0 // fall inbending+outbending
-  if(runnum>=6616 && runnum<=6783) { // spring19
-    FCmode=1; // default
-    if(runnum==6724) FCmode=0; // fcupgated charge spike in file 230
-  };
+  rechargeMode = 0 // fall18 inbending+outbending had recharge OFF
+  if(runnum>=6616 && runnum<=6783) { // spring19 had recharge ON
+    rechargeMode=1;
+    if(runnum==6724) rechargeMode=0; // fcupgated charge spike in file 230
+  }
 }
 else if(RG=="RGB") {
-  FCmode = 1 // default
-  if( runnum in [6263, 6350, 6599, 6601, 11119] ) FCmode=0 // fcupgated charge spikes
+  rechargeMode = 1 // recharge ON
+  if( runnum in [6263, 6350, 6599, 6601, 11119] ) rechargeMode=0 // fcupgated charge spikes
 }
-else if(RG=="RGK") FCmode = 0
-else if(RG=="RGF") FCmode = 0
+else if(RG=="RGK") rechargeMode = 0 // recharge OFF
+else if(RG=="RGF") rechargeMode = 0 // recharge OFF
 
 // FC attenuation fix
+// FIXME: re-define this as a closure here, when resolving https://github.com/JeffersonLab/clasqaDB/issues/12
 // RGB runs <6400 had wrong attenuation, need to use
 // fc -> fc*9.96025
 // (this is programmed in below, but mentioned here for documentation)
@@ -553,10 +560,10 @@ def writeHistos = {
     def fcStop
     LTlist.removeAll{it<0} // remove undefined livetime values
     def aveLivetime = LTlist.size()>0 ? LTlist.sum() / LTlist.size() : 0
-    if(FCmode==0) {
+    if(rechargeMode==0) {
       fcStart = ufcStart * aveLivetime // workaround method
       fcStop = ufcStop * aveLivetime // workaround method
-    } else if(FCmode==1 || FCmode==2) {
+    } else if(rechargeMode==1 || rechargeMode==2) {
       if(FClist.size()>0) {
         fcStart = FClist.min()
         fcStop = FClist.max()
@@ -714,11 +721,11 @@ inHipoList.each { inHipoFile ->
     if(scalerBank.rows()>0) {
       UFClist << scalerBank.getFloat("fcup",0) // ungated charge
       LTlist << scalerBank.getFloat("livetime",0) // livetime
-      if(FCmode==1) {
+      if(rechargeMode==1) {
         FClist << scalerBank.getFloat("fcupgated",0) // gated charge
       }
     }
-    if(FCmode==2 && eventBank.rows()>0) {
+    if(rechargeMode==2 && eventBank.rows()>0) {
       FClist << eventBank.getFloat("beamCharge",0) // gated charge
     }
 

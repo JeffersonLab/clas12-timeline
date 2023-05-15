@@ -37,7 +37,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     have been produced
   * obtain the beam energies from the `RCDB`; CAUTION: sometimes the `RCDB` is 
     wrong, and it is good to ask for the correct beam energy from the run group
-  * set `FCmode`
+  * set `rechargeMode`
 * `exeSlurm.sh $dataset`: runs `monitorRead.groovy` on DSTs using slurm
   * `$dataset` is specified in `datasetList.txt`, along with a range of runs
     * the syntax of this file is `$dataset $firstRun $lastRun`
