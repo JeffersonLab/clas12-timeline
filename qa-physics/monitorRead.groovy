@@ -127,6 +127,8 @@ else if(RG=="RGF") {
  *   - typically used as a fallback if there are "spikes" in gated charge, for data cooked with recharge ON
  * - 1: recharge option was ON during cook
  *   - calculate DAQ-gated FC charge directly from `RUN::scaler:fcupgated`
+ *   - if you find `fcupgated > fcup(un-gated)`, then most likely the recharge option was OFF,
+*      and `rechargeMode=0` should be used instead
  * - 2: special case
  *   - calculate DAQ-gated FC charge from `REC::Event:beamCharge`
  *   - useful if `RUN::scaler` is unavailable
