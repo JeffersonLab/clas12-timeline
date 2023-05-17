@@ -2,11 +2,17 @@
 
 ## Legend
 ```mermaid
-flowchart LR
-    data{{Data}}:::data
+flowchart TB
+    data{{Data files}}:::data
     timeline{{Timeline<br/>HIPO files}}:::timeline
-    auto[Automated step,<br/>by specified wrapper]:::auto
+    subgraph Wrapper Script
+      auto[Automated step,<br/>by specified Wrapper Script]:::auto
+    end
     manual[Manual step,<br/>not automated]:::manual
+    data --> auto
+    data --> manual
+    auto --> timeline
+    manual --> timeline
 
     classDef data fill:#ff8,color:black
     classDef auto fill:#8f8,color:black
