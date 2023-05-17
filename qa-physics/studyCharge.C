@@ -2,7 +2,7 @@
 //   1. fcupgated
 //   2. <livetime>*fcup
 // input: tree.root, produced by mkTree.sh
-// see monitorRead.groovy, `rechargeMode` setting, to know which charge is used
+// see monitorRead.groovy, `FCmode` setting, to know which charge is used
 
 void studyCharge(TString infileN="tree.root") {
 
