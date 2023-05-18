@@ -37,12 +37,16 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     have been produced
   * obtain the beam energies from the `RCDB`; CAUTION: sometimes the `RCDB` is 
     wrong, and it is good to ask for the correct beam energy from the run group
-  * set `rechargeMode`
-    * this depends on whether the data were cooked with the recharge option ON
-      or OFF (see `README.json`, typically included with the cooked data)
+  * set `FCmode`, to specify how to calculate the FC charge
+    * this depends on whether the data needed to be cooked with the recharge
+      option ON or OFF (see `README.json`, typically included with the cooked
+      data)
+      * note that the `FCmode` is NOT determined from the recharge setting, but
+        instead from which charge values in the data we can use
+      * see `monitorRead.groovy` for more details
     * if you find that the DAQ-gated FC charge is larger than the ungated
       charge, you may have assumed here that the recharge option was ON, when
-      actually it was OFF
+      actually it was OFF and needs to be ON
 * `exeSlurm.sh $dataset`: runs `monitorRead.groovy` on DSTs using slurm
   * `$dataset` is specified in `datasetList.txt`, along with a range of runs
     * the syntax of this file is `$dataset $firstRun $lastRun`
