@@ -79,6 +79,7 @@ else if(runnum>=6616 && runnum<=6783) RG="RGA" // spring 19
 else if(runnum>=11093 && runnum<=11300) RG="RGB" // fall 19
 else if(runnum>=11323 && runnum<=11571) RG="RGB" // winter 20
 else if(runnum>=12210 && runnum<=12951) RG="RGF" // spring+summer 20
+else if(runnum>=15019 && runnum<=15884) RG="RGM" 
 else System.err << "WARNING: unknown run group; using default run-group-dependent settings (see monitorRead.groovy)\n"
 println "rungroup = $RG"
 
@@ -92,6 +93,7 @@ else if(RG=="RGB") {
 };
 else if(RG=="RGK") helFlip = false
 else if(RG=="RGF") helFlip = true
+else if(RG=="RGM") helFlip = true
 
 // beam energy
 // - hard-coded; could instead get from RCDB, but sometimes it is incorrect
@@ -117,6 +119,13 @@ else if(RG=="RGF") {
   if     (runnum>=12210 && runnum<=12388) EBEAM = 10.389 // RCDB may still be incorrect
   else if(runnum>=12389 && runnum<=12443) EBEAM =  2.186 // RCDB may still be incorrect
   else if(runnum>=12444 && runnum<=12951) EBEAM = 10.389 // RCDB may still be incorrect
+  else System.err << "ERROR: unknown beam energy\n"
+}
+else if(RG=="RGM") {
+  if     (runnum>=15013 && runnum<=15490) EBEAM = 5.98636 // RCDB may still be incorrect
+  else if(runnum>=15533 && runnum<=15727) EBEAM = 2.07052 // RCDB may still be incorrect
+  else if(runnum>=15728 && runnum<=15784) EBEAM = 4.02962 // RCDB may still be incorrect
+  else if(runnum>=15787 && runnum<=15884) EBEAM = 5.98636 // RCDB may still be incorrect
   else System.err << "ERROR: unknown beam energy\n"
 }
 
@@ -147,6 +156,12 @@ else if(RG=="RGB") {
 }
 else if(RG=="RGK") rechargeMode = 0 // recharge OFF
 else if(RG=="RGF") rechargeMode = 0 // recharge OFF
+else if(RG=="RGM") {		  
+  rechargeMode = 1		 
+  if(runnum>=15015 && runnum<=15199) { 
+    rechargeMode = 2 //no scalars read out in this range probably dosen't work anyway 
+  }
+}
 
 // FC attenuation fix
 // FIXME: re-define this as a closure here, when resolving https://github.com/JeffersonLab/clasqaDB/issues/12

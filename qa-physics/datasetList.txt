@@ -1,4 +1,4 @@
-# RGA
+yes# RGA
 rga_inbending  5032 5419 /cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v0/dst/recon
 rga_outbending 5422 5666 /cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v0/dst/recon
 rga_spring19   6616 6783 /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v0/dst/recon
@@ -28,3 +28,6 @@ rgf_summer20_torusMh 12436 12443 /cache/clas12/rg-f/production/recon/summer2020/
 rgf_summer20_torusM1 12447 12951 /cache/clas12/rg-f/production/recon/summer2020/torus-1_solenoid-0.745/pass1v0/dst/recon
 # full RGF 2020 dataset, with symlinks to above 4 datasets (build with `symlinkRGF.sh`):
 rgf_2020 12210 12951 /w/hallb-scifs17exp/clas12/users/dilks/dm/data.RGF
+
+# RGM
+rgm_fall2021 15024 15884 /volatile/clas12/rg-m/pass0.18/mon/recon
