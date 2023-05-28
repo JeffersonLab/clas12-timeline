@@ -1667,9 +1667,9 @@ public class dst_mon {
 		dirout.mkdir("/ECAL/");
 		dirout.cd("/ECAL/");
 		for(int s=0;s<6;s++){
-			dirout.addDataSet(H_e_EC_etot_p[s],H_e_EC_vt_theta[s]);
+			dirout.addDataSet(H_e_EC_vt_theta[s]);
 		}
-		dirout.addDataSet(H_pi0_mass,H_pi0_G1_vt_evt,H_pi0_G2_vt_evt);
+//		dirout.addDataSet(H_pi0_mass,H_pi0_G1_vt_evt,H_pi0_G2_vt_evt);
 		
 		if(runNum>0)dirout.writeFile("plots"+runNum+"/dst_mon_"+runNum+".hipo");
                else dirout.writeFile("plots/dst_mon.hipo");
