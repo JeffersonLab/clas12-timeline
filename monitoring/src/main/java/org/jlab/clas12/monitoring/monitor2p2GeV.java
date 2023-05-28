@@ -1196,6 +1196,9 @@ public class monitor2p2GeV {
 		H_trig_vy_vz_S = new H2F[6];
 		H_trig_vz_theta_S = new H2F[6];
 		H_trig_ECALsampl_S = new H2F[6];
+		H_trig_PCAL_vt_S = new H1F[6];
+		H_trig_ECIN_vt_S = new H1F[6];
+		H_trig_ECOU_vt_S = new H1F[6];
 		H_trig_PCALECAL_S = new H2F[6];
 		H_trig_HTCCn_theta_S = new H2F[6];
 		H_trig_LTCCn_theta_S = new H2F[6];
@@ -1271,6 +1274,19 @@ public class monitor2p2GeV {
 			H_trig_ECALsampl_S[s].setTitle(String.format("e sect %d",s+1));
 			H_trig_ECALsampl_S[s].setTitleX("p (GeV)");
 			H_trig_ECALsampl_S[s].setTitleY("ECAL sampling");
+			
+			H_trig_PCAL_vt_S[s] = new H1F(String.format("H_trig_PCAL_vt_S%d",s+1),String.format("H_trig_PCAL_vt_S%d",s+1),100,-3,3);
+			H_trig_PCAL_vt_S[s].setTitle(String.format("e sect %d",s+1));
+			H_trig_PCAL_vt_S[s].setTitleX("e- pcal residual (ns)");
+			
+			H_trig_ECIN_vt_S[s] = new H1F(String.format("H_trig_ECIN_vt_S%d",s+1),String.format("H_trig_ECIN_vt_S%d",s+1),100,-3,3);
+			H_trig_ECIN_vt_S[s].setTitle(String.format("e sect %d",s+1));
+			H_trig_ECIN_vt_S[s].setTitleX("e- ecin residual (ns)");
+			
+			H_trig_ECOU_vt_S[s] = new H1F(String.format("H_trig_ECOU_vt_S%d",s+1),String.format("H_trig_ECOU_vt_S%d",s+1),100,-3,3);
+			H_trig_ECOU_vt_S[s].setTitle(String.format("e sect %d",s+1));
+			H_trig_ECOU_vt_S[s].setTitleX("e- ecou residual (ns)");
+			
                         H_trig_PCALECAL_S[s] = new H2F(String.format("H_trig_PCALECAL_S%d",s+1),String.format("H_trig_PCALECAL_S%d",s+1),100,0,1.5,100,0,1.5);
                         H_trig_PCALECAL_S[s].setTitle(String.format("e sect %d",s+1));
                         H_trig_PCALECAL_S[s].setTitleX("E PCAL (GeV)");
