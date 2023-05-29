@@ -4,7 +4,7 @@ import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ECFitter
 
-class ec_pim_time {
+class ec_pcal_time {
 
 def data = new ConcurrentHashMap()
 
