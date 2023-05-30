@@ -4,7 +4,7 @@ import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ECFitter
 
-class ec_pcal_time {
+class ec_ecou_time {
 
 def data = new ConcurrentHashMap()
 
@@ -14,10 +14,10 @@ def processDirectory(dir, run) {
   def sigmalist = []
   def chi2list = []
   def histlist =   (0..<6).collect{
-	  def h1 = dir.getObject('/elec/H_trig_PCAL_vt_S'+(it+1))
+	  def h1 = dir.getObject('/elec/H_trig_ECOU_vt_S'+(it+1))
 	  h1.setName("sec"+(it+1))
-	  h1.setTitle("PCAL Time Residual")
-	  h1.setTitleX("PCAL Time Residual (ns)")
+	  h1.setTitle("ECOU Time Residual")
+	  h1.setTitleX("ECOU Time Residual (ns)")
 	  def f1 = ECFitter.timefit(h1)
 	  funclist.add(f1)
 	  meanlist.add(f1.getParameter(1))
@@ -51,7 +51,7 @@ def close() {
 		  out.cd('/timelines')
 		  out.addDataSet(grtl)
 	  }
-	  out.writeFile('ec_elec_pcal_time_'+name+'.hipo')	  
+	  out.writeFile('ec_elec_ecou_time_'+name+'.hipo')	  
   }
   
 }
