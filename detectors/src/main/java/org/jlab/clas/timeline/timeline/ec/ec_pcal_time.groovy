@@ -32,7 +32,6 @@ def processDirectory(dir, run) {
 
 def close() {
 
-
   ['mean', 'sigma'].each{name->
 	  TDirectory out = new TDirectory()
 	  out.mkdir('/timelines')
@@ -43,14 +42,12 @@ def close() {
 		  grtl.setTitleX("run number")
 
 		  data.sort{it.key}.each{run,it->
-			  if (sec==0){
-				  out.mkdir('/'+it.run)
-				}
-				out.cd('/'+it.run)
-				out.addDataSet(it.hlist[sec])
-			 	out.addDataSet(it.flist[sec])
-				grtl.addPoint(it.run, it.name[sec], 0, 0)
-		  }
+			  if (sec==0)  out.mkdir('/'+it.run)
+			  out.cd('/'+it.run)
+	          out.addDataSet(it.hlist[sec])
+              out.addDataSet(it.flist[sec])
+              grtl.addPoint(it.run, it[name][sec], 0, 0)	  
+          }
 		  out.cd('/timelines')
 		  out.addDataSet(grtl)
 	  }
