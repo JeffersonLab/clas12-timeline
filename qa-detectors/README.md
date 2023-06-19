@@ -9,10 +9,10 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
   - each line should have the following columns, delimited by spaces:
     - detector name
     - hipo file name
-    - (optional) additional specifier(s)
     - lower bound
     - upper bound
     - units
+    - (optional) additional specifier(s)
   - comments can be added using the symbol `#`
     - this is useful for commenting out timelines, especially when debugging a particular timeline
 - other files in `cuts/` may override the default file
