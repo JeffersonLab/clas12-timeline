@@ -131,7 +131,9 @@ cutsFileList.each { re, cutsFile ->
             else addCut('sec'+sec)
           }
           else if(det=='ec') {
-            if(timeline.contains("ec_gg_m")) addCut(lastWord(timeline))
+            if(timeline.contains("ec_gg_m")) {
+              if(sec==1) addCut(lastWord(timeline))
+            }
             else addCut('sec'+sec)
           }
           else if(det=='dc') {
