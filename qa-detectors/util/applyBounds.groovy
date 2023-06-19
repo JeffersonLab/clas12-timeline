@@ -56,33 +56,49 @@ def L = [:]
 def tok
 def lastWord = { str -> str.tokenize('_')[-1] }
 cutsFileList.each { re, cutsFile ->
+
+  // check if this cuts file should be read, by comparing `indir` to regex `re`
   print "Use $cutsFile?"
   if(indir =~ re) {
     println " YES."
     File cutsFileHandle = new File("$calibqadir/cuts/$cutsFile")
     if(!(cutsFileHandle.exists())) throw new Exception("cuts file $cutsFile not found")
+
+    // data structures to track which leaves have been reset, which applies to the case
+    // of overriding cuts files; this ensures leaves are only cleared once per cuts file
+    clearedLeavesB = []
+    clearedLeavesL = []
+
+    // add cut definitions
     cutsFileHandle.eachLine { line ->
+
+      // tokenize
       line = line.replaceAll(/#.*/,'')
       tok = line.tokenize(' ')
       if(tok.size()==0) return
-      cutPath = tok[0..-4]
-      def det = cutPath[0]
-      def timeline = cutPath[1]
-      def spec = cutPath.size()>2 ? cutPath[2] : ''
-      def lbound = tok[-3].toDouble()
-      def ubound = tok[-2].toDouble()
-      def units = tok[-1]
+      def det      = tok[0]
+      def timeline = tok[1]
+      def lbound   = tok[2].toDouble()
+      def ubound   = tok[3].toDouble()
+      def units    = tok[4]
+      cutPath = [det, timeline]
+      spec = tok.size()>5 ? tok[5] : ''
+      if(spec!='')
+        cutPath.add(spec)
 
       // add cuts to graph
       def addCut = { graphN ->
         [
-          [B, [det,timeline,graphN] ],
-          [L, [det,timeline]        ],
-        ].each { tr, np ->
-          T.addLeaf(tr, np, {[]})
-          T.getLeaf(tr, np).clear()
-          T.getLeaf(tr, np).push(lbound)
-          T.getLeaf(tr, np).push(ubound)
+          [B, clearedLeavesB, [det,timeline,graphN] ],
+          [L, clearedLeavesL, [det,timeline]        ],
+        ].each { tr, clearedLeaves, nodePath ->
+          T.addLeaf(tr, nodePath, {[]})
+          if(!(nodePath in clearedLeaves)) {
+            T.getLeaf(tr, nodePath).clear()
+            clearedLeaves.push(nodePath)
+          }
+          T.getLeaf(tr, nodePath).push(lbound)
+          T.getLeaf(tr, nodePath).push(ubound)
         }
       }
 
@@ -96,11 +112,11 @@ cutsFileList.each { re, cutsFile ->
       else if(det=='cnd') {
         (1..3).each{ layernum -> addCut('layer'+layernum+' '+lastWord(timeline)) }
       }
+      else if(det=='ltcc') addCut(spec)
       else { // sector dependent detectors
         (1..6).each{ sec ->
           if(det=='rf') addCut('sec'+sec)
           else if(det=='ftof') addCut('sec'+sec)
-          else if(det=='ltcc' && (sec==3 || sec==5)) addCut('sec'+sec)
           else if(det=='htcc') {
             if(timeline.contains("vtimediff")) {
               def rings = (1..4).collect()
@@ -143,6 +159,7 @@ println T.pPrint(B)
 println "======================================="
 println T.pPrint(L)
 println "======================================="
+
 
 // closure for creating lines for the front end graphs
 // - lineTitle* must be set before calling this
@@ -251,7 +268,11 @@ TL.each{ det, detTr -> // loop through detector directories
     T.getLeaf(L,[det,hipoFile]).eachWithIndex{ num,idx ->
       println "LINE: $det $hipoFile $num"
       def lineColor = 'black'
-      if(hipoFile=="fth_MIPS_energy") {
+      if(hipoFile=="ltcc_elec_nphe_sec") {
+        def lineColors = ['red','red','blue','blue']
+        lineColor = lineColors[idx]
+      }
+      else if(hipoFile=="fth_MIPS_energy") {
         def lineColors = ['red','red','blue','blue']
         lineColor = lineColors[idx]
       }
