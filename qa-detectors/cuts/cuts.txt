@@ -29,12 +29,12 @@ ft    fth_MIPS_time_sigma        layer2  0       1.2       ns
 ec    ec_Sampling                0.23    0.26    unitless
 ec    ec_gg_m_mean               0.129   0.133   GeV
 ec    ec_gg_m_sigma              0       0.015   GeV
-ec    ec_elec_pcal_time_mean           -0.150  0.150   ns
-ec    ec_elec_pcal_time_sigma           0.000  0.600   ns
-ec    ec_elec_ecin_time_mean           -0.150  0.150   ns
-ec    ec_elec_ecin_time_sigma           0.000  0.600   ns
-ec    ec_elec_ecou_time_mean           -0.150  0.150   ns
-ec    ec_elec_ecou_time_sigma           0.000  1.200   ns
+ec    ec_elec_pcal_time_mean     -0.150  0.150   ns
+ec    ec_elec_pcal_time_sigma    0.000   0.600   ns
+ec    ec_elec_ecin_time_mean     -0.150  0.150   ns
+ec    ec_elec_ecin_time_sigma    0.000   0.600   ns
+ec    ec_elec_ecou_time_mean     -0.150  0.150   ns
+ec    ec_elec_ecou_time_sigma    0.000   1.200   ns
 
 ctof  ctof_edep                  5.6     6.4     MeV
 ctof  ctof_time_mean             -0.020  0.020   ns
