@@ -30,13 +30,15 @@ def timelineDir = System.getenv('TIMELINEDIR')
 if(calibqadir==null) throw new Exception("env vars not set; source env.sh")
 File datasetList = new File(calibqadir+"/datasetList.txt")
 def datasetFound = false
-def indir,outdir
+def indir, outdir, inURL, outURL
 if(!(datasetList.exists())) throw new Exception("datasetList.txt not found")
 datasetList.eachLine { line ->
   def tok = line.tokenize(' ')
   if(dataset==tok[0]) { // find the specified dataset
-    indir = timelineDir+"/"+tok[1]
-    outdir = timelineDir+"/"+tok[2]
+    indir  = "$timelineDir/${tok[1]}"
+    outdir = "$timelineDir/${tok[2]}"
+    inURL  = "https://clas12mon.jlab.org/${tok[1]}/tlsummary/"
+    outURL = "https://clas12mon.jlab.org/${tok[2]}/tlsummary/"
     datasetFound = true
   }
 }
@@ -301,12 +303,9 @@ def outdirHandle = new File(outdir)
 outdirHandle.eachFileRecurse(FileType.FILES) { hipoFile ->
   if(hipoFile.name =~ /_QA.hipo$/) {
     delFile = hipoFile.getPath().replaceAll(/_QA\.hipo$/, '.hipo')
-    println "remove:        $delFile"
+    println "\nremove:        $delFile"
     println "since we have: ${hipoFile.getPath()}"
-    proc = "rm -v $delFile".execute()
-    println proc.in.text
-    if(proc.exitValue() > 0)
-      println proc.err.text
+    new File(delFile).delete()
   }
 }
 
@@ -316,9 +315,9 @@ println """
 TIMELINE URLs:
 
 Input Timelines:
-  https://clas12mon.jlab.org/$indir/tlsummary/
+  $inURL
 
 Output Timelines:
-  https://clas12mon.jlab.org/$outdir/tlsummary/
+  $outURL
 
 """
