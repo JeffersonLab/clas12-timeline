@@ -98,10 +98,10 @@ cutsFileList.each { re, cutsFile ->
           T.addLeaf(tr, nodePath, {[]})
           if(!(nodePath in clearedLeaves)) {
             T.getLeaf(tr, nodePath).clear()
-            clearedLeaves.push(nodePath)
+            clearedLeaves.add(nodePath)
           }
-          T.getLeaf(tr, nodePath).push(lbound)
-          T.getLeaf(tr, nodePath).push(ubound)
+          T.getLeaf(tr, nodePath).add(lbound)
+          T.getLeaf(tr, nodePath).add(ubound)
         }
       }
 
