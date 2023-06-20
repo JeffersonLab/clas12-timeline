@@ -4,6 +4,7 @@ import org.jlab.groot.data.H1F
 import org.jlab.groot.math.F1D
 import java.lang.Math.*
 import groovy.io.FileType
+import groovy.json.JsonOutput
 import qa.Tools
 Tools T = new Tools()
 
@@ -310,6 +311,37 @@ outdirHandle.eachFileRecurse(FileType.FILES) { hipoFile ->
 }
 
 
+// generate index
+println "GENERATE INDEX:"
+indexJsonName = "$outdir/ListOfTimelines.json"
+if(new File(indexJsonName).exists()) {
+  println " -> already exists"
+}
+else {
+  def indexHash = [:]
+  outdirHandle.traverse(
+      type: groovy.io.FileType.FILES,
+      nameFilter: ~/.*\.hipo/
+      )
+  {
+    detName      = it.getParent().tokenize('/')[-1]
+    timelineName = it.getName().replaceAll(/\.hipo$/, '').tokenize('_')[1..-1].join(' ')
+    if(indexHash[detName]==null)
+      indexHash.put(detName, [])
+    indexHash[detName].add(timelineName)
+  }
+  indexJson = []
+  indexHash.each { detName, timelineList ->
+    indexJson.add([
+      'subsystem': detName,
+      'variables': timelineList,
+    ])
+  }
+  println T.pPrint(indexJson)
+  new File(indexJsonName).write(JsonOutput.toJson(indexJson))
+}
+
+
 // print URLs
 println """
 TIMELINE URLs:
@@ -319,5 +351,4 @@ Input Timelines:
 
 Output Timelines:
   $outURL
-
 """
