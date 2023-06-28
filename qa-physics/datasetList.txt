@@ -1,11 +1,10 @@
 # RGA
+## pass1
 rga_inbending  5032 5419 /cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v0/dst/recon
 rga_outbending 5422 5666 /cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v0/dst/recon
 rga_spring19   6616 6783 /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v0/dst/recon
-# tests:
-rga_pass0_early 4763 5001 /cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v0b/dst/recon
-rga_pass2_test  6711 6780 /volatile/clas12/rg-a/production/pass0/Spring19/sp19_dst_ai_v1_05/dst/recon
-rga_v1_32       6616 6783 /volatile/clas12/rg-a/production/pass0/Spring19/v1_32/mon/recon
+## pass2
+rga_pass2_spring19 6616 6783 /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/recon
 
 # RGB
 rgb_spring 6156  6603  /cache/clas12/rg-b/production/recon/spring2019/torus-1/pass1/v0/dst/recon
