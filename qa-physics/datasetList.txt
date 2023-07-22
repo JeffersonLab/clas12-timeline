@@ -1,4 +1,4 @@
-yes# RGA
+# RGA
 rga_inbending  5032 5419 /cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v0/dst/recon
 rga_outbending 5422 5666 /cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v0/dst/recon
 rga_spring19   6616 6783 /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v0/dst/recon
