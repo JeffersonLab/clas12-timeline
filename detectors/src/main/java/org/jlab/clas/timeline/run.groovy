@@ -52,8 +52,11 @@ def engines = [
     new forward.forward_Tracking_NegVz(),
     new ec.ec_Sampl(),
     new ec.ec_gg_m(),
-    new ec.ec_pip_time(),
-    new ec.ec_pim_time(),
+	new ec.ec_pcal_time(),
+	new ec.ec_ecin_time(),
+	new ec.ec_ecou_time(),
+//    new ec.ec_pip_time(),
+//    new ec.ec_pim_time(),
     new ltcc.ltcc_nphe_sector(),
     new rf.rftime_diff(),
     new rf.rftime_pim_FD(),
@@ -114,8 +117,20 @@ def engines = [
     new dc.dc_t0_even_sec_sl(),
     new dc.dc_t0_odd_sec_sl(),
     new dc.dc_tmax_sec_sl()],
-  out_RICH: [new rich.rich_timediff(),
-    new rich.rich_fwhm_pmt()]
+  out_RICH: [new rich.rich_dt_m(), 
+       new rich.rich_trk_m(), 
+       new rich.rich_etac_dir_m(), 
+       new rich.rich_etac_plan_m(), 
+       new rich.rich_etac_sphe_m(), 
+       new rich.rich_npho_dir_m(), 
+       new rich.rich_npho_plan_m(), 
+       new rich.rich_npho_sphe_m(), 
+       new rich.rich_npim_m(), 
+       new rich.rich_npip_m(), 
+       new rich.rich_nkm_m(), 
+       new rich.rich_nkp_m(), 
+       new rich.rich_npro_m(), 
+       new rich.rich_npbar_m()]
 ]
 
 

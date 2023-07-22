@@ -122,10 +122,10 @@ else if(RG=="RGF") {
   else System.err << "ERROR: unknown beam energy\n"
 }
 else if(RG=="RGM") {
-  if     (runnum>=15013 && runnum<=15490) EBEAM = 5.98636 // RCDB may still be incorrect
-  else if(runnum>=15533 && runnum<=15727) EBEAM = 2.07052 // RCDB may still be incorrect
-  else if(runnum>=15728 && runnum<=15784) EBEAM = 4.02962 // RCDB may still be incorrect
-  else if(runnum>=15787 && runnum<=15884) EBEAM = 5.98636 // RCDB may still be incorrect
+  if     (runnum>=15013 && runnum<=15490) EBEAM = 5.98636 
+  else if(runnum>=15533 && runnum<=15727) EBEAM = 2.07052 
+  else if(runnum>=15728 && runnum<=15784) EBEAM = 4.02962 
+  else if(runnum>=15787 && runnum<=15884) EBEAM = 5.98636 
   else System.err << "ERROR: unknown beam energy\n"
 }
 

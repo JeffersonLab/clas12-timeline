@@ -1639,19 +1639,23 @@ public class dst_mon {
 			System.out.println(String.format("saved plots/dst_epi0.png"));
 		}
 	}
+	
 	public void write(){
-                TDirectory dirout = new TDirectory();
-                dirout.mkdir("/HTCC/");
-                dirout.cd("/HTCC/");
+        TDirectory dirout = new TDirectory();
+        
+        dirout.mkdir("/HTCC/");
+        dirout.cd("/HTCC/");
 		dirout.addDataSet(H_e_HTCC , H_e_nphe_HTCC, H_e_bin_theta_HTCC, H_e_bin_phi_HTCC, H_e_theta_HTCC, H_e_phi_HTCC);
 		for(int ic=0;ic<10;ic++)dirout.addDataSet(H_e_HTCC_cut[ic]);
-                for(int s=0;s<6;s++)for(int it=0;it<15;it++)for(int ip=0;ip<30;ip++)dirout.addDataSet(H_e_bin_nphe_HTCC[s][it][ip]);
+        for(int s=0;s<6;s++)for(int it=0;it<15;it++)for(int ip=0;ip<30;ip++)dirout.addDataSet(H_e_bin_nphe_HTCC[s][it][ip]);
+        
 		dirout.mkdir("/elastic/");
 		dirout.cd("/elastic/");
 		for(int s=0;s<6;s++){
 			dirout.addDataSet(H_elast_W_theta[s],H_elast_W_Q2[s],H_elast_dvz_theta[s]);
 		}
 		dirout.addDataSet(H_elast_Dphi_phi,H_elast_dvz_vz,H_elast_dvz_theta_all);
+		
 		dirout.mkdir("/FTOF/");
 		dirout.cd("/FTOF/");
 		for(int s=0;s<6;s++){
@@ -1659,8 +1663,16 @@ public class dst_mon {
 			dirout.addDataSet(p1a_pad_vt_elec[s],p1a_pad_vt_pion[s],p1b_pad_vt_elec[s],p1b_pad_vt_pion[s],p2_pad_vt[s]);
 			dirout.addDataSet(p1a_pad_edep_elec[s],p1a_pad_edep_pion[s],p1b_pad_edep_elec[s],p1b_pad_edep_pion[s],p2_pad_edep[s]);
 		}
-                if(runNum>0)dirout.writeFile("plots"+runNum+"/dst_mon_"+runNum+".hipo");
-                else dirout.writeFile("plots/dst_mon.hipo");
+
+		dirout.mkdir("/ECAL/");
+		dirout.cd("/ECAL/");
+		for(int s=0;s<6;s++){
+			dirout.addDataSet(H_e_EC_vt_theta[s]);
+		}
+//		dirout.addDataSet(H_pi0_mass,H_pi0_G1_vt_evt,H_pi0_G2_vt_evt);
+		
+		if(runNum>0)dirout.writeFile("plots"+runNum+"/dst_mon_"+runNum+".hipo");
+               else dirout.writeFile("plots/dst_mon.hipo");
 	}
 
 ////////////////////////////////////////////////

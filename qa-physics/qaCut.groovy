@@ -457,9 +457,7 @@ inList.each { obj ->
       totN = listN.sum()
       totF = listF.sum()
       totU = listU.sum()
-      totA = totF > 1e-3 ? totN / totF : 0 
-      // totA = totN / totF
-
+      totA = totF > 0 ? totN / totF : 0 
 
       // compute livetime
       totLT = totU > 1e-3 ? totF / totU : 0 // from total FC charge

@@ -32,12 +32,14 @@ public class monitor2p2GeV {
 	boolean[] trigger_bits;
 	public float EB, Ebeam;
 	public float RFtime1, RFtime2, startTime, BCG;public long TriggerWord;
+	public float STT;
 	public int trig_part_ind, trig_sect, trig_track_ind, trig_HTCC_ring;
         public int trig_muon_sect;
 	public float trig_HTCC_theta;
 	public int e_part_ind, e_sect, e_track_ind, hasLTCC, ngammas, pip_part_ind, pip_track_ind, pip_sect, pim_part_ind, pim_track_ind, pim_sect, foundCVT, CVTcharge;
 	public int found_e_FMM, found_eTraj, found_eHTCC;
 	public float[] e_FMMmom, e_FMMtheta, e_FMMphi, e_FMMvz;
+	public float e_ecal_T_PCAL, e_ecal_T_ECIN, e_ecal_T_ECOU;
 	public float e_mom, e_theta, e_phi, e_vx, e_vy, e_vz, e_Ivy, e_Ivz, e_ecal_X, e_ecal_Y, e_ecal_Z, e_ecal_E, e_track_chi2, e_vert_time, e_vert_time_RF, e_Q2, e_xB, e_W;
 	public float e_HTCC, e_LTCC, e_pcal_e, e_etot_e, e_TOF_X, e_TOF_Y, e_TOF_Z, e_HTCC_X, e_HTCC_Y, e_HTCC_Z, e_HTCC_tX, e_HTCC_tY, e_HTCC_tZ, e_HTCC_nphe;
 	public float e_DCR1_X, e_DCR1_Y, e_DCR1_Z, e_DCR2_X, e_DCR2_Y, e_DCR2_Z, e_DCR3_X, e_DCR3_Y, e_DCR3_Z;
@@ -52,6 +54,7 @@ public class monitor2p2GeV {
 	public GraphErrors G_Clock_evn, G_gatedClock_evn, G_Clock_ratio;
 
 	public H1F[][] H_trig_phi_theta_S;
+	public H1F[] H_trig_PCAL_vt_S, H_trig_ECIN_vt_S, H_trig_ECOU_vt_S;
 	public H2F[] H_trig_theta_mom_S, H_trig_phi_mom_S, H_trig_theta_phi_S, H_trig_vz_mom_S, H_trig_vy_vz_S, H_trig_vz_theta_S;
 	public H2F[] H_trig_ECALsampl_S, H_trig_PCALECAL_S, H_trig_HTCCn_theta_S, H_trig_LTCCn_theta_S;
         public H2F[] H_trig_ECAL_pos_S, H_trig_TOF_pos_S, H_trig_HTCC_pos_S, H_trig_DCR1_pos_S, H_trig_DCR2_pos_S, H_trig_DCR3_pos_S;
@@ -1193,6 +1196,9 @@ public class monitor2p2GeV {
 		H_trig_vy_vz_S = new H2F[6];
 		H_trig_vz_theta_S = new H2F[6];
 		H_trig_ECALsampl_S = new H2F[6];
+		H_trig_PCAL_vt_S = new H1F[6];
+		H_trig_ECIN_vt_S = new H1F[6];
+		H_trig_ECOU_vt_S = new H1F[6];
 		H_trig_PCALECAL_S = new H2F[6];
 		H_trig_HTCCn_theta_S = new H2F[6];
 		H_trig_LTCCn_theta_S = new H2F[6];
@@ -1268,6 +1274,19 @@ public class monitor2p2GeV {
 			H_trig_ECALsampl_S[s].setTitle(String.format("e sect %d",s+1));
 			H_trig_ECALsampl_S[s].setTitleX("p (GeV)");
 			H_trig_ECALsampl_S[s].setTitleY("ECAL sampling");
+			
+			H_trig_PCAL_vt_S[s] = new H1F(String.format("H_trig_PCAL_vt_S%d",s+1),String.format("H_trig_PCAL_vt_S%d",s+1),100,-3,3);
+			H_trig_PCAL_vt_S[s].setTitle(String.format("e sect %d",s+1));
+			H_trig_PCAL_vt_S[s].setTitleX("e- pcal residual (ns)");
+			
+			H_trig_ECIN_vt_S[s] = new H1F(String.format("H_trig_ECIN_vt_S%d",s+1),String.format("H_trig_ECIN_vt_S%d",s+1),100,-3,3);
+			H_trig_ECIN_vt_S[s].setTitle(String.format("e sect %d",s+1));
+			H_trig_ECIN_vt_S[s].setTitleX("e- ecin residual (ns)");
+			
+			H_trig_ECOU_vt_S[s] = new H1F(String.format("H_trig_ECOU_vt_S%d",s+1),String.format("H_trig_ECOU_vt_S%d",s+1),100,-3,3);
+			H_trig_ECOU_vt_S[s].setTitle(String.format("e sect %d",s+1));
+			H_trig_ECOU_vt_S[s].setTitleX("e- ecou residual (ns)");
+			
                         H_trig_PCALECAL_S[s] = new H2F(String.format("H_trig_PCALECAL_S%d",s+1),String.format("H_trig_PCALECAL_S%d",s+1),100,0,1.5,100,0,1.5);
                         H_trig_PCALECAL_S[s].setTitle(String.format("e sect %d",s+1));
                         H_trig_PCALECAL_S[s].setTitleX("E PCAL (GeV)");
@@ -2031,6 +2050,7 @@ public class monitor2p2GeV {
 			float py = bank.getFloat("py", k);
 			float pz = bank.getFloat("pz", k);
 			int status = bank.getShort("status", k);
+			STT = bank.getFloat("vt",k);
 			if (status<0) status = -status;
 			boolean inDC = (status>=2000 && status<4000);
 			e_mom = (float)Math.sqrt(px*px+py*py+pz*pz);
@@ -2312,18 +2332,24 @@ public class monitor2p2GeV {
 			if(det==1 && pind==e_part_ind){
 				e_ecal_X = bank.getFloat("x",k);
 				e_ecal_Y = bank.getFloat("y",k);
-                                e_ecal_Z = bank.getFloat("z",k);
+                e_ecal_Z = bank.getFloat("z",k);
 				e_ecal_E += bank.getFloat("energy",k);
-                                e_pcal_e += bank.getFloat("energy",k);
+                e_pcal_e += bank.getFloat("energy",k);
 				e_sect = bank.getByte("sector",k);
+				float path = bank.getFloat("path",k);
+				e_ecal_T_PCAL = bank.getFloat("time",k)-path/29.98f-STT;
 			}
 			if(det==4 && pind==e_part_ind){
 				e_ecal_E += bank.getFloat("energy",k);
-                                e_etot_e += bank.getFloat("energy",k);
+                e_etot_e += bank.getFloat("energy",k);
+				float path = bank.getFloat("path",k);
+                e_ecal_T_ECIN = bank.getFloat("time",k)-path/29.98f-STT;
 			}
 			if(det==7 && pind==e_part_ind){
 				e_ecal_E += bank.getFloat("energy",k);
-                                e_etot_e += bank.getFloat("energy",k);
+                e_etot_e += bank.getFloat("energy",k);
+				float path = bank.getFloat("path",k);
+                e_ecal_T_ECOU = bank.getFloat("time",k)-path/29.98f-STT;
 			}
 		}
 	}
@@ -3219,18 +3245,7 @@ public class monitor2p2GeV {
 			}
 	}
 	public void fillECAL(DataBank bank){
-		for(int k = 0; k < bank.rows(); k++){
-			float e = bank.getFloat("energy", k);
-			float x = bank.getFloat("x", k);
-			float y = bank.getFloat("y", k);
-			float t = bank.getFloat("time", k);
-			int lay = bank.getInt("layer", k);
-			if(lay==1){
-				//H_PCAL_pos.fill(x,y);
-				//H_PCAL_e_avg.fill(x,y,e);
-				//H_PCAL_time(time-startTime);
-			}
-		}
+
 	}
 
 /*
@@ -3415,11 +3430,12 @@ public class monitor2p2GeV {
 
 	public int getNelecs(){return this.Nelecs;}
 	public int getNtrigs(){return this.Ntrigs;}
-        public void processEvent(DataEvent event) {
+	
+    public void processEvent(DataEvent event) {
 		trig_part_ind=-1;e_part_ind=-1;
 		Nevts++;
 		e_sect=0;foundCVT=0;
-		e_ecal_E = 0;e_pcal_e=0;e_etot_e=0;hasLTCC=0;
+		e_ecal_E = 0;e_pcal_e=0;e_etot_e=0;hasLTCC=0;e_ecal_T_PCAL=-1000;e_ecal_T_ECIN=-1000;e_ecal_T_ECOU=-1000;
 		trig_track_ind = -1;e_track_ind = -1;pip_part_ind = -1;pim_part_ind = -1;
 
 		//checkpoint_central
@@ -3527,7 +3543,8 @@ public class monitor2p2GeV {
 		if(partBank!=null && scintillBank!=null) makeRFHistograms(partBank, scintillBank);
 		if(partBank!=null)makeMuonPairTrigPurity(partBank,event);
 
-		if(event.hasBank("ECAL::clusters"))fillECAL(event.getBank("ECAL::clusters"));
+//		if(event.hasBank("ECAL::clusters"))fillECAL(event.getBank("ECAL::clusters"));
+		if(ecalBank!=null) fillECAL(ecalBank);
 		if(trackDetBank!=null && event.hasBank("HTCC::rec"))checkTrigECAL(trackDetBank,event.getBank("HTCC::rec"));
 		if(trackDetBank!=null && event.hasBank("FTOF::hits"))fillTOFHists(event.getBank("FTOF::hits") ,trackDetBank);
 
@@ -3558,8 +3575,8 @@ public class monitor2p2GeV {
                     makeCVT(event.getBank("CVTRec::Tracks"), event.getBank("CVTRec::UTracks"), event.getBank("BSTRec::Clusters"));
 
 		if(partBank!=null){
-			makePhotons(partBank,event);
 			e_part_ind = makeElectron(partBank);
+			makePhotons(partBank,event);
 			pip_part_ind = makePiPlusPID(partBank);
 			pim_part_ind = makePiMinusPID(partBank);
 			makePiPlusPimPID(partBank);
@@ -3606,7 +3623,7 @@ public class monitor2p2GeV {
                                 if( trigger_bits[e_sect]){
                                         H_trig_theta_mom_S[e_sect-1].fill(e_mom,e_theta);
                                         float solenoid_scale = -1.0f;
-					float elec_phi_sect = e_phi;
+                                        float elec_phi_sect = e_phi;
                                         if(e_sect>3 && elec_phi_sect<0)elec_phi_sect+=360;
                                         elec_phi_sect +=30f  + solenoid_scale * 35f/e_mom ;
                                         elec_phi_sect -= 60f * (e_sect-1);
@@ -3616,12 +3633,15 @@ public class monitor2p2GeV {
                                         H_trig_phi_mom_S[e_sect-1].fill(e_mom,elec_phi_sect);
                                         //H_trig_phi_mom_S[e_sect-1].fill(e_mom,e_phi);
                                         H_trig_theta_phi_S[e_sect-1].fill(elec_phi_sect,e_theta);
-					H_e_W_phi_S[e_sect-1].fill(elec_phi_sect,e_W);
+                                        H_e_W_phi_S[e_sect-1].fill(elec_phi_sect,e_W);
                                         //H_trig_theta_phi_S[e_sect-1].fill(e_phi,e_theta);
                                         H_trig_vz_mom_S[e_sect-1].fill(e_mom,e_vz);
                                         H_trig_vy_vz_S[e_sect-1].fill(e_Ivz,e_Ivy);
                                         H_trig_vz_theta_S[e_sect-1].fill(e_theta,e_vz);
                                         H_trig_ECALsampl_S[e_sect-1].fill(e_mom,e_ecal_E/e_mom);
+                                        H_trig_PCAL_vt_S[e_sect-1].fill(e_ecal_T_PCAL);
+                                        H_trig_ECIN_vt_S[e_sect-1].fill(e_ecal_T_ECIN);
+                                        H_trig_ECOU_vt_S[e_sect-1].fill(e_ecal_T_ECOU);
                                         H_trig_PCALECAL_S[e_sect-1].fill(e_pcal_e,e_etot_e);
                                         H_trig_HTCCn_theta_S[e_sect-1].fill(e_theta,e_HTCC);
                                         if(hasLTCC==1)H_trig_LTCCn_theta_S[e_sect-1].fill(e_theta,e_LTCC);
@@ -4777,6 +4797,9 @@ public class monitor2p2GeV {
 			dirout.addDataSet(H_trig_vy_vz_S[s]);
 			dirout.addDataSet(H_trig_vz_theta_S[s]);
 			dirout.addDataSet(H_trig_ECALsampl_S[s]);
+			dirout.addDataSet(H_trig_PCAL_vt_S[s]);
+			dirout.addDataSet(H_trig_ECIN_vt_S[s]);
+			dirout.addDataSet(H_trig_ECOU_vt_S[s]);
 			dirout.addDataSet(H_trig_PCALECAL_S[s]);
 			dirout.addDataSet(H_trig_HTCCn_theta_S[s]);
 			dirout.addDataSet(H_trig_LTCCn_theta_S[s]);
