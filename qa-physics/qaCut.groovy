@@ -460,8 +460,7 @@ inList.each { obj ->
       totA = totF > 0 ? totN / totF : 0 
 
       // compute livetime
-      totLT = totU > 1e-3 ? totF / totU : 0 // from total FC charge
-      // totLT = totF / totU // from total FC charge
+      totLT = totU > 0 ? totF / totU : 0 // from total FC charge
       aveLT = listT.size()>0 ? listT.sum() / listT.size() : 0 // average livetime for the run
 
       // accumulated charge (units converted nC -> mC)
