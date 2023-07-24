@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 d="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
 cd $d/../monitoring
