@@ -22,7 +22,7 @@ import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
-pppppppublic class LTCC{
+public class LTCC{
 	boolean userTimeBased, write_volatile;
 	int runNum;
 	boolean[] trigger_bits;
