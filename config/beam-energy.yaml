@@ -1,0 +1,29 @@
+beamEnergy:
+  - runnum: [ 3861, 5673 ]
+    value: 10.6
+  - runnum: [ 5674, 5870 ]
+    value: 7.546
+  - runnum: [ 5871, 6000 ]
+    value: 6.535
+  - runnum: [ 6608, 6783 ]
+    value: 10.199
+  - runnum: [ 11620, 11657 ]
+    value: 2.182
+  - runnum: [ 11658, 12283 ]
+    value: 10.389
+  - runnum: [ 12389, 12444 ]
+    value: 2.182
+  - runnum: [ 12445, 12951 ]
+    value: 10.389
+  - runnum: [ 15013, 15490 ]
+    value: 5.98636
+  - runnum: [ 15533, 15727 ]
+    value: 2.07052
+  - runnum: [ 15728, 15784 ]
+    value: 4.02962
+  - runnum: [ 15787, 15884 ]
+    value: 5.98636
+  - runnum: [ 16010, 16079 ]
+    value: 2.22
+  - runnum: [ 16084, 20000 ]
+    value: 10.54
