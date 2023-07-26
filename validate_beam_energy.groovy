@@ -1,4 +1,5 @@
 import groovy.yaml.YamlSlurper
+import org.rcdb.*
 
 def slurper = new YamlSlurper()
 def set1 = slurper.parse(new File("config/beam-energy.yaml"))
