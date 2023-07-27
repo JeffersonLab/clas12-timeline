@@ -13,7 +13,7 @@ fi
 line=$(grep -wE "^$dataset" datasetList.txt | tail -n1)
 
 if [ -z "$line" ]; then
-  echo "ERROR: cannot find dataset '$dataset' in datasetList.text"
+  echo "ERROR: cannot find dataset '$dataset' in datasetList.txt"
   exit 100
 fi
 
