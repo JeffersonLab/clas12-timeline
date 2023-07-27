@@ -1,3 +1,4 @@
+# from bin/slurm-mon12.sh
 beamEnergy:
   - runnum: [ 3861, 5673 ]
     value: 10.6

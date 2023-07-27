@@ -1,9 +1,16 @@
 import groovy.yaml.YamlSlurper
 import org.rcdb.*
 
+// arguments
+if(args.length<1) {
+  System.err << "ERROR: specify yaml file\n"
+  System.exit(100)
+}
+beamEnConfigYaml = args[0]
+
 // parse beam energy config file
 def slurper = new YamlSlurper()
-def beamEnConfig = slurper.parse(new File("config/beam-energy.yaml"))
+def beamEnConfig = slurper.parse(new File(beamEnConfigYaml))
 
 // connect to RCDB
 def rcdbURL = System.getenv('RCDB_CONNECTION')
@@ -25,19 +32,13 @@ beamEnConfig['beamEnergy'].each{ runRange ->
 
   // loop over runs in this range
   (runRange.runnum.first()..runRange.runnum.last()).each{ runnum ->
-    print "$runnum: "
     res = rcdbProvider.getCondition(runnum, 'beam_energy')
     if(res==null) {
-      println " not in RCDB, skip"
+      // println "  $runnum: not in RCDB, skip"
       return
     }
     beamEnRCDB = res.toDouble() / 1e3 // [MeV] -> [GeV]
-    print "    local=$beamEnLocal  RCDB=$beamEnRCDB"
     if(Math.abs(beamEnLocal - beamEnRCDB)>0.01)
-      println " --> DIFFERENT"
-    else
-      println ""
+      println "  $runnum:  yaml=$beamEnLocal  RCDB=$beamEnRCDB --> DIFFERENT"
   }
-  println "STOP PREMATURELY"
-  System.exit(0)
 }

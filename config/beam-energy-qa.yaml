@@ -1,0 +1,48 @@
+# from qa-physics/monitorRead.groovy
+beamEnergy:
+
+  # RGA
+  - runnum: [ 6616, 6783 ]
+    value: 10.1998
+  - runnum: [ 4763, 5001 ]
+    value: 10.6041
+  - runnum: [ 5032, 5262 ]
+    value: 10.6041
+  - runnum: [ 5300, 5666 ]
+    value: 10.6041
+
+  # RGB
+  - runnum: [ 6120, 6399 ]
+    value: 10.5986
+  - runnum: [ 6409, 6604 ]
+    value: 10.1998
+  - runnum: [ 11093, 11283 ]
+    value: 10.4096
+  - runnum: [ 11284, 11300 ]
+    value: 4.17179
+  - runnum: [ 11323, 11571 ]
+    value: 10.3894
+
+  # RGK
+  - runnum: [ 5674, 5870 ]
+    value: 7.546
+  - runnum: [ 5875, 6000 ]
+    value: 6.535
+
+  # RGF
+  - runnum: [ 12210, 12388 ]
+    value: 10.389
+  - runnum: [ 12389, 12443 ]
+    value:  2.186
+  - runnum: [ 12444, 12951 ]
+    value: 10.389
+
+  # RGM
+  - runnum: [ 15013, 15490 ]
+    value: 5.98636
+  - runnum: [ 15533, 15727 ]
+    value: 2.07052
+  - runnum: [ 15728, 15784 ]
+    value: 4.02962
+  - runnum: [ 15787, 15884 ]
+    value: 5.98636
