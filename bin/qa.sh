@@ -13,10 +13,20 @@ if [ -z "$CALIBQA" ]; then
 fi
 if [ $# -lt 1 ]; then
   echo """
-  USAGE: $0 [URL (or path) of timelines directory] [optional: custom output dir]
-   - if specifying a path, it must be relative to TIMELINEDIR = $TIMELINEDIR
-   - optional output directory must also be relative to TIMELINEDIR = $TIMELINEDIR
-     (otherwise the default is based on the input timeline directory name)
+  USAGE: $0 [URL or path of timelines] [OPTIONS]
+
+  - if specifying a path, it must be relative to TIMELINEDIR, which by default is
+    - TIMELINEDIR = $TIMELINEDIR
+    - it may be overriden with the -t option
+
+  OPTIONS:
+
+    -o DIRECTORY
+         custom output directory, relative to TIMELINEDIR
+         by default, it is the input directory with the string '_qa' appended
+
+    -t DIRECTORY
+         set TIMELINEDIR to specified directory
   """
   exit 2
 fi
@@ -25,11 +35,22 @@ fi
 indir=$(echo $1 | sed 's/\/$//g')
 indir=$(echo $indir | sed 's/^http.*clas12mon\.jlab\.org\///g')
 indir=$(echo $indir | sed 's/\/tlsummary$//g')
-[ $# -ge 2 ] && outdir=$2 || outdir=${indir}_qa
+shift
+outdir=${indir}_qa
+while getopts "o:t:" opt; do
+  case $opt in
+    o) outdir=$OPTARG ;;
+    t) export TIMELINEDIR=$OPTARG ;;
+  esac
+done
+
 dataset=$(echo $indir | sed 's/\//_/g')
-echo "dataset = $dataset"
-echo "indir   = $indir"
-echo "outdir  = $outdir"
+echo """
+dataset     = $dataset
+indir       = $indir
+outdir      = $outdir
+TIMELINEDIR = $TIMELINEDIR
+"""
 echo "$dataset $indir $outdir" >> ${CALIBQA}/datasetList.txt
 
 # prepare output directory
