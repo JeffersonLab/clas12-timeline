@@ -5,7 +5,7 @@ import org.jlab.groot.math.F1D
 import java.lang.Math.*
 import groovy.io.FileType
 import groovy.json.JsonOutput
-import qa.Tools
+import Tools
 Tools T = new Tools()
 
 // Cuts files list //////////////////////////////////
