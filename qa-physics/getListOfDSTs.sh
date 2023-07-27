@@ -3,6 +3,8 @@
 # - this script may take a while to run
 # - use the output for integrityCheck.sh
 
+set -e
+
 if [ -z "$CLASQA" ]; then
   echo "ERROR: please source env.sh first"
   exit
@@ -11,11 +13,7 @@ fi
 if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]"; exit; fi
 dataset=$1
 
-datadir=$(grep $dataset datasetList.txt | awk '{print $4}')
-if [ -z "$datadir" ]; then
-  echo "ERROR: dataset not foundin datasetList.txt"
-  exit
-fi
+source datasetListParser.sh $dataset
 datadir=$(echo $datadir | sed 's/^\/cache/\/mss/g')
 echo "datadir=$datadir"
 ls $datadir

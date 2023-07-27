@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]"; exit; fi
 dataset=$1
 
@@ -13,8 +15,7 @@ for outdir in outmon outdat; do
 done
 
 # loop over runs, copying and linking to dataset subdirs
-runL=$(grep $dataset datasetList.txt | awk '{print $2}')
-runH=$(grep $dataset datasetList.txt | awk '{print $3}')
+source datasetListParser.sh $dataset
 for file in outmon/monitor_*.hipo; do
   run=$(echo $file | sed 's/^.*monitor_//'|sed 's/\.hipo$//')
 

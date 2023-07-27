@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [ -z "$CLASQA" ]; then
   echo "ERROR: please source env.sh first"
   exit
@@ -17,14 +19,7 @@ if [ $# -eq 2 ]; then usetape=1; fi
 echo "dataset=$dataset"
 echo "usetape=$usetape"
 
-
-runL=$(grep $dataset datasetList.txt | awk '{print $2}')
-runH=$(grep $dataset datasetList.txt | awk '{print $3}')
-datadir=$(grep $dataset datasetList.txt | awk '{print $4}')
-if [ -z "$datadir" ]; then
-  echo "ERROR: dataset not foundin datasetList.txt"
-  exit
-fi
+source datasetListParser.sh $dataset
 
 if [ $usetape -eq 1 ]; then
   datadir=$(echo $datadir | sed 's/^\/cache/\/mss/g')
