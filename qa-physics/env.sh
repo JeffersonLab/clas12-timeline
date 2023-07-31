@@ -13,7 +13,6 @@ export CLASQA_JAVA_OPTS="-Djava.awt.headless=true"
 
 echo """
 --- Environment ---
-COATJAVA         = $COATJAVA
 CLASQA           = $CLASQA
 TIMELINEDIR      = $TIMELINEDIR
 JYPATH           = $JYPATH
