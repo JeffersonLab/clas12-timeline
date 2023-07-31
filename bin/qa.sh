@@ -27,7 +27,7 @@ if [ $# -lt 1 ]; then
 
     -t DIRECTORY
          set TIMELINEDIR to specified directory
-  """
+  """ >&2
   exit 101
 fi
 

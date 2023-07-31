@@ -6,11 +6,11 @@
 set -e
 
 if [ -z "$CLASQA" ]; then
-  echo "ERROR: please source env.sh first"
+  echo "ERROR: please source env.sh first" >&2
   exit 100
 fi
 
-if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]"; exit 101; fi
+if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]" >&2; exit 101; fi
 dataset=$1
 
 source datasetListParser.sh $dataset
