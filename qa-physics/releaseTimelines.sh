@@ -1,8 +1,16 @@
 #!/bin/bash
 # copy a locally deployed timeline to the release directory
 
-if [ $# -ne 1 ]; then 
-  echo "USAGE: $0 [dataset]" >&2
+if [ $# -ne 2 ]; then
+  echo """
+  USAGE: $0 [dataset] [target_directory]
+
+    Final release of [dataset] to directory [target_directory]
+
+    Example: $0 rga_inbending rga/pass1/qa
+
+    WARNING: be careful not to overwrite anything you shouldn't...
+  """ >&2
   exit 101
 fi
 if [ -z "$CLASQA" ]; then
@@ -11,15 +19,17 @@ if [ -z "$CLASQA" ]; then
 fi
 
 dataset=$1
-rungroup=$(echo $dataset|sed 's/_.*$//g')
+target=$2
 
-wwwReleaseDir="${TIMELINEDIR}/${rungroup}/pass1/qa"
+wwwReleaseDir="${TIMELINEDIR}/${target}"
 wwwLocalDir="${TIMELINEDIR}/$(whoami)"
 
-echo "dataset=$dataset"
-echo "rungroup=$rungroup"
-echo "wwwReleaseDir=$wwwReleaseDir"
-echo "wwwLocalDir=$wwwLocalDir"
+echo """
+dataset       = $dataset
+target        = $target
+wwwReleaseDir = $wwwReleaseDir
+wwwLocalDir   = $wwwLocalDir
+"""
 
 rm -r ${wwwReleaseDir}/${dataset}*
 cp -rv ${wwwLocalDir}/${dataset}* ${wwwReleaseDir}/
