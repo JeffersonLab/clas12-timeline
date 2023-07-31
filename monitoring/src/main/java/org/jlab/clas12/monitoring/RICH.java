@@ -568,7 +568,7 @@ public class RICH{
 	    can_RICH.cd(ipad);can_RICH.draw(H_dt[m-1]);
 
 	    ipad = 2 + (m-1);
-	    can_RICH.cd(ipad);can_RICH.draw(H_dt_channel[m-1]);
+	    //can_RICH.cd(ipad);can_RICH.draw(H_dt_channel[m-1]);
 
 	    ipad = 4 + (m-1);
 	    can_RICH.cd(ipad);can_RICH.draw(H_dt_RMS[m-1]);
@@ -981,7 +981,7 @@ public class RICH{
 	dirout.cd("/RICH/");
 
 	dirout.addDataSet(H_dt);
-	dirout.addDataSet(H_dt_channel);
+	//dirout.addDataSet(H_dt_channel);
 	dirout.addDataSet(H_dt_RMS);
 	dirout.addDataSet(H_dt_MEAN);
 
