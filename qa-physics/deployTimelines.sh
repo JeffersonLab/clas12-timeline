@@ -14,7 +14,7 @@ fi
 dataset=$1
 destdir=$2
 
-wwwdir="${CLASQAWWW}/$(whoami)"
+wwwdir="${TIMELINEDIR}/$(whoami)"
 
 mkdir -p ${wwwdir}/${destdir}
 rm -r ${wwwdir}/${destdir}

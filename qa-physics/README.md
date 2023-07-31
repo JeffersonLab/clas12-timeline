@@ -24,12 +24,12 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
   * some primary run scripts do this automatically, in case the user forgets
   * note: `JYPATH` is added to the classpath for groovy called via
     `run-groovy`, from `coatjava`
-  * the variable `CLASQAWWW` is the webserver directory to which the output
+  * the variable `TIMELINEDIR` is the webserver directory to which the output
     hipo files will be copied; this is a directory which the front-end will
     read in order to produce the web page version of the timelines. If you are
-    not using this feature, change `CLASQAWWW` to any local directory; if you
+    not using this feature, change `TIMELINEDIR` to any local directory; if you
     don't want to edit `env.sh`, then simply create the directory `../www`,
-    which is the default value of `CLASQAWWW`
+    which is the default value of `TIMELINEDIR`
 
 ## PASS1 Procedure for Automatic QA
 * prepare run-group dependent settings in `monitorRead.groovy`
@@ -88,7 +88,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
 * perform the manual QA (see QA procedure below)
 * if this is the **FINAL** version of the timeline:
   * release timeline to main run group's directory: use `releaseTimelines.sh`
-  * the variable `$CLASQAWWW` should point to the webserver directory
+  * the variable `$TIMELINEDIR` should point to the webserver directory
   * **WARNING:** this is where we store "final" versions of QA timelines; only run
     `releaseTimelines.sh` if you are certain they are ready for release
 

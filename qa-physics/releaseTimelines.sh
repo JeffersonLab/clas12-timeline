@@ -13,8 +13,8 @@ fi
 dataset=$1
 rungroup=$(echo $dataset|sed 's/_.*$//g')
 
-wwwReleaseDir="${CLASQAWWW}/${rungroup}/pass1/qa"
-wwwLocalDir="${CLASQAWWW}/$(whoami)"
+wwwReleaseDir="${TIMELINEDIR}/${rungroup}/pass1/qa"
+wwwLocalDir="${TIMELINEDIR}/$(whoami)"
 
 echo "dataset=$dataset"
 echo "rungroup=$rungroup"

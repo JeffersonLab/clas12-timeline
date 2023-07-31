@@ -3,7 +3,7 @@
 import static groovy.io.FileType.FILES
 import groovy.json.JsonOutput
 
-def wwwDirName = System.getenv("CLASQAWWW") + "/" + System.getenv("LOGNAME")
+def wwwDirName = System.getenv("TIMELINEDIR") + "/" + System.getenv("LOGNAME")
 if(args.length>=1) wwwDirName = args[0]
 
 def wwwDir = new File(wwwDirName)
