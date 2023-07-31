@@ -21,7 +21,7 @@ def cutsFileList = [
 /////////////////////////////////////////////////////
 
 // parse arguments
-if(args.length<1) { println "ERROR: specify dataset name"; System.exit(100); }
+if(args.length<1) { System.err.println "ERROR: specify dataset name"; System.exit(100); }
 def dataset = args[0]
 
 // get www dir, by searching datasetList.txt for specified `dataset`, and set

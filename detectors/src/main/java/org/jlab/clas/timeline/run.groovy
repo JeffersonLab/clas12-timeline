@@ -169,13 +169,13 @@ if(eng) {
 
       println("debug: "+engine.getClass().getSimpleName()+" finished $arg")
     } catch(Exception ex) {
-      println("error: "+engine.getClass().getSimpleName()+" didn't process $arg")
+      System.err.println("error: "+engine.getClass().getSimpleName()+" didn't process $arg")
       System.exit(100)
     }
   }
   engine.close()
   println("debug: "+engine.getClass().getSimpleName()+" ended")
 } else {
-  println("error: "+args[0]+" not found")
+  System.err.println("error: "+args[0]+" not found")
   System.exit(100)
 }
