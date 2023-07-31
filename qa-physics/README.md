@@ -86,8 +86,11 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
   * `getListOfDSTs.sh [dataset]` (takes some time to run)
   * `integrityCheck.sh [dataset]`
 * perform the manual QA (see QA procedure below)
-* release timeline to main directory: use `releaseTimelines.sh`
+* if this is the **FINAL** version of the timeline:
+  * release timeline to main run group's directory: use `releaseTimelines.sh`
   * the variable `$CLASQAWWW` should point to the webserver directory
+  * **WARNING:** this is where we store "final" versions of QA timelines; only run
+    `releaseTimelines.sh` if you are certain they are ready for release
 
 
 ## Automatic QA Procedure and Script Details
