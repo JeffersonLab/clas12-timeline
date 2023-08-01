@@ -3,14 +3,16 @@
 set -e
 
 if [ -z "$CLASQA" ]; then
-  echo "ERROR: please source env.sh first"
+  echo "ERROR: please source env.sh first" >&2
   exit 100
 fi
 
 if [ $# -lt 1 ]; then
-  echo "USAGE: $0 [dataset]"
-  echo "optional: if you specify a second argument, it will use files from tape"
-  echo "          (warning: this feature has never been tested, and needs development!)"
+  echo """
+  USAGE: $0 [dataset]
+  optional: if you specify a second argument, it will use files from tape
+            (warning: this feature has never been tested, and needs development!)
+  """ >&2
   exit 101
 fi
 dataset=$1

@@ -2,7 +2,7 @@
 # jcache a directory of DST files
 
 if [ $# -ne 1 ]; then
-  echo "USAGE $0 [cache directory of DST stubs]"
+  echo "USAGE $0 [cache directory of DST stubs]" >&2
   exit 101
 fi
 cachedir=$1

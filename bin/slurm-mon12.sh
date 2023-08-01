@@ -5,10 +5,10 @@ BINDIR="`dirname $0`"
 MONDIR="`realpath $BINDIR/..`"
 JARPATH="$MONDIR/monitoring/target/clas12-monitoring-v0.0-alpha.jar"
 
-[[ ! -f $JARPATH ]] && echo "---- [ERROR] Problem with jar file for clas12_monitoring package --------" && echo && exit 100
+[[ ! -f $JARPATH ]] && echo "---- [ERROR] Problem with jar file for clas12_monitoring package --------" >&2 && echo && exit 100
 
 # test if there is a version name
-echo $1 | grep -q "/" && echo "---- [ERROR] version name must not contain / -------" && echo && exit 100
+echo $1 | grep -q "/" && echo "---- [ERROR] version name must not contain / -------" >&2 && echo && exit 100
 
 ver=$1
 shift

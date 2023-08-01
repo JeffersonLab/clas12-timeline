@@ -3,11 +3,11 @@
 # - must be run on ifarm
 
 if [ $# -ne 2 ]; then
-  echo "usage: $0 [dataset] [destinationName]"
+  echo "usage: $0 [dataset] [destinationName]" >&2
   exit 101
 fi
 if [ -z "$CLASQA" ]; then
-  echo "ERROR: please source env.sh first"
+  echo "ERROR: please source env.sh first" >&2
   exit 100
 fi
 

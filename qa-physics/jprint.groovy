@@ -1,6 +1,6 @@
 if(args.size()==0) {
-  println("\n\nARGUMENTS: jsonfile [tree-path]")
-  println("""
+  System.err.println("\n\nARGUMENTS: jsonfile [tree-path]")
+  System.err.println("""
   pretty prints a json file
   - if it is a nested map (tree), specify additional arguments
     to restrict printout to a specific sub-tree

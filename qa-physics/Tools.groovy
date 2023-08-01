@@ -29,7 +29,7 @@ class Tools {
     def bitNum = bitNames.findIndexOf{ it==bitName }
     if(bitNum>=0 && bitNum<bitNames.size()) return bitNum
     else {
-      System.err << "ERROR bad bit name $bitName\n"
+      System.err.println "ERROR bad bit name $bitName"
       return 31
     }
   }

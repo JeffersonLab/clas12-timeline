@@ -6,14 +6,14 @@
 # usage: `source $0 $dataset`
 
 if [ $# -ne 1 ]; then
-  echo "ERROR: dataset not specified"
+  echo "ERROR: dataset not specified" >&2
   exit 100
 fi
 
 line=$(grep -wE "^$dataset" datasetList.txt | tail -n1)
 
 if [ -z "$line" ]; then
-  echo "ERROR: cannot find dataset '$dataset' in datasetList.txt"
+  echo "ERROR: cannot find dataset '$dataset' in datasetList.txt" >&2
   exit 100
 fi
 

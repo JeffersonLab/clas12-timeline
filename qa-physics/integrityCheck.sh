@@ -6,22 +6,22 @@
 # - must run getListOfDSTs.sh first
 
 if [ -z "$CLASQA" ]; then
-  echo "ERROR: please source env.sh first"
+  echo "ERROR: please source env.sh first" >&2
   exit 100
 fi
 
-if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]"; exit 101; fi
+if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]" >&2; exit 101; fi
 dataset=$1
 
 if [ ! -f dstlist.${dataset}.dat ]; then
-  echo "ERROR: dstlist.${dataset}.dat does not exist"
-  echo "execute getListOfDSTs.sh first"
+  echo "ERROR: dstlist.${dataset}.dat does not exist" >&2
+  echo "execute getListOfDSTs.sh first" >&2
   exit 100
 fi
 
 if [ ! -f outdat.${dataset}/data_table.dat ]; then
-  echo "ERROR: outdat.${dataset}/data_table.dat does not exist"
-  echo "execute exeTimelines.sh first"
+  echo "ERROR: outdat.${dataset}/data_table.dat does not exist" >&2
+  echo "execute exeTimelines.sh first" >&2
   exit 100
 fi
 

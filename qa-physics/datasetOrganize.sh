@@ -2,7 +2,7 @@
 
 set -e
 
-if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]"; exit 101; fi
+if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]" >&2; exit 101; fi
 dataset=$1
 
 # cleanup / generate new dataset subdirs

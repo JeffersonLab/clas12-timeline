@@ -19,11 +19,11 @@ def outfileW = outfileF.newWriter(false)
 
 // Print out help message
 if(args.contains("-h") || args.contains("--help")) { 
-  println("Options:")
-  println(" -l/--list               : List available conditions from db")
-  println(" -cnds=cnd1,cnd2,...     : Set commands to output table (default: 'user_comment')")
-  println(" -addCnds=cnd1,cnd2,...  : Add commands to output table")
-  println(" -h/--help               : Print this message")
+  System.err.println("Options:")
+  System.err.println(" -l/--list               : List available conditions from db")
+  System.err.println(" -cnds=cnd1,cnd2,...     : Set commands to output table (default: 'user_comment')")
+  System.err.println(" -addCnds=cnd1,cnd2,...  : Add commands to output table")
+  System.err.println(" -h/--help               : Print this message")
   System.exit(101)
 }
 
