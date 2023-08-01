@@ -10,12 +10,16 @@ defaults:
   run:
     shell: bash
 
+env:
+  timeline: rga/pass1/pass0/v2.2.26
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+
+  build_timelines:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -26,3 +30,65 @@ jobs:
         distribution: zulu
     - name: build
       run: ./bin/build-all.sh
+    - name: tar # to preserve any permissions
+      run: |
+        tar czvf build_detectors.tar.gz detectors/target
+        tar czvf build_monitoring.tar.gz monitoring/target
+    - uses: actions/upload-artifact@v3
+      with:
+        name: build
+        retention-days: 1
+        path: build*.tar.gz
+
+  build_coatjava:
+    runs-on: ubuntu-latest
+    steps:
+    - name: setup JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: 11
+        distribution: zulu
+    - name: get coatjava
+      uses: robinraju/release-downloader@v1.8
+      with:
+        repository: JeffersonLab/coatjava
+        tag: 10.0.2
+        tarBall: true
+        extract: true
+    - name: rename coatjava release directory
+      run: |
+        rm *.tar.gz
+        mv JeffersonLab-coatjava* coatjava
+    - name: build coatjava
+      run: |
+        cd coatjava
+        ./build-coatjava.sh
+    - name: tree
+      run: tree
+    - name: tar
+      run: tar czvf build_coatjava.tar.gz coatjava/coatjava
+    - uses: actions/upload-artifact@v3
+      with:
+        name: build
+        retention-days: 1
+        path: build*.tar.gz
+
+  test_qa_detectors:
+    needs:
+      - build_timelines
+      - build_coatjava
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
+      with:
+        name: build
+    - name: untar
+      run: ls build*.tar.gz | xargs -I_ tar xzvf _
+    - name: tree
+      run: tree
+
+# TODO:
+# - how can we make sure the version of coatjava built here matches that in local maven dependencies?
+# - is there CD available for coatjava?
+# - upload files to /u/group/clas/www/clasweb/html/clas12offline/distribution
