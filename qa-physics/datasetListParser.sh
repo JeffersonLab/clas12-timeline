@@ -1,8 +1,8 @@
 #!/bin/bash
 # parse `datasetList.sh`, setting:
-# - `runL`: lower run bound
-# - `runH`: upper run bound
-# - `datadir`: data directory
+# - `RUNL`: lower run bound
+# - `RUNH`: upper run bound
+# - `DATADIR`: data directory
 # usage: `source $0 $dataset`
 
 if [ $# -ne 1 ]; then
@@ -17,10 +17,10 @@ if [ -z "$line" ]; then
   exit 100
 fi
 
-runL=$(echo $line | awk '{print $2}')
-runH=$(echo $line | awk '{print $3}')
-datadir=$(echo $line | awk '{print $4}')
+RUNL=$(echo $line | awk '{print $2}')
+RUNH=$(echo $line | awk '{print $3}')
+DATADIR=$(echo $line | awk '{print $4}')
 echo """found dataset '$dataset':
-  runL    = $runL
-  runH    = $runH
-  datadir = $datadir"""
+  RUNL    = $RUNL
+  RUNH    = $RUNH
+  DATADIR = $DATADIR"""

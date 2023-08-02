@@ -6,5 +6,5 @@ if [ $# -ne 1 ]; then
   exit 101
 fi
 cachedir=$1
-ls $(echo $cachedir | sed 's/^\/cache/\/mss/g')/*.hipo > jlist.tmp
-jcache get $(cat jlist.tmp)
+ls $(echo $cachedir | sed 's/^\/cache/\/mss/g')/*.hipo > tmp/jlist.txt
+jcache get $(cat tmp/jlist.txt)
