@@ -71,6 +71,10 @@ if [ ! -d "$DATADIR" ]; then
   echo "ERROR: DATADIR=$DATADIR does not exist" >&2
   exit 100
 fi
+if [ $(ls -d $DATADIR/*/ | wc -l) -eq 0 ]; then
+  echo "ERROR: DATADIR=$DATADIR has no subdirectories, and likely no data" >&2
+  exit 100
+fi
 
 # make directories and start $issueList
 mkdir -p outdat/trash
@@ -95,7 +99,7 @@ if [[ "$DATADIR" =~ "/cache/" ]]; then
   ls $dataDirTape | grep -vi readme > tmp/tapeList
   diff -y --suppress-common-lines tmp/{cache,tape}List > tmp/diffList
   if [ -s tmp/diffList ]; then
-    printIssue """WARNING: there are differences between cache and tape directories:
+    printIssue """WARNING: there are differences between the list of runs in the cache and tape directories.
       cache dir: $dataDirCache
       tape dir:  $dataDirTape
     This means that one may have run subdirectories that the other does not.
@@ -188,7 +192,7 @@ sep
 echo "JOB DESCRIPTOR: $slurm"
 cat $slurm
 sep
-if [ $useTape -eq 0 ]; then
+if [ $useTape -eq 0 -a $isCacheDir -eq 1 ]; then
   echo """
 =====================
 LIST OF CACHE ISSUES:
@@ -201,9 +205,11 @@ fi
 echo """
 JOB SUBMISSION COMMAND (run this to submit the jobs):
 
+  ===================================
   sbatch $slurm
+  ===================================
 """
-if [ $useTape -eq 0 ]; then
+if [ $useTape -eq 0 -a $isCacheDir -eq 1 ]; then
   if [ -s $issueList ]; then
     echo """
     WARNING: some of the comparisons between cache and tape failed;
