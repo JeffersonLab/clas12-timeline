@@ -57,9 +57,6 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
         there are no such scripts in use
   * wait for slurm jobs to finish
   * execute `errorPrint.sh` to inspect error logs
-  * `exeSlurm.sh` also has the ability to read files from the tape silo; however, while
-    this feature has been programmed in, it has never been used and is NOT tested! It
-    likely does not work yet, but the general idea is programmed in
   * resubmit failed jobs, e.g., those that exceeded time limit on a slow node:
     * get list of run numbers to be resubmitted: 
       `errorPrint.sh | cut -d':' -f1 | uniq | sed 's/err$/out/g' | xargs grep -i runnum`

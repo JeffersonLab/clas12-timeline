@@ -6,18 +6,11 @@ if [ -z "$CLASQA" ]; then
 fi
 
 if [ $# -lt 1 ]; then
-  echo """
-  USAGE: $0 [dataset]
-  optional: if you specify a second argument, it will use files from tape
-            (warning: this feature has never been tested, and needs development!)
-  """ >&2
+  echo "USAGE: $0 [dataset]" >&2
   exit 101
 fi
 dataset=$1
-useTape=0
-if [ $# -eq 2 ]; then useTape=1; fi
 echo "dataset=$dataset"
-echo "useTape=$useTape"
 
 
 # functions
@@ -125,25 +118,15 @@ for runDir in `ls -d ${dataDirMain}/*/ | sed 's;/$;;'`; do
   if [ $run -ge $RUNL -a $run -le $RUNH ]; then
     echo "--- found dir=$runDir  run=$run"
 
-    # if reading from a local directory (not tape):
-    if [ $useTape -eq 0 ]; then
-      runDirRead=$runDir
-      # if reading from cache, compare with tape stubs
-      if [ $isCacheDir -eq 1 ]; then
-        runDirTape=$runDir
-        runDirCache=$(tape2cache $runDirTape)
-        checkIfCached $runDirCache $runDirTape
-        runDirRead=$runDirCache
-      fi
-      cmd="run-groovy $CLASQA_JAVA_OPTS monitorRead.groovy $runDirRead dst"
-
-    # if reading from tape, run jget # FIXME: this is UNTESTED!
-    else
-      scratchDir="/scratch/slurm/$(whoami)/${run}"
-      cmd="mkdir -P $scratchDir && jget ${runDir}/* ${scratchDir}/"
-      cmd="$cmd && run-groovy $CLASQA_JAVA_OPTS monitorRead.groovy $scratchDir dst"
-      cmd="$cmd && rm -r $scratchDir"
+    # if reading from cache, compare with tape stubs
+    runDirRead=$runDir
+    if [ $isCacheDir -eq 1 ]; then
+      runDirTape=$runDir
+      runDirCache=$(tape2cache $runDirTape)
+      checkIfCached $runDirCache $runDirTape
+      runDirRead=$runDirCache
     fi
+    cmd="run-groovy $CLASQA_JAVA_OPTS monitorRead.groovy $runDirRead dst"
 
     # append the command to the joblist
     echo "$cmd" >> $joblist
@@ -192,7 +175,7 @@ sep
 echo "JOB DESCRIPTOR: $slurm"
 cat $slurm
 sep
-if [ $useTape -eq 0 -a $isCacheDir -eq 1 ]; then
+if [ $isCacheDir -eq 1 ]; then
   echo """
 =====================
 LIST OF CACHE ISSUES:
@@ -209,7 +192,7 @@ JOB SUBMISSION COMMAND (run this to submit the jobs):
   sbatch $slurm
   ===================================
 """
-if [ $useTape -eq 0 -a $isCacheDir -eq 1 ]; then
+if [ $isCacheDir -eq 1 ]; then
   if [ -s $issueList ]; then
     echo """
     WARNING: some of the comparisons between cache and tape failed;
