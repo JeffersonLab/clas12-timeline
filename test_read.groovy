@@ -5,6 +5,7 @@ TODO:
 - find a better place to put this file
 - consider qa-physics/Tools.groovy, but move it to some top-level `utils` directory
 - make a method, which returns true/false, instead of exit codes
+- consider using Java, which may be slightly faster
 */
 
 
