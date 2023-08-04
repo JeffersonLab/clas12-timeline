@@ -43,7 +43,13 @@ echo "TIMELINE GENERATION COMPLETE"
 grep -vE '█|═|Physics Division|^     $' $errlog
 rm $errlog
 
+# print final message
 echo """
+
+
+==============================================================================
 If this script ran well, open the TIMELINE URL (printed above) in your browser
 and take a look at the timelines produced for this dataset ($dataset)
+==============================================================================
+
 """
