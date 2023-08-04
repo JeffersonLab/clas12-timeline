@@ -114,9 +114,10 @@ joblist=slurm/joblist.${dataset}.slurm
 for runDir in `ls -d ${dataDirMain}/*/ | sed 's;/$;;'`; do
 
   # get the run number, and check if it's in range
-  run=$(echo $runDir | sed 's;.*/;;g' | sed 's;0*;;g')
-  if [ $run -ge $RUNL -a $run -le $RUNH ]; then
-    echo "--- found dir=$runDir  run=$run"
+  runnum=$((10#$(echo $runDir | sed 's;.*/;;g')))
+  printf "run $runnum: "
+  if [ $runnum -ge $RUNL -a $runnum -le $RUNH ]; then
+    echo "--- found"
 
     # if reading from cache, compare with tape stubs
     runDirRead=$runDir
@@ -132,10 +133,12 @@ for runDir in `ls -d ${dataDirMain}/*/ | sed 's;/$;;'`; do
     echo "$cmd" >> $joblist
 
     # move old output files to a trash directory
-    for runfile in outdat/data_table_${run}.dat outmon/monitor_${run}.hipo; do
+    for runfile in outdat/data_table_${runnum}.dat outmon/monitor_${runnum}.hipo; do
       [ -f $runfile ] && mv -v $runfile $(echo $runfile | sed 's;^out...;&/trash;;')
     done
 
+  else
+    echo "--- WARNING: run $runnum is not within run range ($RUNL to $RUNH)" >&2
   fi
 done
 
