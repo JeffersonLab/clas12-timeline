@@ -26,13 +26,13 @@ tape2cache() {
 
 # note an issue, to be printed altogether at the end to stderr
 issueList=tmp/issueList.txt
-jcacheList=tmp/jcacheSuggested.sh
 printIssue() {
   echo """$1
 """ >> $issueList
 }
 
 # compare cache directory with tape stub directory; if there are differences, note them in $issueList
+jcacheList=tmp/jcacheSuggested.sh
 checkIfCached() {
   cacheDir=$1
   tapeDir=$2
