@@ -39,6 +39,19 @@ exe ./deployTimelines.sh $dataset $dataset
 
 # print errors (filtering out hipo logo contamination)
 sep
-echo "TIMELINE GENERATION COMPLETE"
+echo "ERROR LOGS:"
 grep -vE '█|═|Physics Division|^     $' $errlog
+sep
 rm $errlog
+
+# print final message
+echo """
+
+
+TIMELINE GENERATION COMPLETE
+==============================================================================
+If this script ran well, open the TIMELINE URL (printed above) in your browser
+and take a look at the timelines produced for this dataset ($dataset)
+==============================================================================
+
+"""

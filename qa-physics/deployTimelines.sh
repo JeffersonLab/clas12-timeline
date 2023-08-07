@@ -48,3 +48,5 @@ if [ -d "outmon.${dataset}.qa" ]; then
   rm -r ${wwwdir}/${destdir}_QA
   cp -r outmon.${dataset}.qa ${wwwdir}/${destdir}_QA
 fi
+
+run-groovy $CLASQA_JAVA_OPTS indexPage.groovy $wwwdir
