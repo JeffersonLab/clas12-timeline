@@ -14,12 +14,12 @@ if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]" >&2; exit 101; fi
 dataset=$1
 
 source datasetListParser.sh $dataset
-datadir=$(echo $datadir | sed 's/^\/cache/\/mss/g')
-echo "datadir=$datadir"
-ls $datadir
+DATADIR=$(echo $DATADIR | sed 's/^\/cache/\/mss/g')
+echo "DATADIR=$DATADIR"
+ls $DATADIR
 
 
-find $datadir -name "*.hipo" -print | sed 's/^.*\/rec_clas_//g' > dstfilelist.tmp
+find $DATADIR -name "*.hipo" -print | sed 's/^.*\/rec_clas_//g' > dstfilelist.tmp
 
 > dstlist.tmp
 while read dst; do

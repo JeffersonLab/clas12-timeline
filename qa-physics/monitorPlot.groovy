@@ -153,7 +153,6 @@ def buildAsymGraph = { tObj ->
 def monTree = [:]
 
 def tok
-def inTdir = new TDirectory()
 def objList
 def part
 def hel
@@ -168,9 +167,15 @@ def stddevX
 def ent
 def helP,helM,helDef,helUndef,helFrac,helFracErr,rellum,rellumErr
 
-// loop over sinphi hipo files
+// loop over input hipo files
 inList.each { inFile ->
-  inTdir.readFile(inFile)
+  def inTdir = new TDirectory()
+  try {
+    inTdir.readFile(inFile)
+  } catch(Exception ex) {
+    System.err.println("ERROR: cannot read file $inFile; it may be corrupt")
+    return
+  }
   objList = inTdir.getCompositeObjectList(inTdir)
   objList.each { objN ->
     obj = inTdir.getObject(objN)
@@ -384,7 +389,6 @@ inList.each { inFile ->
     T.addLeaf(monTree,[runnum,'helic','asym',particle,'asymFit'],{fitFunc})
   })
 
-  inFile = null // "close" the file
 } // eo loop over each file (run)
 
 
