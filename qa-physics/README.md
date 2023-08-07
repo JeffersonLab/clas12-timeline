@@ -1,5 +1,5 @@
 # Physics QA Timeline Production
-Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/JeffersonLab/clasqaDB) production
+Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/JeffersonLab/clas12-qadb) production
 
 * Tracks the electron trigger count, normalized by the Faraday cup charge
 * Also implements helicity monitoring, by tracking inclusive beam spin asymmetries
@@ -344,9 +344,9 @@ directory and call `exeQAtimelines.sh` to produce the updated QA timelines
   * it copies the revised`qaTree.json` (`QA/qa.${dataset}/qaTree.json`) to
     the new QA timeline directory, which can then be deployed to the webservers
   * this final `qaTree.json` is stored in the 
-    [`clasqaDB` repository](https://github.com/JeffersonLab/clasqaDB)
+    [`clas12-qadb` repository](https://github.com/JeffersonLab/clas12-qadb)
     and should be copied there, along with `chargeTree.json`
-    * remember to run `util/syncCheck.groovy` in `clasqaDB`
+    * remember to run `util/syncCheck.groovy` in `clas12-qadb`
   * the scripts which copy timelines to the webserver (`deployTimelines.sh` and
     `releaseTimelines.sh`) will copy the new `outmon.${dataset}.qa` directory's
     timelines, but you must call these scripts manually

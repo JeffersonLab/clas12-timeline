@@ -166,7 +166,7 @@ else if(RG=="RGM") {
 }
 
 // FC attenuation fix
-// FIXME: re-define this as a closure here, when resolving https://github.com/JeffersonLab/clasqaDB/issues/12
+// FIXME: re-define this as a closure here, when resolving https://github.com/JeffersonLab/clas12-qadb/issues/12
 // RGB runs <6400 had wrong attenuation, need to use
 // fc -> fc*9.96025
 // (this is programmed in below, but mentioned here for documentation)
