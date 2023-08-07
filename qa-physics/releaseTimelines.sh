@@ -37,8 +37,27 @@ wwwReleaseDir = $wwwReleaseDir
 wwwLocalDir   = $wwwLocalDir
 """
 
-rm -r ${wwwReleaseDir}/${dataset}*
-cp -rv ${wwwLocalDir}/${dataset}* ${wwwReleaseDir}/
+subdirs=(
+  ${dataset}
+  ${dataset}_QA
+  ${dataset}_supplemental
+)
+
+echo "CLEAN TARGET SUBDIRECTORIES ----------------------------"
+for subdir in ${subdirs[@]}; do
+  if [ ! -d ${wwwLocalDir}/${subdir} ]; then
+    echo "ERROR: local directory ${wwwLocalDir}/${subdir} does not exist" >&2
+    exit 100
+  fi
+  mkdir -p ${wwwReleaseDir}/${subdir}
+  rm    -r ${wwwReleaseDir}/${subdir}
+done
+
+echo "COPY TO TARGET -----------------------------------------"
+for subdir in ${subdirs[@]}; do
+  cp -rv ${wwwLocalDir}/${subdir} ${wwwReleaseDir}/
+done
 cp outdat.${dataset}/qaTree.json ${wwwReleaseDir}/${dataset}_QA/
 
+echo "BUILD INDEX PAGE ---------------------------------------"
 run-groovy $CLASQA_JAVA_OPTS indexPage.groovy $wwwReleaseDir
