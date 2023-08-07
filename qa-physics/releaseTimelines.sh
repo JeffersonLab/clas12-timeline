@@ -43,14 +43,19 @@ subdirs=(
   ${dataset}_supplemental
 )
 
-echo "CLEAN TARGET SUBDIRECTORIES ----------------------------"
+echo "CHECK LOCAL DIRECTORIES --------------------------------"
 for subdir in ${subdirs[@]}; do
+  echo "Checking $subdir ..."
   if [ ! -d ${wwwLocalDir}/${subdir} ]; then
     echo "ERROR: local directory ${wwwLocalDir}/${subdir} does not exist" >&2
     exit 100
   fi
-  mkdir -p ${wwwReleaseDir}/${subdir}
-  rm    -r ${wwwReleaseDir}/${subdir}
+done
+
+echo "CLEAN TARGET SUBDIRECTORIES ----------------------------"
+for subdir in ${subdirs[@]}; do
+  mkdir -pv ${wwwReleaseDir}/${subdir}
+  rm    -rv ${wwwReleaseDir}/${subdir}
 done
 
 echo "COPY TO TARGET -----------------------------------------"
