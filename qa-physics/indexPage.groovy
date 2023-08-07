@@ -37,3 +37,10 @@ datasets.each { datasetDirName ->
 
 //println JsonOutput.prettyPrint(JsonOutput.toJson(fileTreeList))
 new File("${wwwDirName}/ListOfTimelines.json").write(JsonOutput.toJson(fileTreeList))
+
+def urlPath = wwwDirName.replaceAll(System.getenv("TIMELINEDIR")+"/", "")
+println """
+TIMELINE URL:
+
+  https://clas12mon.jlab.org/${urlPath}/tlsummary/
+"""
