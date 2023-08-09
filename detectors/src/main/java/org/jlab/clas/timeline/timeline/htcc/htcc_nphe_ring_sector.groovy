@@ -6,9 +6,10 @@ import org.jlab.groot.data.GraphErrors
 class htcc_nphe_ring_sector {
 
 def data = new ConcurrentHashMap()
-def totalNphe = 0 // Initialize a variable to store the total NPHE across all channels
 
 def processDirectory(dir, run) {
+  def totalNphe = 0 // Initialize a variable to store the total NPHE across all channels
+  // First we need to calculate average NPHE
   (1..6).each{sec->
     (1..4).each{ring->
       def h1 = dir.getObject("/HTCC/H_HTCC_nphe_s${sec}_r${ring}_side1") //left
@@ -17,13 +18,23 @@ def processDirectory(dir, run) {
 
       def meanNphe = h1.getMean() // Calculate the mean NPHE for this channel
       totalNphe += meanNphe // Add the mean NPHE to the total
+    }
+  }
+
+  // Calculate the average NPHE across all channels
+  def averageNphe = totalNphe / 48 
+  // Now we can add run, histogram, and correction factor to data
+  (1..6).each{sec->
+    (1..4).each{ring->
+      def h1 = dir.getObject("/HTCC/H_HTCC_nphe_s${sec}_r${ring}_side1") //left
+      def h2 = dir.getObject("/HTCC/H_HTCC_nphe_s${sec}_r${ring}_side2") //right
+      h1.add(h2)
 
       def name = "sec $sec ring $ring"
-      h1.setName(name)
-      h1.setTitle("HTCC Number of Photoelectrons")
-      h1.setTitleX("HTCC Number of Photoelectrons")
-
-      data.computeIfAbsent(name, {[]}).add([run: run, h1: h1])
+      // Calculate the correction factor
+      def correctionFactor = h1.getMean() / averageNphe 
+      // Store the histogram and correction factor
+      data.computeIfAbsent(name, {[]}).add([run: run, h1: h1, correctionFactor: correctionFactor]) 
     }
   }
 }
@@ -42,24 +53,22 @@ def close() {
     grtl.setTitleY("Average HTCC Number of Photoelectrons per sector per ring")
     grtl.setTitleX("run number")
 
-    def grtl_2 = new GraphErrors(name)
-    grtl_2.setTitle("Normalization factor (mean nphe per channel / average nphe across all channels) per sector per ring")
-    grtl_2.setTitleY("Normalization factor per sector per ring")
-    grtl_2.setTitleX("run number")
+    def grcorrection = new GraphErrors(name + "normalization factor")
+    grcorrection.setTitle("Normalization factor (mean nphe per channel / average nphe across all channels) per sector per ring")
+    grcorrection.setTitleY("Normalization factor per sector per ring")
+    grcorrection.setTitleX("run number")
 
     runs.sort{it.run}.each{
       out.mkdir('/'+it.run)
       out.cd('/'+it.run)
       out.addDataSet(it.h1)
       grtl.addPoint(it.run, it.h1.getMean(), 0, 0)
-
-      // Calculate the correction factor
-      def correctionFactor = it.h1.getMean() / averageNphe
-      grtl_2.addPoint(it.run, correctionFactor, 0, 0)
+      // Add the correction factor to the plot
+      grCorrection.addPoint(it.run, it.correctionFactor, 0, 0) 
     }
     out.cd('/timelines')
     out.addDataSet(grtl)
-    out.addDataSet(grtl_2)
+    out.addDataSet(grcorrection)
   }
 
   out.writeFile('htcc_nphe_sec_ring.hipo')
