@@ -8,7 +8,9 @@ class htcc_nphe_ring_sector {
 def data = new ConcurrentHashMap()
 
 def processDirectory(dir, run) {
-  def totalNphe = 0 // Initialize a variable to store the total NPHE across all channels
+  // Initialize a variable to store the total NPHE across all channels
+  def totalNphe = 0 
+  def numChannels = 48
   // First we need to calculate average NPHE
   (1..6).each{sec->
     (1..4).each{ring->
@@ -22,7 +24,7 @@ def processDirectory(dir, run) {
   }
 
   // Calculate the average NPHE across all channels
-  def averageNphe = totalNphe / 48 
+  def averageNphe = totalNphe / numChannels
   // Now we can add run, histogram, and correction factor to data
   (1..6).each{sec->
     (1..4).each{ring->
@@ -32,15 +34,12 @@ def processDirectory(dir, run) {
 
       def name = "sec $sec ring $ring"
       // Calculate the correction factor
-      def correctionFactor = h1.getMean() / averageNphe 
+      def correctionFactor = averageNphe > 0 ? h1.getMean() / averageNphe : 0
       // Store the histogram and correction factor
       data.computeIfAbsent(name, {[]}).add([run: run, h1: h1, correctionFactor: correctionFactor]) 
     }
   }
 }
-
-// Calculate the average NPHE across all channels
-def averageNphe = totalNphe / 48 
 
 def close() {
 

@@ -9,6 +9,7 @@ def data = new ConcurrentHashMap()
 
 def processDirectory(dir, run) {
   def totalNphe = 0
+  def numChannels = 48
 
   (1..6).each{sec->
 
@@ -20,7 +21,8 @@ def processDirectory(dir, run) {
     totalNphe += meanNphe 
   }
 
-  def averageNphe = totalNphe / 48 
+  def averageNphe = totalNphe / numChannels 
+
   (1..6).each{sec->
     def hlist = [(1..4), [1,2]].combinations().collect{ring,side -> dir.getObject("/HTCC/H_HTCC_nphe_s${sec}_r${ring}_side$side")}
     def h1 = hlist.head()
@@ -30,8 +32,7 @@ def processDirectory(dir, run) {
     h1.setTitle("HTCC Number of Photoelectrons")
     h1.setTitleX("HTCC Number of Photoelectrons")
 
-    def correctionFactor = h1.getMean() / averageNphe
-
+    def correctionFactor = averageNphe > 0 ? h1.getMean() / averageNphe : 0
     data.computeIfAbsent(sec, {[]}).add([run:run, h1:h1, correctionFactor:correctionFactor])
   }
 }
