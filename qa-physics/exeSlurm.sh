@@ -110,7 +110,8 @@ $(cat tmp/diffList)
 
   # then diff each run subdirectory
   for runDir in `getRunDirs $dataDirTape`; do
-    checkIfCached $(tape2cache $runDirTape) $runDirTape
+    echo "Checking if cached: $runDir"
+    checkIfCached $(tape2cache $runDir) $runDir
   done
 
 fi
