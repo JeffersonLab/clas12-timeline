@@ -90,29 +90,40 @@ if [[ "$DATADIR" =~ "/cache/" ]]; then
   dataDirCache=$DATADIR
   dataDirTape=$(cache2tape $DATADIR)
 
-  # diff the cache and tape stub top-level directories, to see if one has runs that the other does not
-  ls $dataDirCache | grep -vi readme > tmp/cacheList
-  ls $dataDirTape | grep -vi readme > tmp/tapeList
-  diff -y --suppress-common-lines tmp/{cache,tape}List > tmp/diffList
-  if [ -s tmp/diffList ]; then
-    printIssue """WARNING: there are differences between the list of runs in the cache and tape directories.
-      cache dir: $dataDirCache
-      tape dir:  $dataDirTape
-    This means that one may have run subdirectories that the other does not.
-    Here is a summary of their differences:
+  # check for existence of directories
+  skipCheck=0
+  [ ! -d $dataDirCache ] && printIssue "WARNING: cache directory does not exist: $dataDirCache"    && skipCheck=1
+  [ ! -d $dataDirTape ]  && printIssue "WARNING: tape stub directory does not exist: $dataDirTape" && skipCheck=1
+  if [ $skipCheck -eq 1 ]; then
+    printIssue """WARNING: since cache or tape directory does not exist, it is not possible to make sure
+         that all files on tape also exist on cache"""
+    echo "Skipping cache check, since problems were detected (see errors and warnings below)..."
+  else
 
-   cache_dir                                                    tape_dir
+    # diff the cache and tape stub top-level directories, to see if one has runs that the other does not
+    ls $dataDirCache | grep -vi readme > tmp/cacheList
+    ls $dataDirTape | grep -vi readme > tmp/tapeList
+    diff -y --suppress-common-lines tmp/{cache,tape}List > tmp/diffList
+    if [ -s tmp/diffList ]; then
+      printIssue """WARNING: there are differences between the list of runs in the cache and tape directories.
+        cache dir: $dataDirCache
+        tape dir:  $dataDirTape
+      This means that one may have run subdirectories that the other does not.
+      Here is a summary of their differences:
+
+     cache_dir                                                    tape_dir
 ===============                                              ==============
 $(cat tmp/diffList)
 
-    """
-  fi
+      """
+    fi
 
-  # then diff each run subdirectory
-  for runDir in `getRunDirs $dataDirTape`; do
-    echo "Checking if cached: $runDir"
-    checkIfCached $(tape2cache $runDir) $runDir
-  done
+    # then diff each run subdirectory
+    for runDir in `getRunDirs $dataDirTape`; do
+      echo "Checking if cached: $runDir"
+      checkIfCached $(tape2cache $runDir) $runDir
+    done
+  fi
 
 fi
 
