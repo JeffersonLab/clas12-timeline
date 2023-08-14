@@ -9,7 +9,7 @@ set -e
 # arguments
 if [ -z "$CALIBQA" ]; then
   echo "Setting local environment vars:"
-  source $(dirname $(realpath ${BASH_SOURCE[0]}))/../qa-detectors/env.sh
+  source $(dirname $(realpath ${BASH_SOURCE[0]}))/../qa-detectors/environ.sh
 fi
 if [ $# -lt 1 ]; then
   echo """

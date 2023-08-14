@@ -23,7 +23,7 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
 ## Procedure
 - set environment variables:
   ```bash
-  source env.sh
+  source environ.sh
   ```
 - Run one of:
   ```bash

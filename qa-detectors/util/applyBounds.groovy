@@ -28,7 +28,7 @@ def dataset = args[0]
 // `indir` and `outdir`
 def calibqadir = System.getenv('CALIBQA')
 def timelineDir = System.getenv('TIMELINEDIR')
-if(calibqadir==null) throw new Exception("env vars not set; source env.sh")
+if(calibqadir==null) throw new Exception("env vars not set; source environ.sh")
 File datasetList = new File(calibqadir+"/datasetList.txt")
 def datasetFound = false
 def indir, outdir, inURL, outURL

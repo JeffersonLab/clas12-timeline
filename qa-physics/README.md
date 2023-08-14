@@ -20,7 +20,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
   * local environment:
     * `$COATJAVA` must point to your local install
     * `run-groovy` (likely in `$COATJAVA/bin`) must be in your `$PATH`
-2. set local environment variables with `source env.sh`
+2. set local environment variables with `source environ.sh`
   * some primary run scripts do this automatically, in case the user forgets
   * note: `JYPATH` is added to the classpath for groovy called via
     `run-groovy`, from `coatjava`
@@ -28,7 +28,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     hipo files will be copied; this is a directory which the front-end will
     read in order to produce the web page version of the timelines. If you are
     not using this feature, change `TIMELINEDIR` to any local directory; if you
-    don't want to edit `env.sh`, then simply create the directory `../www`,
+    don't want to edit `environ.sh`, then simply create the directory `../www`,
     which is the default value of `TIMELINEDIR`
 
 ## PASS1 Procedure for Automatic QA

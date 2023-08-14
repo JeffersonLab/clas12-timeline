@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z "$CLASQA" ]; then source env.sh; fi
+if [ -z "$CLASQA" ]; then source environ.sh; fi
 
 if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]" >&2; exit 101; fi
 dataset=$1
