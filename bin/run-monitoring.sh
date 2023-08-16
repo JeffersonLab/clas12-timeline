@@ -18,9 +18,14 @@ SLURM_TIME=4:00:00
 ver=test
 outputDir=plots
 declare -A modes
-for key in findhipo rundir single series submit; do
-  modes[$key]=false
-done
+availableModes=(
+  findhipo
+  rundir
+  single
+  series
+  submit
+)
+for key in ${availableModes[@]}; do modes[$key]=false; done
 
 # usage
 if [ $# -lt 1 ]; then
@@ -92,8 +97,13 @@ while getopts "v:o:-:" opt; do
   case $opt in
     v) ver=$OPTARG;;
     o) outputDir=$OPTARG;;
-    -) modes[$OPTARG]=true;;
-    *) echo "ERROR: unknown option -$opt" >&2 && exit 100;;
+    -)
+      for key in "${!modes[@]}"; do
+        [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
+      done
+      [ -z "${modes[$OPTARG]}" ] && echo "ERROR: unknown option --$OPTARG" >&2 && exit 100
+      ;;
+    *) exit 100;;
   esac
 done
 shift $((OPTIND - 1))
