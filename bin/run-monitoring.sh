@@ -1,11 +1,10 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 
 # constants ############################################################
 # dependencies
 BINDIR="`dirname $0`"
-MONDIR="`realpath $BINDIR/..`"
-JARPATH="$MONDIR/monitoring/target/clas12-monitoring-v0.0-alpha.jar"
+JARPATH="$(realpath $BINDIR/..)/monitoring/target/clas12-monitoring-v0.0-alpha.jar"
 # executable
 EXE=org.jlab.clas12.monitoring.ana_2p2
 MAX_NUM_EVENTS=100000000
@@ -14,20 +13,15 @@ SLURM_MEMORY=1500
 SLURM_TIME=4:00:00
 ########################################################################
 
+source $BINDIR/environ.sh
+
 # default options
 ver=test
 outputDir=plots
 declare -A modes
-availableModes=(
-  findhipo
-  rundir
-  single
-  series
-  submit
-  focus-detectors
-  focus-physics
-)
-for key in ${availableModes[@]}; do modes[$key]=false; done
+for key in findhipo rundir single series submit focus-detectors focus-physics; do
+  modes[$key]=false
+done
 
 # usage
 if [ $# -lt 1 ]; then
