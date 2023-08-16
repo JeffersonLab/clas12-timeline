@@ -17,11 +17,10 @@ SLURM_TIME=4:00:00
 # default options
 ver=test
 outputDir=plots
-modeFindhipo=0
-modeRundir=0
-modeSingle=0
-modeSeries=0
-modeSubmit=0
+declare -A modes
+for key in findhipo rundir single series submit; do
+  modes[$key]=false
+done
 
 # usage
 if [ $# -lt 1 ]; then
@@ -33,7 +32,7 @@ if [ $# -lt 1 ]; then
 
     [RUN_DIRECTORY]...   One or more directories, each directory corresponds to
                          one run and should contain reconstructed hipo files
-                         - See \"input finding\" options below for more control,
+                         - See \"INPUT FINDING OPTIONS\" below for more control,
                            so that you don't have to specify each run's directory
                          - A regexp or globbing (wildcards) can be used to
                            specify the list of directories as well, if your shell
@@ -48,7 +47,7 @@ if [ $# -lt 1 ]; then
      -o [OUTPUT_DIRECTORY]  output directory
                             default = $outputDir
 
-     *** Input finding options: choose only one, or the default will assume each specified
+     *** INPUT FINDING OPTIONS: choose only one, or the default will assume each specified
          [RUN_DIRECTORY] is a single run's directory full of HIPO files
 
        --findhipo  use \`find\` to find all HIPO files in each
@@ -59,7 +58,7 @@ if [ $# -lt 1 ]; then
                    subdirectories named as just run numbers; it is not
                    recommended to use wildcards for this option
 
-     *** Execution control options: choose only one, or the default will generate a
+     *** EXECUTION CONTROL OPTIONS: choose only one, or the default will generate a
          Slurm job description and print out the suggested \`sbatch\` command
 
        --single    run only the first job, locally; useful for
@@ -93,16 +92,7 @@ while getopts "v:o:-:" opt; do
   case $opt in
     v) ver=$OPTARG;;
     o) outputDir=$OPTARG;;
-    -)
-      case $OPTARG in
-        findhipo) modeFindhipo=1;;
-        rundir) modeRundir=1;;
-        single) modeSingle=1;;
-        series) modeSeries=1;;
-        submit) modeSubmit=1;;
-        *) echo "ERROR: unknown option --$OPTARG" >&2 && exit 100;;
-      esac
-      ;;
+    -) modes[$OPTARG]=true;;
     *) echo "ERROR: unknown option -$opt" >&2 && exit 100;;
   esac
 done
@@ -112,7 +102,7 @@ shift $((OPTIND - 1))
 # parse input directories
 rdirs=()
 [ $# == 0 ] && echo "ERROR: no run directories specified" >&2 && exit 100
-if [ $modeFindhipo -eq 1 ]; then
+if ${modes['findhipo']}; then
   for topdir in $*; do
     fileList=$(find -L $topdir -type f -name "*.hipo")
     if [ -z "$fileList" ]; then
@@ -121,7 +111,7 @@ if [ $modeFindhipo -eq 1 ]; then
       rdirs+=($(echo $fileList | xargs dirname | sort | uniq))
     fi
   done
-elif [ $modeRundir -eq 1 ]; then
+elif ${modes['rundir']}; then
   for topdir in $*; do
     if [ -d $topdir -o -L $topdir ]; then
       for subdir in $(ls $topdir | grep -E "[0-9]+"); do
@@ -145,17 +135,11 @@ Settings:
 ========================
 VERSION_NAME     = $ver
 OUTPUT_DIRECTORY = $outputDir
-OPTIONS = {
-  findhipo => $modeFindhipo,
-  rundir   => $modeRundir,
-  single   => $modeSingle,
-  series   => $modeSeries,
-  submit   => $modeSubmit,
-}
+OPTIONS = {"""
+for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
+echo """}
 RUN_DIRECTORIES = ["""
-for rdir in ${rdirs[@]}; do
-  echo "  $rdir,"
-done
+for rdir in ${rdirs[@]}; do echo "  $rdir,"; done
 echo """]
 ========================
 """
@@ -261,10 +245,10 @@ Generated:
 
 # execute the job(s)
 singleScript=$slurm.single.sh
-if [ $modeSingle -eq 1 -o $modeSeries -eq 1 ]; then
+if ${modes['single']} || ${modes['series']}; then
   echo "#!/bin/bash" > $singleScript
   echo "set -e" >> $singleScript
-  if [ $modeSingle -eq 1 ]; then
+  if ${modes['single']}; then
     echo "RUNNING ONE SINGLE JOB LOCALLY:"
     echo "================================================"
     head -n1 $joblist >> $singleScript
@@ -276,7 +260,7 @@ if [ $modeSingle -eq 1 -o $modeSeries -eq 1 ]; then
   chmod u+x $singleScript
   $singleScript
   exit $?
-elif [ $modeSubmit -eq 1 ]; then
+elif ${modes['submit']}; then
   sbatch $slurm
   echo "JOBS SUBMITTED!"
 else
