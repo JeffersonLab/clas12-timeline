@@ -24,6 +24,8 @@ availableModes=(
   single
   series
   submit
+  focus-detectors
+  focus-physics
 )
 for key in ${availableModes[@]}; do modes[$key]=false; done
 
@@ -74,6 +76,15 @@ if [ $# -lt 1 ]; then
 
        --submit    submit the slurm jobs, rather than just
                    printing the \`sbatch\` command
+
+     *** FOCUS OPTIONS: these options allow for running single types of jobs,
+         rather than the default of running everything; you may specify more
+         than one
+
+       --focus-detectors   run monitoring for detector (and QA) timelines
+
+       --focus-physics     run monitoring for physics QA timelines
+
 
   EXAMPLES:
 
@@ -137,6 +148,13 @@ else
 fi
 for rdir in ${rdirs[@]}; do
   [[ "$rdir" =~ ^- ]] && echo "ERROR: option '$rdir' must be specified before run directories" >&2 && exit 100
+done
+
+
+# check focus options
+modes['focus-all']=true
+for key in focus-detectors focus-physics; do
+  if ${modes[$key]}; then modes['focus-all']=false; fi
 done
 
 # print arguments
@@ -203,14 +221,14 @@ for r0,r1,eb in beamlist:
 
   # prepare slurm script
   echo "------ generating $EXE command"
-  cmd="""
+  cmd_detectors="""
 echo \"RUN $runnum\" &&
 realpath $rdir/* > $outputDir/$runnum.input &&
 mkdir -p $plotDir &&
 pushd $outputDir &&
 java -DCLAS12DIR=\${COATJAVA}/ -Xmx1024m -cp \${COATJAVA}/lib/clas/*:\${COATJAVA}/lib/utils/*:$JARPATH $EXE $runnum $runnum.input $MAX_NUM_EVENTS $beam_energy;
 popd"""
-  echo $cmd >> $joblist
+  if ${modes['focus-all']} || ${modes['focus-detectors']}; then echo $cmd_detectors >> $joblist; fi
 
 done
 
