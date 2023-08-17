@@ -4,6 +4,7 @@
 # constants ############################################################
 # dependencies
 BINDIR="`dirname $0`"
+MAINDIR=$BINDIR/..
 JARPATH="$(realpath $BINDIR/..)/monitoring/target/clas12-monitoring-v0.0-alpha.jar"
 # executable
 EXE=org.jlab.clas12.monitoring.ana_2p2
@@ -18,7 +19,6 @@ source $BINDIR/environ.sh
 
 # default options
 ver=test
-outputDir=plots
 declare -A modes
 for key in findhipo rundir single series submit check-cache focus-detectors focus-physics; do
   modes[$key]=false
@@ -50,9 +50,6 @@ if [ $# -lt 1 ]; then
      -v [VERSION_NAME]      version name, defined by the user, used for
                             slurm jobs identification
                             default = $ver
-
-     -o [OUTPUT_DIRECTORY]  output directory
-                            default = $outputDir
 
      *** INPUT FINDING OPTIONS: choose only one, or the default will assume each specified
          [RUN_DIRECTORY] is a single run's directory full of HIPO files
@@ -108,10 +105,9 @@ if [ $# -lt 1 ]; then
 fi
 
 # parse options
-while getopts "v:o:-:" opt; do
+while getopts "v:-:" opt; do
   case $opt in
     v) ver=$OPTARG;;
-    o) outputDir=$OPTARG;;
     -)
       for key in "${!modes[@]}"; do
         [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
@@ -165,8 +161,7 @@ done
 echo """
 Settings:
 $sep
-VERSION_NAME     = $ver
-OUTPUT_DIRECTORY = $outputDir
+VERSION_NAME = $ver
 OPTIONS = {"""
 for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
 echo """}
@@ -187,12 +182,11 @@ fi
 [[ ! -f $JARPATH ]] && printError "Problem with jar file for clas12_monitoring package" && echo && exit 100
 echo $ver | grep -q "/" && printError "version name must not contain '/' " && echo && exit 100
 slurmJobName=clas12-timeline-$ver
-mkdir -p $outputDir slurm/scripts
-
 
 # start job lists
 echo """
 Generating job scripts..."""
+mkdir -p $MAINDIR/slurm/scripts
 jobkeys=()
 for key in detectors physics; do
   if ${modes['focus-all']} || ${modes['focus-'$key]}; then
@@ -201,10 +195,24 @@ for key in detectors physics; do
 done
 declare -A joblists
 for key in ${jobkeys[@]}; do
-  joblists[$key]=slurm/job.$ver.$key.list
+  joblists[$key]=$MAINDIR/slurm/job.$ver.$key.list
   > ${joblists[$key]}
 done
 
+# make output directories and backup directories
+unixtime=$(date +%s)
+for key in ${jobkeys[@]}; do
+  case $key in
+    detectors)
+      mkdir -p $MAINDIR/detectors/outplots
+      ;;
+    physics)
+      mkdir -p $MAINDIR/qa-physics/outdat
+      mkdir -p $MAINDIR/qa-physics/outmon
+      ;;
+  esac
+  mkdir -p $MAINDIR/tmp/backup.$unixtime/$key
+done
 
 # loop over input directories, building the job lists
 runnumMin=0
@@ -242,29 +250,36 @@ for r0,r1,eb in beamlist:
 
   # generate job scripts
   for key in ${jobkeys[@]}; do
-    jobscript=slurm/scripts/$key.$runnum.sh
+    jobscript=$MAINDIR/slurm/scripts/$key.$runnum.sh
 
     case $key in
 
       detectors)
-        plotDir=$outputDir/plots$runnum
-        [[ -d $plotDir ]] && printError "skipping run $runnum because the directory $plotDir already exists" && continue
-        realpath $rdir/* > $outputDir/$runnum.input
+        # preparation
+        plotDir=$MAINDIR/detectors/outplots/plots$runnum
+        [[ -d $plotDir ]] && mv -v $plotDir $MAINDIR/tmp/backup.$unixtime/detectors/
+        realpath $rdir/* > $MAINDIR/detectors/outplots/$runnum.input
         mkdir -p $plotDir
+        # wrapper script
         cat > $jobscript << EOF
 #!/bin/bash
 echo "RUN $runnum"
-pushd $outputDir
+pushd $MAINDIR/detectors/outplots
 java -DCLAS12DIR=${COATJAVA}/ -Xmx1024m -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH $EXE $runnum $runnum.input $MAX_NUM_EVENTS $beam_energy
 popd
 EOF
         ;;
 
       physics)
+        # preparation: backup old files
+        for backupFile in $MAINDIR/qa-physics/outdat/data_table_${runnum}.dat $MAINDIR/qa-physics/outmon/monitor_${runnum}.hipo; do
+          [ -f $backupFile ] && mv -v $backupFile $MAINDIR/tmp/backup.$unixtime/physics/
+        done
+        # wrapper script
         cat > $jobscript << EOF
 #!/bin/bash
 echo "RUN $runnum"
-pushd qa-physics
+pushd $MAINDIR/qa-physics
 run-groovy -Djava.awt.headless=true monitorRead.groovy $(realpath $rdir) dst
 popd
 EOF
@@ -281,7 +296,7 @@ done
 # prepare qa-physics/datasetList.txt
 for key in ${jobkeys[@]}; do
   if [ "$key" == "physics" ]; then
-    echo "$ver $runnumMin $runnumMax" >> qa-physics/datasetList.txt
+    echo "$ver $runnumMin $runnumMax" >> $MAINDIR/qa-physics/datasetList.txt
   fi
 done
 

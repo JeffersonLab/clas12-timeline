@@ -15,8 +15,8 @@ slurm
 tmp
 
 # detector timelines
+detectors/outplots
 log
-plots
 
 # physics timelines
 qa-physics/outdat*
