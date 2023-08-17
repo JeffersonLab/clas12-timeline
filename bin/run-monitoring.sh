@@ -181,7 +181,7 @@ fi
 # initial checks and preparations
 [[ ! -f $JARPATH ]] && printError "Problem with jar file for clas12_monitoring package" && echo && exit 100
 echo $ver | grep -q "/" && printError "version name must not contain '/' " && echo && exit 100
-slurmJobName=clas12-timeline-$ver
+slurmJobName=clas12-timeline--$ver
 
 # start job lists
 echo """
@@ -330,7 +330,7 @@ for key in ${jobkeys[@]}; do
     cat > $slurm << EOF
 #!/bin/sh
 #SBATCH --ntasks=1
-#SBATCH --job-name=$slurmJobName-$key
+#SBATCH --job-name=$slurmJobName--$key
 #SBATCH --output=$SLURM_LOG.out
 #SBATCH --error=$SLURM_LOG.err
 #SBATCH --partition=production

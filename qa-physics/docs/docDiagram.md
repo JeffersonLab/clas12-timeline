@@ -25,7 +25,7 @@ flowchart TB
 ```mermaid
 flowchart TB
 
-    subgraph Automated by exeSlurm.sh
+    subgraph "Automated by ../bin/run-monitoring.sh"
       dst{{DSTs}}:::data
       monitorRead[monitorRead.groovy]:::auto
       monitorReadOut{{outdat/data_table_$run.dat<br>outmon/monitor_$run.hipo}}:::data

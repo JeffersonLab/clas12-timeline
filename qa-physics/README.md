@@ -47,7 +47,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     * if you find that the DAQ-gated FC charge is larger than the ungated
       charge, you may have assumed here that the recharge option was ON, when
       actually it was OFF and needs to be ON
-* `exeSlurm.sh $dataset`: runs `monitorRead.groovy` on DSTs using slurm
+* `../bin/run-monitoring.sh`: runs `monitorRead.groovy` on DSTs using slurm
   * `$dataset` is specified in `datasetList.txt`, along with a range of runs
     * the syntax of this file is `$dataset $firstRun $lastRun`
     * several scripts use this file; some loop over all datasets, whereas
@@ -91,7 +91,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
 
 
 ## Automatic QA Procedure and Script Details
-* The automatic QA is executed by `exeSlurm.sh` followed by `exeTimelines.sh`;
+* The automatic QA is executed by `../bin/run-monitoring.sh` followed by `exeTimelines.sh`;
   these scripts execute several groovy scripts, which are described in this
   section
 
@@ -114,7 +114,7 @@ First step is to read DST or Skim files, producing hipo files and data tables
 * `groovy monitorRead.groovy __hipo_file_(directory)__ skim(dst)`
   * It is better to run this using `slurm`, but this can be run on a single skim file or
     directory of one run's DST files
-    * see `exeSlurm.sh` for example job submission scripts
+    * see `../bin/run-monitoring.sh` for example job submission scripts
   * the 2nd argument, `inHipoType` needs to be specified so that determination of run
     number and segment(file) number is done correctly
     * use `dst` for DST files
