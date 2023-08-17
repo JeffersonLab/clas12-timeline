@@ -7,8 +7,21 @@ detectors/target
 monitoring/target
 
 # transient files
-log
-plots
+*.hipo
+*.root
+*.tmp
+.nfs*
 slurm
 tmp
-qa-detectors/datasetList.txt
+
+# detector timelines
+log
+plots
+
+# physics timelines
+qa-physics/outdat*
+qa-physics/outmon*
+qa-physics/QA/qa
+datasetList.txt
+qaTree*.json*
+chargeTree*.json*

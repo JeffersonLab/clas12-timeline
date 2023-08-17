@@ -207,6 +207,8 @@ done
 
 
 # loop over input directories, building the job lists
+runnumMin=0
+runnumMax=0
 for rdir in ${rdirs[@]}; do
 
   # get the run number
@@ -214,6 +216,8 @@ for rdir in ${rdirs[@]}; do
   runnum=`basename $rdir | grep -m1 -o -E "[0-9]+"`
   [[ -z "$runnum" ]] && printError "unknown run number for directory $rdir" && continue
   runnum=$((10#$runnum))
+  [ $runnum -lt $runnumMin -o $runnumMin -eq 0 ] && runnumMin=$runnum
+  [ $runnum -gt $runnumMax -o $runnumMax -eq 0 ] && runnumMax=$runnum
 
   # get the beam energy
   # FIXME: use a config file or RCDB; this violates DRY with qa-physics/monitorRead.groovy
@@ -271,6 +275,14 @@ EOF
     echo $jobscript >> ${joblists[$key]}
   done
 
+done
+
+
+# prepare qa-physics/datasetList.txt
+for key in ${jobkeys[@]}; do
+  if [ "$key" == "physics" ]; then
+    echo "$ver $runnumMin $runnumMax" >> qa-physics/datasetList.txt
+  fi
 done
 
 
