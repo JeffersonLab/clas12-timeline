@@ -10,4 +10,5 @@ monitoring/target
 log
 plots
 slurm
+tmp
 qa-detectors/datasetList.txt

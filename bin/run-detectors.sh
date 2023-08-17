@@ -34,7 +34,7 @@ else
 	shift 2
 
 	inputdir=`realpath $1`
-	mkdir -p $out_dir
+	mkdir -p log $out_dir
 	cd $out_dir
 
 	#subdirectory names

@@ -11,7 +11,7 @@ MAX_NUM_EVENTS=100000000
 # slurm settings
 SLURM_MEMORY=1500
 SLURM_TIME=4:00:00
-SLURM_LOG=/farm_out/$LOGNAME/%x-%A_%a
+SLURM_LOG=/farm_out/%u/%x-%A_%a
 ########################################################################
 
 source $BINDIR/environ.sh
@@ -20,13 +20,9 @@ source $BINDIR/environ.sh
 ver=test
 outputDir=plots
 declare -A modes
-for key in findhipo rundir single series submit focus-detectors focus-physics; do
+for key in findhipo rundir single series submit check-cache focus-detectors focus-physics; do
   modes[$key]=false
 done
-
-# error handling
-printError()   { echo "[ERROR]: $1" >&2; }
-printWarning() { echo "[WARNING]: $1" >&2; }
 
 # usage
 sep="================================================================"
@@ -81,6 +77,9 @@ if [ $# -lt 1 ]; then
        --submit    submit the slurm jobs, rather than just
                    printing the \`sbatch\` command
 
+       --check-cache   cross check /cache directories with tape stub
+                       directories (/mss); does not create/run any jobs
+
      *** FOCUS OPTIONS: these options allow for running single types of jobs,
          rather than the default of running everything; you may specify more
          than one
@@ -134,7 +133,7 @@ if ${modes['findhipo']}; then
     if [ -z "$fileList" ]; then
       printWarning "run directory '$topdir' has no HIPO files"
     else
-      rdirs+=($(echo $fileList | xargs dirname | sort | uniq))
+      rdirs+=($(echo $fileList | xargs dirname | sort -u))
     fi
   done
 elif ${modes['rundir']}; then
@@ -177,12 +176,18 @@ echo """]
 $sep
 """
 
+# check cache (and exit), if requested
+if ${modes['check-cache']}; then
+  echo "Cross-checking /cache and /mss..."
+  $BINDIR/check-cache.sh ${rdirs[@]}
+  exit $?
+fi
 
 # initial checks and preparations
 [[ ! -f $JARPATH ]] && printError "Problem with jar file for clas12_monitoring package" && echo && exit 100
 echo $ver | grep -q "/" && printError "version name must not contain '/' " && echo && exit 100
 slurmJobName=clas12-timeline-$ver
-mkdir -p log $outputDir slurm/scripts
+mkdir -p $outputDir slurm/scripts
 
 
 # start job lists

@@ -14,3 +14,7 @@ done
 
 # timeline webserver directory
 export TIMELINEDIR=/u/group/clas/www/clas12mon/html/hipo
+
+# error handling
+printError()   { echo "[ERROR]: $1"   >&2; }
+printWarning() { echo "[WARNING]: $1" >&2; }
