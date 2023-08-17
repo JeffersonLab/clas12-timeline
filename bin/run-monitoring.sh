@@ -11,6 +11,7 @@ MAX_NUM_EVENTS=100000000
 # slurm settings
 SLURM_MEMORY=1500
 SLURM_TIME=4:00:00
+SLURM_LOG=/farm_out/$LOGNAME/%x-%A_%a
 ########################################################################
 
 source $BINDIR/environ.sh
@@ -23,11 +24,18 @@ for key in findhipo rundir single series submit focus-detectors focus-physics; d
   modes[$key]=false
 done
 
+# error handling
+printError()   { echo "[ERROR]: $1" >&2; }
+printWarning() { echo "[WARNING]: $1" >&2; }
+
 # usage
+sep="================================================================"
 if [ $# -lt 1 ]; then
   echo """
+  $sep
   USAGE: $0  [OPTIONS]...  [RUN_DIRECTORY]...
-         runs the monitoring jobs, either on the farm or locally
+  $sep
+  Runs the monitoring jobs, either on the farm or locally
 
   REQUIRED ARGUMENTS:
 
@@ -38,6 +46,8 @@ if [ $# -lt 1 ]; then
                          - A regexp or globbing (wildcards) can be used to
                            specify the list of directories as well, if your shell
                            supports it
+
+  $sep
 
   OPTIONS:
 
@@ -79,6 +89,7 @@ if [ $# -lt 1 ]; then
 
        --focus-physics     run monitoring for physics QA timelines
 
+  $sep
 
   EXAMPLES:
 
@@ -106,7 +117,7 @@ while getopts "v:o:-:" opt; do
       for key in "${!modes[@]}"; do
         [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
       done
-      [ -z "${modes[$OPTARG]}" ] && echo "ERROR: unknown option --$OPTARG" >&2 && exit 100
+      [ -z "${modes[$OPTARG]}" ] && printError "unknown option --$OPTARG" && exit 100
       ;;
     *) exit 100;;
   esac
@@ -116,12 +127,12 @@ shift $((OPTIND - 1))
 
 # parse input directories
 rdirs=()
-[ $# == 0 ] && echo "ERROR: no run directories specified" >&2 && exit 100
+[ $# == 0 ] && printError "no run directories specified" && exit 100
 if ${modes['findhipo']}; then
   for topdir in $*; do
     fileList=$(find -L $topdir -type f -name "*.hipo")
     if [ -z "$fileList" ]; then
-      echo "WARNING: run directory '$topdir' has no HIPO files" >&2
+      printWarning "run directory '$topdir' has no HIPO files"
     else
       rdirs+=($(echo $fileList | xargs dirname | sort | uniq))
     fi
@@ -133,7 +144,7 @@ elif ${modes['rundir']}; then
         rdirs+=($(echo "$topdir/$subdir " | sed 's;//;/;g'))
       done
     else
-      echo "ERROR: run directory '$topdir' does not exist" >&2
+      printError "run directory '$topdir' does not exist"
       exit 100
     fi
   done
@@ -141,7 +152,7 @@ else
   rdirs=$@
 fi
 for rdir in ${rdirs[@]}; do
-  [[ "$rdir" =~ ^- ]] && echo "ERROR: option '$rdir' must be specified before run directories" >&2 && exit 100
+  [[ "$rdir" =~ ^- ]] && printError "option '$rdir' must be specified before run directories" && exit 100
 done
 
 
@@ -154,7 +165,7 @@ done
 # print arguments
 echo """
 Settings:
-========================
+$sep
 VERSION_NAME     = $ver
 OUTPUT_DIRECTORY = $outputDir
 OPTIONS = {"""
@@ -163,38 +174,41 @@ echo """}
 RUN_DIRECTORIES = ["""
 for rdir in ${rdirs[@]}; do echo "  $rdir,"; done
 echo """]
-========================
+$sep
 """
 
 
-# test if one jar for clas12-monitoring package exists in the directory
-[[ ! -f $JARPATH ]] && echo "---- [ERROR] Problem with jar file for clas12_monitoring package --------" >&2 && echo && exit 100
+# initial checks and preparations
+[[ ! -f $JARPATH ]] && printError "Problem with jar file for clas12_monitoring package" && echo && exit 100
+echo $ver | grep -q "/" && printError "version name must not contain '/' " && echo && exit 100
+slurmJobName=clas12-timeline-$ver
+mkdir -p log $outputDir slurm/scripts
 
-# test if there is a version name
-echo $ver | grep -q "/" && echo "---- [ERROR] version name must not contain / -------" >&2 && echo && exit 100
-slurmJobName=clas12-timeline-monitoring-$ver
-echo "---- slurm job name will be: $slurmJobName"
 
-# make output directories
-mkdir -p log $outputDir slurm
+# start job lists
+echo """
+Generating job scripts..."""
+jobkeys=()
+for key in detectors physics; do
+  if ${modes['focus-all']} || ${modes['focus-'$key]}; then
+    jobkeys+=($key)
+  fi
+done
+declare -A joblists
+for key in ${jobkeys[@]}; do
+  joblists[$key]=slurm/job.$ver.$key.list
+  > ${joblists[$key]}
+done
 
-# loop over input directories, building the job list
-joblist=slurm/job.${ver}.list
-> $joblist
+
+# loop over input directories, building the job lists
 for rdir in ${rdirs[@]}; do
 
-  # check for existence of directory
-  echo "---- READ directory $rdir"
-  [[ ! -e $rdir ]] && echo "------ [ERROR] the folder $rdir does not exist" >&2 && continue
-
   # get the run number
+  [[ ! -e $rdir ]] && printError "the folder $rdir does not exist" && continue
   runnum=`basename $rdir | grep -m1 -o -E "[0-9]+"`
-  [[ -z "$runnum" ]] && echo "------ [WARNING] unknown run number for directory $rdir" >&2 && continue
+  [[ -z "$runnum" ]] && printError "unknown run number for directory $rdir" && continue
   runnum=$((10#$runnum))
-
-  # if output directory exists, skip this run
-  plotDir=$outputDir/plots$runnum
-  [[ -d $plotDir ]] && echo "------ [WARNING] skipping run $runnum because the directory $plotDir already exists" >&2 && continue
 
   # get the beam energy
   # FIXME: use a config file or RCDB; this violates DRY with qa-physics/monitorRead.groovy
@@ -211,37 +225,82 @@ for r0,r1,eb in beamlist:
     ret=eb
     print(ret)
 """`
-  echo "------ beam energy = $beam_energy GeV"
+  if [ -z "$beam_energy" ]; then
+    printError "Unknown beam energy for run $runnum"
+    printWarning "Since this script is still undergoing testing, let's assume the beam energy is 10.6 GeV" # FIXME
+    beam_energy=10.6
+  fi
 
-  # prepare slurm script
-  echo "------ generating $EXE command"
-  cmd_detectors="""
-echo \"RUN $runnum\" &&
-realpath $rdir/* > $outputDir/$runnum.input &&
-mkdir -p $plotDir &&
-pushd $outputDir &&
-java -DCLAS12DIR=\${COATJAVA}/ -Xmx1024m -cp \${COATJAVA}/lib/clas/*:\${COATJAVA}/lib/utils/*:$JARPATH $EXE $runnum $runnum.input $MAX_NUM_EVENTS $beam_energy;
-popd"""
-  if ${modes['focus-all']} || ${modes['focus-detectors']}; then echo $cmd_detectors >> $joblist; fi
+  # generate job scripts
+  for key in ${jobkeys[@]}; do
+    jobscript=slurm/scripts/$key.$runnum.sh
+
+    case $key in
+
+      detectors)
+        plotDir=$outputDir/plots$runnum
+        [[ -d $plotDir ]] && printError "skipping run $runnum because the directory $plotDir already exists" && continue
+        realpath $rdir/* > $outputDir/$runnum.input
+        mkdir -p $plotDir
+        cat > $jobscript << EOF
+#!/bin/bash
+echo "RUN $runnum"
+pushd $outputDir
+java -DCLAS12DIR=${COATJAVA}/ -Xmx1024m -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH $EXE $runnum $runnum.input $MAX_NUM_EVENTS $beam_energy
+popd
+EOF
+        ;;
+
+      physics)
+        cat > $jobscript << EOF
+#!/bin/bash
+echo "RUN $runnum"
+pushd qa-physics
+run-groovy -Djava.awt.headless=true monitorRead.groovy $(realpath $rdir) dst
+popd
+EOF
+        ;;
+
+    esac
+    chmod u+x $jobscript
+    echo $jobscript >> ${joblists[$key]}
+  done
 
 done
 
 
-# check if we have any jobs to run
-if [ ! -s $joblist ]; then
-  echo "[ERROR] there are no jobs to run" >&2
-  exit 100
-fi
+# now generate slurm descriptions and/or local scripts
+echo """
+Generating batch scripts..."""
+exelist=()
+for key in ${jobkeys[@]}; do
 
+  # check if we have any jobs to run
+  joblist=${joblists[$key]}
+  [ ! -s $joblist ] && printWarning "there are no $key timeline jobs to run" && continue
+  slurm=$(echo $joblist | sed 's;.list$;.slurm;')
 
-# write slurm script
-slurm=slurm/job.${ver}.slurm
-cat > $slurm << EOF
+  # either generate single/sequential run scripts
+  if ${modes['single']} || ${modes['series']}; then
+    singleScript=$(echo $joblist | sed 's;.list$;.local.sh;')
+    echo "#!/bin/bash" > $singleScript
+    echo "set -e" >> $singleScript
+    if ${modes['single']}; then
+      head -n1 $joblist >> $singleScript
+    else
+      cat $joblist >> $singleScript
+    fi
+    chmod u+x $singleScript
+    exelist+=($singleScript)
+
+  # otherwise generate slurm description
+  else
+    cat > $slurm << EOF
 #!/bin/sh
 #SBATCH --ntasks=1
-#SBATCH --job-name=$slurmJobName
-#SBATCH --output=log/%x-%A_%a.out
-#SBATCH --error=log/%x-%A_%a.err
+#SBATCH --job-name=$slurmJobName-$key
+#SBATCH --output=$SLURM_LOG.out
+#SBATCH --error=$SLURM_LOG.err
 #SBATCH --partition=production
 #SBATCH --account=clas12
 
@@ -257,39 +316,35 @@ module switch clas12/pro
 
 srun \$(head -n\$SLURM_ARRAY_TASK_ID $joblist | tail -n1)
 EOF
+    exelist+=($slurm)
+  fi
+done
 
+
+# execution
 echo """
-Generated:
-  Slurm script: $slurm
-  Job list:     $joblist
+$sep
 """
-
-
-# execute the job(s)
-singleScript=$slurm.single.sh
 if ${modes['single']} || ${modes['series']}; then
-  echo "#!/bin/bash" > $singleScript
-  echo "set -e" >> $singleScript
   if ${modes['single']}; then
     echo "RUNNING ONE SINGLE JOB LOCALLY:"
-    echo "================================================"
-    head -n1 $joblist >> $singleScript
   else
     echo "RUNNING ALL JOBS SEQUENTIALLY, LOCALLY:"
-    echo "================================================"
-    cat $joblist >> $singleScript
   fi
-  chmod u+x $singleScript
-  $singleScript
-  exit $?
+  echo $sep
+  for exe in ${exelist[@]}; do $exe; done
 elif ${modes['submit']}; then
-  sbatch $slurm
+  echo "SUBMITTING JOBS TO SLURM"
+  echo sep
+  for exe in ${exelist[@]}; do sbatch $exe; done
+  echo sep
   echo "JOBS SUBMITTED!"
 else
-  echo """
-  To submit all jobs to slurm, run:
-  =========================
-  sbatch $slurm
-  =========================
+  echo """  SLURM JOB DESCRIPTIONS GENERATED
+  - Slurm job name prefix will be: $slurmJobName
+  - To submit all jobs to slurm, run:
+    ------------------------------------------"""
+  for exe in ${exelist[@]}; do echo "    sbatch $exe"; done
+  echo """    ------------------------------------------
   """
 fi
