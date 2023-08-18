@@ -91,7 +91,7 @@ flowchart TB
             timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
         end
         subgraph "<strong>bin/run-physics-timelines.sh</strong>"
-            timelinePhysics["<strong>Run physics QA:</strong><br/>qa-physics/: (see documentation)"]:::proc
+            timelinePhysics["<strong>Make physics QA timelines:</strong><br/>qa-physics/: (see documentation)"]:::proc
         end
     end
 
