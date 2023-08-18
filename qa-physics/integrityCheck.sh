@@ -21,7 +21,7 @@ fi
 
 if [ ! -f outdat.${dataset}/data_table.dat ]; then
   echo "ERROR: outdat.${dataset}/data_table.dat does not exist" >&2
-  echo "execute exeTimelines.sh first" >&2
+  echo "execute ../bin/run-physics-timelines.sh first" >&2
   exit 100
 fi
 

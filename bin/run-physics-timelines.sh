@@ -1,9 +1,13 @@
 #!/bin/bash
 
-if [ -z "$CLASQA" ]; then source environ.sh; fi
+source $(dirname $0)/environ.sh
+
+if [ -z "$CLASQA" ]; then source $(dirname $0)/qa-physics/environ.sh; fi  # TODO: get rid of this
 
 if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]" >&2; exit 101; fi
 dataset=$1
+
+pushd $CLASQA
 
 # setup error filtered execution function
 errlog="errors.log"
@@ -45,6 +49,7 @@ sep
 rm $errlog
 
 # print final message
+popd
 echo """
 
 

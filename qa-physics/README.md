@@ -68,18 +68,18 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
       * note: `monitorRead.groovy` will overwrite any partial files left behind by jobs
         which were terminated prematurely, there is no need to delete them prior to
         resubmission
-* `exeTimelines.sh $dataset`, which does the following:
+* `../bin/run-physics-timelines.sh $dataset`, which does the following:
   * runs `qaPlot.groovy` (on electron trigger and FT)
   * runs `qaCut.groovy` (on electron trigger and FT)
   * runs `datasetOrganize.sh`
   * runs `monitorPlot.groovy`
   * copies timelines to webserver using `deployTimelines.sh`
   * if any of these scripts throw errors, they will be redirected and printed at the end
-    of `exeTimelines.sh`
+    of `../bin/run-physics-timelines.sh`
     * if you see any errors for a script, it's best to rerun that script independently
       to diagnose the problem
 * integrity check: check if all available data were analyzed (must be done AFTER
-  `exeTimelines.sh`)
+  `../bin/run-physics-timelines.sh`)
   * `getListOfDSTs.sh [dataset]` (takes some time to run)
   * `integrityCheck.sh [dataset]`
 * perform the manual QA (see QA procedure below)
@@ -91,7 +91,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
 
 
 ## Automatic QA Procedure and Script Details
-* The automatic QA is executed by `../bin/run-monitoring.sh` followed by `exeTimelines.sh`;
+* The automatic QA is executed by `../bin/run-monitoring.sh` followed by `../bin/run-physics-timelines.sh`;
   these scripts execute several groovy scripts, which are described in this
   section
 
@@ -273,7 +273,7 @@ the timelines and recording features not identified by the automatic QA in
   * verify your epoch lines are where you want them
     * use `mkTree.sh`
     * look at "supplemental" `epoch view` timelines
-  * if you make changes to the epoch lines, re-run `exeTimelines.sh` to
+  * if you make changes to the epoch lines, re-run `../bin/run-physics-timelines.sh` to
     generate the updated `qaTree.json`
 * verify all the data have been analyzed by the automatic QA
   * execute `getListOfDSTs.sh [dataset]` to obtain a list of run numbers and file

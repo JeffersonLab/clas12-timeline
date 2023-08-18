@@ -33,7 +33,7 @@ flowchart TB
       monitorRead --> monitorReadOut
     end
 
-    subgraph Automated by exeTimelines.sh
+    subgraph "Automated by ../bin/run-physics-timelines.sh"
       datasetOrganize[datasetOrganize.sh]:::auto
       outmonFiles{{outmon.$dataset/monitor_$run.hipo}}:::data
       outdatFiles{{outdat.$dataset/data_table.dat}}:::data
