@@ -65,7 +65,7 @@ Here is a flowchart illustrating the data and steps for timeline production:
 ```mermaid
 flowchart TB
 
-    classDef script   fill:#8f8,color:black
+    classDef proc     fill:#8f8,color:black
     classDef data     fill:#ff8,color:black
     classDef misc     fill:#f8f,color:black
     classDef timeline fill:#8ff,color:black
@@ -74,41 +74,41 @@ flowchart TB
 
     subgraph Data Monitoring
         subgraph "<strong>bin/run-monitoring.sh</strong>"
-            monitoring["monitoring/"]:::script
-            qaPhysics["qa-physics/"]:::script
+            monitorDetectors["monitoring/"]:::proc
+            monitorPhysics["qa-physics/"]:::proc
         end
     end
-    dst --> monitoring
-    dst --> qaPhysics
+    dst --> monitorDetectors
+    dst --> monitorPhysics
 
-    monitoring --> outplots[(detectors/outplots)]:::data
-    qaPhysics  --> outdat[(qa-physics/outdat/*.dat)]:::data
-    qaPhysics  --> outmon[(qa-physics/outmon/*.hipo)]:::data
+    monitorDetectors --> outplots[(detectors/outplots)]:::data
+    monitorPhysics   --> outdat[(qa-physics/outdat/*.dat)]:::data
+    monitorPhysics   --> outmon[(qa-physics/outmon/*.hipo)]:::data
 
     subgraph Timeline Production
         subgraph "<strong>bin/run-detector-timelines.sh</strong>"
-            detectors["detectors/"]:::script
-            qaDetectors["qa-detectors/"]:::script
+            timelineDetectorsPreQA["detectors/"]:::proc
+            timelineDetectors["qa-detectors/"]:::proc
         end
         subgraph "<strong>bin/run-physics-timelines.sh</strong>"
-            qaPhysics2["qa-physics/"]:::script
+            timelinePhysics["qa-physics/"]:::proc
         end
     end
 
-    outplots --> detectors --> qaDetectors
-    outdat --> qaPhysics2
-    outmon --> qaPhysics2
+    outplots --> timelineDetectorsPreQA --> timelineDetectors
+    outdat   --> timelinePhysics
+    outmon   --> timelinePhysics
 
     subgraph QADB Production
         qadb([QADB]):::misc
-        manualQA[manual physics QA]:::script
+        manualQA[manual physics QA]:::proc
     end
     
     timelines{{timelines}}:::timeline
 
-    qaDetectors --> timelines
-    qaPhysics2 --> timelines
-    qaPhysics2 --> qadb
+    timelineDetectors --> timelines
+    timelinePhysics   --> timelines
+    timelinePhysics   --> qadb
     manualQA <-.-> timelines
     manualQA <-.-> qadb
 ```
