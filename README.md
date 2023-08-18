@@ -75,7 +75,7 @@ flowchart TB
     subgraph Data Monitoring
         subgraph "<strong>bin/run-monitoring.sh</strong>"
             monitorDetectors["<strong>Make detector histograms</strong><br/>monitoring/: org.jlab.clas12.monitoring.ana_2p2"]:::proc
-            monitorPhysics["<strong>Make physics QA histograms</strong><br/>qa-physics/monitorRead.groovy"]:::proc
+            monitorPhysics["<strong>Make physics QA histograms</strong><br/>qa-physics/: monitorRead.groovy"]:::proc
         end
     end
     dst --> monitorDetectors
@@ -91,7 +91,7 @@ flowchart TB
             timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
         end
         subgraph "<strong>bin/run-physics-timelines.sh</strong>"
-            timelinePhysics["<strong>Run physics QA:</strong><br/>qa-physics/_____"]:::proc
+            timelinePhysics["<strong>Run physics QA:</strong><br/>qa-physics/: (see documentation)"]:::proc
         end
     end
 
