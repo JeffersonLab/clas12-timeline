@@ -6,8 +6,7 @@
 BINDIR="`dirname $0`"
 MAINDIR=$BINDIR/..
 JARPATH="$(realpath $BINDIR/..)/monitoring/target/clas12-monitoring-v0.0-alpha.jar"
-# executable
-EXE=org.jlab.clas12.monitoring.ana_2p2
+# max number of events for detector monitoring timelines
 MAX_NUM_EVENTS=100000000
 # slurm settings
 SLURM_MEMORY=1500
@@ -265,7 +264,7 @@ for r0,r1,eb in beamlist:
 #!/bin/bash
 echo "RUN $runnum"
 pushd $MAINDIR/detectors/outplots
-java -DCLAS12DIR=${COATJAVA}/ -Xmx1024m -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH $EXE $runnum $runnum.input $MAX_NUM_EVENTS $beam_energy
+java -DCLAS12DIR=${COATJAVA}/ -Xmx1024m -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH org.jlab.clas12.monitoring.ana_2p2 $runnum $runnum.input $MAX_NUM_EVENTS $beam_energy
 popd
 EOF
         ;;
