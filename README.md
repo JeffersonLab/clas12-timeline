@@ -63,7 +63,7 @@ See [its documentation here](qa-physics) for more details.
 Here is a flowchart illustrating the data and steps for timeline production:
 
 ```mermaid
-flowchart LR 
+flowchart TB
 
     classDef script   fill:#8f8,color:black
     classDef data     fill:#ff8,color:black
@@ -78,6 +78,12 @@ flowchart LR
             qaPhysics["qa-physics/"]:::script
         end
     end
+    dst --> monitoring
+    dst --> qaPhysics
+
+    monitoring --> outplots[(detectors/outplots)]:::data
+    qaPhysics  --> outdat[(qa-physics/outdat/*.dat)]:::data
+    qaPhysics  --> outmon[(qa-physics/outmon/*.hipo)]:::data
 
     subgraph Timeline Production
         subgraph "<strong>bin/run-detector-timelines.sh</strong>"
@@ -89,6 +95,10 @@ flowchart LR
         end
     end
 
+    outplots --> detectors --> qaDetectors
+    outdat --> qaPhysics2
+    outmon --> qaPhysics2
+
     subgraph QADB Production
         qadb([QADB]):::misc
         manualQA[manual physics QA]:::script
@@ -96,10 +106,9 @@ flowchart LR
     
     timelines{{timelines}}:::timeline
 
-    dst --> monitoring --> detectors --> qaDetectors --> timelines
-    dst --> qaPhysics --> qaPhysics2 --> timelines
+    qaDetectors --> timelines
+    qaPhysics2 --> timelines
     qaPhysics2 --> qadb
-
     manualQA <-.-> timelines
     manualQA <-.-> qadb
 ```
