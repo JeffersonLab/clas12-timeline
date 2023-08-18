@@ -2,6 +2,8 @@
 
 Timeline production for CLAS12. Timelines are deployed to [clas12mon](https://clas12mon.jlab.org).
 
+## Setup
+
 To download,
 ```bash
 git clone https://github.com/JeffersonLab/clas12-timeline.git
@@ -9,52 +11,60 @@ git clone https://github.com/JeffersonLab/clas12-timeline.git
 
 To build,
 ```bash
-./bin/build-all.sh        # standard build
-./bin/build-all.sh clean  # alternatively, a clean build
+bin/build-all.sh        # standard build
+bin/build-all.sh clean  # alternatively, a clean build
 ```
 
-## Detector Timelines
-The detector timeline production procedure is outlined in the following steps:
+## Procedure
 
-### 1. `clas12_monitoring`
-To submit `clas12_monitoring` for each run from specified directory one should run these commands, e.g.:
+Two types of timelines are produced:
+1. Detector timelines, to monitor detector parameters, histograms, and calibration
+2. Physics timelines, to monitor higher-level quantities to perform Quality Assurance (QA) for physics analysis
+
+NOTE: physics timeline production and QA are typically only valuable on high-statistics datasets; you may not want
+to produce them if you are only interested in detector timelines.
+
+Both of these timeline types are produced in two stages:
+
+### Stage 1: Data Monitoring
+
+This stage reads DST files and produces histograms and auxiliary files, which are then consumed by Stage 2 to produce the timelines. Since DST files are read, it is recommended to use a computing cluster.
+
+To run this stage, execute:
 ```bash
-./bin/run-monitoring.sh   # print usage guide
+bin/run-monitoring.sh
 ```
+which will print the usage guide, along with some examples (since it was called with no arguments). With this script, you may run single jobs locally or multiple jobs in parallel on the computing cluster.
 
-To run it interactively, see the [monitoring subdirectory](monitoring)
+#### Details
+- data monitoring for detector timelines is handled by the [`monitoring/` subdirectory](monitoring);
+  see [its documentation](monitoring/README.md)
+- data monitoring for physics timelines is handled by the [`qa-physics/` subdirectory](qa-physics);
+  see [its documentation](qa-physics/README.md)
 
-### 2. Detector Timelines
-To run, execute following command,
+### Stage 2: Timeline Production and QA
+
+After Stage 1 is complete, run the following Stage 2 scripts to produce the timeline `HIPO` files and to run the automatic QA procedures. Run them with no arguments to print the usage guides.
+
 ```bash
-./bin/run-detectors.sh "run group" "cooking version" "/path/to/monitoring/files/""
-```
-with the adequate arguments, e.g.,
-```bash
-./bin/run-detectors.sh rgb pass0v25.18 /volatile/clas12/rg-b/offline_monitoring/pass0/v25.18/
+bin/run-detector-timelines.sh
+bin/run-physics-timelines.sh
 ```
 
-### 3. Detector QA
-To run,
-```bash
-./bin/run-qa.sh TIMELINE
-```
-where `TIMELINE` is either the URL, for example,
-```
-https://clas12mon.jlab.org/rga/pass1/version3/tlsummary
-```
-or the relative path to the timeline, which for this example would be `rga/pass1/version3`. The output
-URL containing QA timelines will be printed at the end of the script output; for this example, it will be
-```
-https://clas12mon.jlab.org/rga/pass1/version3_qa/tlsummary
-```
+If all went well, a URL for the new timelines will be printed; open it in a browser to view them.
 
-See [further details](qa-detectors/README.md) for more information.
 
-# Physics QA Timelines
-The physics QA is typically performed only on a fully cooked dataset, whereas the above detector timeline production
-is produced on much smaller data subsets. The physics QA timeline production is thus separate from the
-detector timeline production, and produces the QADB.
+#### Details
+- detector timeline production is handled by the [`detectors/` subdirectory](detectors);
+  see [its documentation](detectors/README.md)
+- QA of detector timelines is handled by the [`qa-detectors/` subdirectory](qa-detectors);
+  see [its documentation](qa-detectors/README.md)
+- physics timeline production and QA are handled by the [`qa-physics/` subdirectory](qa-physics);
+  see [their documentation](qa-physics/README.md)
+
+## QA Database (QADB) Production
+
+The [QADB](https://github.com/JeffersonLab/clas12-qadb) is produced by the physics timeline QA, typically only for a fully cooked dataset. It is automatically produced from the physics QA, but it is highly recommended to perform a "manual QA" afterward, by looking at the automatic QA results, cross checking with the experimental log book, and modifying the QADB accordingly.
 
 See [its documentation here](qa-physics) for more details.
 
