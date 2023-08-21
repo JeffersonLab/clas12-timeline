@@ -122,7 +122,7 @@ First step is to read DST or Skim files, producing hipo files and data tables
   * you may want to check the "RUN GROUP DEPENDENT SETTINGS" in the code, to make sure
     certain settings (e.g., beam energy) are correct for your run group
   * Outputs:
-    * `outdat/data_table_${run}.dat`, which is a data table with the following columns:
+    * `../outfiles/physics/data_table_${run}.dat`, which is a data table with the following columns:
       * run number
       * 5-file number
       * sector
@@ -132,7 +132,7 @@ First step is to read DST or Skim files, producing hipo files and data tables
       * DAQ-gated FC charge at end of 5-file (`F_f`)
       * DAQ-ungated FC charge at beginning of 5-file
       * DAQ-ungated FC charge at end of 5-file
-    * `outmon/monitor_${runnum}.hipo` contains several plots 
+    * `../outfiles/physics/monitor_${runnum}.hipo` contains several plots 
       * in the script, they are organized into a tree data structure, which allows plot
         any variable, for any set of properties
         * for example, the helicity plots are for pi+,pi-, and positive helicity and
@@ -155,10 +155,10 @@ First step is to read DST or Skim files, producing hipo files and data tables
 
 ### Data Organization
 * use the script `datasetOrganize.sh [dataset]`
-  * this will concatenate files from `outdat` into a single file
+  * this will concatenate files from `../outfiles/physics/*.dat` into a single file
     `outdat.${dataset}/data_table.dat`, for the specified dataset
   * it will also generate symlinks from `outmon.${dataset}/monitor*.hipo` to the
-    relevant `outmon/monitor*.hipo` files
+    relevant `../outfiles/physics/monitor*.hipo` files
 
 
 ### Plotting Scripts
@@ -170,7 +170,7 @@ files can then be fed to a QA script
     * the list of timelines is at the bottom of the script, and is handled by
       the `hipoWrite` closure, which takes two arguments:
       * the name of the timeline, which will be the name of the corresponding
-        hipo file, also send to the `outmon/` directory
+        hipo file, also send to the `outmon` directory
       * a list of filters, used to access the plots that are added to that
         timeline; all plots which pass those filters will be plotted together in
         a single timeline hipo file
@@ -194,7 +194,7 @@ files can then be fed to a QA script
       timelines to the webserver
 
 * `groovy qaPlot.groovy $dataset [$useFT]` 
-  * reads `outdat.${dataset}/data_table.dat` and generates `outmon/monitorElec.hipo`
+  * reads `outdat.${dataset}/data_table.dat` and generates `outmon.${dataset}/monitorElec.hipo`
     * within this hipo file, there is one directory for each run, containing several
       plots:
       * `grA*`: N/F vs. file number (the `A` notation is so it appears first in the
@@ -229,7 +229,7 @@ generate QA timelines, and a `json` file which is used for the manual followup Q
         manually, but could be automated in a future release
 
 * `groovy qaCut.groovy $dataset [$useFT]`
-  * reads `outmon/monitorElec.hipo`, along with `epochs/epochs.${dataset}.txt`, to build
+  * reads `outmon.${dataset}/monitorElec.hipo`, along with `epochs/epochs.${dataset}.txt`, to build
     timelines for the online monitor
   * if `$useFT` is set, it will use FT electrons instead
   * the runs are organized into epochs, wherein each:
@@ -365,7 +365,7 @@ directory and call `exeQAtimelines.sh` to produce the updated QA timelines
 
 ## Supplementary Scripts
 * `deployTimelines.sh __subdirectory__`
-  * reads `outmon` directory for timeline `hipo` files and copies them to the online
+  * reads `outmon.$dataset` directory for timeline `hipo` files and copies them to the online
     timeline webserver (you may need to edit the path), into the specified subdirectory
 
 * `indexPage.groovy`

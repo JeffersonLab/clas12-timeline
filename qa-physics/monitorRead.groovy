@@ -21,12 +21,14 @@ Tools T = new Tools()
 // OPTIONS
 def segmentSize = 10000 // number of events in each segment
 def inHipoType = "dst" // options: "dst", "skim"
+def outDir = "../outfiles/physics"
 
 
 // ARGUMENTS
 def inHipo = "skim/skim4_5052.hipo" // directory of DST files, or a single SKIM file
 if(args.length>=1) inHipo = args[0]
 if(args.length>=2) inHipoType = args[1]
+if(args.length>=3) outDir = args[2]
 
 
 
@@ -176,11 +178,10 @@ else if(RG=="RGM") {
 //////////////////////////////////////////////////////////
 
 // make outut directories
-"mkdir -p outdat".execute()
-"mkdir -p outmon".execute()
+"mkdir -p $outDir".execute()
 
 // prepare output table for electron count and FC charge
-def datfile = new File("outdat/data_table_${runnum}.dat")
+def datfile = new File("$outDir/data_table_${runnum}.dat")
 def datfileWriter = datfile.newWriter(false)
 
 
@@ -806,7 +807,7 @@ inHipoList.each { inHipoFile ->
 } // end loop over hipo files
 
 // write outHipo file
-outHipoN = "outmon/monitor_${runnum}.hipo"
+outHipoN = "$outDir/monitor_${runnum}.hipo"
 File outHipoFile = new File(outHipoN)
 if(outHipoFile.exists()) outHipoFile.delete()
 outHipo.writeFile(outHipoN)

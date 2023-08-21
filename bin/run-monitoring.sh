@@ -12,6 +12,7 @@ MAX_NUM_EVENTS=100000000
 SLURM_MEMORY=1500
 SLURM_TIME=4:00:00
 SLURM_LOG=/farm_out/%u/%x-%A_%a
+OUTPUT_DIR=$MAINDIR/outfiles
 ########################################################################
 
 source $BINDIR/environ.sh
@@ -182,10 +183,11 @@ fi
 echo $ver | grep -q "/" && printError "version name must not contain '/' " && echo && exit 100
 slurmJobName=clas12-timeline--$ver
 
-# start job lists
+# start job lists, make output and backup directories
 echo """
 Generating job scripts..."""
 mkdir -p $MAINDIR/slurm/scripts
+backupDir=$MAINDIR/tmp/backup.$(date +%s) # use unixtime for uniqueness
 jobkeys=()
 for key in detectors physics; do
   if ${modes['focus-all']} || ${modes['focus-'$key]}; then
@@ -196,21 +198,8 @@ declare -A joblists
 for key in ${jobkeys[@]}; do
   joblists[$key]=$MAINDIR/slurm/job.$ver.$key.list
   > ${joblists[$key]}
-done
-
-# make output directories and backup directories
-unixtime=$(date +%s)
-for key in ${jobkeys[@]}; do
-  case $key in
-    detectors)
-      mkdir -p $MAINDIR/detectors/outplots
-      ;;
-    physics)
-      mkdir -p $MAINDIR/qa-physics/outdat
-      mkdir -p $MAINDIR/qa-physics/outmon
-      ;;
-  esac
-  mkdir -p $MAINDIR/tmp/backup.$unixtime/$key
+  mkdir -p $OUTPUT_DIR/$key
+  mkdir -p $backupDir/$key
 done
 
 # loop over input directories, building the job lists
@@ -260,14 +249,14 @@ for r0,r1,eb in beamlist:
 
       detectors)
         # preparation
-        plotDir=$MAINDIR/detectors/outplots/plots$runnum
-        [[ -d $plotDir ]] && mv -v $plotDir $MAINDIR/tmp/backup.$unixtime/detectors/
+        plotDir=$OUTPUT_DIR/$key/plots$runnum
+        [[ -d $plotDir ]] && mv -v $plotDir $backupDir/$key/
         mkdir -p $plotDir
         # wrapper script
         cat > $jobscript << EOF
 #!/bin/bash
 echo "RUN $runnum"
-pushd $MAINDIR/detectors/outplots
+pushd $OUTPUT_DIR/$key
 java -DCLAS12DIR=${COATJAVA}/ -Xmx1024m -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH org.jlab.clas12.monitoring.ana_2p2 $runnum $inputListFile $MAX_NUM_EVENTS $beam_energy
 popd
 EOF
@@ -275,15 +264,15 @@ EOF
 
       physics)
         # preparation: backup old files
-        for backupFile in $MAINDIR/qa-physics/outdat/data_table_${runnum}.dat $MAINDIR/qa-physics/outmon/monitor_${runnum}.hipo; do
-          [ -f $backupFile ] && mv -v $backupFile $MAINDIR/tmp/backup.$unixtime/physics/
+        for backupFile in $OUTPUT_DIR/$key/data_table_${runnum}.dat $OUTPUT_DIR/$key/monitor_${runnum}.hipo; do
+          [ -f $backupFile ] && mv -v $backupFile $backupDir/$key/
         done
         # wrapper script
         cat > $jobscript << EOF
 #!/bin/bash
 echo "RUN $runnum"
 pushd $MAINDIR/qa-physics
-run-groovy -Djava.awt.headless=true monitorRead.groovy $(realpath $rdir) dst
+run-groovy -Djava.awt.headless=true monitorRead.groovy $(realpath $rdir) dst $OUTPUT_DIR
 popd
 EOF
         ;;

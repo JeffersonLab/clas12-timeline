@@ -13,14 +13,10 @@ monitoring/target
 .nfs*
 slurm
 tmp
-
-# detector timelines
-detectors/outplots
 log
+outfiles
 
 # physics timelines
-qa-physics/outdat*
-qa-physics/outmon*
 qa-physics/QA/qa
 datasetList.txt
 qaTree*.json*
