@@ -58,7 +58,9 @@ public class ana_2p2 {
                 try {
                         read = new Scanner(file);
                         do { 
-                                String filename = read.next();
+                                String filename = read.next()
+                                        .replaceAll("^file:", "")
+                                        .replaceAll("^mss:", "");
                                 if(runNum==0 || filename.contains(String.format("%d",runNum) ) ){
 					toProcessFileNames.add(filename);
 					System.out.println("adding "+filename);
@@ -78,7 +80,7 @@ public class ana_2p2 {
 			progresscount++;
 			System.out.println(String.format(">>>>>>>>>>>>>>>> %s",runstrg));
 			File varTmpDir = new File(runstrg);
-			if(!varTmpDir.exists()){System.out.println("FILE DOES NOT EXIST");continue;}
+			if(!varTmpDir.exists()){System.err.println(String.format("ERROR: FILE DOES NOT EXIST: '%s'",runstrg));continue;}
 			System.out.println("READING NOW "+runstrg);
 			HipoDataSource reader = new HipoDataSource();
 			reader.open(runstrg);

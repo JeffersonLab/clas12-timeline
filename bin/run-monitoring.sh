@@ -4,8 +4,8 @@
 # constants ############################################################
 # dependencies
 BINDIR="`dirname $0`"
-MAINDIR=$BINDIR/..
-JARPATH="$(realpath $BINDIR/..)/monitoring/target/clas12-monitoring-v0.0-alpha.jar"
+MAINDIR=$(realpath $BINDIR/..)
+JARPATH="$MAINDIR/monitoring/target/clas12-monitoring-v0.0-alpha.jar"
 # max number of events for detector monitoring timelines
 MAX_NUM_EVENTS=100000000
 # slurm settings
@@ -226,6 +226,11 @@ for rdir in ${rdirs[@]}; do
   [ $runnum -lt $runnumMin -o $runnumMin -eq 0 ] && runnumMin=$runnum
   [ $runnum -gt $runnumMax -o $runnumMax -eq 0 ] && runnumMax=$runnum
 
+  # get list of input files, and append prefix for SWIF
+  inputListFile=$MAINDIR/slurm/files.$ver.$runnum.inputs.list
+  [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
+  realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
+
   # get the beam energy
   # FIXME: use a config file or RCDB; this violates DRY with qa-physics/monitorRead.groovy
   beam_energy=`python -c """
@@ -257,14 +262,13 @@ for r0,r1,eb in beamlist:
         # preparation
         plotDir=$MAINDIR/detectors/outplots/plots$runnum
         [[ -d $plotDir ]] && mv -v $plotDir $MAINDIR/tmp/backup.$unixtime/detectors/
-        realpath $rdir/* > $MAINDIR/detectors/outplots/$runnum.input
         mkdir -p $plotDir
         # wrapper script
         cat > $jobscript << EOF
 #!/bin/bash
 echo "RUN $runnum"
 pushd $MAINDIR/detectors/outplots
-java -DCLAS12DIR=${COATJAVA}/ -Xmx1024m -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH org.jlab.clas12.monitoring.ana_2p2 $runnum $runnum.input $MAX_NUM_EVENTS $beam_energy
+java -DCLAS12DIR=${COATJAVA}/ -Xmx1024m -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH org.jlab.clas12.monitoring.ana_2p2 $runnum $inputListFile $MAX_NUM_EVENTS $beam_energy
 popd
 EOF
         ;;

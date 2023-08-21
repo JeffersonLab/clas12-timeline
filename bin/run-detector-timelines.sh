@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# constants ############################################################
 SCRIPTPATH=`realpath $0`
 BINPATH=`dirname $SCRIPTPATH`
 DIRPATH=`dirname $BINPATH`
