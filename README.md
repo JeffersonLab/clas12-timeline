@@ -97,5 +97,17 @@ flowchart TB
     monitorPhysics   --> outdat
     monitorPhysics   --> outmon
 
+    subgraph Timeline Production
+        subgraph "<strong>bin/run-detector-timelines.sh</strong>"
+            timelineDetectorsPreQA["<strong>Make detector timelines</strong><br/>detectors/: org.jlab.clas.timeline.run"]:::proc
+            timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
+        end
+        subgraph "<strong>bin/run-physics-timelines.sh</strong>"
+            timelinePhysics["<strong>Make physics QA timelines:</strong><br/>qa-physics/: (see documentation)"]:::proc
+        end
+        outTimelinePhysics{{outfiles/$dataset/timelines/physics_*/*}}::timeline
+        outTimelineDetectorsPreQA{{outfiles/$dataset/detectors/timelines/$detector/*.hipo}}::timeline
+        outTimelineDetectors{{outfiles/$dataset/timelines/$detector/*.hipo}}::timeline
+    end
 
 ```
