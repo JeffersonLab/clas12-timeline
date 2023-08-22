@@ -26,9 +26,10 @@ def dataset = args[0]
 
 // get www dir, by searching datasetList.txt for specified `dataset`, and set
 // `indir` and `outdir`
-def calibqadir = System.getenv('CALIBQA')
+def calibqadir = System.getenv('TIMELINESRC')
 def timelineDir = System.getenv('TIMELINEDIR')
 if(calibqadir==null) throw new Exception("env vars not set; source environ.sh")
+calibqadir += "qa-detectors"
 File datasetList = new File(calibqadir+"/datasetList.txt")
 def datasetFound = false
 def indir, outdir, inURL, outURL

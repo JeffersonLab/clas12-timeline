@@ -11,8 +11,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
   monitor several different sets of data
 
 # Setup
-0. recommended to use `zsh` or `bash` as your shell; development has been
-   done in `zsh`
+0. recommended to use `bash` as your shell
 1. set `COATJAVA` environment
   * on `ifarm`:
     * `source /group/clas12/packages/setup.sh`
@@ -20,8 +19,10 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
   * local environment:
     * `$COATJAVA` must point to your local install
     * `run-groovy` (likely in `$COATJAVA/bin`) must be in your `$PATH`
-2. set local environment variables with `source environ.sh`
-  * some primary run scripts do this automatically, in case the user forgets
+2. note for developers: set local environment variables with `source ../bin/environ.sh`
+  * wrapper scripts in `../bin/` do this automatically, but if you intend to run
+    individual scripts here (namely during manual QA), you may need to call this `source`
+    command
   * note: `JYPATH` is added to the classpath for groovy called via
     `run-groovy`, from `coatjava`
   * the variable `TIMELINEDIR` is the webserver directory to which the output

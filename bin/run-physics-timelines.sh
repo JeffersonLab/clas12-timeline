@@ -2,12 +2,10 @@
 
 source $(dirname $0)/environ.sh
 
-if [ -z "$CLASQA" ]; then source $(dirname $0)/qa-physics/environ.sh; fi  # TODO: get rid of this
-
 if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]" >&2; exit 101; fi
 dataset=$1
 
-pushd $CLASQA
+pushd $TIMELINESRC/qa-physics
 
 # setup error filtered execution function
 errlog="errors.log"
@@ -26,17 +24,17 @@ function exe {
 exe ./datasetOrganize.sh $dataset
 
 # produce chargeTree.json
-exe run-groovy $CLASQA_JAVA_OPTS buildChargeTree.groovy $dataset
+exe run-groovy buildChargeTree.groovy $dataset
 
 # loop over datasets
 # trigger electrons monitor
-exe run-groovy $CLASQA_JAVA_OPTS qaPlot.groovy $dataset
-exe run-groovy $CLASQA_JAVA_OPTS qaCut.groovy $dataset
+exe run-groovy qaPlot.groovy $dataset
+exe run-groovy qaCut.groovy $dataset
 # FT electrons
-exe run-groovy $CLASQA_JAVA_OPTS qaPlot.groovy $dataset FT
-exe run-groovy $CLASQA_JAVA_OPTS qaCut.groovy $dataset FT
+exe run-groovy qaPlot.groovy $dataset FT
+exe run-groovy qaCut.groovy $dataset FT
 # general monitor
-exe run-groovy $CLASQA_JAVA_OPTS monitorPlot.groovy $dataset
+exe run-groovy monitorPlot.groovy $dataset
 # deploy timelines to dev www
 exe ./deployTimelines.sh $dataset $dataset
 

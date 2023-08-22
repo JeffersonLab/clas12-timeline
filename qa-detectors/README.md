@@ -21,10 +21,6 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
   - for example, paths which match the regular expression `/rga.*fa18/` could use the file `cuts/cuts_rga_fa18.txt`
 
 ## Procedure
-- set environment variables:
-  ```bash
-  source environ.sh
-  ```
 - Run one of:
   ```bash
   ../bin/run-qa.sh                     # print usage guide
@@ -32,6 +28,8 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
   ../bin/run-qa.sh path/to/timelines   # or specify a timeline directory, relative to $TIMELINEDIR
   ../bin/run-qa.sh path/to/timelines output_dir_name   # custom output directory name, relative to $TIMELINEDIR
   ```
+- note to developers: if you want to run local scripts, call `source ../bin/environ.sh` (this is
+  automatically done when running the wrapper `../bin/run-qa.sh`)
 - The URLs for the timelines will be printed upon success
 - The new timeline files will appear in `/path/to/timelines_qa` (or in the
   custom directory, if you specified one), where any timeline hipo file to

@@ -6,7 +6,7 @@ if [ $# -ne 2 ]; then
   echo "usage: $0 [dataset] [destinationName]" >&2
   exit 101
 fi
-if [ -z "$CLASQA" ]; then
+if [ -z "$TIMELINESRC" ]; then
   echo "ERROR: please source environ.sh first" >&2
   exit 100
 fi
@@ -49,4 +49,4 @@ if [ -d "outmon.${dataset}.qa" ]; then
   cp -r outmon.${dataset}.qa ${wwwdir}/${destdir}_QA
 fi
 
-run-groovy $CLASQA_JAVA_OPTS indexPage.groovy $wwwdir
+run-groovy indexPage.groovy $wwwdir

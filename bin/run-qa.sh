@@ -6,11 +6,9 @@
 
 set -e
 
+source `dirname $0`/environ.sh
+
 # arguments
-if [ -z "$CALIBQA" ]; then
-  echo "Setting local environment vars:"
-  source $(dirname $(realpath ${BASH_SOURCE[0]}))/../qa-detectors/environ.sh
-fi
 if [ $# -lt 1 ]; then
   echo """
   USAGE: $0 [URL or path of timelines] [OPTIONS]
@@ -51,7 +49,7 @@ indir       = $indir
 outdir      = $outdir
 TIMELINEDIR = $TIMELINEDIR
 """
-echo "$dataset $indir $outdir" >> ${CALIBQA}/datasetList.txt
+echo "$dataset $indir $outdir" >> $TIMELINESRC/qa-detectors/datasetList.txt
 
 # prepare output directory
 echo "[+] CLEANUP OUTPUT DIRECTORY $outdir:"
@@ -63,4 +61,4 @@ cp -rvL $TIMELINEDIR/$indir/* $TIMELINEDIR/$outdir/
 
 # run the qa
 echo "[+] APPLY QA BOUNDS"
-run-groovy $CALIBQA_JAVA_OPTS ${CALIBQA}/util/applyBounds.groovy $dataset
+run-groovy $TIMELINESRC/qa-detectors/util/applyBounds.groovy $dataset

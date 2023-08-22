@@ -1,7 +1,7 @@
 #!/bin/bash
 # copy a locally deployed timeline to the release directory
 
-if [ -z "$CLASQA" ]; then
+if [ -z "$TIMELINESRC" ]; then
   echo "ERROR: please source environ.sh first" >&2
   exit 100
 fi
@@ -65,4 +65,4 @@ done
 cp outdat.${dataset}/qaTree.json ${wwwReleaseDir}/${dataset}_QA/
 
 echo "BUILD INDEX PAGE ---------------------------------------"
-run-groovy $CLASQA_JAVA_OPTS indexPage.groovy $wwwReleaseDir
+run-groovy indexPage.groovy $wwwReleaseDir

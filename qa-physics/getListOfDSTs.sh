@@ -5,7 +5,7 @@
 
 set -e
 
-if [ -z "$CLASQA" ]; then
+if [ -z "$TIMELINESRC" ]; then
   echo "ERROR: please source environ.sh first" >&2
   exit 100
 fi
