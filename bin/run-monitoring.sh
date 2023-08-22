@@ -17,7 +17,7 @@ SLURM_LOG=/farm_out/%u/%x-%A_%a
 source $BINDIR/environ.sh
 
 # default options
-ver=test
+dataset=test_v0
 declare -A modes
 for key in findhipo rundir single series submit check-cache focus-detectors focus-physics; do
   modes[$key]=false
@@ -46,9 +46,8 @@ if [ $# -lt 1 ]; then
 
   OPTIONS:
 
-     -v [VERSION_NAME]      version name, defined by the user, used for
-                            slurm jobs identification
-                            default = $ver
+     -d [DATASET_NAME]      dataset name, defined by the user, used for organization
+                            default = '$dataset'
 
      *** INPUT FINDING OPTIONS: choose only one, or the default will assume each specified
          [RUN_DIRECTORY] is a single run's directory full of HIPO files
@@ -104,9 +103,9 @@ if [ $# -lt 1 ]; then
 fi
 
 # parse options
-while getopts "v:-:" opt; do
+while getopts "d:-:" opt; do
   case $opt in
-    v) ver=$OPTARG;;
+    d) dataset=$OPTARG;;
     -)
       for key in "${!modes[@]}"; do
         [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
@@ -160,7 +159,7 @@ done
 echo """
 Settings:
 $sep
-VERSION_NAME = $ver
+DATASET_NAME = $dataset
 OPTIONS = {"""
 for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
 echo """}
@@ -179,15 +178,16 @@ fi
 
 # initial checks and preparations
 [[ ! -f $JARPATH ]] && printError "Problem with jar file for clas12_monitoring package" && echo && exit 100
-echo $ver | grep -q "/" && printError "version name must not contain '/' " && echo && exit 100
-slurmJobName=clas12-timeline--$ver
+echo $dataset | grep -q "/" && printError "dataset name must not contain '/' " && echo && exit 100
+[ -z "$dataset" ] && printError "dataset name must not be empty" && echo && exit 100
+slurmJobName=clas12-timeline--$dataset
 
 # start job lists, make output and backup directories
 echo """
 Generating job scripts..."""
 mkdir -p $MAINDIR/slurm/scripts
-outputDir=$MAINDIR/outfiles/$ver
-backupDir=$MAINDIR/tmp/backup.$ver.$(date +%s) # use unixtime for uniqueness
+outputDir=$MAINDIR/outfiles/$dataset
+backupDir=$MAINDIR/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
 jobkeys=()
 for key in detectors physics; do
   if ${modes['focus-all']} || ${modes['focus-'$key]}; then
@@ -196,7 +196,7 @@ for key in detectors physics; do
 done
 declare -A joblists
 for key in ${jobkeys[@]}; do
-  joblists[$key]=$MAINDIR/slurm/job.$ver.$key.list
+  joblists[$key]=$MAINDIR/slurm/job.$dataset.$key.list
   > ${joblists[$key]}
   mkdir -p $outputDir/$key
   mkdir -p $backupDir/$key
@@ -216,7 +216,7 @@ for rdir in ${rdirs[@]}; do
   [ $runnum -gt $runnumMax -o $runnumMax -eq 0 ] && runnumMax=$runnum
 
   # get list of input files, and append prefix for SWIF
-  inputListFile=$MAINDIR/slurm/files.$ver.$runnum.inputs.list
+  inputListFile=$MAINDIR/slurm/files.$dataset.$runnum.inputs.list
   [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
   realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
 
@@ -272,7 +272,7 @@ EOF
 #!/bin/bash
 echo "RUN $runnum"
 pushd $MAINDIR/qa-physics
-run-groovy -Djava.awt.headless=true monitorRead.groovy $(realpath $rdir) $ver $dataset
+run-groovy -Djava.awt.headless=true monitorRead.groovy $(realpath $rdir) $dataset dst
 popd
 EOF
         ;;
@@ -288,7 +288,7 @@ done
 # prepare qa-physics/datasetList.txt
 for key in ${jobkeys[@]}; do
   if [ "$key" == "physics" ]; then
-    echo "$ver $runnumMin $runnumMax" >> $MAINDIR/qa-physics/datasetList.txt
+    echo "$dataset $runnumMin $runnumMax" >> $MAINDIR/qa-physics/datasetList.txt
   fi
 done
 
