@@ -122,7 +122,7 @@ First step is to read DST or Skim files, producing hipo files and data tables
   * you may want to check the "RUN GROUP DEPENDENT SETTINGS" in the code, to make sure
     certain settings (e.g., beam energy) are correct for your run group
   * Outputs:
-    * `../outfiles/physics/data_table_${run}.dat`, which is a data table with the following columns:
+    * `../outfiles/$dataset/physics/data_table_${run}.dat`, which is a data table with the following columns:
       * run number
       * 5-file number
       * sector
@@ -132,7 +132,7 @@ First step is to read DST or Skim files, producing hipo files and data tables
       * DAQ-gated FC charge at end of 5-file (`F_f`)
       * DAQ-ungated FC charge at beginning of 5-file
       * DAQ-ungated FC charge at end of 5-file
-    * `../outfiles/physics/monitor_${runnum}.hipo` contains several plots 
+    * `../outfiles/$dataset/physics/monitor_${runnum}.hipo` contains several plots 
       * in the script, they are organized into a tree data structure, which allows plot
         any variable, for any set of properties
         * for example, the helicity plots are for pi+,pi-, and positive helicity and
@@ -155,10 +155,10 @@ First step is to read DST or Skim files, producing hipo files and data tables
 
 ### Data Organization
 * use the script `datasetOrganize.sh [dataset]`
-  * this will concatenate files from `../outfiles/physics/*.dat` into a single file
+  * this will concatenate files from `../outfiles/$dataset/physics/*.dat` into a single file
     `outdat.${dataset}/data_table.dat`, for the specified dataset
   * it will also generate symlinks from `outmon.${dataset}/monitor*.hipo` to the
-    relevant `../outfiles/physics/monitor*.hipo` files
+    relevant `../outfiles/$dataset/physics/monitor*.hipo` files
 
 
 ### Plotting Scripts

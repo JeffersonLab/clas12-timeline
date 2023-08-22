@@ -91,9 +91,9 @@ flowchart TB
     dst --> monitorDetectors
     dst --> monitorPhysics
 
-    monitorDetectors --> outplots[(outfiles/detectors/*/*.hipo)]:::data
-    monitorPhysics   --> outdat[(outfiles/physics/*.dat)]:::data
-    monitorPhysics   --> outmon[(outfiles/physics/*.hipo)]:::data
+    monitorDetectors --> outplots[(outfiles/$dataset/detectors/*/*.hipo)]:::data
+    monitorPhysics   --> outdat[(outfiles/$dataset/physics/*.dat)]:::data
+    monitorPhysics   --> outmon[(outfiles/$dataset/physics/*.hipo)]:::data
 
     subgraph Timeline Production
         subgraph "<strong>bin/run-detector-timelines.sh</strong>"

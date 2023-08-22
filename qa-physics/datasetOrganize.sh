@@ -21,7 +21,7 @@ done
 
 # loop over runs, copying and linking to dataset subdirs
 source datasetListParser.sh $dataset
-INPUT_DIR=$(realpath $CLASQA/../outfiles/physics)
+INPUT_DIR=$(realpath $CLASQA/../outfiles/$dataset/physics)
 for file in $INPUT_DIR/monitor_*.hipo; do
   run=$(echo $file | sed 's/^.*monitor_//'|sed 's/\.hipo$//')
 

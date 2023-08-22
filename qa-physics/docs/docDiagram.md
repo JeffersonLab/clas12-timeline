@@ -28,7 +28,7 @@ flowchart TB
     subgraph "Automated by ../bin/run-monitoring.sh"
       dst{{DSTs}}:::data
       monitorRead[monitorRead.groovy]:::auto
-      monitorReadOut{{../outfiles/physics/data_table_$run.dat<br>../outfiles/physics/monitor_$run.hipo}}:::data
+      monitorReadOut{{../outfiles/$dataset/physics/data_table_$run.dat<br>../outfiles/$dataset/physics/monitor_$run.hipo}}:::data
       dst --> monitorRead
       monitorRead --> monitorReadOut
     end

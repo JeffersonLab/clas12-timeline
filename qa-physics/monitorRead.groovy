@@ -18,19 +18,39 @@ import java.lang.Math.*
 import Tools // (make sure `.` is in $CLASSPATH)
 Tools T = new Tools()
 
-// OPTIONS
-def segmentSize = 10000 // number of events in each segment
-def inHipoType = "dst" // options: "dst", "skim"
-def outDir = "../outfiles/physics"
-
+def timelineSrc = System.getenv("TIMELINESRC")
+if(timelineSrc==null) {
+  System.err.println "ERROR: environment variables not set"
+  System.exit(100)
+}
 
 // ARGUMENTS
-def inHipo = "skim/skim4_5052.hipo" // directory of DST files, or a single SKIM file
-if(args.length>=1) inHipo = args[0]
-if(args.length>=2) inHipoType = args[1]
-if(args.length>=3) outDir = args[2]
-
-
+def inHipoType = "dst" // options: "dst", "skim"
+def segmentSize = 10000 // number of events in each segment
+if(args.length<2) {
+  System.err.println """
+  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO file] [dataset] [type(OPTIONAL)] [size(OPTIONAL)]
+         REQUIRED parameters:
+           - [HIPO file] should be a DST file or skim file
+           - [dataset] is the unique dataset name, used by all scripts
+         OPTIONAL parameters:
+           - [type] can be 'dst' or 'skim' (default is '$inHipoType')
+           - [size] is used only when [type] is 'skim' as the number of events per segment
+             (default=$segmentSize)
+  """
+  System.exit(101)
+}
+def inHipo  = args[0]
+def dataset = args[1]
+if(args.length>=3) inHipoType  = args[2]
+if(args.length>=4) segmentSize = args[3]
+def outDir = "$timelineSrc/outfiles/$dataset/physics"
+System.println """
+inHipo     = $inHipo
+dataset    = $dataset
+inHipoType = $inHipoType
+outDir     = $outDir
+"""
 
 // get hipo file names
 def inHipoList = []
