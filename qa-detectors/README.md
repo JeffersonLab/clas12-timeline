@@ -23,13 +23,11 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
 ## Procedure
 - Run one of:
   ```bash
-  ../bin/run-qa.sh                     # print usage guide
-  ../bin/run-qa.sh timeline_URL        # URL for a timeline
-  ../bin/run-qa.sh path/to/timelines   # or specify a timeline directory, relative to $TIMELINEDIR
-  ../bin/run-qa.sh path/to/timelines output_dir_name   # custom output directory name, relative to $TIMELINEDIR
+  ../bin/run-detector-timelines.sh               # print usage guide
+  ../bin/run-detector-timelines.sh  --focus-qa   # run detector QA only (for debugging this QA code; you may need to set other options)
   ```
 - note to developers: if you want to run local scripts, call `source ../bin/environ.sh` (this is
-  automatically done when running the wrapper `../bin/run-qa.sh`)
+  automatically done when running the wrapper `../bin/run-detector-timelines.sh`)
 - The URLs for the timelines will be printed upon success
 - The new timeline files will appear in `/path/to/timelines_qa` (or in the
   custom directory, if you specified one), where any timeline hipo file to

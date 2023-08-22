@@ -21,30 +21,17 @@ def cutsFileList = [
 /////////////////////////////////////////////////////
 
 // parse arguments
-if(args.length<1) { System.err.println "ERROR: specify dataset name"; System.exit(100); }
-def dataset = args[0]
+if(args.length!=2) { 
+  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT TIMELINES] [OUTPUT TIMELINES]"
+  System.exit(100)
+}
+def indir  = args[0]
+def outdir = args[1]
 
-// get www dir, by searching datasetList.txt for specified `dataset`, and set
-// `indir` and `outdir`
+// get source dir
 def calibqadir = System.getenv('TIMELINESRC')
-def timelineDir = System.getenv('TIMELINEDIR')
 if(calibqadir==null) throw new Exception("env vars not set; source environ.sh")
 calibqadir += "qa-detectors"
-File datasetList = new File(calibqadir+"/datasetList.txt")
-def datasetFound = false
-def indir, outdir, inURL, outURL
-if(!(datasetList.exists())) throw new Exception("datasetList.txt not found")
-datasetList.eachLine { line ->
-  def tok = line.tokenize(' ')
-  if(dataset==tok[0]) { // find the specified dataset
-    indir  = "$timelineDir/${tok[1]}"
-    outdir = "$timelineDir/${tok[2]}"
-    inURL  = "https://clas12mon.jlab.org/${tok[1]}/tlsummary/"
-    outURL = "https://clas12mon.jlab.org/${tok[2]}/tlsummary/"
-    datasetFound = true
-  }
-}
-if(!datasetFound) throw new Exception("unknown dataset \"$dataset\"")
 
 // define tree "B" of closures for each calibration QA constraint
 // -first branch: detectors (=directory names)
@@ -341,15 +328,3 @@ else {
   println T.pPrint(indexJson)
   new File(indexJsonName).write(JsonOutput.toJson(indexJson))
 }
-
-
-// print URLs
-println """
-TIMELINE URLs:
-
-Input Timelines:
-  $inURL
-
-Output Timelines:
-  $outURL
-"""

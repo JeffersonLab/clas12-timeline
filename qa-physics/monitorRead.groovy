@@ -29,13 +29,14 @@ def inHipoType = "dst" // options: "dst", "skim"
 def segmentSize = 10000 // number of events in each segment
 if(args.length<2) {
   System.err.println """
-  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO file or directory] [dataset] [type(OPTIONAL)] [size(OPTIONAL)]
+  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO file directory] [dataset] [type(OPTIONAL)] [size(OPTIONAL)]
          REQUIRED parameters:
-           - [HIPO file or directory] should be a HIPO file or directory of HIPO files, either
+           - [HIPO file directory] should be a directory of HIPO files, either
              DST file(s) or skim file(s)
            - [dataset] is the unique dataset name, used by all scripts
          OPTIONAL parameters:
            - [type] can be 'dst' or 'skim' (default is '$inHipoType')
+             NOTE: 'skim' file usage may not work
            - [size] is used only when [type] is 'skim' as the number of events per segment
              (default=$segmentSize)
   """

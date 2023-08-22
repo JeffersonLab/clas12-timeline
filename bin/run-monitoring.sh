@@ -1,11 +1,10 @@
 #!/bin/bash
 
+source $(dirname $0)/environ.sh
 
 # constants ############################################################
 # dependencies
-BINDIR="`dirname $0`"
-MAINDIR=$(realpath $BINDIR/..)
-JARPATH="$MAINDIR/monitoring/target/clas12-monitoring-v0.0-alpha.jar"
+JARPATH="$TIMELINESRC/monitoring/target/clas12-monitoring-v0.0-alpha.jar"
 # max number of events for detector monitoring timelines
 MAX_NUM_EVENTS=100000000
 # slurm settings
@@ -14,7 +13,6 @@ SLURM_TIME=4:00:00
 SLURM_LOG=/farm_out/%u/%x-%A_%a
 ########################################################################
 
-source $BINDIR/environ.sh
 
 # default options
 dataset=test_v0
@@ -46,7 +44,7 @@ if [ $# -lt 1 ]; then
 
   OPTIONS:
 
-     -d [DATASET_NAME]      dataset name, defined by the user, used for organization
+     -d [DATASET_NAME]      unique dataset name, defined by the user, used for organization
                             default = '$dataset'
 
      *** INPUT FINDING OPTIONS: choose only one, or the default will assume each specified
@@ -172,7 +170,7 @@ $sep
 # check cache (and exit), if requested
 if ${modes['check-cache']}; then
   echo "Cross-checking /cache and /mss..."
-  $BINDIR/check-cache.sh ${rdirs[@]}
+  $TIMELINESRC/bin/check-cache.sh ${rdirs[@]}
   exit $?
 fi
 
@@ -185,9 +183,9 @@ slurmJobName=clas12-timeline--$dataset
 # start job lists, make output and backup directories
 echo """
 Generating job scripts..."""
-mkdir -p $MAINDIR/slurm/scripts
-outputDir=$MAINDIR/outfiles/$dataset
-backupDir=$MAINDIR/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
+mkdir -p $TIMELINESRC/slurm/scripts
+outputDir=$TIMELINESRC/outfiles/$dataset
+backupDir=$TIMELINESRC/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
 jobkeys=()
 for key in detectors physics; do
   if ${modes['focus-all']} || ${modes['focus-'$key]}; then
@@ -196,7 +194,7 @@ for key in detectors physics; do
 done
 declare -A joblists
 for key in ${jobkeys[@]}; do
-  joblists[$key]=$MAINDIR/slurm/job.$dataset.$key.list
+  joblists[$key]=$TIMELINESRC/slurm/job.$dataset.$key.list
   > ${joblists[$key]}
   mkdir -p $outputDir/$key
   mkdir -p $backupDir/$key
@@ -216,7 +214,7 @@ for rdir in ${rdirs[@]}; do
   [ $runnum -gt $runnumMax -o $runnumMax -eq 0 ] && runnumMax=$runnum
 
   # get list of input files, and append prefix for SWIF
-  inputListFile=$MAINDIR/slurm/files.$dataset.$runnum.inputs.list
+  inputListFile=$TIMELINESRC/slurm/files.$dataset.$runnum.inputs.list
   [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
   realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
 
@@ -243,7 +241,7 @@ for r0,r1,eb in beamlist:
 
   # generate job scripts
   for key in ${jobkeys[@]}; do
-    jobscript=$MAINDIR/slurm/scripts/$key.$runnum.sh
+    jobscript=$TIMELINESRC/slurm/scripts/$key.$runnum.sh
 
     case $key in
 
@@ -271,7 +269,7 @@ EOF
         cat > $jobscript << EOF
 #!/bin/bash
 echo "RUN $runnum"
-pushd $MAINDIR/qa-physics
+pushd $TIMELINESRC/qa-physics
 run-groovy -Djava.awt.headless=true monitorRead.groovy $(realpath $rdir) $dataset dst
 popd
 EOF
@@ -288,7 +286,7 @@ done
 # prepare qa-physics/datasetList.txt
 for key in ${jobkeys[@]}; do
   if [ "$key" == "physics" ]; then
-    echo "$dataset $runnumMin $runnumMax" >> $MAINDIR/qa-physics/datasetList.txt
+    echo "$dataset $runnumMin $runnumMax" >> $TIMELINESRC/qa-physics/datasetList.txt
   fi
 done
 
