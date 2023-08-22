@@ -102,6 +102,9 @@ flowchart TB
             timelineDetectorsPreQA["<strong>Make detector timelines</strong><br/>detectors/: org.jlab.clas.timeline.run"]:::proc
             timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
         end
+        subgraph "<strong>bin/run-physics-timelines.sh</strong>"
+            timelinePhysics["<strong>Make physics QA timelines:</strong><br/>qa-physics/: (see documentation)"]:::proc
+        end
     end
 
 ```
