@@ -106,28 +106,28 @@ flowchart TB
         subgraph "<strong>bin/run-physics-timelines.sh</strong>"
             timelinePhysics["<strong>Make physics QA timelines:</strong><br/>qa-physics/: (see documentation)"]:::proc
         end
+    end
+    subgraph Final Timelines
         outTimelinePhysics{{outfiles/$dataset/timelines/physics_*/*}}:::timeline
         outTimelineDetectors{{outfiles/$dataset/timelines/$detector/*.hipo}}:::timeline
+        deploy["<strong>Deployment</strong>"]:::proc
+        timelineDir{{"$TIMELINEDIR/"}}:::timeline
     end
-
     outplots --> timelineDetectorsPreQA --> outTimelineDetectorsPreQA --> timelineDetectors --> outTimelineDetectors
     outdat   --> timelinePhysics
     outmon   --> timelinePhysics
     timelinePhysics --> outTimelinePhysics
+    outTimelineDetectors --> deploy
+    outTimelinePhysics   --> deploy
+    deploy --> timelineDir
 
     subgraph QADB Production
         qadb([QADB]):::misc
         manualQA[<strong>Perform manual<br/>physics QA</strong>]:::proc
     end
-    
-    deploy["<strong>Deployment</strong>"]:::proc
-    timelineDir{{"$TIMELINEDIR/"}}:::timeline
-
-    outTimelineDetectors --> deploy
-    outTimelinePhysics   --> deploy
     outTimelinePhysics   --> qadb
     manualQA <-.-> outTimelinePhysics
     manualQA <-.-> qadb
-    deploy --> timelineDir
+    
 
 ```
