@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 source $(dirname $0)/environ.sh
 
 if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]" >&2; exit 101; fi

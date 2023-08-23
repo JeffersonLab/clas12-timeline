@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 source $(dirname $0)/environ.sh
 
 # constants ############################################################
