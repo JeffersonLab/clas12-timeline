@@ -11,7 +11,7 @@ defaults:
     shell: bash
 
 env:
-  timeline: rga/pass1/pass0/v2.2.26
+  dataset: ci_test
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -84,15 +84,25 @@ jobs:
       with:
         name: validation_files
         retention-days: 1
-        path: validation_files/*
+        path: validation_files
 
-  test_qa_detectors:
+  run_monitoring:
     needs:
       - build_timelines
-      - build_coatjava
+      # - build_coatjava
       - download_test_data
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        type:
+          - detectors
+          # - physics
     steps:
+    - name: setup JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: 11
+        distribution: zulu
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@v3
       with:
@@ -100,10 +110,13 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: build
-    - name: untar
+    - name: untar build
       run: ls build*.tar.gz | xargs -I_ tar xzvf _
     - name: tree
       run: tree
+    # - name: run-monitoring
+    #   run: bin/run-monitoring.sh -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
+
 
 # TODO:
 # - how can we make sure the version of coatjava built here matches that in local maven dependencies?
