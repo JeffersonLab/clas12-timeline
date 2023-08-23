@@ -134,7 +134,7 @@ flowchart TB
 
 The following shows the tree of output files produced by code in this repository. A unique dataset name `$dataset` is used by most scripts, and almost all output files are contained in `outfiles/$dataset`.
 
-Temporary files are additionally stored in `tmp/`, including backups of previous runs.
+Temporary files are additionally stored in `tmp/`, including backups (for the case when you re-run timelines for the same `$dataset`)
 
 ```
 outfiles
