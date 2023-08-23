@@ -87,14 +87,14 @@ jobs:
   run_monitoring:
     needs:
       - build_timelines
-      # - build_coatjava
+      - build_coatjava
       - download_test_data
     runs-on: ubuntu-latest
     strategy:
       matrix:
         type:
           - detectors
-          # - physics
+          - physics
     steps:
     - name: setup JDK
       uses: actions/setup-java@v3
@@ -112,9 +112,8 @@ jobs:
       run: ls *.tar.gz | xargs -I_ tar xzvf _
     - name: tree
       run: tree
-    # - name: run-monitoring
-    #   run: bin/run-monitoring.sh -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
-
+    - name: run-monitoring
+      run: bin/run-monitoring.sh -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
 
 # TODO:
 # - how can we make sure the version of coatjava built here matches that in local maven dependencies?
