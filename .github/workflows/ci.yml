@@ -78,11 +78,9 @@ jobs:
     steps:
     - name: download
       run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
-    - name: extract
-      run: tar xzvf validation_files.tar.gz
     - uses: actions/upload-artifact@v3
       with:
-        name: validation_files
+        name: validation_files.tar.gz
         retention-days: 1
         path: validation_files
 
@@ -111,7 +109,7 @@ jobs:
       with:
         name: build
     - name: untar build
-      run: ls build*.tar.gz | xargs -I_ tar xzvf _
+      run: ls *.tar.gz | xargs -I_ tar xzvf _
     - name: tree
       run: tree
     # - name: run-monitoring
