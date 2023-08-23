@@ -80,9 +80,9 @@ jobs:
       run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
     - uses: actions/upload-artifact@v3
       with:
-        name: validation_files.tar.gz
+        name: validation_files
         retention-days: 1
-        path: validation_files
+        path: validation_files.tar.gz
 
   run_monitoring:
     needs:
