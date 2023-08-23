@@ -48,12 +48,15 @@ public class tof_monitor {
 	public H2F[][] DC_residuals_trkDoca;
 	public H1F[][] DC_residuals, DC_time, DC_time_even, DC_time_odd;
 	public H2F[][] DC_residuals_trkDoca_nocut;
-	public H1F[][] DC_residuals_nocut, DC_time_nocut;	
+	public H1F[][] DC_residuals_nocut, DC_time_nocut;
 	public H2F[][] DC_residuals_trkDoca_rescut;
 	public H1F[][] DC_residuals_rescut, DC_time_rescut;
+    public H2F DC_jitterzero_sec_sl, DC_jitterone_sec_sl, DC_jittertwo_sec_sl;
+    public H2F DC_hits_even_ts_sec_sl, DC_hits_odd_ts_sec_sl;
+    public H1F DC_jitterdist;
 	public F1D[][] f_time_invertedS;
 
-	public float p1a_counter_thickness, p1b_counter_thickness, p2_counter_thickness; 
+	public float p1a_counter_thickness, p1b_counter_thickness, p2_counter_thickness;
 	public int phase_offset;
 	public long timestamp;
 
@@ -65,7 +68,7 @@ public class tof_monitor {
 
 	public tof_monitor(int reqrunNum, boolean reqTimeBased, boolean reqwrite_volatile) {
 		runNum = reqrunNum;userTimeBased=reqTimeBased;
-	
+
 		rfPeriod = 4.008f;
 	   	ccdb = new ConstantsManager();
 	   	ccdb.init(Arrays.asList(new String[]{"/daq/tt/fthodo","/calibration/eb/rf/config","/calibration/eb/rf/offset","/calibration/ftof/time_jitter"}));
@@ -90,10 +93,10 @@ public class tof_monitor {
 		}
 		p1a_counter_thickness = 5.0f; //cm
 		//phase_offset = 3; //RGA Fall 2018, RGB Spring 2019, RGA Spring 2019
-		//phase_offset = 1; //Engineering Run, RGA Spring 2018 
+		//phase_offset = 1; //Engineering Run, RGA Spring 2018
 		p1b_counter_thickness = 6.0f; //cm
 		p2_counter_thickness = 5.0f; //cm
-			
+
 		write_volatile = reqwrite_volatile;
 		p1a_pad_occ = new H2F("p1a_pad_occ","p1a_pad_occ",25,0,25,6,0.5,6.5);
 		p1a_pad_occ.setTitle("p1a occupancies");
@@ -156,6 +159,31 @@ public class tof_monitor {
 		DC_time_odd = new H1F[6][6];
 		DC_time_rescut = new H1F[6][6];
 		DC_time_nocut = new H1F[6][6];
+		//DC jitter histograms, distributions of hits for jitter 0, 1 and 2 and for even and odd event timestamps for each sector/Superlayer
+		DC_jitterzero_sec_sl = new H2F("DC_jitterzero_sec_sl","DC_jitterzero_sec_sl",6,0.5,6.5,6,0.5,6.5);
+		DC_jitterzero_sec_sl.setTitle("jitter 0 hits per sector and sl");
+		DC_jitterzero_sec_sl.setTitleX("sector");
+		DC_jitterzero_sec_sl.setTitleY("superlayer");
+		DC_jitterone_sec_sl = new H2F("DC_jitterone_sec_sl","DC_jitterone_sec_sl",6,0.5,6.5,6,0.5,6.5);
+		DC_jitterone_sec_sl.setTitle("jitter 1 hits per sector and sl");
+		DC_jitterone_sec_sl.setTitleX("sector");
+		DC_jitterone_sec_sl.setTitleY("superlayer");
+		DC_jittertwo_sec_sl = new H2F("DC_jittertwo_sec_sl","DC_jittertwo_sec_sl",6,0.5,6.5,6,0.5,6.5);
+		DC_jittertwo_sec_sl.setTitle("jitter 2 hits per sector and sl");
+		DC_jittertwo_sec_sl.setTitleX("sector");
+		DC_jittertwo_sec_sl.setTitleY("superlayer");
+		DC_hits_even_ts_sec_sl = new H2F("DC_hits_even_ts_sec_sl","DC_hits_even_ts_sec_sl",6,0.5,6.5,6,0.5,6.5);
+		DC_hits_even_ts_sec_sl.setTitle("hits per sector and sl for even time stamps");
+		DC_hits_even_ts_sec_sl.setTitleX("sector");
+		DC_hits_even_ts_sec_sl.setTitleY("superlayer");
+		DC_hits_odd_ts_sec_sl = new H2F("DC_hits_odd_ts_sec_sl","DC_hits_odd_ts_sec_sl",6,0.5,6.5,6,0.5,6.5);
+		DC_hits_odd_ts_sec_sl.setTitle("hits per sector and sl for odd time stamps");
+		DC_hits_odd_ts_sec_sl.setTitleX("sector");
+		DC_hits_odd_ts_sec_sl.setTitleY("superlayer");
+		DC_jitterdist = new H1F("DC_jitterdist","DC_jitterdist",19,-9.5,9.5);
+		DC_jitterdist.setTitle("Hits with different jitters");
+		DC_jitterdist.setTitleX("jitter");
+
 		f_time_invertedS = new F1D[6][6];
 
 		ftof_ctof_vtdiff = new H1F[6];
@@ -247,7 +275,7 @@ public class tof_monitor {
                         p1b_dt_4nstrack_all[s].setTitleY("counts");
 
 			float[] DCcellsizeSL = {0.9f,0.9f,1.3f,1.3f,2.0f,2.0f};
-		
+
 			p1a_edep[s][0] = new H1F(String.format("p1a_edep_smallangles_S%d",s+1),"p1a_edep_smallangles",100,0.,30.);
 			p1a_edep[s][0].setTitle(String.format("p1a PathLCorrected Edep, small angles, S%d",s+1));
 			p1a_edep[s][0].setTitleX("E (MeV)");
@@ -292,7 +320,7 @@ public class tof_monitor {
 			p2_tdcadc_dt[s] =  new H1F(String.format("p2_tdcadc_dt_S%d",s+1),"p2_tdcadc",15750,-30.000,600.000);
 			p2_tdcadc_dt[s].setTitle(String.format("p2 t_tdc-t_fadc, S%d",s+1));
 			p2_tdcadc_dt[s].setTitleX("t_tdc-t_fadc (ns)");
-			p2_tdcadc_dt[s].setTitleY("counts"); 
+			p2_tdcadc_dt[s].setTitleY("counts");
 
 			ftof_ctof_vtdiff[s] = new H1F(String.format("ftof-ctof_vtdiff_S%d",s+1),"ftof-ctof_vtdiff",300,-5.,5.);
 			ftof_ctof_vtdiff[s].setTitle(String.format("FTOFvt - CTOFvt, S%d",s+1));
@@ -353,7 +381,7 @@ public class tof_monitor {
 		{"name":"trkDoca",	  "id":10,  "type":"float", "info":"track doca of the hit (in cm)"},
 		{"name":"timeResidual", "id":11,  "type":"float", "info":"time residual of the hit (in cm)"},
 	 */
-	public void fillDC(DataBank DCB, DataBank RunConfig){
+	public void fillDC(DataBank DCB, DataBank RunConfig, DataBank RecPart){
 		for(int r=0;r<DCB.rows();r++){
 			int s = DCB.getInt("sector",r)-1;
 			int sl = DCB.getInt("superlayer",r)-1;
@@ -361,13 +389,14 @@ public class tof_monitor {
 			float timeResidual = DCB.getFloat("timeResidual",r);
 			float dDoca = DCB.getFloat("dDoca",r);
 			float time = DCB.getFloat("time",r);
+			int jitter = DCB.getInt("jitter",r);
 			double betacutvalue = 0.9;
 			double fitresidualcut = 1000; //microns
-			
+
 			//Determine alpha cut
 			double alphacutvalue = 30;
 		    double bFieldVal = (double) DCB.getFloat("B", r);
-		    int polarity = (int)Math.signum(RunConfig.getFloat("torus",0));	
+		    int polarity = (int)Math.signum(RunConfig.getFloat("torus",0));
 	        // alpha in the bank is corrected for B field.  To fill the alpha bin use the uncorrected value
 	        double theta0 = Math.toDegrees(Math.acos(1-0.02*bFieldVal));
 	        double alphaRadUncor = DCB.getFloat("Alpha", r)+ polarity*theta0;
@@ -375,43 +404,62 @@ public class tof_monitor {
 	        if(alphaRadUncor> -1*alphacutvalue &&  alphaRadUncor< alphacutvalue) {
 	            alphacutpass = true;
 	        }
-			
+		boolean leadingelectron = false;
+		int leadingparticlepid = RecPart.getInt("pid", 0);
+		if (leadingparticlepid == 11) leadingelectron = true;
+
 	        long timestamp = RunConfig.getLong("timestamp", 0);
-	        
+
 			// float field = DCB.getFloat("B",r); //removing per DC experts' request
-			if(s>-1&&s<6&&sl>-1&&sl<6){
+			if(s>-1&&s<6&&sl>-1&&sl<6 && leadingelectron){
 				// boolean otherregions = (sl<2 || sl>3);
 				// boolean region2 = ((sl==2||sl==3) && field<0.5);
 				// if (otherregions||region2) {
-		
+
 				//Fill Histograms with no extra cut
 				DC_residuals_trkDoca_nocut[s][sl].fill(trkDoca,timeResidual);
 				DC_residuals_nocut[s][sl].fill(timeResidual);
 				DC_time_nocut[s][sl].fill(time);
-				
+
 				//Add extra cuts on hits from DC4gui. TrkID, beta, alphacut, TFlight (maybe PID?, needs REC::Event here)
 				if (DCB.getByte("trkID", r) > 0 && DCB.getFloat("beta", r) > betacutvalue &&
 					 DCB.getFloat("TFlight",r) > 0 && alphacutpass == true
 						)
 				{
+
 					DC_residuals_trkDoca[s][sl].fill(trkDoca,timeResidual);
 					DC_residuals[s][sl].fill(timeResidual);
-					DC_time[s][sl].fill(time);	
-					
+					DC_time[s][sl].fill(time);
+					DC_jitterdist.fill(jitter);
+
 					if( timestamp%2 == 0) {//even time stamps
-						DC_time_even[s][sl].fill(time);	
+						DC_time_even[s][sl].fill(time);
+						//sector and superlayer need to go from 1-6
+						DC_hits_even_ts_sec_sl.fill(s+1,sl+1);
+						if (jitter == 0) {
+							DC_jitterzero_sec_sl.fill(s+1,sl+1);
+						}
+						if (jitter == 2 || jitter == -2 || jitter == 8 || jitter == -8) {
+							DC_jittertwo_sec_sl.fill(s+1,sl+1);
+						}
 					}
 					else {//odd time stamps
-						DC_time_odd[s][sl].fill(time);	
+						DC_time_odd[s][sl].fill(time);
+						//sector and superlayer need to go from 1-6
+						DC_hits_odd_ts_sec_sl.fill(s+1,sl+1);
+						if (jitter == 1 || jitter == -1 || jitter == 4 || jitter == -4) {
+							DC_jitterone_sec_sl.fill(s+1,sl+1);
 						}
+					}
 				//Apply also fitresidual cut, factor 0.0001 to convert to cm from microns
 					if (DCB.getFloat("fitResidual",r) < 0.0001 * fitresidualcut) {
 						DC_residuals_trkDoca_rescut[s][sl].fill(trkDoca,timeResidual);
 						DC_residuals_rescut[s][sl].fill(timeResidual);
 						DC_time_rescut[s][sl].fill(time);
-					}						
+					}
 				}
 			}
+			else if (s>-1&&s<6&&sl>-1&&sl<6 && leadingelectron==false) {}
 			else System.out.println("sector "+(s+1)+" superlayer "+(sl+1));
 		}
 	}
@@ -420,7 +468,7 @@ public class tof_monitor {
 		for (int r=0;r<ftoftdc.rows();r++) {
 			int sector_tdc = ftoftdc.getInt("sector",r);
 			int layer_tdc = ftoftdc.getInt("layer",r);
-			int component_tdc = ftoftdc.getInt("component",r);	
+			int component_tdc = ftoftdc.getInt("component",r);
 			int order = ftoftdc.getByte("order",r)-2;
 			int tdc_pmt = (component_tdc-1)*2+order+1;
 			int TDC = ftoftdc.getInt("TDC",r);
@@ -445,7 +493,7 @@ public class tof_monitor {
 
 				}
 			}
-		}	
+		}
 	}
 
 	public void fillTOFCalibHists(DataBank part, DataBank sc, DataBank scextras, DataBank trk){
@@ -477,7 +525,7 @@ public class tof_monitor {
 					if (sc.getByte("detector",j)==12 && e_part_ind != -1) {
 						float dedx = scextras.getFloat("dedx",j);
 						int pad = sc.getInt("component", j);
-						int sector = sc.getInt("sector",j);		
+						int sector = sc.getInt("sector",j);
 						float time = sc.getFloat("time", j);
 						float pathlength = sc.getFloat("path",j);
 						float timediff = -10.f;
@@ -500,7 +548,7 @@ public class tof_monitor {
 						}
 						//otherwise skip
 						else continue;
-							
+
 						timediff = (float) (time - flighttime) - vt;
 
 						if (sc.getByte("layer",j)==1){
@@ -549,7 +597,7 @@ public class tof_monitor {
 						}
 
 						// panel 2, use p, pi+, p-; cuts are from calibration suite
-						// 22 Dec 2020: Cuts aligned with calib suite as per Dan's info 
+						// 22 Dec 2020: Cuts aligned with calib suite as per Dan's info
 						if (pid == 2212 || pid == 211 || pid == -211) {
 							if (sc.getByte("layer",j)==3){
 								if (energy > 0.5 && vz > -10. && vz < 5.0 && mom > 0.4 && mom <10. && reducedchi2 < 5000.) {
@@ -685,7 +733,7 @@ public class tof_monitor {
                 }
 		if (N_electrons_FD >= 1 && N_pim_CD >= 1 && sector != 0) {
 			for (int n=0;n<N_electrons_FD;n++) {
-				for (int nn=0;nn<N_pim_CD;nn++) {		
+				for (int nn=0;nn<N_pim_CD;nn++) {
 			//System.out.println(String.format("Number electrons FD within cuts: "+N_electrons_FD+" Number of pi- CD within cuts: "+N_pim_CD+"\n"));
 					//System.out.println(String.format("FTOF vtime: "+FTOF_vtime[n]+" CTOF_vtime: "+CTOF_vtime[nn]+"\n"));
 					ftof_ctof_vtdiff[sector-1].fill(FTOF_vtime[n]-CTOF_vtime[nn]);
@@ -847,7 +895,7 @@ public class tof_monitor {
 		if(event.hasBank("FTOF::tdc")) toftdc = event.getBank("FTOF::tdc");
                 if(event.hasBank("CTOF::hits")) ctofhits = event.getBank("CTOF::hits");
                 if(event.hasBank("CVTRec::Tracks")) cvttrack = event.getBank("CVTRec::Tracks");
-		
+
 		if(event.hasBank("RUN::rf"))fillRFTime(event.getBank("RUN::rf"));
 		if(event.hasBank("RUN::config")) {
 			timestamp = event.getBank("RUN::config").getLong("timestamp",0);
@@ -859,7 +907,7 @@ public class tof_monitor {
 		if (partBank!=null && scintillator!=null && scintextras!=null && track!=null) fillTOFCalibHists(partBank,scintillator,scintextras,track);
 		if (partBank!=null && scintillator!=null && track!=null && ctofhits!=null && cvttrack!=null) fillCTOFFTOFTiming(partBank,scintillator,track,ctofhits,cvttrack);
 
-		if(userTimeBased && hitBank!=null && event.hasBank("RUN::config"))fillDC(hitBank, configbank);
+		if(userTimeBased && hitBank!=null && event.hasBank("RUN::config") && event.hasBank("REC::Particle") )fillDC(hitBank, configbank, partBank);
 		if(toftdc!=null && tofadc!=null) fillTOFadctdcHists(tofadc,toftdc);
 	}
 
@@ -966,7 +1014,7 @@ public class tof_monitor {
 			for (int k=0;k<3;k++) {
 				can_TOF_calib.cd(6*s+36+k);can_TOF_calib.draw(p1a_edep[s][k]);
 				can_TOF_calib.cd(6*s+36+k+3);can_TOF_calib.draw(p1b_edep[s][k]);
-			}	
+			}
 			can_TOF_calib.cd(s+72);can_TOF_calib.draw(p2_edep[s]);
 		}
 
@@ -1104,7 +1152,7 @@ public class tof_monitor {
 		dirout.cd("/tof/");
 		for(int s=0;s<6;s++){
 			dirout.addDataSet(p1a_pad_vt[s],p1b_pad_vt[s],p2_pad_vt[s],p1a_pad_dt[s],p1b_pad_dt[s],p2_pad_dt[s]);
-			dirout.addDataSet(p1a_pad_dt_calib[s],p1b_pad_dt_calib[s],p2_pad_dt_calib[s],p1a_dt_calib_all[s],p1b_dt_calib_all[s],p2_dt_calib_all[s],p2_edep[s]); 
+			dirout.addDataSet(p1a_pad_dt_calib[s],p1b_pad_dt_calib[s],p2_pad_dt_calib[s],p1a_dt_calib_all[s],p1b_dt_calib_all[s],p2_dt_calib_all[s],p2_edep[s]);
 			dirout.addDataSet(p1a_pad_dt_4nstrack[s],p1b_pad_dt_4nstrack[s],p1a_dt_4nstrack_all[s],p1b_dt_4nstrack_all[s]);
 			dirout.addDataSet(p1a_tdcadc_dt[s], p1b_tdcadc_dt[s], p2_tdcadc_dt[s], ftof_ctof_vtdiff[s]);
 			for (int i=0;i<3;i++) {
@@ -1115,10 +1163,12 @@ public class tof_monitor {
 		dirout.cd("/dc/");
 		for(int s=0;s<6;s++)for(int sl=0;sl<6;sl++){
 			dirout.addDataSet(DC_residuals_trkDoca[s][sl],DC_time[s][sl]);
-			dirout.addDataSet(DC_time_even[s][sl],DC_time_odd[s][sl]);			
+			dirout.addDataSet(DC_time_even[s][sl],DC_time_odd[s][sl]);
 			dirout.addDataSet(DC_residuals_trkDoca_rescut[s][sl],DC_time_rescut[s][sl]);
 			dirout.addDataSet(DC_residuals_trkDoca_nocut[s][sl],DC_time_nocut[s][sl]);
 		}
+		dirout.addDataSet(DC_jitterzero_sec_sl, DC_jitterone_sec_sl, DC_jittertwo_sec_sl);
+		dirout.addDataSet(DC_hits_even_ts_sec_sl, DC_hits_odd_ts_sec_sl,DC_jitterdist);
 		if(write_volatile)if(runNum>0)dirout.writeFile("/volatile/clas12/rga/spring18/plots"+runNum+"/out_TOF_"+runNum+".hipo");
 
 		if(!write_volatile){
