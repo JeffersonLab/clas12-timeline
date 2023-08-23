@@ -73,13 +73,30 @@ jobs:
         retention-days: 1
         path: build*.tar.gz
 
+  download_test_data:
+    runs-on: ubuntu-latest
+    steps:
+    - name: download
+      run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
+    - name: extract
+      run: tar xzvf validation_files.tar.gz
+    - uses: actions/upload-artifact@v3
+      with:
+        name: validation_files
+        retention-days: 1
+        path: validation_files/*
+
   test_qa_detectors:
     needs:
       - build_timelines
       - build_coatjava
+      - download_test_data
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
+      with:
+        name: validation_files
     - uses: actions/download-artifact@v3
       with:
         name: build
@@ -91,4 +108,3 @@ jobs:
 # TODO:
 # - how can we make sure the version of coatjava built here matches that in local maven dependencies?
 # - is there CD available for coatjava?
-# - upload files to /u/group/clas/www/clasweb/html/clas12offline/distribution
