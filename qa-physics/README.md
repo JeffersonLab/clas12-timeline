@@ -74,7 +74,8 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
   * runs `qaCut.groovy` (on electron trigger and FT)
   * runs `datasetOrganize.sh`
   * runs `monitorPlot.groovy`
-  * copies timelines to webserver using `deployTimelines.sh`
+  * copies timelines to output timeline directory, `../outfiles/$dataset/timelines`,
+    using `stageTimelines.sh`
   * if any of these scripts throw errors, they will be redirected and printed at the end
     of `../bin/run-physics-timelines.sh`
     * if you see any errors for a script, it's best to rerun that script independently
@@ -84,12 +85,6 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
   * `getListOfDSTs.sh [dataset]` (takes some time to run)
   * `integrityCheck.sh [dataset]`
 * perform the manual QA (see QA procedure below)
-* if this is the **FINAL** version of the timeline:
-  * release timeline to main run group's directory: use `releaseTimelines.sh`
-  * the variable `$TIMELINEDIR` should point to the webserver directory
-  * **WARNING:** this is where we store "final" versions of QA timelines; only run
-    `releaseTimelines.sh` if you are certain they are ready for release
-
 
 ## Automatic QA Procedure and Script Details
 * The automatic QA is executed by `../bin/run-monitoring.sh` followed by `../bin/run-physics-timelines.sh`;
@@ -348,9 +343,6 @@ directory and call `exeQAtimelines.sh` to produce the updated QA timelines
     [`clas12-qadb` repository](https://github.com/JeffersonLab/clas12-qadb)
     and should be copied there, along with `chargeTree.json`
     * remember to run `util/syncCheck.groovy` in `clas12-qadb`
-  * the scripts which copy timelines to the webserver (`deployTimelines.sh` and
-    `releaseTimelines.sh`) will copy the new `outmon.${dataset}.qa` directory's
-    timelines, but you must call these scripts manually
 
 ### melding
 * This more advanced procedure is used if you need to combine two `qaTree.json` files
@@ -362,18 +354,3 @@ directory and call `exeQAtimelines.sh` to produce the updated QA timelines
     update a `qaTree.json` file, with full control of each defect bit's
     behavior
   * see `QA/meld/README.md`
-
-
-## Supplementary Scripts
-* `deployTimelines.sh __subdirectory__`
-  * reads `outmon.$dataset` directory for timeline `hipo` files and copies them to the online
-    timeline webserver (you may need to edit the path), into the specified subdirectory
-
-* `indexPage.groovy`
-  * generate `ListOfTimelines.json` file, for hipo files in the online directory's
-    subirectories
-
-* `upload.sh __hipoFile(s)__`
-  * upload a file to the timeline webserver, via `scp`
-  * you may need to alter the webserver location
-

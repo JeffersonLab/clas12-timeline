@@ -35,8 +35,8 @@ exe run-groovy qaPlot.groovy $dataset FT
 exe run-groovy qaCut.groovy $dataset FT
 # general monitor
 exe run-groovy monitorPlot.groovy $dataset
-# deploy timelines to dev www
-exe ./deployTimelines.sh $dataset $dataset
+# move timelines to output area
+exe ./stageTimelines.sh $dataset
 
 
 # print errors (filtering out hipo logo contamination)

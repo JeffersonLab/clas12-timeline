@@ -51,7 +51,7 @@ while getopts "d:r:i:-:" opt; do
       rungroup=$(echo $OPTARG | tr '[:upper:]' '[:lower:]')
       ;;
     i) 
-      if [ -d $OPTARG -o -L $OPTARG ]; then
+      if [ -d $OPTARG ]; then
         inputDir=$(realpath $OPTARG)
       else
         printError "input directory $OPTARG does not exist"

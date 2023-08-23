@@ -130,7 +130,7 @@ if ${modes['findhipo']}; then
   done
 elif ${modes['rundir']}; then
   for topdir in $*; do
-    if [ -d $topdir -o -L $topdir ]; then
+    if [ -d $topdir ]; then
       for subdir in $(ls $topdir | grep -E "[0-9]+"); do
         rdirs+=($(echo "$topdir/$subdir " | sed 's;//;/;g'))
       done
