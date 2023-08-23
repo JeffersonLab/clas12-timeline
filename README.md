@@ -110,7 +110,7 @@ flowchart TB
     subgraph Final Timelines
         outTimelinePhysics{{outfiles/$dataset/timelines/physics_*/*}}:::timeline
         outTimelineDetectors{{outfiles/$dataset/timelines/$detector/*.hipo}}:::timeline
-        deploy["<strong>Deployment</strong>"]:::proc
+        deploy["<strong>Deployment</strong><br/>bin/deploy-timelines.sh"]:::proc
         timelineDir{{"$TIMELINEDIR/"}}:::timeline
     end
     outplots --> timelineDetectorsPreQA --> outTimelineDetectorsPreQA --> timelineDetectors --> outTimelineDetectors
@@ -128,6 +128,46 @@ flowchart TB
     outTimelinePhysics   --> qadb
     manualQA <-.-> outTimelinePhysics
     manualQA <-.-> qadb
-    
+```
 
+# Output Files Tree
+
+The following shows the tree of output files produced by code in this repository. A unique dataset name `$dataset` is used by most scripts, and almost all output files are contained in `outfiles/$dataset`.
+
+Temporary files are additionally stored in `tmp/`, including backups of previous runs.
+
+```
+outfiles
+└── $dataset
+    │
+    ├── detectors                # histograms, etc. for detector timelines
+    │   │
+    │   ├── plots5000            # hipo files from `bin/run-monitoring.sh`, for run number 5000
+    │   ├── plots5001            # " " for run number 5001
+    │   ├── ...
+    │   │
+    │   └── timelines            # detector timelines, pre QA, from `bin/run-detector-timelines.sh`
+    │       ├── htcc
+    │       ├── ltcc
+    │       └── ...
+    │
+    ├── physics                  # histograms, etc. for physics timelines, from `bin/run-monitoring.sh`
+    │   │
+    │   ├── data_table_5000.dat  # table of yields and charge for run number 5000
+    │   ├── data_table_5001.dat
+    │   ├── ...
+    │   │
+    │   ├── monitor_5000.hipo    # histograms for run number 5000
+    │   ├── monitor_5001.hipo
+    │   └── ...
+    │
+    └── timelines                # final output timeline files, for deployment to web server
+        │
+        ├── htcc                 # detector timelines, with QA, from `bin/run-detector-timelines.sh`
+        ├── ltcc
+        ├── ...
+        │
+        ├── phys_qa              # physics timelines, with QA, from `bin/run-physics-timelines.sh`
+        ├── phys_qa_extra        # extra physics QA timelines, for experts
+        └── qadb                 # QADB results timeline
 ```
