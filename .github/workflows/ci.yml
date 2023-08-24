@@ -141,8 +141,8 @@ jobs:
           - detectors
           - physics
         include:
-          - { type: detectors  args: -r b } ###### NOTE: if validation files' run group changes, change this
-          - { type: physics    args: ''   }
+          - { type: detectors,  args: -r b } ###### NOTE: if validation files' run group changes, change this
+          - { type: physics,    args: ''   }
     steps:
     - name: setup java
       uses: actions/setup-java@v3
