@@ -1,43 +1,5 @@
 #!/bin/bash
 
-#
-#
-#
-#
-#
-#
-#
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# TODO: test this
-# 
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-
 # usage
 if [ $# -lt 1 ]; then
   echo """
@@ -67,8 +29,8 @@ fi
 # preparation
 mkdir -p tmp
 jcacheList=tmp/jcacheSuggested.sh
-chmod u+x $jcacheList
 echo "#!/bin/bash" > $jcacheList
+chmod u+x $jcacheList
 
 # convert cache directory => tape stub directory
 cache2tape() { realpath $1 | sed 's;^.*/cache/;/mss/;'; }
@@ -114,14 +76,19 @@ for cacheRunDir in ${cacheRunDirList[@]}; do
     cacheDirLS=$(ls $cacheRunDir | grep -vi readme)
     tapeDirLS=$(ls $tapeRunDir  | grep -vi readme)
     if [ -n "$(diff <(echo $cacheDirLS) <(echo $tapeDirLS))" ]; then
-      printError """some files are on tape but not on cache
-        cache dir: $cacheRunDir
-        tape dir:  $tapeRunDir
-      consider running bin/jcacheRun.sh on this cache directory
-      or run $jcacheList to do so on all such directories"""
+      printError """some files are on tape but not on cache for subdirectory $(basename $cacheRunDir)
+      To see their differences, run the following command (cache on left, tape on right):
+        diff -y --suppress-common-lines \\
+          <(ls $cacheRunDir) \\
+          <(ls $tapeRunDir)
+      """
       echo "bin/jcacheRun.sh $cacheRunDir" >> $jcacheList
     fi
   fi
 done
 
 echo "DONE cross checking /cache with tape stubs"
+if [ $(cat $jcacheList | wc -l) -gt 1 ]; then
+  echo "Since differences were found, consider running \`jcache\`"
+  echo "For convenience, the script $jcacheList was generated to help you"
+fi
