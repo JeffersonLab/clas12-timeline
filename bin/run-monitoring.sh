@@ -355,7 +355,10 @@ if ${modes['single']} || ${modes['series']}; then
     echo "RUNNING ALL JOBS SEQUENTIALLY, LOCALLY:"
   fi
   echo $sep
-  for exe in ${exelist[@]}; do $exe; done
+  for exe in ${exelist[@]}; do
+    $exe
+    [ $? -ne 0 ] && exit 100
+  done
 elif ${modes['submit']}; then
   echo "SUBMITTING JOBS TO SLURM"
   echo sep
