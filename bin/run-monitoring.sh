@@ -254,6 +254,7 @@ for r0,r1,eb in beamlist:
         # wrapper script
         cat > $jobscript << EOF
 #!/bin/bash
+set -e
 echo "RUN $runnum"
 pushd $outputDir/$key
 java -DCLAS12DIR=${COATJAVA}/ -Xmx1024m -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH org.jlab.clas12.monitoring.ana_2p2 $runnum $inputListFile $MAX_NUM_EVENTS $beam_energy
@@ -269,6 +270,7 @@ EOF
         # wrapper script
         cat > $jobscript << EOF
 #!/bin/bash
+set -e
 echo "RUN $runnum"
 pushd $TIMELINESRC/qa-physics
 run-groovy -Djava.awt.headless=true monitorRead.groovy $(realpath $rdir) $dataset dst
@@ -355,10 +357,7 @@ if ${modes['single']} || ${modes['series']}; then
     echo "RUNNING ALL JOBS SEQUENTIALLY, LOCALLY:"
   fi
   echo $sep
-  for exe in ${exelist[@]}; do
-    $exe
-    [ $? -ne 0 ] && exit 100
-  done
+  for exe in ${exelist[@]}; do $exe; done
 elif ${modes['submit']}; then
   echo "SUBMITTING JOBS TO SLURM"
   echo sep
