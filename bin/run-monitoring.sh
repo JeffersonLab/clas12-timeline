@@ -307,16 +307,16 @@ for key in ${jobkeys[@]}; do
 
   # either generate single/sequential run scripts
   if ${modes['single']} || ${modes['series']}; then
-    singleScript=$(echo $joblist | sed 's;.list$;.local.sh;')
-    echo "#!/bin/bash" > $singleScript
-    echo "set -e" >> $singleScript
+    localScript=$(echo $joblist | sed 's;.list$;.local.sh;')
+    echo "#!/bin/bash" > $localScript
+    echo "set -e" >> $localScript
     if ${modes['single']}; then
-      head -n1 $joblist >> $singleScript
+      head -n1 $joblist >> $localScript
     else
-      cat $joblist >> $singleScript
+      cat $joblist >> $localScript
     fi
-    chmod u+x $singleScript
-    exelist+=($singleScript)
+    chmod u+x $localScript
+    exelist+=($localScript)
 
   # otherwise generate slurm description
   else
@@ -360,9 +360,9 @@ if ${modes['single']} || ${modes['series']}; then
   for exe in ${exelist[@]}; do $exe; done
 elif ${modes['submit']}; then
   echo "SUBMITTING JOBS TO SLURM"
-  echo sep
+  echo $sep
   for exe in ${exelist[@]}; do sbatch $exe; done
-  echo sep
+  echo $sep
   echo "JOBS SUBMITTED!"
 else
   echo """  SLURM JOB DESCRIPTIONS GENERATED
