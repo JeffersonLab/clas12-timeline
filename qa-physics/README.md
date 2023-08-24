@@ -125,13 +125,16 @@ First step is to read DST or Skim files, producing hipo files and data tables
     * `outdat/data_table_${run}.dat`, which is a data table with the following columns:
       * run number
       * 5-file number
+      * minimum event number
+      * maximum event number
       * sector
-      * number of electron triggers (`N`)
+      * number of electron triggers (`N`) in this sector
       * number of electrons in the forward tagger
-      * DAQ-gated FC charge at beginning of 5-file (`F_i`)
-      * DAQ-gated FC charge at end of 5-file (`F_f`)
-      * DAQ-ungated FC charge at beginning of 5-file
-      * DAQ-ungated FC charge at end of 5-file
+      * DAQ-gated FC charge at beginning of 5-file (`F_i`) (minimum readout)
+      * DAQ-gated FC charge at end of 5-file (`F_f`) (maximum readout)
+      * DAQ-ungated FC charge at beginning of 5-file (minimum readout)
+      * DAQ-ungated FC charge at end of 5-file (maximum readout)
+      * average livetime
     * `outmon/monitor_${runnum}.hipo` contains several plots 
       * in the script, they are organized into a tree data structure, which allows plot
         any variable, for any set of properties
