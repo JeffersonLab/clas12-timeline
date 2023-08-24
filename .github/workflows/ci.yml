@@ -114,6 +114,18 @@ jobs:
       run: tree
     - name: run-monitoring
       run: bin/run-monitoring.sh -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
+    - uses: actions/upload-artifact@v3
+      with:
+        name: slurm
+        retention-days: 1
+        path: slurm
+    - uses: actions/upload-artifact@v3
+      with:
+        name: outfiles
+        retention-days: 1
+        path: outfiles
+
+
 
 # TODO:
 # - how can we make sure the version of coatjava built here matches that in local maven dependencies?
