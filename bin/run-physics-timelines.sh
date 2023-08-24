@@ -3,8 +3,18 @@
 set -e
 source $(dirname $0)/environ.sh
 
-if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]" >&2; exit 101; fi
+# arguments
+dataset=test_v0
+if [ $# -eq 0 ]; then
+  echo """
+  USAGE: $0 [dataset]
+  (the default dataset is '$dataset'
+  """ >&2
+  exit 101
+fi
+[[ "$1" == "-d" ]] && shift # accept -d option, for consistency with other scripts
 dataset=$1
+[ -z "$dataset" ] && printError "dataset not specified" && exit 100
 
 pushd $TIMELINESRC/qa-physics
 
