@@ -31,7 +31,7 @@ def outdir = args[1]
 // get source dir
 def calibqadir = System.getenv('TIMELINESRC')
 if(calibqadir==null) throw new Exception("env vars not set; source environ.sh")
-calibqadir += "qa-detectors"
+calibqadir += "/qa-detectors"
 
 // define tree "B" of closures for each calibration QA constraint
 // -first branch: detectors (=directory names)
@@ -52,8 +52,9 @@ cutsFileList.each { re, cutsFile ->
   print "Use $cutsFile?"
   if(indir =~ re) {
     println " YES."
-    File cutsFileHandle = new File("$calibqadir/cuts/$cutsFile")
-    if(!(cutsFileHandle.exists())) throw new Exception("cuts file $cutsFile not found")
+    def cutsFileName = "$calibqadir/cuts/$cutsFile"
+    File cutsFileHandle = new File(cutsFileName)
+    if(!(cutsFileHandle.exists())) throw new Exception("cuts file $cutsFileName not found")
 
     // data structures to track which leaves have been reset, which applies to the case
     // of overriding cuts files; this ensures leaves are only cleared once per cuts file
@@ -296,35 +297,4 @@ outdirHandle.eachFileRecurse(FileType.FILES) { hipoFile ->
     println "since we have: ${hipoFile.getPath()}"
     new File(delFile).delete()
   }
-}
-
-
-// generate index
-println "GENERATE INDEX:"
-indexJsonName = "$outdir/ListOfTimelines.json"
-if(new File(indexJsonName).exists()) {
-  println " -> already exists"
-}
-else {
-  def indexHash = [:]
-  outdirHandle.traverse(
-      type: groovy.io.FileType.FILES,
-      nameFilter: ~/.*\.hipo/
-      )
-  {
-    detName      = it.getParent().tokenize('/')[-1]
-    timelineName = it.getName().replaceAll(/\.hipo$/, '').tokenize('_')[1..-1].join(' ')
-    if(indexHash[detName]==null)
-      indexHash.put(detName, [])
-    indexHash[detName].add(timelineName)
-  }
-  indexJson = []
-  indexHash.each { detName, timelineList ->
-    indexJson.add([
-      'subsystem': detName,
-      'variables': timelineList,
-    ])
-  }
-  println T.pPrint(indexJson)
-  new File(indexJsonName).write(JsonOutput.toJson(indexJson))
 }

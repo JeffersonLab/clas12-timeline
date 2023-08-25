@@ -142,16 +142,15 @@ detDirs=(
 
 # cleanup output directories
 backupDir=$TIMELINESRC/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
+echo ">>> backing up any previous files to $backupDir ..."
 mkdir -p $backupDir
-[ -d $outputDir ] && mv $outputDir $backupDir/detectors
-if [ -d $finalDir ]; then
-  for detDir in ${detDirs[@]}; do
-    dir=$finalDir/$detDir
-    if [ -d $dir ]; then
-      mkdir -p $backupDir/timelines
-      mv -v $dir $backupDir/timelines/
-    fi
-  done
+if ${modes['focus-all']} || ${modes['focus-timelines']}; then
+  mkdir -p $backupDir/detectors
+  [ -d $outputDir ] && mv -v $outputDir $backupDir/detectors/
+  [ -d $finalDir  ] && mv -v $finalDir  $backupDir/
+fi
+if ${modes['focus-all']} || ${modes['focus-qa']}; then
+  [ -d $finalDir ] && mv -v $finalDir $backupDir/
 fi
 
 # make output directories
@@ -230,19 +229,27 @@ fi
 
 # first, copy the timelines to the final timeline directory; we do this regardless of whether QA is run
 # so that (1) only `$finalDir` needs deployment and (2) we can re-run the QA with 'focus-qa' mode
+echo ">>> copy timelines to final directory..."
 cp -rL $outputDir/* $finalDir/
 
 if ${modes['focus-all']} || ${modes['focus-qa']}; then
-  run-groovy $TIMELINESRC/qa-detectors/util/applyBounds.groovy $outputDir $finalDir > $logDir/qa.out 2> $logDir/qa.err
+  echo ">>> add QA lines..."
+  run-groovy $TIMELINESRC/qa-detectors/util/applyBounds.groovy $outputDir $finalDir > $logDir/qa.out 2> $logDir/qa.err ||
+    printError "QA lines failed; check error logs"
 fi
 
 
 ######################################
 # finalize
 ######################################
-echo "ERROR LOGS:"
-echo "---------------------------------------------------------------------------------------------------------------------"
-grep "error:" $logDir/*.err
-echo "---------------------------------------------------------------------------------------------------------------------"
+errPattern="error:|exception:"
+echo """
+$sep
+OUTPUT AND ERROR LOGS:
+$logDir/*.out
+$logDir/*.err
 
-echo "The possible technical errors can be inspected through the log files in $logDir."
+For convenience, running \`grep -iE '$errPattern'\` on *.err files:
+$sep"""
+grep -iE --color "$errPattern" $logDir/*.err || echo "grep found no errors, but you still may want to take a look yourself..."
+echo $sep
