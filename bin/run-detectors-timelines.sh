@@ -7,6 +7,7 @@ source $(dirname $0)/environ.sh
 dataset=test_v0
 rungroup=a
 inputDir=""
+numThreads=4
 declare -A modes
 for key in build focus-timelines focus-qa; do
   modes[$key]=false
@@ -32,6 +33,9 @@ if [ $# -eq 0 ]; then
     -i [INPUT_DIR]      directory of input files; by default this is based on [DATASET_NAME]:
                         default = '$TIMELINESRC/outfiles/[DATASET_NAME]/detectors'
 
+    -n [NUM_THREADS]    number of parallel threads to run
+                        default = $numThreads
+
     --build             cleanly-rebuild the timeline code, then run
 
     --focus-timelines   only produce the detector timelines, do not run detector QA code
@@ -41,7 +45,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # parse options
-while getopts "d:r:i:-:" opt; do
+while getopts "d:r:i:n:-:" opt; do
   case $opt in
     d) 
       echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
@@ -58,6 +62,9 @@ while getopts "d:r:i:-:" opt; do
         printError "input directory $OPTARG does not exist"
         exit 100
       fi
+      ;;
+    n)
+      numThreads=$OPTARG
       ;;
     -)
       for key in "${!modes[@]}"; do
@@ -85,6 +92,7 @@ $sep
 DATASET_NAME = $dataset
 RUN_GROUP    = $rungroup
 INPUT_DIR    = $inputDir
+NUM_THREADS  = $numThreads
 OPTIONS = {"""
 for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
 echo "}"
@@ -106,25 +114,11 @@ export JARPATH="$TIMELINESRC/detectors/target"
 export CLASSPATH="${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH/*:$GROOVYLIB/*"
 
 # output directory names
-outputDir=$TIMELINEDIR/outfiles/$dataset/detectors/timelines
-finalDir=$TIMELINEDIR/outfiles/$dataset/timelines
-logDir=$TIMELINEDIR/outfiles/$dataset/log
+outputDir=$TIMELINESRC/outfiles/$dataset/detectors/timelines
+finalDir=$TIMELINESRC/outfiles/$dataset/timelines
+logDir=$TIMELINESRC/outfiles/$dataset/log
 
-# cleanup output directories
-backupDir=$TIMELINESRC/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
-mkdir -p $backupDir
-[ -d $outputDir ] && mv $outputDir $backupDir/detectors
-if [ -d $finalDir ]; then
-  mkdir -p $backupDir/timelines
-  for d in $(ls -d $finalDir/*/ | grep -v '/physics_'); do
-    mv $d $backupDir/timelines/
-  done
-fi
-
-# make output directories
-mkdir -p $outputDir $logDir $finalDir
-
-# detector subdirectories
+# output detector subdirectories
 detDirs=(
   band
   bmtbst
@@ -140,11 +134,28 @@ detDirs=(
   ftof
   htcc
   ltcc
-  particle_mass_ctof_and_ftof
+  m2_ctof_ftof
   rf
   rich
   trigger
 )
+
+# cleanup output directories
+backupDir=$TIMELINESRC/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
+mkdir -p $backupDir
+[ -d $outputDir ] && mv $outputDir $backupDir/detectors
+if [ -d $finalDir ]; then
+  for detDir in ${detDirs[@]}; do
+    dir=$finalDir/$detDir
+    if [ -d $dir ]; then
+      mkdir -p $backupDir/timelines
+      mv -v $dir $backupDir/timelines/
+    fi
+  done
+fi
+
+# make output directories
+mkdir -p $outputDir $logDir $finalDir
 
 ######################################
 # produce detector timelines
@@ -155,8 +166,8 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   pushd $outputDir
 
   # make detector subdirectories
-  for dir in ${detDirs[@]}; do
-    mkdir -p $dir
+  for detDir in ${detDirs[@]}; do
+    mkdir -p $detDir
   done
 
   # get main executable
@@ -165,46 +176,47 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   if [[ "$rungroup" == "b" ]]; then
     MAIN="org.jlab.clas.timeline.run_rgb"
   fi
+  [[ ! "$rungroup" =~ ^[a-zA-Z] ]] && printError "unknown rungroup '$rungroup'" && exit 100
   export MAIN
 
   # run function
   run() {
-    echo "processing $1"
-    java -DCLAS12DIR="$COATJAVA/" $MAIN "$@" > $logDir/$1.out 2> $logDir/$1.err
+    timeline=$1
+    input=$2
+    log=$3
+    echo ">>> producing timeline '$timeline' ..."
+    java -DCLAS12DIR="$COATJAVA/" $MAIN $timeline $input > $log/$timeline.out 2> $log/$timeline.err
   }
   export -f run
   #JAVA_OPTS="-Dsun.java2d.pmoffscreen=false -Xms1024m -Xmx12288m"; export JAVA_OPTS
 
   # execution
   java $MAIN --timelines |
-    xargs -I{} -n1 --max-procs 4 bash -c 'run "$@"' -- {} $inputDir
+    xargs -I{} -n1 --max-procs $numThreads bash -c 'run "$@"' -- {} $inputDir $logDir
 
   # organize outputs
-  for dir in ${detDirs[@]}; do
-    case $dir in
-      bmtbst)
-        mv bmt_*.hipo $dir/
-        mv bst_*.hipo $dir/
-        ;;
-      central)
-        mv cen_*.hipo $dir/
-        ;;
-      ft)
-        mv ftc_*.hipo $dir/
-        mv fth_*.hipo $dir/
-        ;;
-      rf)
-        mv rftime_*.hipo $dir/
-        ;;
-      trigger)
-        mv rat_*.hipo $dir/
-        ;;
-      particle_mass_ctof_and_ftof)
-        mv ctof/*m2*.hipo $dir/
-        mv ftof/*m2*.hipo $dir/
+  echo ">>> organizing output timelines..."
+  timelineFiles=$(find -name "*.hipo")
+  [ -z "$timelineFiles" ] && printError "no timelines were produced; check error logs in $logDir/" && exit 100
+  for timelineFile in $timelineFiles; do
+    det=$(basename $timelineFile | sed 's;_.*;;g')
+    case $det in
+      bmt)    mv $timelineFile bmtbst/  ;;
+      bst)    mv $timelineFile bmtbst/  ;;
+      cen)    mv $timelineFile central/ ;;
+      ftc)    mv $timelineFile ft/      ;;
+      fth)    mv $timelineFile ft/      ;;
+      rat)    mv $timelineFile trigger/ ;;
+      rftime) mv $timelineFile rf/      ;;
+      ctof|ftof)
+        [[ "$timelineFile" =~ _m2_ ]] && mv $timelineFile m2_ctof_ftof/ || mv $timelineFile $det/
         ;;
       *)
-        mv ${dir}_*.hipo $dir/
+        if [ -d $det ]; then
+          mv $timelineFile $det/
+        else
+          printError "not sure where to put timeline '$timelineFile' for detector '$det'; please update $0 to fix this"
+        fi
         ;;
     esac
   done

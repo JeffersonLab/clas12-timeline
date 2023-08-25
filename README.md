@@ -161,6 +161,10 @@ outfiles
     │   ├── monitor_5001.hipo
     │   └── ...
     │
+    ├── log                      # log files from `bin/run-*-timelines.sh` (whereas slurm logs are found in /farm_out/$LOGNAME/)
+    │   ├── $timeline.out
+    │   └── $timeline.err
+    │
     └── timelines                # final output timeline files, for deployment to web server
         │
         ├── htcc                 # detector timelines, with QA, from `bin/run-detectors-timelines.sh`
