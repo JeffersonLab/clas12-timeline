@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -u
 source $(dirname $0)/environ.sh
 
 # default options
@@ -8,8 +9,9 @@ dataset=test_v0
 rungroup=a
 inputDir=""
 numThreads=4
+singleTimeline=""
 declare -A modes
-for key in build focus-timelines focus-qa; do
+for key in list build focus-timelines focus-qa; do
   modes[$key]=false
 done
 
@@ -36,6 +38,12 @@ if [ $# -eq 0 ]; then
     -n [NUM_THREADS]    number of parallel threads to run
                         default = $numThreads
 
+    -t [TIMELINE]       produce only the single detector timeline [TIMELINE]; useful for debugging
+                        use --list to dump the list of timelines
+                        default: run all
+
+    --list              dump the list of timelines and exit
+
     --build             cleanly-rebuild the timeline code, then run
 
     --focus-timelines   only produce the detector timelines, do not run detector QA code
@@ -45,7 +53,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # parse options
-while getopts "d:r:i:n:-:" opt; do
+while getopts "d:r:i:n:t:-:" opt; do
   case $opt in
     d) 
       echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
@@ -65,6 +73,9 @@ while getopts "d:r:i:n:-:" opt; do
       ;;
     n)
       numThreads=$OPTARG
+      ;;
+    t)
+      singleTimeline=$OPTARG
       ;;
     -)
       for key in "${!modes[@]}"; do
@@ -152,6 +163,9 @@ fi
 if ${modes['focus-all']} || ${modes['focus-qa']}; then
   [ -d $finalDir ] && mv -v $finalDir $backupDir/
 fi
+for fail in $(find $logDir -name "*.fail"); do
+  rm $fail
+done
 
 # make output directories
 mkdir -p $outputDir $logDir $finalDir
@@ -159,7 +173,7 @@ mkdir -p $outputDir $logDir $finalDir
 ######################################
 # produce detector timelines
 ######################################
-if ${modes['focus-all']} || ${modes['focus-timelines']}; then
+if ${modes['focus-all']} || ${modes['focus-timelines']} || ${modes['list']}; then
 
   # change working directory to output directory
   pushd $outputDir
@@ -178,25 +192,34 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   [[ ! "$rungroup" =~ ^[a-zA-Z] ]] && printError "unknown rungroup '$rungroup'" && exit 100
   export MAIN
 
-  # run function
-  run() {
-    timeline=$1
-    input=$2
-    log=$3
-    echo ">>> producing timeline '$timeline' ..."
-    java -DCLAS12DIR="$COATJAVA/" $MAIN $timeline $input > $log/$timeline.out 2> $log/$timeline.err
-  }
-  export -f run
-  #JAVA_OPTS="-Dsun.java2d.pmoffscreen=false -Xms1024m -Xmx12288m"; export JAVA_OPTS
+  if ${modes['list']}; then
+    echo $sep
+    echo "LIST OF TIMELINES"
+    echo $sep
+    java $MAIN --timelines
+    exit $?
+  fi
 
-  # execution
-  java $MAIN --timelines |
-    xargs -I{} -n1 --max-procs $numThreads bash -c 'run "$@"' -- {} $inputDir $logDir
+  # produce timelines, multithreaded
+  jobCnt=1
+  for timelineObj in $(java $MAIN --timelines); do
+    logFile=$logDir/$timelineObj
+    [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
+    if [ $jobCnt -le $numThreads ]; then
+      echo ">>> producing timeline '$timelineObj' ..."
+      java -DCLAS12DIR=$COATJAVA/ $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+      let jobCnt++
+    else
+      wait
+      jobCnt=1
+    fi
+  done
+  wait
 
   # organize outputs
   echo ">>> organizing output timelines..."
   timelineFiles=$(find -name "*.hipo")
-  [ -z "$timelineFiles" ] && printError "no timelines were produced; check error logs in $logDir/" && exit 100
+  [ -z "$timelineFiles" ] && printError "no timelines were produced; check error logs in $logDir/"
   for timelineFile in $timelineFiles; do
     det=$(basename $timelineFile | sed 's;_.*;;g')
     case $det in
@@ -234,22 +257,50 @@ cp -rL $outputDir/* $finalDir/
 
 if ${modes['focus-all']} || ${modes['focus-qa']}; then
   echo ">>> add QA lines..."
-  run-groovy $TIMELINESRC/qa-detectors/util/applyBounds.groovy $outputDir $finalDir > $logDir/qa.out 2> $logDir/qa.err ||
-    printError "QA lines failed; check error logs"
+  logFile=$logDir/qa
+  run-groovy $TIMELINESRC/qa-detectors/util/applyBounds.groovy $outputDir $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
 fi
 
 
 ######################################
-# finalize
+# error checking
 ######################################
-errPattern="error:|exception:"
+
+# print log file info
 echo """
 $sep
 OUTPUT AND ERROR LOGS:
 $logDir/*.out
 $logDir/*.err
+"""
 
-For convenience, running \`grep -iE '$errPattern'\` on *.err files:
+# exit nonzero if any jobs exitted nonzero
+failedJobs=($(find $logDir -name "*.fail" | xargs -I{} basename {} .fail))
+if [ ${#failedJobs[@]} -gt 0 ]; then
+  for failedJob in ${failedJobs[@]}; do
+    echo $sep
+    printError "job '$failedJob' returned non-zero exit code; error log dump:"
+    cat $logDir/$failedJob.err
+  done
+  if [ -z "$singleTimeline" -a ${modes['focus-qa']} = false ]; then
+    echo $sep
+    echo "To re-run only the failed timelines, for debugging, try one of the following commands:"
+    for failedJob in ${failedJobs[@]}; do
+      if [ "$failedJob" = "qa" ]; then
+        echo "  $0 $@ --focus-qa"
+      else
+        echo "  $0 $@ --focus-timelines -t $failedJob"
+      fi
+    done
+  fi
+  exit 100
+else
+  echo "All jobs exitted normally"
+fi
+
+# grep for suspicious things in error logs
+errPattern="error:|exception:"
+echo """To look for any quieter errors, running \`grep -iE '$errPattern'\` on *.err files:
 $sep"""
-grep -iE --color "$errPattern" $logDir/*.err || echo "grep found no errors, but you still may want to take a look yourself..."
+grep -iE --color "$errPattern" $logDir/*.err || echo "Good news: grep found no errors, but you still may want to take a look yourself..."
 echo $sep
