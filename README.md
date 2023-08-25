@@ -47,7 +47,7 @@ which will print the usage guide, along with some examples (since it was called 
 After Stage 1 is complete, run the following Stage 2 scripts to produce the timeline `HIPO` files and to run the automatic QA procedures. Run them with no arguments to print the usage guides.
 
 ```bash
-bin/run-detector-timelines.sh
+bin/run-detectors-timelines.sh
 bin/run-physics-timelines.sh
 ```
 
@@ -98,7 +98,7 @@ flowchart TB
     monitorPhysics   --> outmon
 
     subgraph Timeline Production
-        subgraph "<strong>bin/run-detector-timelines.sh</strong>"
+        subgraph "<strong>bin/run-detectors-timelines.sh</strong>"
             timelineDetectorsPreQA["<strong>Make detector timelines</strong><br/>detectors/: org.jlab.clas.timeline.run"]:::proc
             outTimelineDetectorsPreQA{{outfiles/$dataset/detectors/timelines/$detector/*.hipo}}:::timeline
             timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
@@ -146,7 +146,7 @@ outfiles
     │   ├── plots5001            # " " for run number 5001
     │   ├── ...
     │   │
-    │   └── timelines            # detector timelines, pre QA, from `bin/run-detector-timelines.sh`
+    │   └── timelines            # detector timelines, pre QA, from `bin/run-detectors-timelines.sh`
     │       ├── htcc
     │       ├── ltcc
     │       └── ...
@@ -163,7 +163,7 @@ outfiles
     │
     └── timelines                # final output timeline files, for deployment to web server
         │
-        ├── htcc                 # detector timelines, with QA, from `bin/run-detector-timelines.sh`
+        ├── htcc                 # detector timelines, with QA, from `bin/run-detectors-timelines.sh`
         ├── ltcc
         ├── ...
         │
