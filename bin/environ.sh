@@ -20,7 +20,7 @@ done
 export TIMELINEDIR=/u/group/clas/www/clas12mon/html/hipo
 
 # check coatjava environment
-if [ -z "$COATJAVA" ]; then
+if [ -z "${COATJAVA-}" ]; then
   # if on a CI runner, use CI coatjava build artifacts; otherwise print error
   coatjava_ci=$TIMELINESRC/coatjava/coatjava
   [ -d $coatjava_ci ] &&
@@ -29,4 +29,4 @@ if [ -z "$COATJAVA" ]; then
 fi
 
 # ensure coatjava executables are found
-[ -n "$COATJAVA" ] && export PATH="$COATJAVA/bin${PATH:+:${PATH}}"
+[ -n "${COATJAVA-}" ] && export PATH="$COATJAVA/bin${PATH:+:${PATH}}"
