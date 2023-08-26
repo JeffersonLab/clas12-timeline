@@ -20,16 +20,22 @@ dataset=$1
 pushd $TIMELINESRC/qa-physics
 
 # setup error filtered execution function
-errlog="errors.log"
-> $errlog
+logDir=$TIMELINESRC/outfiles/$dataset/log
+mkdir -p $logDir
+logFile=$logDir/physics.err
+logTmp=$logFile.tmp
+> $logFile
 function sep { printf '%70s\n' | tr ' ' -; }
 function exe { 
   sep
   echo "EXECUTE: $*"
   sep
-  sep >> $errlog
-  echo "$* errors:" >> $errlog
-  $* 2>>$errlog
+  $* 2> $logTmp
+  if [ -s $logTmp ]; then
+    echo "stderr from command:  $*" >> $logFile
+    cat $logTmp >> $logFile
+    sep >> $logFile
+  fi
 }
 
 # organize the data into datasets
@@ -50,23 +56,16 @@ exe run-groovy monitorPlot.groovy $dataset
 # move timelines to output area
 exe ./stageTimelines.sh $dataset
 
-
-# print errors (filtering out hipo logo contamination)
-sep
-echo "ERROR LOGS:"
-grep -vE '█|═|Physics Division|^     $' $errlog
-sep
-rm $errlog
-
-# print final message
 popd
+
+# print errors
 echo """
 
-
-TIMELINE GENERATION COMPLETE
-==============================================================================
-If this script ran well, open the TIMELINE URL (printed above) in your browser
-and take a look at the timelines produced for this dataset ($dataset)
-==============================================================================
-
 """
+if [ -s $logFile ]; then
+  printError "some scripts had errors or warnings; dumping error output:"
+  sep >&2
+  cat $logFile >&2
+else
+  echo "No errors or warnings!"
+fi

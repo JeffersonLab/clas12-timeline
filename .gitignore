@@ -16,6 +16,7 @@ tmp
 outfiles
 
 # physics timelines
+qa-physics/outdat.*
 qa-physics/QA/qa
 datasetList.txt
 qaTree*.json*
