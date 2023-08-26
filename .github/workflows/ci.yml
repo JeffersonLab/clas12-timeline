@@ -106,6 +106,8 @@ jobs:
       uses: wtfjoke/setup-groovy@v1
       with:
         groovy-version: 4.x
+    - name: groovy version
+      run: groovy --version
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@v3
       with:
@@ -153,6 +155,8 @@ jobs:
       uses: wtfjoke/setup-groovy@v1
       with:
         groovy-version: 4.x
+    - name: groovy version
+      run: groovy --version
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@v3
       with:
