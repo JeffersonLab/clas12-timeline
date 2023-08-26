@@ -143,7 +143,7 @@ jobs:
           - detectors
           - physics
         include:
-          - { type: detectors,  args: -r b } ###### NOTE: if validation files' run group changes, change this
+          - { type: detectors,  args: -n 2 -r b } ###### NOTE: if validation files' run group changes, change this
           - { type: physics,    args: ''   }
     steps:
     - name: setup java
@@ -166,6 +166,8 @@ jobs:
         name: build
     - name: untar build
       run: ls *.tar.gz | xargs -I_ tar xzvf _
+    - name: tree
+      run: tree
     - name: run timelines
       run: bin/run-${{matrix.type}}-timelines.sh -d ${{env.dataset}} ${{matrix.args}}
     - uses: actions/upload-artifact@v3
