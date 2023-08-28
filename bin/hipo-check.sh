@@ -1,56 +1,57 @@
 #!/bin/bash
 
 set -e
+set -u
+source $(dirname $0)/environ.sh
 
 # arguments
-if [ $# -ne 3 ]; then
+if [ $# -lt 1 ]; then
+  printError "no HIPO files specified for $(basename $0)"
   echo """
-  Search a directory for HIPO files, checking each one for corruption
-  or other issues
+  USAGE: $0 [HIPO_FILE(S)]...
 
-  USAGE: $0 [TOP-LEVEL DIRECTORY]
+  Checks each [HIPO_FILE] for corruption, etc.
   """ >&2
   exit 101
 fi
-inputTopDir=$(realpath $1)
-sizeThreshold=128000
+hipoFiles=$@
 
-## TODO:
-# - option to "trash" or `rm` a bad file
-# - option to stop on single failure (set -e)
-# - option to set a minimum size threshold; what is the exact minimum?
+# minimum file size for a valid HIPO file
+# - seems to be 192 bytes, but setting the threshold slightly higher may be safer
+# - a HIPO file with a single empty `H1F` in a TDirectory named `/0` is 320 bytes
+SIZE_THRESHOLD=300
 
-# failure handler
-fail() {
-  echo "[+] FAILURE: $1" >&2
+# handle failure
+declare -a badFiles
+markBad() {
+  file=$1
+  shift
+  printError "HIPO file '$file' $*"
+  badFiles+=($file)
 }
 
-# checks and preparation
-[ ! -d $inputTopDir ] && echo "ERROR: [TOP-LEVEL DIRECTORY]=$inputTopDir does not exist" >&2 && exit 100
+# loop over HIPO files
+for hipoFile in ${hipoFiles[@]}; do
+  echo "[+] CHECK: $hipoFile"
 
-# find input HIPO files
-for inputFile in $(find $inputTopDir -name "*.hipo"); do
-  echo "[+] CHECK: $inputFile"
+  # check existence
+  [ ! -f $hipoFile ] && markBad $hipoFile "does not exist" && continue
 
   # check file size
-  fileSize=$(wc -c < $inputFile)
-  if [ $fileSize -lt $threshold ]; then
-    fail "file size ($fileSize) is less than threshold ($threshold)"
-  fi
+  fileSize=$(wc -c < $hipoFile)
+  [ $fileSize -lt $SIZE_THRESHOLD ] && markBad $hipoFile "file size ($fileSize) is less than threshold ($SIZE_THRESHOLD)" && continue
 
-  # HIPO smoke test
-  # run-groovy -e """
-  # TODO
-  # TODO
-  # TODO
-  # """
-  
-  # run HIPO test
-  hipo-utils -test $inputFile
-  status=$?
-  if [ $? -ne 1 ]; then
-    fail "HIPO test failed"
-  fi
-
+  # run `hipo-utils -test`
+  hipo-utils -test $hipoFile
+  [ $? -ne 0 ] && markBad $hipoFile "\`hipo-utils -test\` failed" && continue
 
 done
+
+# exit nonzero if any HIPO files were bad
+if [ ${#badFiles[@]} -gt 0 ]; then
+  printError "The following HIPO files are bad:"
+  for badFile in ${badFiles[@]}; do
+    echo "         - $badFile" >&2
+  done
+  exit 100
+fi

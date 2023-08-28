@@ -256,10 +256,17 @@ for r0,r1,eb in beamlist:
         cat > $jobscript << EOF
 #!/bin/bash
 set -e
+set -u
+set -o pipefail
 echo "RUN $runnum"
+
+# produce histograms
 pushd $outputDir/$key
 java -DCLAS12DIR=${COATJAVA}/ -Xmx1024m -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH org.jlab.clas12.monitoring.ana_2p2 $runnum $inputListFile $MAX_NUM_EVENTS $beam_energy
 popd
+
+# check output HIPO files
+$TIMELINESRC/bin/hipo-check.sh \$(find $plotDir -name "*.hipo")
 EOF
         ;;
 
@@ -272,10 +279,17 @@ EOF
         cat > $jobscript << EOF
 #!/bin/bash
 set -e
+set -u
+set -o pipefail
 echo "RUN $runnum"
+
+# produce histograms
 pushd $TIMELINESRC/qa-physics
 run-groovy -Djava.awt.headless=true monitorRead.groovy $(realpath $rdir) $dataset dst
 popd
+
+# check output HIPO files
+$TIMELINESRC/bin/hipo-check.sh $outputDir/$key/monitor_$runnum.hipo
 EOF
         ;;
 
