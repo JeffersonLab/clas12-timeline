@@ -19,7 +19,7 @@ hipoFiles=$@
 # minimum file size for a valid HIPO file
 # - seems to be 192 bytes, but setting the threshold slightly higher may be safer
 # - a HIPO file with a single empty `H1F` in a TDirectory named `/0` is 320 bytes
-SIZE_THRESHOLD=300
+SIZE_THRESHOLD=200
 
 # handle failure
 declare -a badFiles=()
