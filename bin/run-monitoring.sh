@@ -287,14 +287,6 @@ EOF
 done
 
 
-# prepare qa-physics/datasetList.txt
-for key in ${jobkeys[@]}; do
-  if [ "$key" == "physics" ]; then
-    echo "$dataset $runnumMin $runnumMax" >> $TIMELINESRC/qa-physics/datasetList.txt
-  fi
-done
-
-
 # now generate slurm descriptions and/or local scripts
 echo """
 Generating batch scripts..."""

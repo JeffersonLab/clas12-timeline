@@ -11,24 +11,20 @@ if [ -z "$TIMELINESRC" ]; then
 fi
 
 # cleanup / generate new dataset subdirs
-for outdir in outmon outdat; do
-  dir=$TIMELINESRC/qa-physics/${outdir}.${dataset}
+OUTMON_DIR=$TIMELINESRC/qa-physics/outmon.${dataset}
+OUTDAT_DIR=$TIMELINESRC/qa-physics/outdat.${dataset}
+for dir in $OUTMON_DIR $OUTDAT_DIR; do
   echo "clean $dir"
   mkdir -p $dir
-  rm -r $dir
+  rm    -r $dir
   mkdir -p $dir
 done
 
 # loop over runs, copying and linking to dataset subdirs
-source datasetListParser.sh $dataset
 INPUT_DIR=$(realpath $TIMELINESRC/outfiles/$dataset/physics)
 for file in $INPUT_DIR/monitor_*.hipo; do
-  run=$(echo $file | sed 's/^.*monitor_//'|sed 's/\.hipo$//')
-
-  if [ $run -ge $RUNL -a $run -le $RUNH ]; then
-    echo "file run $run to dataset $dataset"
-    cat $INPUT_DIR/data_table_${run}.dat >> $TIMELINESRC/qa-physics/outdat.${dataset}/data_table.dat
-    ln -sv $INPUT_DIR/monitor_${run}.hipo $TIMELINESRC/qa-physics/outmon.${dataset}/monitor_${run}.hipo
-  fi
-
+  ln -sv $file $OUTMON_DIR/
+done
+for file in $INPUT_DIR/data_table_*.dat; do
+  cat $file >> $OUTDAT_DIR/data_table.dat
 done

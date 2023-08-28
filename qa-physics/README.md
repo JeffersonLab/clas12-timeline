@@ -49,13 +49,6 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
       charge, you may have assumed here that the recharge option was ON, when
       actually it was OFF and needs to be ON
 * `../bin/run-monitoring.sh`: runs `monitorRead.groovy` on DSTs using slurm
-  * `$dataset` is specified in `datasetList.txt`, along with a range of runs
-    * the syntax of this file is `$dataset $firstRun $lastRun`
-    * several scripts use this file; some loop over all datasets, whereas
-      others require you to specify which dataset
-      * for scripts which loop over all datasets, you can restrict them by
-        commenting out lines in `datasetList.txt` (using `#`); currently
-        there are no such scripts in use
   * wait for slurm jobs to finish
   * execute `errorPrint.sh` to inspect error logs
   * resubmit failed jobs, e.g., those that exceeded time limit on a slow node:
