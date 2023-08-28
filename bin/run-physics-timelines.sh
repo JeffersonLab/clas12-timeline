@@ -30,7 +30,7 @@ function exe {
   sep
   echo "EXECUTE: $*"
   sep
-  $* 2> $logTmp
+  $* 2> >(tee $logTmp >&2)
   if [ -s $logTmp ]; then
     echo "stderr from command:  $*" >> $logFile
     cat $logTmp >> $logFile
