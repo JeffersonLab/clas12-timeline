@@ -22,7 +22,7 @@ hipoFiles=$@
 SIZE_THRESHOLD=300
 
 # handle failure
-declare -a badFiles
+declare -a badFiles=()
 markBad() {
   file=$1
   shift
