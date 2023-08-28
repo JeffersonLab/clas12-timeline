@@ -163,9 +163,11 @@ fi
 if ${modes['focus-all']} || ${modes['focus-qa']}; then
   [ -d $finalDir ] && mv -v $finalDir $backupDir/
 fi
-for fail in $(find $logDir -name "*.fail"); do
-  rm $fail
-done
+if [ -d $logDir ]; then
+  for fail in $(find $logDir -name "*.fail"); do
+    rm $fail
+  done
+fi
 
 # make output directories
 mkdir -p $outputDir $logDir $finalDir
@@ -216,7 +218,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']} || ${modes['list']}; the
   done
   wait
 
-  # organize outputs
+  # organize output timelines
   echo ">>> organizing output timelines..."
   timelineFiles=$(find -name "*.hipo")
   [ -z "$timelineFiles" ] && printError "no timelines were produced; check error logs in $logDir/"
@@ -265,6 +267,11 @@ fi
 ######################################
 # error checking
 ######################################
+
+# check output timelines
+echo ">>> checking output timelines..."
+$TIMELINESRC/bin/hipo-check.sh $(find $outputDir -name "*.hipo")
+echo ">>> done checking output timelines, all are OK"
 
 # print log file info
 echo """
