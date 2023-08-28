@@ -24,8 +24,12 @@ mkdir -p $outputDir
 rm    -r $outputDir
 mkdir -p $outputDir
 
+# check HIPO files
+timelineFiles=$(ls $inputDir/*.hipo | grep -vE '^monitor')
+$TIMELINESRC/bin/hipo-check.sh $timelineFiles
+
 # copy timelines to output directory
-for file in $(ls $inputDir/*.hipo | grep -vE '^monitor'); do
+for file in $timelineFiles; do
   cp -v $file $outputDir/
 done
 
