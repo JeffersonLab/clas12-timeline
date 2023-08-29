@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # error handling
-printError()   { echo "[ERROR]: $1"   >&2; }
-printWarning() { echo "[WARNING]: $1" >&2; }
+printError()   { echo -e "\e[1;31m[ERROR]: $* \e[0m"   >&2; }
+printWarning() { echo -e "\e[1;35m[WARNING]: $* \e[0m" >&2; }
 
 # get the working directory
 [ -z "${BASH_SOURCE[0]}" ] && thisEnv=$0 || thisEnv=${BASH_SOURCE[0]}
