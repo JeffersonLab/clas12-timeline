@@ -42,8 +42,11 @@ for hipoFile in ${hipoFiles[@]}; do
   [ $fileSize -lt $SIZE_THRESHOLD ] && markBad $hipoFile "file size ($fileSize) is less than threshold ($SIZE_THRESHOLD)" && continue
 
   # run `hipo-utils -test`
+  set +e
   hipo-utils -test $hipoFile
-  [ $? -ne 0 ] && markBad $hipoFile "\`hipo-utils -test\` failed" && continue
+  testCode=$?
+  set -e
+  [ $testCode -ne 0 ] && markBad $hipoFile "\`hipo-utils -test\` failed" && continue
 
 done
 
