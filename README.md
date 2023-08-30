@@ -111,7 +111,7 @@ flowchart TB
         outTimelinePhysics{{outfiles/$dataset/timelines/physics_*/*}}:::timeline
         outTimelineDetectors{{outfiles/$dataset/timelines/$detector/*.hipo}}:::timeline
         deploy["<strong>Deployment</strong><br/>bin/deploy-timelines.sh"]:::proc
-        timelineDir{{"$TIMELINEDIR/"}}:::timeline
+        timelineDir{{timelines on web server}}:::timeline
     end
     outplots --> timelineDetectorsPreQA --> outTimelineDetectorsPreQA --> timelineDetectors --> outTimelineDetectors
     outdat   --> timelinePhysics

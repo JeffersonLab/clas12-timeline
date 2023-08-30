@@ -3,6 +3,9 @@
 
 source $(dirname $0)/environ.sh
 
+# timeline webserver directory
+TIMELINEDIR=/u/group/clas/www/clas12mon/html/hipo
+
 usage() {
   echo """
   USAGE: $0 [OPTIONS]... [DATASET] [TARGET_DIRECTORY]

@@ -16,9 +16,6 @@ for p in \
   export JYPATH="$p${JYPATH:+:${JYPATH}}"
 done
 
-# timeline webserver directory
-export TIMELINEDIR=/u/group/clas/www/clas12mon/html/hipo
-
 # check coatjava environment
 if [ -z "${COATJAVA-}" ]; then
   # if on a CI runner, use CI coatjava build artifacts; otherwise print error

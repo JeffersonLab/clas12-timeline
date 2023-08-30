@@ -25,12 +25,6 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     command
   * note: `JYPATH` is added to the classpath for groovy called via
     `run-groovy`, from `coatjava`
-  * the variable `TIMELINEDIR` is the webserver directory to which the output
-    hipo files will be copied; this is a directory which the front-end will
-    read in order to produce the web page version of the timelines. If you are
-    not using this feature, change `TIMELINEDIR` to any local directory; if you
-    don't want to edit `environ.sh`, then simply create the directory `../www`,
-    which is the default value of `TIMELINEDIR`
 
 ## PASS1 Procedure for Automatic QA
 * prepare run-group dependent settings in `monitorRead.groovy`
