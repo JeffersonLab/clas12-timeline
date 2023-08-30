@@ -19,6 +19,7 @@ import org.jlab.groot.data.TDirectory;
 import org.jlab.clas.physics.Vector3;
 import org.jlab.clas.physics.LorentzVector;
 import org.jlab.groot.base.GStyle;
+import org.jlab.logging.DefaultLogger;
 
 public class ana_2p2 {
 	public ana_2p2(){}
@@ -26,6 +27,7 @@ public class ana_2p2 {
         public static void main(String[] args) {
                 System.setProperty("java.awt.headless", "true");
 		GStyle.setPalette("kRainBow");
+                DefaultLogger.debug();
                 int count = 0;
 		int runNum = 0;
 		String filelist = "list_of_files.txt";
