@@ -22,6 +22,8 @@ declare -A modes
 for key in findhipo rundir single series submit check-cache focus-detectors focus-physics; do
   modes[$key]=false
 done
+getDefaultOutputDir() { echo $TIMELINESRC/outfiles/$1; }
+outputDir=""
 
 # usage
 sep="================================================================"
@@ -48,6 +50,9 @@ if [ $# -lt 1 ]; then
 
      -d [DATASET_NAME]      unique dataset name, defined by the user, used for organization
                             default = '$dataset'
+
+     -o [OUTPUT_DIR]        custom output directory
+                            default = $(getDefaultOutputDir [DATASET_NAME])
 
      *** INPUT FINDING OPTIONS: choose only one, or the default will assume each specified
          [RUN_DIRECTORY] is a single run's directory full of HIPO files
@@ -103,9 +108,10 @@ if [ $# -lt 1 ]; then
 fi
 
 # parse options
-while getopts "d:-:" opt; do
+while getopts "d:o:-:" opt; do
   case $opt in
     d) dataset=$OPTARG;;
+    o) outputDir=$OPTARG;;
     -)
       for key in "${!modes[@]}"; do
         [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
@@ -121,6 +127,9 @@ shift $((OPTIND - 1))
 # parse input directories
 rdirs=()
 [ $# == 0 ] && printError "no run directories specified" && exit 100
+for topdir in $*; do
+  [[ "$topdir" =~ ^- ]] && printError "option '$topdir' must be specified before run directories" && exit 100
+done
 if ${modes['findhipo']}; then
   for topdir in $*; do
     fileList=$(find -L $topdir -type f -name "*.hipo")
@@ -144,10 +153,11 @@ elif ${modes['rundir']}; then
 else
   rdirs=$@
 fi
-for rdir in ${rdirs[@]}; do
-  [[ "$rdir" =~ ^- ]] && printError "option '$rdir' must be specified before run directories" && exit 100
-done
+[ ${#rdirs[@]} -eq 0 ] && printError "no run directories found" && exit 100
 
+# set and make output directory
+[ -z "$outputDir" ] && outputDir=$(getDefaultOutputDir $dataset)
+mkdir -p $outputDir
 
 # check focus options
 modes['focus-all']=true
@@ -160,6 +170,7 @@ echo """
 Settings:
 $sep
 DATASET_NAME = $dataset
+OUTPUT_DIR   = $outputDir
 OPTIONS = {"""
 for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
 echo """}
@@ -182,11 +193,10 @@ echo $dataset | grep -q "/" && printError "dataset name must not contain '/' " &
 [ -z "$dataset" ] && printError "dataset name must not be empty" && echo && exit 100
 slurmJobName=clas12-timeline--$dataset
 
-# start job lists, make output and backup directories
+# start job lists, make backup directories
 echo """
 Generating job scripts..."""
 mkdir -p $TIMELINESRC/slurm/scripts
-outputDir=$TIMELINESRC/outfiles/$dataset
 backupDir=$TIMELINESRC/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
 jobkeys=()
 for key in detectors physics; do
@@ -203,17 +213,21 @@ for key in ${jobkeys[@]}; do
 done
 
 # loop over input directories, building the job lists
-runnumMin=0
-runnumMax=0
 for rdir in ${rdirs[@]}; do
 
-  # get the run number
-  [[ ! -e $rdir ]] && printError "the folder $rdir does not exist" && continue
-  runnum=`basename $rdir | grep -m1 -o -E "[0-9]+"`
-  [[ -z "$runnum" ]] && printError "unknown run number for directory $rdir" && continue
+  # get the run number, either from `rdir` basename (fast), or from `RUN::config` (slow)
+  [[ ! -e $rdir ]] && printError "the run directory '$rdir' does not exist" && continue
+  runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory basename
+  if [ -z "$runnum" ]; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
+    firstHipo=$(ls $rdir/*.hipo | head -n1)
+    [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number" && continue
+    echo "using HIPO file $firstHipo to get run number for run directory '$rdir'"
+    $TIMELINESRC/bin/hipo-check.sh $firstHipo
+    runnum=$(run-groovy $TIMELINESRC/bin/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+  fi
+  [ -z "$runnum" -o $runnum -eq 0 ] && printError "unknown run number for run directory '$rdir'; ignoring this directory" && continue
   runnum=$((10#$runnum))
-  [ $runnum -lt $runnumMin -o $runnumMin -eq 0 ] && runnumMin=$runnum
-  [ $runnum -gt $runnumMax -o $runnumMax -eq 0 ] && runnumMax=$runnum
+  echo "run directory '$rdir' has run number $runnum"
 
   # get list of input files, and append prefix for SWIF
   inputListFile=$TIMELINESRC/slurm/files.$dataset.$runnum.inputs.list
