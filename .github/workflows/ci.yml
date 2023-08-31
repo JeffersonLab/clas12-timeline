@@ -130,6 +130,10 @@ jobs:
       run: tree
     - name: run monitoring
       run: bin/run-monitoring.sh -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
+    - name: tree slurm
+      run: tree slurm
+    - name: tree outfiles
+      run: tree outfiles
     - uses: actions/upload-artifact@v3
       with:
         name: slurm
@@ -183,6 +187,8 @@ jobs:
       run: tree
     - name: run timelines
       run: bin/run-${{matrix.type}}-timelines.sh -d ${{env.dataset}} ${{matrix.args}}
+    - name: tree outfiles
+      run: tree outfiles
     - uses: actions/upload-artifact@v3
       with:
         name: outfiles
