@@ -23,6 +23,7 @@ public class FT {
 
     boolean userTimeBased, write_volatile;
     public int runNum, trigger;
+    public String outputDir;
     public int crate;
 
     public boolean hasRF;
@@ -56,8 +57,9 @@ public class FT {
 
     public ConstantsManager ccdb;
 
-    public FT(int reqrunNum, boolean reqTimeBased, boolean reqwrite_volatile) {
+    public FT(int reqrunNum, String reqOutputDir, boolean reqTimeBased, boolean reqwrite_volatile) {
         runNum = reqrunNum;
+        outputDir = reqOutputDir;
         userTimeBased = reqTimeBased;
         write_volatile = reqwrite_volatile;
 
@@ -576,18 +578,9 @@ public class FT {
         can_FT.cd(25);
         can_FT.draw(hmassangle);
 
-        if (runNum > 0) {
-            if (!write_volatile) {
-                can_FT.save(String.format("plots" + runNum + "/FT.png"));
-            }
-            if (write_volatile) {
-                can_FT.save(String.format("/volatile/clas12/rgb/spring19/plots" + runNum + "/FT.png"));
-            }
-            System.out.println(String.format("saved plots" + runNum + "/FT.png"));
-        } else {
-            can_FT.save(String.format("plots/FT.png"));
-            System.out.println(String.format("saved plots/FT.png"));
-        }
+        if (!write_volatile)can_FT.save(String.format(outputDir+"/FT.png"));
+        if (write_volatile)can_FT.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/FT.png"));
+        System.out.println(String.format("saved "+outputDir+"/FT.png"));
 
     }
 
@@ -607,15 +600,15 @@ public class FT {
         dirout.addDataSet(hi_cal_time_theta_ch, hi_cal_time_neu, hi_cal_time_cut_neu, hi_cal_time_e_neu, hi_cal_time_theta_neu, hpi0sum, hmassangle);
         if (write_volatile) {
             if (runNum > 0) {
-                dirout.writeFile("/volatile/clas12/rgb/spring19/plots" + runNum + "/out_FT_" + runNum + ".hipo");
+                dirout.writeFile("/volatile/clas12/rgb/spring19/"+outputDir+"/out_FT_"+runNum+".hipo");
             }
         }
 
         if (!write_volatile) {
             if (runNum > 0) {
-                dirout.writeFile("plots" + runNum + "/out_FT_" + runNum + ".hipo");
+                dirout.writeFile(outputDir+"/out_FT_"+runNum+".hipo");
             } else {
-                dirout.writeFile("plots/out_FT.hipo");
+                dirout.writeFile(outputDir+"/out_FT.hipo");
             }
         }
     }
@@ -640,7 +633,8 @@ public class FT {
                 useTB = false;
             }
         }
-        FT ana = new FT(runNum, useTB, useVolatile);
+        String outputDir = runNum > 0 ? "plots"+runNum : "plots";
+        FT ana = new FT(runNum, outputDir, useTB, useVolatile);
         List<String> toProcessFileNames = new ArrayList<>();
         File file = new File(filelist);
         Scanner read;

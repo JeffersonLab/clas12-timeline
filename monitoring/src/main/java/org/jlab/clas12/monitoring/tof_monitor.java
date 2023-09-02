@@ -28,6 +28,7 @@ import org.jlab.detector.calib.utils.ConstantsManager;
 public class tof_monitor {
 	boolean userTimeBased, write_volatile;
 	public int runNum;
+        public String outputDir;
 	public boolean hasRF;
 	public float RFTime, rfoffset1, rfoffset2;
 	public float rfPeriod;
@@ -66,8 +67,9 @@ public class tof_monitor {
 	public IndexedTable ftofTable, ctofTable;
 	public ConstantsManager ccdb;
 
-	public tof_monitor(int reqrunNum, boolean reqTimeBased, boolean reqwrite_volatile) {
+	public tof_monitor(int reqrunNum, String reqOutputDir, boolean reqTimeBased, boolean reqwrite_volatile) {
 		runNum = reqrunNum;userTimeBased=reqTimeBased;
+                outputDir = reqOutputDir;
 
 		rfPeriod = 4.008f;
 	   	ccdb = new ConstantsManager();
@@ -988,15 +990,9 @@ public class tof_monitor {
 			can_TOF_occ.cd(48+s);can_TOF_occ.draw(p2_pad_dt[s]);
 			//can_TOF_occ.getPad(54+s).getAxisZ().setLog(true);
 		}
-		if(runNum>0){
-			if(!write_volatile)can_TOF_occ.save(String.format("plots"+runNum+"/TOF_cal.png"));
-			if(write_volatile)can_TOF_occ.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/TOF_cal.png"));
-			System.out.println(String.format("saved plots"+runNum+"/TOF_cal.png"));
-		}
-		else{
-			can_TOF_occ.save(String.format("plots/TOF_cal.png"));
-			System.out.println(String.format("saved plots/TOF_cal.png"));
-		}
+                if(!write_volatile)can_TOF_occ.save(String.format(outputDir+"/TOF_cal.png"));
+                if(write_volatile)can_TOF_occ.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/TOF_cal.png"));
+                System.out.println(String.format("saved "+outputDir+"/TOF_cal.png"));
 
 		EmbeddedCanvas can_TOF_calib = new EmbeddedCanvas();
 		can_TOF_calib.setSize(3000,5000);
@@ -1028,17 +1024,11 @@ public class tof_monitor {
                 	can_FTOF_CTOF.cd(s);can_FTOF_CTOF.draw(ftof_ctof_vtdiff[s]);
 		}
 
-		if(runNum>0){
-				if(!write_volatile)can_TOF_calib.save(String.format("plots"+runNum+"/TOF_calib.png"));
-				if(!write_volatile)can_FTOF_CTOF.save(String.format("plots"+runNum+"/FTOF_CTOF.png"));
-				if(write_volatile)can_TOF_calib.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/TOF_calib.png"));
-				System.out.println(String.format("saved plots"+runNum+"/TOF_calib.png"));
-				System.out.println(String.format("saved plots"+runNum+"/FTOF_CTOF.png"));
-		}
-		else{
-			can_TOF_occ.save(String.format("plots/TOF_calib.png"));
-			System.out.println(String.format("saved plots/TOF_calib.png"));
-		}
+                if(!write_volatile)can_TOF_calib.save(String.format(outputDir+"/TOF_calib.png"));
+                if(!write_volatile)can_FTOF_CTOF.save(String.format(outputDir+"/FTOF_CTOF.png"));
+                if(write_volatile)can_TOF_calib.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/TOF_calib.png"));
+                System.out.println(String.format("saved "+outputDir+"/TOF_calib.png"));
+                System.out.println(String.format("saved "+outputDir+"/FTOF_CTOF.png"));
 
 		EmbeddedCanvas can_TOF_4nstrack = new EmbeddedCanvas();
                 can_TOF_4nstrack.setSize(3000,5000);
@@ -1053,15 +1043,9 @@ public class tof_monitor {
                         can_TOF_4nstrack.cd(s+18);can_TOF_4nstrack.draw(p1b_dt_4nstrack_all[s]);
                 }
 
-                if(runNum>0){
-                                if(!write_volatile)can_TOF_4nstrack.save(String.format("plots"+runNum+"/TOF_4nstrack.png"));
-                                if(write_volatile)can_TOF_4nstrack.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/TOF_4nstrack.png"));
-                                System.out.println(String.format("saved plots"+runNum+"/TOF_4nstrack.png"));
-                }
-                else{
-                        can_TOF_occ.save(String.format("plots/TOF_4nstrack.png"));
-                        System.out.println(String.format("saved plots/TOF_4nstrack.png"));
-                }
+                if(!write_volatile)can_TOF_4nstrack.save(String.format(outputDir+"/TOF_4nstrack.png"));
+                if(write_volatile)can_TOF_4nstrack.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/TOF_4nstrack.png"));
+                System.out.println(String.format("saved "+outputDir+"/TOF_4nstrack.png"));
 
 		EmbeddedCanvas can_TOF_ADCTDC = new EmbeddedCanvas();
 		can_TOF_ADCTDC.setSize(3000,3000);
@@ -1074,15 +1058,9 @@ public class tof_monitor {
 			can_TOF_ADCTDC.cd(s+6);can_TOF_ADCTDC.draw(p1b_tdcadc_dt[s]);
 			can_TOF_ADCTDC.cd(s+12);can_TOF_ADCTDC.draw(p2_tdcadc_dt[s]);
 		}
-		if(runNum>0){
-			if(!write_volatile)can_TOF_ADCTDC.save(String.format("plots"+runNum+"/TOF_adctdc_timediff.png"));
-			if(write_volatile)can_TOF_ADCTDC.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/TOF_adctdc_timediff.png"));
-			System.out.println(String.format("saved plots"+runNum+"/TOF_adctdc_timediff.png"));
-		}
-		else{
-			can_TOF_ADCTDC.save(String.format("plots/TOF_adctdc_timediff.png"));
-			System.out.println(String.format("saved plots/TOF_adctdc_timediff.png"));
-		}
+                if(!write_volatile)can_TOF_ADCTDC.save(String.format(outputDir+"/TOF_adctdc_timediff.png"));
+                if(write_volatile)can_TOF_ADCTDC.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/TOF_adctdc_timediff.png"));
+                System.out.println(String.format("saved "+outputDir+"/TOF_adctdc_timediff.png"));
 
 		EmbeddedCanvas can_DC_resd_trkDoca  = new EmbeddedCanvas();
 		can_DC_resd_trkDoca.setSize(3000,3000);
@@ -1095,15 +1073,9 @@ public class tof_monitor {
 			can_DC_resd_trkDoca.getPad(sl + 6*s).getAxisZ().setLog(true);
 			can_DC_resd_trkDoca.draw(DC_residuals_trkDoca[s][sl]);
 		}
-		if(runNum>0){
-			if(!write_volatile)can_DC_resd_trkDoca.save(String.format("plots"+runNum+"/DC_resd_trkDoca.png"));
-			if(write_volatile)can_DC_resd_trkDoca.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/DC_resd_trkDoca.png"));
-			System.out.println(String.format("saved plots"+runNum+"/DC_resd_trkDoca.png"));
-		}
-		else{
-			can_DC_resd_trkDoca.save(String.format("plots/DC_resd_trkDoca.png"));
-			System.out.println(String.format("saved plots/DC_resd_trkDoca.png"));
-		}
+                if(!write_volatile)can_DC_resd_trkDoca.save(String.format(outputDir+"/DC_resd_trkDoca.png"));
+                if(write_volatile)can_DC_resd_trkDoca.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/DC_resd_trkDoca.png"));
+                System.out.println(String.format("saved "+outputDir+"/DC_resd_trkDoca.png"));
 
 		EmbeddedCanvas can_DC_resd  = new EmbeddedCanvas();
 		can_DC_resd.setSize(3000,3000);
@@ -1115,15 +1087,9 @@ public class tof_monitor {
 			can_DC_resd.cd(sl + 6*s);
 			can_DC_resd.draw(DC_residuals[s][sl]);
 		}
-		if(runNum>0){
-			if(!write_volatile)can_DC_resd.save(String.format("plots"+runNum+"/DC_resd.png"));
-			if(write_volatile)can_DC_resd.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/DC_resd.png"));
-			System.out.println(String.format("saved plots"+runNum+"/DC_resd.png"));
-		}
-		else{
-			can_DC_resd.save(String.format("plots/DC_resd.png"));
-			System.out.println(String.format("saved plots/DC_resd.png"));
-		}
+                if(!write_volatile)can_DC_resd.save(String.format(outputDir+"/DC_resd.png"));
+                if(write_volatile)can_DC_resd.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/DC_resd.png"));
+                System.out.println(String.format("saved "+outputDir+"/DC_resd.png"));
 
 		EmbeddedCanvas can_DC_time  = new EmbeddedCanvas();
 		can_DC_time.setSize(3000,3000);
@@ -1135,15 +1101,9 @@ public class tof_monitor {
 				can_DC_time.cd(sl + 6*s);
 				can_DC_time.draw(DC_time[s][sl]);can_DC_time.draw(f_time_invertedS[s][sl],"same");
 		}
-		if(runNum>0){
-				if(!write_volatile)can_DC_time.save(String.format("plots"+runNum+"/DC_time.png"));
-				if(write_volatile)can_DC_time.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/DC_time.png"));
-				System.out.println(String.format("saved plots"+runNum+"/DC_time.png"));
-		}
-		else{
-				can_DC_time.save(String.format("plots/DC_time.png"));
-				System.out.println(String.format("saved plots/DC_time.png"));
-		}
+                if(!write_volatile)can_DC_time.save(String.format(outputDir+"/DC_time.png"));
+                if(write_volatile)can_DC_time.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/DC_time.png"));
+                System.out.println(String.format("saved "+outputDir+"/DC_time.png"));
 	}
 
 	public void write() {
@@ -1169,11 +1129,11 @@ public class tof_monitor {
 		}
 		dirout.addDataSet(DC_jitterzero_sec_sl, DC_jitterone_sec_sl, DC_jittertwo_sec_sl);
 		dirout.addDataSet(DC_hits_even_ts_sec_sl, DC_hits_odd_ts_sec_sl,DC_jitterdist);
-		if(write_volatile)if(runNum>0)dirout.writeFile("/volatile/clas12/rga/spring18/plots"+runNum+"/out_TOF_"+runNum+".hipo");
+		if(write_volatile) dirout.writeFile("/volatile/clas12/rga/spring18/"+outputDir+"/out_TOF_"+runNum+".hipo");
 
 		if(!write_volatile){
-			if(runNum>0)dirout.writeFile("plots"+runNum+"/out_TOF_"+runNum+".hipo");
-			else dirout.writeFile("plots/out_TOF.hipo");
+			if(runNum>0)dirout.writeFile(outputDir+"/out_TOF_"+runNum+".hipo");
+			else dirout.writeFile(outputDir+"/out_TOF.hipo");
 		}
 	}
 ////////////////////////////////////////////////
@@ -1188,7 +1148,8 @@ public class tof_monitor {
 		if(args.length>0)runNum = Integer.parseInt(args[0]);
 		if(args.length>1)filelist = args[1];
 		if(args.length>2)if(Integer.parseInt(args[2])==0)useTB=false;
-		tof_monitor ana = new tof_monitor(runNum,useTB,useVolatile);
+                String outputDir = runNum > 0 ? "plots"+runNum : "plots";
+		tof_monitor ana = new tof_monitor(runNum,outputDir,useTB,useVolatile);
 		List<String> toProcessFileNames = new ArrayList<String>();
 		File file = new File(filelist);
 		Scanner read;

@@ -165,7 +165,7 @@ if(eng) {
       TDirectory dir = new TDirectory()
       dir.readFile(arg)
       def fname = arg.split('/')[-1]
-      def m = fname =~ /\d{4,7}/
+      def m = fname =~ /\d+/
       def run = m[0].toInteger()
 
       engine.processDirectory(dir, run)
