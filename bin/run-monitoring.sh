@@ -19,7 +19,7 @@ SLURM_LOG=/farm_out/%u/%x-%A_%a
 # default options
 dataset=test_v0
 declare -A modes
-for key in findhipo rundir single series submit check-cache focus-detectors focus-physics; do
+for key in findhipo rundir single series submit check-cache swifjob focus-detectors focus-physics; do
   modes[$key]=false
 done
 getDefaultOutputDir() { echo $TIMELINESRC/outfiles/$1; }
@@ -57,13 +57,18 @@ if [ $# -lt 1 ]; then
      *** INPUT FINDING OPTIONS: choose only one, or the default will assume each specified
          [RUN_DIRECTORY] is a single run's directory full of HIPO files
 
-       --findhipo  use \`find\` to find all HIPO files in each
-                   [RUN_DIRECTORY]; this is useful if you have a
-                   directory tree, e.g., runs grouped by target
+       --findhipo     use \`find\` to find all HIPO files in each
+                      [RUN_DIRECTORY]; this is useful if you have a
+                      directory tree, e.g., runs grouped by target
 
-       --rundir    assume each specified [RUN_DIRECTORY] contains
-                   subdirectories named as just run numbers; it is not
-                   recommended to use wildcards for this option
+       --rundir       assume each specified [RUN_DIRECTORY] contains
+                      subdirectories named as just run numbers; it is not
+                      recommended to use wildcards for this option
+
+       --check-cache  cross check /cache directories with tape stub directories
+                      (/mss) and exit without creating or running any jobs; this is
+                      useful if you are running QA on older DSTs which may no longer be
+                      fully pinned on /cache
 
      *** EXECUTION CONTROL OPTIONS: choose only one, or the default will generate a
          Slurm job description and print out the suggested \`sbatch\` command
@@ -77,8 +82,10 @@ if [ $# -lt 1 ]; then
        --submit    submit the slurm jobs, rather than just
                    printing the \`sbatch\` command
 
-       --check-cache   cross check /cache directories with tape stub
-                       directories (/mss); does not create/run any jobs
+       --swifjob   run this on a workflow runner, where the input
+                   HIPO files are found in ./ and specifying [RUN_DIRECTORIES] is
+                   not required; overrides some other settings; this is NOT meant
+                   to be used interactively, but rather as a part of a workflow
 
      *** FOCUS OPTIONS: these options allow for running single types of jobs,
          rather than the default of running everything; you may specify more
@@ -116,47 +123,55 @@ while getopts "d:o:-:" opt; do
       for key in "${!modes[@]}"; do
         [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
       done
-      [ -z "${modes[$OPTARG]}" ] && printError "unknown option --$OPTARG" && exit 100
+      [ -z "${modes[$OPTARG]-}" ] && printError "unknown option --$OPTARG" && exit 100
       ;;
     *) exit 100;;
   esac
 done
 shift $((OPTIND - 1))
 
-
 # parse input directories
 rdirs=()
-[ $# == 0 ] && printError "no run directories specified" && exit 100
-for topdir in $*; do
-  [[ "$topdir" =~ ^- ]] && printError "option '$topdir' must be specified before run directories" && exit 100
-done
-if ${modes['findhipo']}; then
-  for topdir in $*; do
-    fileList=$(find -L $topdir -type f -name "*.hipo")
-    if [ -z "$fileList" ]; then
-      printWarning "run directory '$topdir' has no HIPO files"
-    else
-      rdirs+=($(echo $fileList | xargs dirname | sort -u))
-    fi
-  done
-elif ${modes['rundir']}; then
-  for topdir in $*; do
-    if [ -d $topdir ]; then
-      for subdir in $(ls $topdir | grep -E "[0-9]+"); do
-        rdirs+=($(echo "$topdir/$subdir " | sed 's;//;/;g'))
-      done
-    else
-      printError "run directory '$topdir' does not exist"
-      exit 100
-    fi
-  done
+if ${modes['swifjob']}; then
+  rdirs=(.) # all input files reside in ./ on a workflow runner
 else
-  rdirs=$@
+  [ $# == 0 ] && printError "no run directories specified" && exit 100
+  rdirsArgs="$@"
+  for topdir in ${rdirsArgs[@]}; do
+    [[ "$topdir" =~ ^- ]] && printError "option '$topdir' must be specified before run directories" && exit 100
+  done
+  if ${modes['findhipo']}; then
+    for topdir in ${rdirsArgs[@]}; do
+      fileList=$(find -L $topdir -type f -name "*.hipo")
+      if [ -z "$fileList" ]; then
+        printWarning "run directory '$topdir' has no HIPO files"
+      else
+        rdirs+=($(echo $fileList | xargs dirname | sort -u))
+      fi
+    done
+  elif ${modes['rundir']}; then
+    for topdir in ${rdirsArgs[@]}; do
+      if [ -d $topdir ]; then
+        for subdir in $(ls $topdir | grep -E "[0-9]+"); do
+          rdirs+=($(echo "$topdir/$subdir " | sed 's;//;/;g'))
+        done
+      else
+        printError "run directory '$topdir' does not exist"
+        exit 100
+      fi
+    done
+  else
+    rdirs=$@
+  fi
 fi
 [ ${#rdirs[@]} -eq 0 ] && printError "no run directories found" && exit 100
 
 # set and make output directory
-[ -z "$outputDir" ] && outputDir=$(getDefaultOutputDir $dataset)
+if ${modes['swifjob']}; then
+  outputDir=$(pwd -P)/outfiles
+else
+  [ -z "$outputDir" ] && outputDir=$(getDefaultOutputDir $dataset)
+fi
 mkdir -p $outputDir
 
 # check focus options
@@ -164,6 +179,10 @@ modes['focus-all']=true
 for key in focus-detectors focus-physics; do
   if ${modes[$key]}; then modes['focus-all']=false; fi
 done
+if ${modes['swifjob']} && ${modes['focus-all']}; then
+  printError "option --swifjob must be used with either --focus-detectors or --focus-physics"
+  exit 100
+fi
 
 # print arguments
 echo """
@@ -193,11 +212,11 @@ echo $dataset | grep -q "/" && printError "dataset name must not contain '/' " &
 [ -z "$dataset" ] && printError "dataset name must not be empty" && echo && exit 100
 slurmJobName=clas12-timeline--$dataset
 
-# start job lists, make backup directories
+# start job lists
 echo """
 Generating job scripts..."""
-mkdir -p $TIMELINESRC/slurm/scripts
-backupDir=$TIMELINESRC/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
+slurmDir=./slurm
+mkdir -p $slurmDir/scripts
 jobkeys=()
 for key in detectors physics; do
   if ${modes['focus-all']} || ${modes['focus-'$key]}; then
@@ -206,11 +225,12 @@ for key in detectors physics; do
 done
 declare -A joblists
 for key in ${jobkeys[@]}; do
-  joblists[$key]=$TIMELINESRC/slurm/job.$dataset.$key.list
+  joblists[$key]=$slurmDir/job.$dataset.$key.list
   > ${joblists[$key]}
-  mkdir -p $outputDir/$key
-  mkdir -p $backupDir/$key
 done
+
+# define backup directory (used only if the output files already exist; not used `if ${modes['swifjob']}`)
+backupDir=$TIMELINESRC/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
 
 # loop over input directories, building the job lists
 for rdir in ${rdirs[@]}; do
@@ -230,7 +250,7 @@ for rdir in ${rdirs[@]}; do
   echo "run directory '$rdir' has run number $runnum"
 
   # get list of input files, and append prefix for SWIF
-  inputListFile=$TIMELINESRC/slurm/files.$dataset.$runnum.inputs.list
+  inputListFile=$slurmDir/files.$dataset.$runnum.inputs.list
   [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
   realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
 
@@ -257,16 +277,24 @@ for r0,r1,eb in beamlist:
 
   # generate job scripts
   for key in ${jobkeys[@]}; do
-    jobscript=$TIMELINESRC/slurm/scripts/$key.$runnum.sh
 
+    # preparation: make output subdirectory and backup old one, if it exists
+    outputSubDir=$outputDir/timeline_$key/$runnum
+    if ${modes['swifjob']}; then
+      outputSubDir=$outputDir # no need for run subdirectory or backup on swif runner
+    else
+      if [ -d $outputSubDir ]; then
+        mkdir -p $backupDir/timeline_$key
+        mv -v $outputSubDir $backupDir/timeline_$key/
+      fi
+    fi
+    mkdir -p $outputSubDir
+
+    # make job scripts for each $key
+    jobscript=$slurmDir/scripts/$key.$runnum.sh
     case $key in
 
       detectors)
-        # preparation
-        plotDir=$outputDir/$key/plots$runnum
-        [[ -d $plotDir ]] && mv -v $plotDir $backupDir/$key/
-        mkdir -p $plotDir
-        # wrapper script
         cat > $jobscript << EOF
 #!/bin/bash
 set -e
@@ -275,21 +303,23 @@ set -o pipefail
 echo "RUN $runnum"
 
 # produce histograms
-pushd $outputDir/$key
-java -DCLAS12DIR=${COATJAVA}/ -Xmx1024m -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH org.jlab.clas12.monitoring.ana_2p2 $runnum $inputListFile $MAX_NUM_EVENTS $beam_energy
-popd
+java \
+  -DCLAS12DIR=${COATJAVA}/ \
+  -Xmx1024m \
+  -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH \
+  org.jlab.clas12.monitoring.ana_2p2 \
+    $runnum \
+    $outputSubDir \
+    $inputListFile \
+    $MAX_NUM_EVENTS \
+    $beam_energy
 
 # check output HIPO files
-$TIMELINESRC/bin/hipo-check.sh \$(find $plotDir -name "*.hipo")
+$TIMELINESRC/bin/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
 EOF
         ;;
 
       physics)
-        # preparation: backup old files
-        for backupFile in $outputDir/$key/data_table_${runnum}.dat $outputDir/$key/monitor_${runnum}.hipo; do
-          [ -f $backupFile ] && mv -v $backupFile $backupDir/$key/
-        done
-        # wrapper script
         cat > $jobscript << EOF
 #!/bin/bash
 set -e
@@ -298,21 +328,27 @@ set -o pipefail
 echo "RUN $runnum"
 
 # produce histograms
-pushd $TIMELINESRC/qa-physics
-run-groovy -Djava.awt.headless=true monitorRead.groovy $(realpath $rdir) $dataset dst
-popd
+run-groovy \
+  -Djava.awt.headless=true \
+  monitorRead.groovy \
+    $(realpath $rdir) \
+    $outputSubDir \
+    dst
 
 # check output HIPO files
-$TIMELINESRC/bin/hipo-check.sh $outputDir/$key/monitor_$runnum.hipo
+$TIMELINESRC/bin/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
 EOF
         ;;
 
     esac
+
+    # grant permission and add it `joblists`
     chmod u+x $jobscript
     echo $jobscript >> ${joblists[$key]}
-  done
 
-done
+  done # loop over `jobkeys`
+
+done # loop over `rdirs`
 
 
 # now generate slurm descriptions and/or local scripts
