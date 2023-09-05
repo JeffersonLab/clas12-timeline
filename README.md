@@ -140,38 +140,41 @@ Temporary files are additionally stored in `tmp/`, including backups (for the ca
 outfiles
 └── $dataset
     │
-    ├── detectors                # histograms, etc. for detector timelines
+    ├── timeline_detectors            # histograms, etc. for detector timelines, from `bin/run-monitoring.sh`
     │   │
-    │   ├── plots5000            # hipo files from `bin/run-monitoring.sh`, for run number 5000
-    │   ├── plots5001            # " " for run number 5001
-    │   ├── ...
+    │   ├── 5000                      # for run number 5000
+    │   │   ├── out_HTCC_5000.hipo
+    │   │   ├── out_LTCC_5000.hipo
+    │   │   └── ...
     │   │
-    │   └── timelines            # detector timelines, pre QA, from `bin/run-detectors-timelines.sh`
-    │       ├── htcc
-    │       ├── ltcc
-    │       └── ...
-    │
-    ├── physics                  # histograms, etc. for physics timelines, from `bin/run-monitoring.sh`
-    │   │
-    │   ├── data_table_5000.dat  # table of yields and charge for run number 5000
-    │   ├── data_table_5001.dat
-    │   ├── ...
-    │   │
-    │   ├── monitor_5000.hipo    # histograms for run number 5000
-    │   ├── monitor_5001.hipo
+    │   ├── 5001                      # for run number 5001
     │   └── ...
     │
-    ├── log                      # log files from `bin/run-*-timelines.sh` (whereas slurm logs are found in /farm_out/$LOGNAME/)
-    │   ├── $timeline.out
-    │   └── $timeline.err
+    ├── timeline_physics              # histograms, etc. for physics timelines, from `bin/run-monitoring.sh`
+    │   │
+    │   ├── 5000                      # for run number 5000
+    │   │   ├── data_table_5000.dat
+    │   │   └── monitor_5000.hipo
+    │   │
+    │   ├── 5001                      # for run number 5001
+    │   └── ...
     │
-    └── timelines                # final output timeline files, for deployment to web server
-        │
-        ├── htcc                 # detector timelines, with QA, from `bin/run-detectors-timelines.sh`
-        ├── ltcc
-        ├── ...
-        │
-        ├── phys_qa              # physics timelines, with QA, from `bin/run-physics-timelines.sh`
-        ├── phys_qa_extra        # extra physics QA timelines, for experts
-        └── qadb                 # QADB results timeline
+    ├── timeline_web_preQA            # detector timelines, before QA lines are drawn
+    │   ├── htcc
+    │   ├── ltcc
+    │   └── ...
+    │
+    ├── timeline_web                  # final output timeline files, for deployment to web server
+    │   │
+    │   ├── htcc                      # detector timelines, with QA, from `bin/run-detectors-timelines.sh`
+    │   ├── ltcc
+    │   ├── ...
+    │   │
+    │   ├── phys_qa                   # physics timelines, with QA, from `bin/run-physics-timelines.sh`
+    │   ├── phys_qa_extra             # extra physics QA timelines, for experts
+    │   └── qadb                      # QADB results timeline
+    │
+    └── log                           # log files from `bin/run-*-timelines.sh` (not slurm logs (/farm_out/$LOGNAME/))
+        ├── $timeline.out
+        └── $timeline.err
 ```
