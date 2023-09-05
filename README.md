@@ -183,8 +183,8 @@ outfiles
 
 For CLAS12 `swif` workflow integration, the `bin/run-monitoring.sh` script (which normally generates `slurm` jobs) has a special mode:
 ```bash
-bin/run-monitoring --swifjob --focus-detectors   # generate files for detector timelines
-bin/run-monitoring --swifjob --focus-physics     # generate files for physics QA timelines
+bin/run-monitoring.sh --swifjob --focus-detectors   # generate files for detector timelines
+bin/run-monitoring.sh --swifjob --focus-physics     # generate files for physics QA timelines
 ```
 Either or both of these commands is _all_ that needs to be executed on a runner node; calling one of these will automatically run the wrapped code, with the following assumptions and conventions:
 - input HIPO files are at `./` and only a single run will be processed
