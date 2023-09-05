@@ -5,7 +5,7 @@ rga_outbending 5422 5666 /cache/clas12/rg-a/production/recon/fall2018/torus+1/pa
 rga_spring19   6616 6783 /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v0/dst/recon
 ## pass2
 rga_pass2_spring19 6616 6783 /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/recon
-rga_test_fall18    4763 5666 /volatile/clas12/rg-a/production/pass0/Fall18/v0_26/mon/recon
+rga_test_fall18_FC1    4763 5666 /volatile/clas12/rg-a/production/pass0/Fall18/v0_26/mon/recon
 
 # RGB
 rgb_spring 6156  6603  /cache/clas12/rg-b/production/recon/spring2019/torus-1/pass1/v0/dst/recon

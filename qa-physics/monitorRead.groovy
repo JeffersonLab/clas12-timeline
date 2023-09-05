@@ -146,7 +146,7 @@ else if(RG=="RGM") {
  */
 def FCmode = 1 // default assumes DAQ-gated FC charge can be trusted
 if(RG=="RGA") {
-  FCmode = 0 // fall18 inbending+outbending
+  FCmode = 1 // fall18 inbending+outbending
   if(runnum>=6616 && runnum<=6783) { // spring19
     FCmode=1;
     if(runnum==6724) FCmode=0; // fcupgated charge spike in file 230
