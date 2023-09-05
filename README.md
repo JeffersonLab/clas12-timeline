@@ -178,3 +178,40 @@ outfiles
         ├── $timeline.out
         └── $timeline.err
 ```
+
+# Notes on SWIF Workflows
+
+For CLAS12 `swif` workflow integration, the `bin/run-monitoring.sh` script (which normally generates `slurm` jobs) has a special mode:
+```bash
+bin/run-monitoring --swifjob --focus-detectors   # generate files for detector timelines
+bin/run-monitoring --swifjob --focus-physics     # generate files for physics QA timelines
+```
+Either or both of these commands is _all_ that needs to be executed on a runner node; calling one of these will automatically run the wrapped code, with the following assumptions and conventions:
+- input HIPO files are at `./` and only a single run will be processed
+- run number is obtained by `RUN::config` from one of the HIPO files; all HIPO files are assumed to belong to the same run
+- all output files will be in `./outfiles` (no `$dataset` subdirectory as above)
+
+The output files `./outfiles/` are to be moved to the `swif` output target, following the usual file tree convention with run-number subdirectories:
+```
+top_level_target_directory
+  │
+  ├── timeline_detectors
+  │   ├── 005000  # run 5000; corresponding output files from `--focus-detectors` in `outfiles/` should be moved here
+  │   ├── 005001  # run 5001
+  │   └── ...
+  │
+  ├── timeline_physics
+  │   ├── 005000  # run 5000; corresponding output files from `--focus-physics` in `outfiles/` should be moved here
+  │   └── ...
+  │
+  ├── recon
+  │
+  ├── train
+  │
+  └── ...
+```
+For compatibility with the file tree expected by downstream `bin/run-*-timelines.sh` scripts (see above), symbolic links may be made to these `timeline_{detectors,physics}` directories.
+
+Separate `--focus-detectors` and `--focus-physics` options are preferred, since:
+- offers better organization of the contract data between `swif` jobs and downstream scripts
+- often we will run one and not the other: `--focus-detectors` needs `mon` schema, whereas `--focus-physics` prefers high statistics
