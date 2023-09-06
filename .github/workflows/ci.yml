@@ -201,7 +201,7 @@ jobs:
           - detectors
           - physics
         include:
-          - { type: detectors,  args: -n 2 -r ${{env.validation_run_group}} }
+          - { type: detectors,  args: '-n 2 -r ${{env.validation_run_group}}' }
           - { type: physics,    args: '' }
     steps:
     - name: setup java
