@@ -181,7 +181,7 @@ outfiles
 
 # Notes on SWIF Workflows
 
-For CLAS12 `swif` workflow integration, the `bin/run-monitoring.sh` script (which normally generates `slurm` jobs) has a special mode:
+For CLAS12 `swif` workflow integration, the `bin/run-monitoring.sh` script (which normally generates `slurm` jobs) has a specific mode `--swifjob`:
 ```bash
 bin/run-monitoring.sh --swifjob --focus-detectors   # generate files for detector timelines
 bin/run-monitoring.sh --swifjob --focus-physics     # generate files for physics QA timelines
