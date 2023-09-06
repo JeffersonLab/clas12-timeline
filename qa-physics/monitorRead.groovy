@@ -15,15 +15,18 @@ import org.jlab.detector.base.DetectorType
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 import java.lang.Math.*
-import Tools // (make sure `.` is in $CLASSPATH)
+import Tools
 Tools T = new Tools()
+
+// CONSTANTS
+def SEGMENT_SIZE = 10000 // number of events in each segment (for `inHipoType==skim`)
 
 // ARGUMENTS
 def inHipoType = "dst" // options: "dst", "skim"
-def segmentSize = 10000 // number of events in each segment
+def runnum = 0
 if(args.length<2) {
   System.err.println """
-  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO file directory] [output directory] [type(OPTIONAL)] [size(OPTIONAL)]
+  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO file directory] [output directory] [type(OPTIONAL)] [runnum(OPTIONAL)]
          REQUIRED parameters:
            - [HIPO file directory] should be a directory of HIPO files, either
              DST file(s) or skim file(s)
@@ -31,20 +34,19 @@ if(args.length<2) {
          OPTIONAL parameters:
            - [type] can be 'dst' or 'skim' (default is '$inHipoType')
              NOTE: 'skim' file usage may not work
-           - [size] is used only when [type] is 'skim' as the number of events per segment
-             (default=$segmentSize)
+           - [runnum] the run number; if not specified, it will be obtained from RUN::config
+
   """
   System.exit(101)
 }
 def inHipo = args[0]
 def outDir = args[1]
-if(args.length>=3) inHipoType  = args[2]
-if(args.length>=4) segmentSize = args[3]
+if(args.length>=3) inHipoType = args[2]
+if(args.length>=4) runnum     = args[3].toInteger()
 System.println """
 inHipo     = $inHipo
 outDir     = $outDir
-inHipoType = $inHipoType
-"""
+inHipoType = $inHipoType"""
 
 // get hipo file names
 def inHipoList = []
@@ -67,18 +69,12 @@ else {
 }
 
 
-// get runnum
-def runnum
-if(inHipoType=="skim") {
-  if(inHipo.contains('postprocess'))
-    runnum = inHipo.tokenize('.')[-2].tokenize('/')[-1].toInteger()
-  else
-    runnum = inHipo.tokenize('.')[-2].tokenize('_')[-1].toInteger()
-}
-else if(inHipoType=="dst") {
-  runnum = inHipo.tokenize('/')[-1].toInteger()
-}
-println "runnum=$runnum"
+// get runnum; assumes all HIPO files have the same run number
+if(runnum<=0)
+  runnum = T.getRunNumber(inHipoList.first())
+if(runnum<=0)
+  System.exit(100)
+System.println "runnum     = $runnum"
 
 
 //////////////////////////////////////////////////////////
@@ -689,7 +685,7 @@ inHipoList.each { inHipoFile ->
 
 
     // update segment number, if reading skim file
-    if(inHipoType=="skim") segment = (evCount/segmentSize).toInteger()
+    if(inHipoType=="skim") segment = (evCount/SEGMENT_SIZE).toInteger()
 
     // if segment number changed, write out filled histos 
     // and/or create new histos
