@@ -303,15 +303,15 @@ set -o pipefail
 echo "RUN $runnum"
 
 # produce histograms
-java \
-  -DCLAS12DIR=${COATJAVA}/ \
-  -Xmx1024m \
-  -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH \
-  org.jlab.clas12.monitoring.ana_2p2 \
-    $runnum \
-    $outputSubDir \
-    $inputListFile \
-    $MAX_NUM_EVENTS \
+java \\
+  -DCLAS12DIR=${COATJAVA}/ \\
+  -Xmx1024m \\
+  -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH \\
+  org.jlab.clas12.monitoring.ana_2p2 \\
+    $runnum \\
+    $outputSubDir \\
+    $inputListFile \\
+    $MAX_NUM_EVENTS \\
     $beam_energy
 
 # check output HIPO files
@@ -328,11 +328,11 @@ set -o pipefail
 echo "RUN $runnum"
 
 # produce histograms
-run-groovy \
-  -Djava.awt.headless=true \
-  monitorRead.groovy \
-    $(realpath $rdir) \
-    $outputSubDir \
+run-groovy \\
+  -Djava.awt.headless=true \\
+  $TIMELINESRC/qa-physics/monitorRead.groovy \\
+    $(realpath $rdir) \\
+    $outputSubDir \\
     dst
 
 # check output HIPO files
@@ -414,7 +414,13 @@ if ${modes['single']} || ${modes['series']}; then
     echo "RUNNING ALL JOBS SEQUENTIALLY, LOCALLY:"
   fi
   echo $sep
-  for exe in ${exelist[@]}; do $exe; done
+  for exe in ${exelist[@]}; do
+    echo """
+    $sep
+    EXECUTING: $exe
+    $sep"""
+    $exe
+  done
 elif ${modes['submit']}; then
   echo "SUBMITTING JOBS TO SLURM"
   echo $sep
