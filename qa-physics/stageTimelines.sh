@@ -1,8 +1,8 @@
 #!/bin/bash
 # copy timeline hipo files to output timelines area, staging them for deployment
 
-if [ $# -ne 1 ]; then
-  echo "USAGE: $0 [dataset]" >&2
+if [ $# -ne 2 ]; then
+  echo "USAGE: $0 [dataset] [output_dir]" >&2
   exit 101
 fi
 if [ -z "$TIMELINESRC" ]; then
@@ -10,25 +10,21 @@ if [ -z "$TIMELINESRC" ]; then
   exit 100
 fi
 dataset=$1
+outputDir=$2
 
 # directory names
 inputDir=$TIMELINESRC/qa-physics/outmon.$dataset
-outputDir=$TIMELINESRC/outfiles/$dataset/timelines
 if [ ! -d $inputDir ]; then
   printError "ERROR: dataset '$dataset' files not found in $inputDir"
   exit 100
 fi
-
-# clean output directory
-mkdir -p $outputDir
-rm    -r $outputDir
-mkdir -p $outputDir
 
 # check HIPO files
 timelineFiles=$(ls $inputDir/*.hipo | grep -vE '^monitor')
 $TIMELINESRC/bin/hipo-check.sh $timelineFiles
 
 # copy timelines to output directory
+mkdir -p $outputDir
 for file in $timelineFiles; do
   cp -v $file $outputDir/
 done
