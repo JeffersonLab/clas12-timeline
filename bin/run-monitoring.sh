@@ -333,7 +333,8 @@ run-groovy \\
   $TIMELINESRC/qa-physics/monitorRead.groovy \\
     $(realpath $rdir) \\
     $outputSubDir \\
-    dst
+    dst \\
+    $runnum
 
 # check output HIPO files
 $TIMELINESRC/bin/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
@@ -363,13 +364,13 @@ for key in ${jobkeys[@]}; do
   slurm=$(echo $joblist | sed 's;.list$;.slurm;')
 
   # either generate single/sequential run scripts
-  if ${modes['single']} || ${modes['series']}; then
+  if ${modes['single']} || ${modes['series']} || ${modes['swifjob']}; then
     localScript=$(echo $joblist | sed 's;.list$;.local.sh;')
     echo "#!/bin/bash" > $localScript
     echo "set -e" >> $localScript
     if ${modes['single']}; then
       head -n1 $joblist >> $localScript
-    else
+    else # ${modes['series']} || ${modes['swifjob']}
       cat $joblist >> $localScript
     fi
     chmod u+x $localScript
@@ -407,13 +408,12 @@ done
 echo """
 $sep
 """
-if ${modes['single']} || ${modes['series']}; then
+if ${modes['single']} || ${modes['series']} || ${modes['swifjob']}; then
   if ${modes['single']}; then
     echo "RUNNING ONE SINGLE JOB LOCALLY:"
-  else
+  elif ${modes['series']}; then
     echo "RUNNING ALL JOBS SEQUENTIALLY, LOCALLY:"
   fi
-  echo $sep
   for exe in ${exelist[@]}; do
     echo """
     $sep
