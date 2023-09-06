@@ -12,7 +12,7 @@ defaults:
 
 env:
   dataset: ci_test
-  validation_single_run: 011329
+  validation_single_run: '011329'
   validation_run_group: B # FIXME: not actually used; see comments mentioning this variable below
 
 concurrency:
