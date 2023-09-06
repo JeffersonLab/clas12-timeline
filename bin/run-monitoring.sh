@@ -239,8 +239,8 @@ for rdir in ${rdirs[@]}; do
   [[ ! -e $rdir ]] && printError "the run directory '$rdir' does not exist" && continue
   runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory basename
   if [ -z "$runnum" ]; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
-    firstHipo=$(ls $rdir/*.hipo | head -n1)
-    [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number" && continue
+    firstHipo=$(find $rdir -name "*.hipo" | head -n1)
+    [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number or create job" && continue
     echo "using HIPO file $firstHipo to get run number for run directory '$rdir'"
     $TIMELINESRC/bin/hipo-check.sh $firstHipo
     runnum=$(run-groovy $TIMELINESRC/bin/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
@@ -360,7 +360,7 @@ for key in ${jobkeys[@]}; do
 
   # check if we have any jobs to run
   joblist=${joblists[$key]}
-  [ ! -s $joblist ] && printWarning "there are no $key timeline jobs to run" && continue
+  [ ! -s $joblist ] && printError "there are no $key timeline jobs to run" && continue
   slurm=$(echo $joblist | sed 's;.list$;.slurm;')
 
   # either generate single/sequential run scripts
@@ -405,6 +405,7 @@ done
 
 
 # execution
+[ ${#exelist[@]} -eq 0 ] && printError "no jobs were created at all; check errors and warnings above" && exit 100
 echo """
 $sep
 """
