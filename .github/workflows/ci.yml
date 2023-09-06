@@ -12,8 +12,8 @@ defaults:
 
 env:
   dataset: ci_test
-  validation_run_group: B
   validation_single_run: 011329
+  validation_run_group: B # FIXME: not actually used; see comments mentioning this variable below
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -201,7 +201,7 @@ jobs:
           - detectors
           - physics
         include:
-          - { type: detectors,  args: '-n 2 -r ${{env.validation_run_group}}' }
+          - { type: detectors,  args: -n 2 -r B } # FIXME: prefer `-r ${{env.validation_run_group}}`, but that's invalid syntax for matrix arg
           - { type: physics,    args: '' }
     steps:
     - name: setup java
