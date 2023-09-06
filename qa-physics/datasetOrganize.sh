@@ -2,8 +2,9 @@
 
 set -e
 
-if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]" >&2; exit 101; fi
+if [ $# -ne 2 ];then echo "USAGE: $0 [dataset] [input_dir]" >&2; exit 101; fi
 dataset=$1
+inputDir=$2
 
 if [ -z "$TIMELINESRC" ]; then
   echo "ERROR: please source environ.sh first" >&2
@@ -21,10 +22,9 @@ for dir in $OUTMON_DIR $OUTDAT_DIR; do
 done
 
 # loop over runs, copying and linking to dataset subdirs
-INPUT_DIR=$(realpath $TIMELINESRC/outfiles/$dataset/physics)
-for file in $INPUT_DIR/monitor_*.hipo; do
+for file in $(find $inputDir -name "monitor_*.hipo"); do
   ln -sv $file $OUTMON_DIR/
 done
-for file in $INPUT_DIR/data_table_*.dat; do
+for file in $(find $inputDir -name "data_table_*.dat"); do
   cat $file >> $OUTDAT_DIR/data_table.dat
 done
