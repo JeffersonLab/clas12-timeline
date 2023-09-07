@@ -473,9 +473,9 @@ public class FT {
         double hMean = hpi0sum.getAxis().getBinCenter(hpi0sum.getMaximumBin());
         double hRMS = 10; //ns
         fpi0.setParameter(0, hAmp);
-        fpi0.setParLimits(0, hAmp * 0.8, hAmp * 1.2);
+        if(hAmp!=0) fpi0.setParLimits(0, hAmp * 0.8, hAmp * 1.2);
         fpi0.setParameter(1, hMean);
-        fpi0.setParLimits(1, hMean - hRMS, hMean + hRMS);
+        if(hRMS!=0) fpi0.setParLimits(1, hMean - hRMS, hMean + hRMS);
         DataFitter.fit(fpi0, hpi0sum, "LQ");
         hpi0sum.setFunction(null);
     }
@@ -486,9 +486,9 @@ public class FT {
         double hRMS = hcharge.getRMS(); //ns
         fcharge.setRange(fcharge.getRange().getMin(), hMean * 2.0);
         fcharge.setParameter(0, hAmp);
-        fcharge.setParLimits(0, 0.5 * hAmp, 1.5 * hAmp);
+        if(hAmp!=0) fcharge.setParLimits(0, 0.5 * hAmp, 1.5 * hAmp);
         fcharge.setParameter(1, hMean);
-        fcharge.setParLimits(1, 0.8 * hMean, 1.2 * hMean);//Changed from 5-30        
+        if(hMean!=0) fcharge.setParLimits(1, 0.8 * hMean, 1.2 * hMean);//Changed from 5-30        
         fcharge.setParameter(2, 0.3);//Changed from 2
         fcharge.setParLimits(2, 0.1, 1);//Changed from 0.5-10
         fcharge.setParameter(3, 0.2 * hAmp);
@@ -504,11 +504,11 @@ public class FT {
         double pm = hRMS * 3;
         ftime.setRange(rangeMin, rangeMax);
         ftime.setParameter(0, hAmp);
-        ftime.setParLimits(0, hAmp * 0.8, hAmp * 1.2);
+        if(hAmp!=0) ftime.setParLimits(0, hAmp * 0.8, hAmp * 1.2);
         ftime.setParameter(1, hMean);
-        ftime.setParLimits(1, hMean - pm, hMean + (pm));
+        if(pm!=0) ftime.setParLimits(1, hMean - pm, hMean + (pm));
         ftime.setParameter(2, 0.2);
-        ftime.setParLimits(2, 0.1 * hRMS, 0.8 * hRMS);
+        if(hRMS!=0) ftime.setParLimits(2, 0.1 * hRMS, 0.8 * hRMS);
     }
 
     public void plot() {

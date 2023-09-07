@@ -21,7 +21,7 @@ class DCFitter{
         f1.setRange(hMean-1, hMean+1);
         f1.setParameter(0, hAmp);
         f1.setParameter(1, hMean);
-        f1.setParLimits(1, hMean-0.5, hMean+0.5);
+        if(hMean!=0) f1.setParLimits(1, hMean-0.5, hMean+0.5);
         f1.setParameter(2, hRMS);
         f1.setParameter(3,0);
 
@@ -55,7 +55,7 @@ class DCFitter{
         f2.setRange(hMean-1, hMean+1);
         f2.setParameter(0, hAmp);
         f2.setParameter(1, hMean);
-        f2.setParLimits(1, hMean-0.5, hMean+0.5);
+        if(hMean!=0) f2.setParLimits(1, hMean-0.5, hMean+0.5);
         f2.setParameter(2, hRMS);
         f2.setParameter(3,0);
  
