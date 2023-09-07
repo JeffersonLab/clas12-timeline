@@ -208,6 +208,7 @@ fi
 
 # initial checks and preparations
 [[ ! -f $JARPATH ]] && printError "Problem with jar file for clas12_monitoring package" && echo && exit 100
+export CLASSPATH="$JARPATH${CLASSPATH:+:${CLASSPATH}}"
 echo $dataset | grep -q "/" && printError "dataset name must not contain '/' " && echo && exit 100
 [ -z "$dataset" ] && printError "dataset name must not be empty" && echo && exit 100
 slurmJobName=clas12-timeline--$dataset
@@ -243,7 +244,7 @@ for rdir in ${rdirs[@]}; do
     [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number or create job" && continue
     echo "using HIPO file $firstHipo to get run number for run directory '$rdir'"
     $TIMELINESRC/bin/hipo-check.sh $firstHipo
-    runnum=$(run-groovy $TIMELINESRC/bin/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+    runnum=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
   fi
   [ -z "$runnum" -o $runnum -eq 0 ] && printError "unknown run number for run directory '$rdir'; ignoring this directory" && continue
   runnum=$((10#$runnum))
@@ -304,9 +305,7 @@ echo "RUN $runnum"
 
 # produce histograms
 java \\
-  -DCLAS12DIR=${COATJAVA}/ \\
-  -Xmx1024m \\
-  -cp ${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH \\
+  $TIMELINE_JAVA_OPTS \\
   org.jlab.clas12.monitoring.ana_2p2 \\
     $runnum \\
     $outputSubDir \\
@@ -329,7 +328,7 @@ echo "RUN $runnum"
 
 # produce histograms
 run-groovy \\
-  -Djava.awt.headless=true \\
+  $TIMELINE_GROOVY_OPTS \\
   $TIMELINESRC/qa-physics/monitorRead.groovy \\
     $(realpath $rdir) \\
     $outputSubDir \\

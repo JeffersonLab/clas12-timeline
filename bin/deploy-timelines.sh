@@ -121,7 +121,7 @@ mkdir -pv $targetDir
 rm    -rv $targetDir
 mkdir -pv $targetDir
 cp -rv $inputDir/* $targetDir/
-run-groovy $TIMELINESRC/bin/index-webpage.groovy $targetDir
+run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/index-webpage.groovy $targetDir
 echo "DONE."
 
 # print URL

@@ -101,9 +101,9 @@ done
 # set class path
 GROOVYPATH=`which groovy`
 GROOVYBIN=`dirname $GROOVYPATH`
-export GROOVYLIB="`dirname $GROOVYBIN`/lib"
-export JARPATH="$TIMELINESRC/detectors/target"
-export CLASSPATH="${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH/*:$GROOVYLIB/*"
+GROOVYLIB="`dirname $GROOVYBIN`/lib"
+JARPATH="$TIMELINESRC/detectors/target"
+export CLASSPATH="$JARPATH/*:$GROOVYLIB/*${CLASSPATH:+:${CLASSPATH}}"
 
 # get main executable for detector timelines
 # FIXME: remove run group dependence
@@ -239,7 +239,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
     if [ $jobCnt -le $numThreads ]; then
       echo ">>> producing timeline '$timelineObj' ..."
-      java -DCLAS12DIR=$COATJAVA/ $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+      java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
       let jobCnt++
     else
       wait
@@ -293,7 +293,7 @@ cp -rL $finalDirPreQA/* $finalDir/
 if ${modes['focus-all']} || ${modes['focus-qa']}; then
   echo ">>> add QA lines..."
   logFile=$logDir/qa
-  run-groovy $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
+  run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
   qaFiles=$(find $finalDir -name "*_QA.hipo")
   [ -n "$qaFiles" ] && $TIMELINESRC/bin/hipo-check.sh $qaFiles
 fi
