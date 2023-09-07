@@ -19,8 +19,7 @@ if [ $# -eq 0 ]; then
 
   REQUIRED OPTIONS: specify at least one of the following:
 
-    -i [INPUT_DIR]      directory of input files, either a directory containing run subdirectories
-                        or the top-level SWIF workflow output directory
+    -i [INPUT_DIR]      directory containing run subdirectories of timeline histograms
 
     -d [DATASET_NAME]   unique dataset name, defined by the user, used for organization
                         output files will be written to ./outfiles/[DATASET_NAME]
@@ -55,9 +54,8 @@ done
 
 # set directories and dataset name
 # FIXME: copied implementation from `run-detector-timelines.sh`
-inputDir=$(echo $inputDir | sed 's;timeline_detectors$;;') # remove 'timeline_detectors' subdirectory, if user specified it
 if [ -z "$inputDir" -a -n "$dataset" ]; then
-  inputDir=$TIMELINESRC/outfiles/$dataset # default input directory is in ./outfiles/
+  inputDir=$TIMELINESRC/outfiles/$dataset/timeline_physics # default input directory is in ./outfiles/
 elif [ -n "$inputDir" -a -z "$dataset" ]; then
   dataset=$(ruby -e "puts '$inputDir'.split('/')[-4..].join('_')") # set dataset using last few subdirectories in inputDir dirname
 elif [ -z "$inputDir" -a -z "$dataset" ]; then
@@ -67,7 +65,6 @@ fi
 outputDir=$TIMELINESRC/outfiles/$dataset
 
 # set subdirectories
-inputDir=$inputDir/timeline_physics
 finalDir=$outputDir/timeline_web
 logDir=$outputDir/log
 
