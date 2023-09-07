@@ -596,7 +596,7 @@ public class cndCheckPlots {
 								System.out.println("height "+H_CND_time.getBinContent(H_CND_time.getMaximumBin()));
 								IntRes.setParameter(2,0.2);
 								try {
-										DataFitter.fit(IntRes, H_CND_time, "");
+										DataFitter.fit(IntRes, H_CND_time, "Q");
 										H_CND_time.setTitle("Integrated vertex time. Width=" + IntRes.getParameter(2));
 								} catch (Exception ex) {
 										ex.printStackTrace();
@@ -611,7 +611,7 @@ public class cndCheckPlots {
 								System.out.println("height "+H_CND_res[0].getBinContent(H_CND_res[0].getMaximumBin()));
 								IntRes1.setParameter(2,2.0);
 								try {
-										// DataFitter.fit(IntRes1, H_CND_res[0], "");
+										// DataFitter.fit(IntRes1, H_CND_res[0], "Q");
 										//H_CND_res[0].setTitle("Integrated vertex time. Width=" + IntRes1.getParameter(2));
 								} catch (Exception ex) {
 										ex.printStackTrace();
@@ -659,7 +659,7 @@ public class cndCheckPlots {
 														fitE[(comp*3)+layer+(sector*6)].setParameter(4,0.0);
 
 														try {
-																DataFitter.fit(fitz[(comp*3)+layer+(sector*6)], H_CND_align[(comp*3)+layer+(sector*6)], "");
+																DataFitter.fit(fitz[(comp*3)+layer+(sector*6)], H_CND_align[(comp*3)+layer+(sector*6)], "Q");
 																double resz =Math.abs(fitz[(comp*3)+layer+(sector*6)].getParameter(2));
 																double alig=fitz[(comp*3)+layer+(sector*6)].getParameter(1);
 																//double aligt=fitt[(comp*3)+layer+(sector*6)].getParameter(1);
@@ -673,7 +673,7 @@ public class cndCheckPlots {
 														}
 
 														try {
-																DataFitter.fit(fitt[(comp*3)+layer+(sector*6)], H_CND_alignt[(comp*3)+layer+(sector*6)], "");
+																DataFitter.fit(fitt[(comp*3)+layer+(sector*6)], H_CND_alignt[(comp*3)+layer+(sector*6)], "Q");
 																double rest=Math.abs(fitt[(comp*3)+layer+(sector*6)].getParameter(2));
 																double aligt=fitt[(comp*3)+layer+(sector*6)].getParameter(1);
 																if(rest<0.5)resot.addPoint((comp*3)+layer+(sector*6),rest,0.,0.);
@@ -685,7 +685,7 @@ public class cndCheckPlots {
 														}
 
 														try {
-																DataFitter.fit(fitE[(comp*3)+layer+(sector*6)], H_CND_alignE[(comp*3)+layer+(sector*6)], "");
+																DataFitter.fit(fitE[(comp*3)+layer+(sector*6)], H_CND_alignE[(comp*3)+layer+(sector*6)], "Q");
 																double resE=Math.abs(fitE[(comp*3)+layer+(sector*6)].getParameter(2));
 																double aligE=fitE[(comp*3)+layer+(sector*6)].getParameter(1);
 																//if(rest<0.5)resot.addPoint((comp*3)+layer+(sector*6),rest,0.,0.);
