@@ -111,17 +111,17 @@ function exe {
 exe ./datasetOrganize.sh $dataset $inputDir
 
 # produce chargeTree.json
-exe run-groovy buildChargeTree.groovy $dataset
+exe run-groovy $TIMELINE_GROOVY_OPTS buildChargeTree.groovy $dataset
 
 # loop over datasets
 # trigger electrons monitor
-exe run-groovy qaPlot.groovy $dataset
-exe run-groovy qaCut.groovy $dataset
+exe run-groovy $TIMELINE_GROOVY_OPTS qaPlot.groovy $dataset
+exe run-groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $dataset
 # FT electrons
-exe run-groovy qaPlot.groovy $dataset FT
-exe run-groovy qaCut.groovy $dataset FT
+exe run-groovy $TIMELINE_GROOVY_OPTS qaPlot.groovy $dataset FT
+exe run-groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $dataset FT
 # general monitor
-exe run-groovy monitorPlot.groovy $dataset
+exe run-groovy $TIMELINE_GROOVY_OPTS monitorPlot.groovy $dataset
 # move timelines to output area
 exe ./stageTimelines.sh $dataset $finalDir
 
