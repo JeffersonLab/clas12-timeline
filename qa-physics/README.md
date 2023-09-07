@@ -20,7 +20,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
   * local environment:
     * `$COATJAVA` must point to your local install
     * `run-groovy` (likely in `$COATJAVA/bin`) must be in your `$PATH`
-2. set local environment variables with `source env.sh`
+2. set local environment variables with `source environ.sh`
   * some primary run scripts do this automatically, in case the user forgets
   * note: `JYPATH` is added to the classpath for groovy called via
     `run-groovy`, from `coatjava`
@@ -28,7 +28,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     hipo files will be copied; this is a directory which the front-end will
     read in order to produce the web page version of the timelines. If you are
     not using this feature, change `TIMELINEDIR` to any local directory; if you
-    don't want to edit `env.sh`, then simply create the directory `../www`,
+    don't want to edit `environ.sh`, then simply create the directory `../www`,
     which is the default value of `TIMELINEDIR`
 
 ## PASS1 Procedure for Automatic QA
@@ -125,13 +125,16 @@ First step is to read DST or Skim files, producing hipo files and data tables
     * `outdat/data_table_${run}.dat`, which is a data table with the following columns:
       * run number
       * 5-file number
+      * minimum event number
+      * maximum event number
       * sector
-      * number of electron triggers (`N`)
+      * number of electron triggers (`N`) in this sector
       * number of electrons in the forward tagger
-      * DAQ-gated FC charge at beginning of 5-file (`F_i`)
-      * DAQ-gated FC charge at end of 5-file (`F_f`)
-      * DAQ-ungated FC charge at beginning of 5-file
-      * DAQ-ungated FC charge at end of 5-file
+      * DAQ-gated FC charge at beginning of 5-file (`F_i`) (minimum readout)
+      * DAQ-gated FC charge at end of 5-file (`F_f`) (maximum readout)
+      * DAQ-ungated FC charge at beginning of 5-file (minimum readout)
+      * DAQ-ungated FC charge at end of 5-file (maximum readout)
+      * average livetime
     * `outmon/monitor_${runnum}.hipo` contains several plots 
       * in the script, they are organized into a tree data structure, which allows plot
         any variable, for any set of properties

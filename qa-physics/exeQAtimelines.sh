@@ -2,7 +2,7 @@
 # after finishing analysis in the `QA` subdirectory, this script will call
 # qaCut.groovy on the results
 
-if [ -z "$CLASQA" ]; then source env.sh; fi
+if [ -z "$CLASQA" ]; then source environ.sh; fi
 
 if [ $# -ne 1 ]; then
   echo "USAGE: $0 [dataset]" >&2

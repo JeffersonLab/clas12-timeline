@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$CLASQA" ]; then
-  echo "ERROR: please source env.sh first" >&2
+  echo "ERROR: please source environ.sh first" >&2
   exit 100
 fi
 
@@ -54,6 +54,11 @@ checkIfCached() {
   fi
 }
 
+# get a list of run subdirectories
+getRunDirs() {
+  echo $(ls -d $1/*/ | sed 's;/$;;')
+}
+
 
 # preparation
 # -----------------------------------------------------------------------
@@ -78,40 +83,56 @@ mkdir -p tmp
 echo "#!/bin/bash" > $jcacheList
 
 # check if DATADIR is a /cache subdirectory; if so, we will loop through the
-# corresponding tape stub directory, cross checking with the /cache directory,
-# but the data will be read from the /cache directory
+# corresponding tape stub directory, cross checking with the /cache directory
 isCacheDir=0
-dataDirMain=$DATADIR
 if [[ "$DATADIR" =~ "/cache/" ]]; then
   isCacheDir=1
   dataDirCache=$DATADIR
   dataDirTape=$(cache2tape $DATADIR)
-  dataDirMain=$dataDirTape 
-  # diff the cache and tape stub directories, to see if one has runs that the other does not
-  ls $dataDirCache | grep -vi readme > tmp/cacheList
-  ls $dataDirTape | grep -vi readme > tmp/tapeList
-  diff -y --suppress-common-lines tmp/{cache,tape}List > tmp/diffList
-  if [ -s tmp/diffList ]; then
-    printIssue """WARNING: there are differences between the list of runs in the cache and tape directories.
-      cache dir: $dataDirCache
-      tape dir:  $dataDirTape
-    This means that one may have run subdirectories that the other does not.
-    Here is a summary of their differences:
 
-   cache_dir                                                    tape_dir
+  # check for existence of directories
+  skipCheck=0
+  [ ! -d $dataDirCache ] && printIssue "WARNING: cache directory does not exist: $dataDirCache"    && skipCheck=1
+  [ ! -d $dataDirTape ]  && printIssue "WARNING: tape stub directory does not exist: $dataDirTape" && skipCheck=1
+  if [ $skipCheck -eq 1 ]; then
+    printIssue """WARNING: since cache or tape directory does not exist, it is not possible to make sure
+         that all files on tape also exist on cache"""
+    echo "Skipping cache check, since problems were detected (see errors and warnings below)..."
+  else
+
+    # diff the cache and tape stub top-level directories, to see if one has runs that the other does not
+    ls $dataDirCache | grep -vi readme > tmp/cacheList
+    ls $dataDirTape | grep -vi readme > tmp/tapeList
+    diff -y --suppress-common-lines tmp/{cache,tape}List > tmp/diffList
+    if [ -s tmp/diffList ]; then
+      printIssue """WARNING: there are differences between the list of runs in the cache and tape directories.
+        cache dir: $dataDirCache
+        tape dir:  $dataDirTape
+      This means that one may have run subdirectories that the other does not.
+      Here is a summary of their differences:
+
+     cache_dir                                                    tape_dir
 ===============                                              ==============
 $(cat tmp/diffList)
 
-    """
+      """
+    fi
+
+    # then diff each run subdirectory
+    for runDir in `getRunDirs $dataDirTape`; do
+      echo "Checking if cached: $runDir"
+      checkIfCached $(tape2cache $runDir) $runDir
+    done
   fi
+
 fi
 
 
-# build job commands
+# build job commands, only for the runs in specified range
 # -----------------------------------------------------------------------
 joblist=slurm/joblist.${dataset}.slurm
 > $joblist
-for runDir in `ls -d ${dataDirMain}/*/ | sed 's;/$;;'`; do
+for runDir in `getRunDirs $DATADIR`; do
 
   # get the run number, and check if it's in range
   runnum=$((10#$(echo $runDir | sed 's;.*/;;g')))
@@ -119,18 +140,8 @@ for runDir in `ls -d ${dataDirMain}/*/ | sed 's;/$;;'`; do
   if [ $runnum -ge $RUNL -a $runnum -le $RUNH ]; then
     echo "--- found"
 
-    # if reading from cache, compare with tape stubs
-    runDirRead=$runDir
-    if [ $isCacheDir -eq 1 ]; then
-      runDirTape=$runDir
-      runDirCache=$(tape2cache $runDirTape)
-      checkIfCached $runDirCache $runDirTape
-      runDirRead=$runDirCache
-    fi
-    cmd="run-groovy $CLASQA_JAVA_OPTS monitorRead.groovy $runDirRead dst"
-
     # append the command to the joblist
-    echo "$cmd" >> $joblist
+    echo "run-groovy $CLASQA_JAVA_OPTS monitorRead.groovy $runDir dst" >> $joblist
 
     # move old output files to a trash directory
     for runfile in outdat/data_table_${runnum}.dat outmon/monitor_${runnum}.hipo; do

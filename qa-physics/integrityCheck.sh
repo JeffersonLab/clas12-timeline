@@ -6,7 +6,7 @@
 # - must run getListOfDSTs.sh first
 
 if [ -z "$CLASQA" ]; then
-  echo "ERROR: please source env.sh first" >&2
+  echo "ERROR: please source environ.sh first" >&2
   exit 100
 fi
 
