@@ -38,7 +38,8 @@ done
 
 # java and groovy options
 timeline_java_opts=(
-  -DCLAS12DIR=${COATJAVA}/
+  -DCLAS12DIR=$COATJAVA/
+  -Djava.util.logging.config.file=$COATJAVA/etc/logging/debug.properties
   -Xmx1024m
 )
 timeline_groovy_opts=(
