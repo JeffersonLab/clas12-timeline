@@ -239,7 +239,7 @@ for rdir in ${rdirs[@]}; do
   # get the run number, either from `rdir` basename (fast), or from `RUN::config` (slow)
   [[ ! -e $rdir ]] && printError "the run directory '$rdir' does not exist" && continue
   runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory basename
-  if [ -z "$runnum" ]; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
+  if [ -z "$runnum" ] || ${modes['swifjob']}; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
     firstHipo=$(find $rdir -name "*.hipo" | head -n1)
     [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number or create job" && continue
     echo "using HIPO file $firstHipo to get run number for run directory '$rdir'"
