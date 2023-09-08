@@ -8,6 +8,8 @@ See other files in this directory, in case there are typos here:
 
 Only differences greater than 0.01 GeV are noted.
 
+In the timeline code, beam energy is used for plot ranges (and occasionally cuts) for the detector timelines, and for (SI)DIS kinematics and cuts for beam spin asymmetries in the physics timelines.
+
 ## RG-A
 - RCDB matches timeline hard-coded values
 
