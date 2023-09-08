@@ -8,27 +8,28 @@ TIMELINEDIR=/u/group/clas/www/clas12mon/html/hipo
 
 usage() {
   echo """
-  USAGE: $0 [OPTIONS]... [DATASET] [TARGET_DIRECTORY]
+  USAGE: $0 [OPTIONS]... -d [DATASET] -t [TARGET_DIRECTORY]
 
   =================================================================
   CAUTION: READ ALL OF THIS BEFORE RUNNING !
 
-     If you really don't want to read, do a dry run using -d:
-       $0 -d [ARGS]...
+     If you really don't want to read, do a dry run using -D:
+       $0 -D [ARGS]...
 
   WARNING: be careful not to overwrite anything you shouldn't
   =================================================================
 
-  REQUIRED ARGUMENTS: copy timelines for dataset [DATASET] to [TARGET_DIRECTORY]
-  -------------------
+  REQUIRED OPTIONS: copy timelines for dataset [DATASET] to [TARGET_DIRECTORY]
+  -----------------
 
-  - [DATASET]  the unique dataset name used by other scripts;
-               final timeline files are assumed to be in the default location;
-               if they are elsewhere, use the -i option
+  -d [DATASET]            the unique dataset name used by other scripts;
+                          final timeline files are assumed to be in the default
+                          location; if they are elsewhere, use the -i option
 
-  - [TARGET_DIRECTORY]   the top-level destination where the directory of
-                         final timelines will be copied to
+  -t [TARGET_DIRECTORY]   the top-level destination where the directory of
+                          final timelines will be copied to
 
+  NOTES:
     - [TARGET_DIRECTORY] is RELATIVE to \$TIMELINEDIR, where
         TIMELINEDIR = $TIMELINEDIR
     - use the -c option for a [TARGET_DIRECTORY] not relative to \$TIMELINEDIR
@@ -41,10 +42,10 @@ usage() {
       [RUN_GROUP]/pass[PASS]    the Run Group's directory; note the
                                 file organization may vary between Run Groups
 
-  OPTIONAL ARGUMENTS: must precede REQUIRED ARGUMENTS
-  -------------------
+  OPTIONAL OPTIONS:
+  -----------------
 
-  -d                     dry-run: prints what your command will do, but does not do it
+  -D                     dry-run: prints what your command will do, but does not do it
 
   -c                     interpret [TARGET_DIRECTORY] as a custom directory,
                          not relative to \$TIMELINEDIR
@@ -54,34 +55,36 @@ usage() {
                            default = [DATASET]
 
   -i [INPUT_DIRECTORY]   specify an alternate input directory of timelines
-                           default = $TIMELINESRC/outfiles/[DATASET]/timelines
+                           default = $TIMELINESRC/outfiles/[DATASET]/timeline_web
   """ >&2
 }
 
 # parse arguments
 [ $# -lt 2 ] && usage && exit 101
 ### optional arguments
+dataset=""
+targetDirArg=""
 dryRun=false
 customTarget=false
 subDir=""
 inputDir=""
-while getopts "dcs:i:" opt; do
+while getopts "d:t:Dcs:i:" opt; do
   case $opt in
-    d) dryRun=true       ;;
-    c) customTarget=true ;;
-    s) subDir=$OPTARG    ;;
-    i) inputDir=$OPTARG  ;;
-    *) exit 100          ;;
+    d) dataset=$OPTARG      ;;
+    t) targetDirArg=$OPTARG ;;
+    D) dryRun=true          ;;
+    c) customTarget=true    ;;
+    s) subDir=$OPTARG       ;;
+    i) inputDir=$OPTARG     ;;
+    *) exit 100             ;;
   esac
 done
-shift $((OPTIND - 1))
-### required arguments
-[ $# -ne 2 ] && usage && exit 101
-dataset=$1
-targetDirArg=$2
+
+# check required options
+[ -z "$dataset" -o -z "$targetDirArg" ] && printError "missing required options -d and -t" && usage && exit 100
 
 # specify input directory
-[ -z "$inputDir" ] && inputDir=$TIMELINESRC/outfiles/$dataset/timelines
+[ -z "$inputDir" ] && inputDir=$TIMELINESRC/outfiles/$dataset/timeline_web
 [ ! -d $inputDir ] && printError "input timelines directory $inputDir does not exist" && exit 100
 
 # specify target directory
@@ -108,7 +111,7 @@ if ${dryRun}; then
   echo """
   This was a dry run, and nothing was done. Inspect the output above. Make sure
   that you have write access to [DESTINATION]. If everything looks okay, re-run
-  your command without the -d option.
+  your command without the -D option.
   """
   exit 0
 fi
