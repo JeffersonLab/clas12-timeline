@@ -51,9 +51,6 @@ bin/run-detectors-timelines.sh
 bin/run-physics-timelines.sh
 ```
 
-If all went well, a URL for the new timelines will be printed; open it in a browser to view them.
-
-
 #### Details
 - detector timeline production is handled by the [`detectors/` subdirectory](detectors);
   see [its documentation](detectors/README.md)
@@ -61,6 +58,17 @@ If all went well, a URL for the new timelines will be printed; open it in a brow
   see [its documentation](qa-detectors/README.md)
 - physics timeline production and QA are handled by the [`qa-physics/` subdirectory](qa-physics);
   see [their documentation](qa-physics/README.md)
+
+### Stage 3: Deployment
+
+To view the timelines on the web, you must deploy them by copying the timeline HIPO files to a directory served to the web. Note that you must have write-permission for that directory. To deploy, run (with no arguments, for the usage guide):
+
+```bash
+bin/deploy-timelines.sh
+```
+
+If all went well, a URL for the new timelines will be printed; open it in a browser to view them.
+
 
 ## QA Database (QADB) Production
 
@@ -87,9 +95,9 @@ flowchart TB
             monitorDetectors["<strong>Make detector histograms</strong><br/>monitoring/: org.jlab.clas12.monitoring.ana_2p2"]:::proc
             monitorPhysics["<strong>Make physics QA histograms</strong><br/>qa-physics/: monitorRead.groovy"]:::proc
         end
-        outplots[(outfiles/$dataset/detectors/*/*.hipo)]:::data
-        outdat[(outfiles/$dataset/physics/*.dat)]:::data
-        outmon[(outfiles/$dataset/physics/*.hipo)]:::data
+        outplots[(.....detectors/$run_number/*.hipo)]:::data
+        outdat[(.....physics/$run_number/*.dat)]:::data
+        outmon[(.....physics/$run_number/*.hipo)]:::data
     end
     dst --> monitorDetectors
     dst --> monitorPhysics
@@ -100,7 +108,7 @@ flowchart TB
     subgraph Timeline Production
         subgraph "<strong>bin/run-detectors-timelines.sh</strong>"
             timelineDetectorsPreQA["<strong>Make detector timelines</strong><br/>detectors/: org.jlab.clas.timeline.run"]:::proc
-            outTimelineDetectorsPreQA{{outfiles/$dataset/detectors/timelines/$detector/*.hipo}}:::timeline
+            outTimelineDetectorsPreQA{{outfiles/$dataset/timeline_web_preQA/$detector/*.hipo}}:::timeline
             timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
         end
         subgraph "<strong>bin/run-physics-timelines.sh</strong>"
@@ -108,8 +116,8 @@ flowchart TB
         end
     end
     subgraph Final Timelines
-        outTimelinePhysics{{outfiles/$dataset/timelines/physics_*/*}}:::timeline
-        outTimelineDetectors{{outfiles/$dataset/timelines/$detector/*.hipo}}:::timeline
+        outTimelinePhysics{{outfiles/$dataset/timeline_web/phys_*/*}}:::timeline
+        outTimelineDetectors{{outfiles/$dataset/timeline_web/$detector/*.hipo}}:::timeline
         deploy["<strong>Deployment</strong><br/>bin/deploy-timelines.sh"]:::proc
         timelineDir{{timelines on web server}}:::timeline
     end
@@ -195,12 +203,12 @@ The output files `./outfiles/` are to be moved to the `swif` output target, foll
 ```
 top_level_target_directory
   │
-  ├── timeline_detectors
+  ├── detectors
   │   ├── 005000  # run 5000; corresponding output files from `--focus-detectors` in `outfiles/` should be moved here
   │   ├── 005001  # run 5001
   │   └── ...
   │
-  ├── timeline_physics
+  ├── physics
   │   ├── 005000  # run 5000; corresponding output files from `--focus-physics` in `outfiles/` should be moved here
   │   └── ...
   │
