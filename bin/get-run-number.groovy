@@ -1,5 +1,5 @@
 // get run number for a given HIPO file, using RUN::config
-import Tools
+import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 if(args.length<1) {

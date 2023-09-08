@@ -3,7 +3,7 @@
 import org.rcdb.*
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
-import Tools
+import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 infile="qa/qaTree.json"
