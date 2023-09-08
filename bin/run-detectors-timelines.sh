@@ -8,7 +8,7 @@ source $(dirname $0)/environ.sh
 inputDir=""
 dataset=""
 rungroup=a
-numThreads=4
+numThreads=8
 singleTimeline=""
 declare -A modes
 for key in list build focus-timelines focus-qa; do
