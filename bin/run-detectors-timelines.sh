@@ -273,7 +273,8 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   done
 
   # check timelines
-  $TIMELINESRC/bin/hipo-check.sh $(find . -name "*.hipo")
+  outputFiles=$(find . -name "*.hipo")
+  [ -n "$outputFiles" ] && $TIMELINESRC/bin/hipo-check.sh $outputFiles
 
   popd
 fi
@@ -291,8 +292,8 @@ if ${modes['focus-all']} || ${modes['focus-qa']}; then
   echo ">>> add QA lines..."
   logFile=$logDir/qa
   run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
-  qaFiles=$(find $finalDir -name "*_QA.hipo")
-  [ -n "$qaFiles" ] && $TIMELINESRC/bin/hipo-check.sh $qaFiles
+  outputFiles=$(find $finalDir -name "*_QA.hipo")
+  [ -n "$outputFiles" ] && $TIMELINESRC/bin/hipo-check.sh $outputFiles
 fi
 
 
