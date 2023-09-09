@@ -11,9 +11,11 @@ git clone https://github.com/JeffersonLab/clas12-timeline.git
 
 To build,
 ```bash
-bin/build-all.sh        # standard build
-bin/build-all.sh clean  # alternatively, a clean build
+make              # build
+make clean        # clean, but do not build
+make clean build  # clean, then build
 ```
+Additional `make` targets are available, to selectively build and/or clean sub-projects; this is useful to speedup development (just build what you need); for example, `make monitoring` or `make detectors-clean`.
 
 ## Procedure
 
