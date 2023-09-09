@@ -13,16 +13,11 @@ To build,
 ```bash
 mvn package
 ```
-#### Notes
-The [top-level POM](pom.xml) includes two submodules:
-- [monitoring](monitoring)
-- [detectors](detectors)
-You may build them individually with `-f`, e.g.,
-```bash
-mvn -f detectors package`
-```
-
-Use `mvn clean` if you want to clean build targets. 
+#### Additional Build Notes:
+- Use `mvn clean` if you want to clean build targets. 
+- The [top-level POM](pom.xml) includes the following submodules, which you may build individually with the `-f` option of `mvn`:
+  1. [`monitoring`](monitoring): generate histograms for detectors
+  1. [`detectors`](detectors): uses detector histograms to generate timelines
 
 ## Procedure
 
