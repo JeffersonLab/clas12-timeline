@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.jlab.clas.timeline</groupId>
+  <artifactId>clas12-timeline</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <name>clas12-timeline</name>
+  <url>http://www.github.com/JeffersonLab/clas12-timeline</url>
+
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>monitoring</module>
+    <module>detectors</module>
+  </modules>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jlab.coat</groupId>
+      <artifactId>coat-libs</artifactId>
+      <version>9.0.0-SNAPSHOT</version>
+      <type>jar</type>
+    </dependency>
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>clas12maven</id>
+      <url>https://clasweb.jlab.org/clas12maven</url>
+    </repository>
+  </repositories>
+
+</project>
