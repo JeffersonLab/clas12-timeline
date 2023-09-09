@@ -14,10 +14,10 @@ endef
 
 monitoring detectors: FORCE
 	$(call header,BUILD $@)
-	@cd $@ && mvn package
+	mvn -f $@ package
 
 %-clean:
 	$(call header,CLEAN $*)
-	@cd $* && mvn clean
+	mvn -f $* clean
 
 FORCE:
