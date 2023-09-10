@@ -3,15 +3,21 @@ import groovy.yaml.YamlSlurper
 
 class Config {
 
+  // instance variables -------------------------------------
+
+  // config file vars
   private String      configFileName
   private File        configFile
   private Object      configTree
   private YamlSlurper slurper
 
-  private int    runNum    = 0
-  private String runGroup  = "unknown"
-  private String runPeriod = "unknown"
+  // run group and period
+  private int            runNum
+  private Range<Integer> runNumRange
+  private String         runGroup
+  private String         runPeriod
 
+  // ------------------------------------------------------
 
   /**
    * @param configFileName the configuration file name
@@ -41,6 +47,20 @@ class Config {
       checkNode("run group '$runGroupIt'", runGroupConfigTree, "runs")
     }
 
+    // initialize run period variables
+    resetRunPeriod()
+
+  }
+
+
+  /**
+   * Reset the run period variables
+   */
+  private void resetRunPeriod() {
+    runNum      = 0
+    runNumRange = 0..0
+    runGroup    = "unknown"
+    runPeriod   = "unknown"
   }
 
 
@@ -49,17 +69,22 @@ class Config {
    * @param runNum the run number
    */
   public void setRun(int runNum) {
-
-    // find the run group and run period
     this.runNum = runNum
     try {
+      // if runNum is in the same run period as the previous call, do nothing
+      if(runNumRange.contains(runNum)) return
+      // reset run period variables
+      resetRunPeriod()
+      // search for the run period which contains this runNum
       def found = false
       configTree["run_groups"].find { runGroupIt, runGroupConfigTree ->
-        runGroupConfigTree["runs"].find { runPeriodIt, runRange ->
-          if(runNum >= runRange[0] && runNum <= runRange[1]) {
-            runGroup  = runGroupIt
-            runPeriod = runPeriodIt
-            found     = true
+        runGroupConfigTree["runs"].find { runPeriodIt, runNumRangeArr ->
+          Range<Integer> runNumRangeIt = runNumRangeArr[0]..runNumRangeArr[1]
+          if(runNumRangeIt.contains(runNum)) {
+            runNumRange = runNumRangeIt
+            runGroup    = runGroupIt
+            runPeriod   = runPeriodIt
+            found       = true
           }
           return found
         }
@@ -71,7 +96,6 @@ class Config {
       ex.printStackTrace()
       System.exit(100)
     }
-
   }
 
 
@@ -89,8 +113,10 @@ class Config {
   public void printConfig() {
     System.out.println """
 Configuration for run $runNum:
-  Run Group:  $runGroup
-  Run Period: $runPeriod"""
+  Run Group:        $runGroup
+  Run Period:       $runPeriod
+  Run Number Range: ${runNumRange.getFrom()} to ${runNumRange.getTo()}
+"""
   }
 
 }
