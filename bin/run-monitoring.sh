@@ -5,8 +5,6 @@ set -u
 source $(dirname $0)/environ.sh
 
 # constants ############################################################
-# dependencies
-JARPATH="$TIMELINESRC/monitoring/target/clas12-monitoring-v0.0-alpha.jar"
 # max number of events for detector monitoring timelines
 MAX_NUM_EVENTS=100000000
 # slurm settings
@@ -207,8 +205,6 @@ if ${modes['check-cache']}; then
 fi
 
 # initial checks and preparations
-[[ ! -f $JARPATH ]] && printError "Problem with jar file for clas12_monitoring package" && echo && exit 100
-export CLASSPATH="$JARPATH${CLASSPATH:+:${CLASSPATH}}"
 echo $dataset | grep -q "/" && printError "dataset name must not contain '/' " && echo && exit 100
 [ -z "$dataset" ] && printError "dataset name must not be empty" && echo && exit 100
 slurmJobName=clas12-timeline--$dataset
