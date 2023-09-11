@@ -84,12 +84,6 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     corresponding to one run
   * Skim files are assumed to be contained in a single directory, with one skim file
     corresponding to one run
-* The file `Tools.groovy` contains several subroutines used by the general monitor
-  scripts; depending on your environment, you may need to ensure that this working
-  directory is included in the environment variable `$CLASSPATH`
-  * One way to do this in `bash` is `export CLASSPATH="${CLASSPATH}:.`, which adds the
-    present working directory
-
 
 ### DST / Skim reading
 First step is to read DST or Skim files, producing hipo files and data tables

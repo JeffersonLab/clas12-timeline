@@ -7,7 +7,7 @@ import org.jlab.groot.data.H1F
 import org.jlab.groot.fitter.DataFitter
 import org.jlab.groot.math.F1D
 import java.lang.Math.*
-import Tools
+import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 // ARGUMENTS:

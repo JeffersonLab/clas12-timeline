@@ -15,7 +15,7 @@ import org.jlab.detector.base.DetectorType
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 import java.lang.Math.*
-import Tools
+import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 // CONSTANTS
