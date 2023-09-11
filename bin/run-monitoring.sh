@@ -299,6 +299,9 @@ set -u
 set -o pipefail
 echo "RUN $runnum"
 
+# set classpath
+export CLASSPATH=$CLASSPATH
+
 # produce histograms
 java \\
   $TIMELINE_JAVA_OPTS \\
@@ -321,6 +324,9 @@ set -e
 set -u
 set -o pipefail
 echo "RUN $runnum"
+
+# set classpath
+export JYPATH=$JYPATH
 
 # produce histograms
 run-groovy \\
