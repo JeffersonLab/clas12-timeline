@@ -49,7 +49,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
       actually it was OFF and needs to be ON
 * `exeSlurm.sh $dataset`: runs `monitorRead.groovy` on DSTs using slurm
   * `$dataset` is specified in `datasetList.txt`, along with a range of runs
-    * the syntax of this file is `$dataset $firstRun $lastRun`
+    * the syntax of this file is `$dataset first_run_number last_run_number data_directory`
     * several scripts use this file; some loop over all datasets, whereas
       others require you to specify which dataset
       * for scripts which loop over all datasets, you can restrict them by
