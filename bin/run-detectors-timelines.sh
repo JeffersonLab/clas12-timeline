@@ -97,12 +97,8 @@ while getopts "i:d:r:n:t:-:" opt; do
   esac
 done
 
-# set class path
-GROOVYPATH=`which groovy`
-GROOVYBIN=`dirname $GROOVYPATH`
-GROOVYLIB="`dirname $GROOVYBIN`/lib"
-JARPATH="$TIMELINESRC/detectors/target"
-export CLASSPATH="$JARPATH/*:$GROOVYLIB/*${CLASSPATH:+:${CLASSPATH}}"
+# set class path to include groovy's classpath, for `java` calls
+export CLASSPATH="$JYPATH${CLASSPATH:+:${CLASSPATH}}"
 
 # get main executable for detector timelines
 # FIXME: remove run group dependence
