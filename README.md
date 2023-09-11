@@ -11,9 +11,13 @@ git clone https://github.com/JeffersonLab/clas12-timeline.git
 
 To build,
 ```bash
-bin/build-all.sh        # standard build
-bin/build-all.sh clean  # alternatively, a clean build
+mvn package
 ```
+#### Additional Build Notes:
+- Use `mvn clean` if you want to clean build targets. 
+- The [top-level POM](pom.xml) includes the following submodules, which you may build individually with the `-f` option of `mvn`:
+  1. [`monitoring`](monitoring): generate histograms for detectors
+  1. [`detectors`](detectors): uses detector histograms to generate timelines
 
 ## Procedure
 

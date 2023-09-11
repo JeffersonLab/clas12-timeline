@@ -34,7 +34,7 @@ jobs:
         java-version: 11
         distribution: zulu
     - name: build
-      run: ./bin/build-all.sh
+      run: mvn package
     - name: tar # to preserve any permissions
       run: |
         tar czvf build_detectors.tar.gz detectors/target
