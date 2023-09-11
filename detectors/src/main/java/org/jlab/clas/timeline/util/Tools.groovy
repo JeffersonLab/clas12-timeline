@@ -1,3 +1,4 @@
+package org.jlab.clas.timeline.util
 import org.jlab.clas.physics.LorentzVector
 import org.jlab.clas.physics.Vector3
 import org.jlab.io.hipo.HipoDataSource
