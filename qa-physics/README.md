@@ -43,6 +43,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
       charge, you may have assumed here that the recharge option was ON, when
       actually it was OFF and needs to be ON
 * `../bin/run-monitoring.sh`: runs `monitorRead.groovy` on DSTs using slurm
+  * you should use a unique `$dataset` name (see [../README.md](../README.md))
   * wait for slurm jobs to finish
   * execute `errorPrint.sh` to inspect error logs
   * resubmit failed jobs, e.g., those that exceeded time limit on a slow node:
