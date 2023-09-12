@@ -1,6 +1,8 @@
 #!/bin/bash
 # copy timeline hipo files to output timelines area, staging them for deployment
 
+set -e
+
 if [ $# -ne 2 ]; then
   echo "USAGE: $0 [dataset] [output_dir]" >&2
   exit 101
@@ -20,7 +22,7 @@ if [ ! -d $inputDir ]; then
 fi
 
 # check HIPO files
-timelineFiles=$(ls $inputDir/*.hipo | grep -vE '^monitor')
+timelineFiles=$(find $inputDir -name "*.hipo" -type f)
 $TIMELINESRC/bin/hipo-check.sh $timelineFiles
 
 # copy timelines to output directory
@@ -30,8 +32,13 @@ for file in $timelineFiles; do
 done
 
 # organize them
+mkdir_clean() {
+  mkdir -p $*
+  rm -r $*
+  mkdir -p $*
+}
 pushd $outputDir
-mkdir -v phys_qa{,_extra}
+mkdir_clean phys_qa phys_qa_extra
 extraList=(
   electron_FT_yield_normalized_values
   electron_FT_yield_QA_Automatic_Result
@@ -50,10 +57,11 @@ for extraFile in ${extraList[@]}; do
   mv -v $extraFile.hipo phys_qa_extra/
 done
 mv -v *.hipo phys_qa/
-popd
 
 # if QADB timelines were produced, copy them too
 if [ -d $inputDir.qa ]; then
-  mkdir -p $outputDir/qadb
-  cp -v $inputDir.qa/* $outputDir/qadb/
+  mkdir_clean qadb
+  cp -v $inputDir.qa/* qadb/
 fi
+
+popd
