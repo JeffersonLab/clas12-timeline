@@ -394,10 +394,6 @@ for key in ${jobkeys[@]}; do
 #SBATCH --array=1-$(cat $joblist | wc -l)
 #SBATCH --ntasks=1
 
-source /group/clas12/packages/setup.sh
-module purge
-module load clas12/pro
-
 srun \$(head -n\$SLURM_ARRAY_TASK_ID $joblist | tail -n1)
 EOF
     exelist+=($slurm)
