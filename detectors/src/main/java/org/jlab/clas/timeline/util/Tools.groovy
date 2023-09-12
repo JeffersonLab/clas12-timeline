@@ -206,7 +206,7 @@ class Tools {
       event = reader.getNextEvent()
       if(event.hasBank("RUN::config")) {
         runnum = BigInteger.valueOf(event.getBank("RUN::config").getInt('run',0))
-        break
+        if(runnum>0) break
       }
     }
     reader.close()
