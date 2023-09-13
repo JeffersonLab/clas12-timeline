@@ -20,7 +20,7 @@ class Tools {
     "SectorLoss: N/F diminished within a FD sector for several consecutive files",
     "LowLiveTime: live time < 0.9",
     "Misc: miscellaneous defect, documented as comment",
-    "TotalOutlierFT: outlier N/F, but not terminal, marginal, or `LossFT`, FT electron",
+    "TotalOutlierFT: outlier N/F, but not terminal, marginal, or sector loss, FT electron",
     "TerminalOutlierFT: outlier N/F of first or last file of run, not marginal, FT electron",
     "MarginalOutlierFT: marginal outlier N/F, within one standard deviation of cut line, FT electron",
     "LossFT: N/F diminished within FT for several consecutive files",
