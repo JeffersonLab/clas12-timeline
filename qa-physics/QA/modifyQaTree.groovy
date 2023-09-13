@@ -124,7 +124,7 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
     """)
     System.err.println("Bit List:\n")
     T.bitDefinitions.size().times {
-      System.err.println("$it\t" + T.bitNames[it] + "\t" + T.bitDescripts[it] + "\n")
+      System.err.println(sprintf("%5d %20s:   %s", it, T.bitNames[it], T.bitDescripts[it]))
     }
     System.exit(101)
   }
