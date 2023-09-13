@@ -174,12 +174,6 @@ else if(RG=="RGM") {
   }
 }
 
-// FC attenuation fix
-// FIXME: re-define this as a closure here, when resolving https://github.com/JeffersonLab/clas12-qadb/issues/12
-// RGB runs <6400 had wrong attenuation, need to use
-// fc -> fc*9.96025
-// (this is programmed in below, but mentioned here for documentation)
-
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -602,14 +596,6 @@ def writeHistos = {
     }
     if(fcStart>fcStop || ufcStart>ufcStop) {
       System.err.println "WARNING: faraday cup start > stop for run=${runnum} file=${segmentNum}"
-    }
-
-    // RGB attenuation correction
-    if(RG=="RGB" && runnum<6400) {
-      fcStart *= 9.96025
-      fcStop *= 9.96025
-      ufcStart *= 9.96025
-      ufcStop *= 9.96025
     }
 
     // write number of electrons and FC charge to datfile
