@@ -24,6 +24,12 @@ class Tools {
     TerminalOutlierFT: "outlier N/F of first or last file of run, not marginal, FT electron",
     MarginalOutlierFT: "marginal outlier N/F, within one stddev of cut line, FT electron",
     LossFT:            "N/F diminished within FT for several consecutive files",
+    BSAWrong:          "Beam Spin Asymmetry is the wrong sign",
+    BSAUnknown:        "Beam Spin Asymmetry is unknown, likely because of low statistics",
+    TSAWrong:          "Target Spin Asymmetry is the wrong sign",
+    TSAUnknown:        "Target Spin Asymmetry is unknown, likely because of low statistics",
+    DSAWrong:          "Double Spin Asymmetry is the wrong sign",
+    DSAUnknown:        "Double Spin Asymmetry is unknown, likely because of low statistics",
   ]
 
   // list of bit names and descriptions
@@ -36,7 +42,7 @@ class Tools {
     if(bitNum>=0 && bitNum<bitNames.size()) return bitNum
     else {
       System.err.println "ERROR bad bit name $bitName"
-      return 31
+      return 63
     }
   }
 
