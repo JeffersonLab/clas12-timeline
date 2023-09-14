@@ -86,8 +86,9 @@ First step is to read DST or Skim files, producing HIPO files and data tables
       * DAQ-ungated FC charge at end of 5-file (maximum readout)
       * average livetime
     * monitoring HIPO file, `[output_directory]/monitor_${runnum}.hipo`, contains several plots 
-      * there is one plot per 'segment' where a segment is a single DST file
-        (5-file) or a set of 10000 events for skim files
+      * there is one plot per 'time bin', defined as a set of consecutive events satisfying:
+        * at least a certain number of events with `RUN::scaler`
+        * at least a certain number of overall events
 
 ### Data Organization
 * use the script `datasetOrganize.sh`
@@ -107,8 +108,8 @@ First step is to read DST or Skim files, producing HIPO files and data tables
         * Units of angle are radians
       * Clicking on a point will draw several plots below the timeline,
         corresponding to that run:
-        * distribution of the average value of X, with one entry per segment
-        * graph of the average value of X versus segment number
+        * distribution of the average value of X, with one entry per time bin
+        * graph of the average value of X versus time bin number
 
 * `qaPlot.groovy` 
   * reads data table and generates `monitorElec.hipo`

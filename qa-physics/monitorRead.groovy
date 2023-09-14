@@ -19,7 +19,8 @@ import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 // CONSTANTS
-def SEGMENT_SIZE = 10000 // number of events in each segment (for `inHipoType==skim`)
+def MIN_NUM_SCALERS = 2000 // at least this many scaler readouts per time bin
+def MIN_NUM_EVENTS  = 380000 // at least this many events per time bin
 
 // ARGUMENTS
 def inHipoType = "dst" // options: "dst", "skim"
@@ -267,8 +268,9 @@ def eleSec
 def eventNum
 def eventNumList = []
 def eventNumMin, eventNumMax
-def segmentNum
-def segmentDev
+def timeBinNum = -1
+def timeBinEventCount = 0
+def timeBinScalerCount = 0
 def helicity
 def helStr
 def helDefined
@@ -276,8 +278,6 @@ def phi
 def runnumTmp = -1
 def reader
 def evCount
-def segment
-def segmentTmp = -1
 def nbins
 def sectors = 0..<6
 def nElec = sectors.collect{0}
@@ -528,31 +528,10 @@ def writeHistos = {
   // proceed only if there are data to write
   if(eventNumList.size()>0) {
 
-    // get segment number
-    if(inHipoType=="skim") {
-      // segment number is average event number; include standard deviation
-      // of event number as well
-      segmentNum = Math.round( eventNumList.sum() / eventNumList.size() )
-      segmentDev = Math.round(Math.sqrt( 
-       eventNumList.collect{ n -> Math.pow((n-segmentNum),2) }.sum() / 
-       (eventNumList.size()-1)
-      ))
-      print "eventNum ave=$segmentNum dev=$segmentDev"
-      print "min=$eventNumMin max=$eventNumMax\n"
-    }
-    else if(inHipoType=="dst") {
-      // segment number is the DST 5-file number; standard devation is irrelevant here
-      // and set to 0 for compatibility with downstream code
-      segmentNum = segmentTmp
-      segmentDev = 0
-    }
-
-
     // loop through histTree, adding histos to the hipo file;
-    // note that the average event number is appended to the name
     T.exeLeaves( histTree, {
-      histN = T.leaf.getName() + "_${segmentNum}_${segmentDev}"
-      histT = T.leaf.getTitle() + " :: segment=${segmentNum}"
+      histN = T.leaf.getName() + "_${timeBinNum}"
+      histT = T.leaf.getTitle() + " :: timeBinNum=${timeBinNum}"
       T.leaf.setName(histN)
       T.leaf.setTitle(histT)
       outHipo.addDataSet(T.leaf) 
@@ -567,7 +546,7 @@ def writeHistos = {
       ufcStart = UFClist.min()
       ufcStop = UFClist.max()
     } else {
-      System.err.println "WARNING: empty UFClist for run=${runnum} file=${segmentNum}"
+      System.err.println "WARNING: empty UFClist for run=${runnum} timeBinNum=${timeBinNum}"
       ufcStart = 0
       ufcStop = 0
     }
@@ -584,18 +563,18 @@ def writeHistos = {
         fcStart = FClist.min()
         fcStop = FClist.max()
       } else {
-        System.err.println "WARNING: empty FClist for run=${runnum} file=${segmentNum}"
+        System.err.println "WARNING: empty FClist for run=${runnum} timeBinNum=${timeBinNum}"
         fcStart = 0
         fcStop = 0
       }
     }
     if(fcStart>fcStop || ufcStart>ufcStop) {
-      System.err.println "WARNING: faraday cup start > stop for run=${runnum} file=${segmentNum}"
+      System.err.println "WARNING: faraday cup start > stop for run=${runnum} timeBinNum=${timeBinNum}"
     }
 
     // write number of electrons and FC charge to datfile
     sectors.each{ sec ->
-      datfileWriter << [ runnum, segmentNum ].join(' ') << ' '
+      datfileWriter << [ runnum, timeBinNum ].join(' ') << ' '
       datfileWriter << [ eventNumMin, eventNumMax ].join(' ') << ' '
       datfileWriter << [ sec+1, nElec[sec], nElecFT ].join(' ') << ' '
       datfileWriter << [ fcStart, fcStop, ufcStart, ufcStop, aveLivetime ].join(' ') << '\n'
@@ -613,8 +592,8 @@ def writeHistos = {
     */
   }
   else {
-    System.err.println "WARNING: empty segment (segmentTmp=$segmentTmp)"
-    System.err.println " if all segments in a run are empty, there will be more errors later!"
+    System.err.println "WARNING: empty time bin (timeBinNum=$timeBinNum)"
+    System.err.println " if all time bins in a run are empty, there will be more errors later!"
   }
 
   // reset number of trigger electrons counter and FC lists
@@ -638,10 +617,6 @@ inHipoList.each { inHipoFile ->
   reader = new HipoDataSource()
   reader.open(inHipoFile)
 
-  // if DST file, set segment number to 5-file number
-  if(inHipoType=="dst")
-    segment = inHipoFile.tokenize('.')[-2].tokenize('-')[0].toInteger()
-
   // EVENT LOOP
   while(reader.hasEvent()) {
     //if(evCount>100000) break // limiter
@@ -662,17 +637,11 @@ inHipoList.each { inHipoFile ->
     //println "pidList = $pidList"
 
 
-    // update segment number, if reading skim file
-    if(inHipoType=="skim") segment = (evCount/SEGMENT_SIZE).toInteger()
+    // if time bin number changed, write out filled histos and/or create new histos
+    if(timeBinNum==-1 || (timeBinScalerCount>=MIN_NUM_SCALERS && timeBinEventCount>=MIN_NUM_EVENTS)) {
 
-    // if segment number changed, write out filled histos 
-    // and/or create new histos
-    if(segment!=segmentTmp) {
-
-      // if this isn't the first segment, and if we are reading a skim file,
-      // write out filled histograms; note that if reading a dst file, this
-      // subroutine is instead called at the end of the event loop
-      if(segmentTmp>=0 && inHipoType=="skim") writeHistos()
+      // if this isn't the first time bin, write out filled histograms
+      if(timeBinNum>=0) writeHistos()
 
       // define new histograms
       nbins = 50
@@ -700,15 +669,17 @@ inHipoList.each { inHipoFile ->
 
       // print the histogram names and titles
       /*
-      if(segmentTmp==-1) {
+      if(timeBinNum==-1) {
         println "---\nhistogram names and titles:"
         T.printTree(histTree,{ T.leaf.getName() +" ::: "+ T.leaf.getTitle() })
         println "---"
       }
       */
 
-      // update tmp number
-      segmentTmp = segment
+      // update time bin number and reset counters
+      timeBinNum++
+      timeBinEventCount = 0
+      timeBinScalerCount = 0
     }
 
 
@@ -777,26 +748,28 @@ inHipoList.each { inHipoFile ->
       }
     }
 
-    // add eventNum to the list of this segment's event numbers; ignore empty events (eventNum==0)
+    // add eventNum to the list of this time bin's event numbers; ignore empty events (eventNum==0)
     eventNum = BigInteger.valueOf(configBank.getInt('event',0))
     if(eventNum>0) eventNumList.add(eventNum)
 
+    // increment time bin event counters
+    timeBinEventCount++
+    if(event.hasBank("RUN::scaler")) timeBinScalerCount++
+
   } // end event loop
   reader.close()
-
-  // write histograms to hipo file, and then set them to null for garbage collection
-  segmentTmp = segment
-  writeHistos()
 
   // close reader
   reader = null
   System.gc()
 } // end loop over hipo files
 
+// write final time bin's histograms
+writeHistos()
+
 // write outHipo file
 outHipoN = "$outDir/monitor_${runnum}.hipo"
 File outHipoFile = new File(outHipoN)
 if(outHipoFile.exists()) outHipoFile.delete()
 outHipo.writeFile(outHipoN)
-if(inHipoType=="dst") datfileWriter.close()
 
