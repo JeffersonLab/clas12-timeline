@@ -22,7 +22,7 @@ if [ ! -d $inputDir ]; then
 fi
 
 # check HIPO files
-timelineFiles=$(find $inputDir -name "*.hipo" -type f)
+timelineFiles=$(find $inputDir -name "*.hipo" -type f | grep -v 'monitorElec')
 $TIMELINESRC/bin/hipo-check.sh $timelineFiles
 
 # copy timelines to output directory
