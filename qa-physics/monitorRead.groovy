@@ -21,6 +21,8 @@ Tools T = new Tools()
 // CONSTANTS
 def MIN_NUM_SCALERS = 2000 // at least this many scaler readouts per time bin
 def MIN_NUM_EVENTS  = 380000 // at least this many events per time bin
+def VERBOSE         = true   // enable extra log messages, for debugging
+def printDebug = { msg -> if(VERBOSE) println "[DEBUG]: $msg" }
 
 // ARGUMENTS
 def inHipoType = "dst" // options: "dst", "skim"
@@ -276,7 +278,6 @@ def helStr
 def helDefined
 def phi
 def runnumTmp = -1
-def reader
 def evCount
 def nbins
 def sectors = 0..<6
@@ -474,6 +475,20 @@ def findParticles = { pid ->
 }
 
 
+// subroutine to get the FC charge and livetime, depending on `FCmode`
+def getFCcharge = { scalerBankArg, eventBankArg ->
+  if(scalerBankArg.rows()>0) {
+    UFClist << scalerBankArg.getFloat("fcup",0)     // ungated charge
+    LTlist  << scalerBankArg.getFloat("livetime",0) // livetime
+    if(FCmode==1) {
+      FClist << scalerBankArg.getFloat("fcupgated",0) // gated charge
+    }
+  }
+  if(FCmode==2 && eventBankArg.rows()>0) {
+    FClist << eventBankArg.getFloat("beamCharge",0) // gated charge
+  }
+}
+
 
 // subroutine to calculate hadron (pion) kinematics, and fill histograms
 // note: needs to have some kinematics defined (vecQ,Q2,W), and helStr
@@ -539,7 +554,7 @@ def writeHistos = {
     //println "write histograms:"; T.printTree(histTree,{T.leaf.getName()})
 
 
-    // get FC charge
+    // get accumulated FC charge
     def ufcStart
     def ufcStop
     if(UFClist.size()>0) {
@@ -579,6 +594,9 @@ def writeHistos = {
       datfileWriter << [ sec+1, nElec[sec], nElecFT ].join(' ') << ' '
       datfileWriter << [ fcStart, fcStop, ufcStart, ufcStop, aveLivetime ].join(' ') << '\n'
     }
+    printDebug " - event number range: [ $eventNumMin, $eventNumMax ]"
+    printDebug " - gated-FC charge:    [ $fcStart, $fcStop ]"
+    printDebug " - ungated-FC charge:  [ $ufcStart, $ufcStop ]"
 
     // print some stats
     /*
@@ -611,37 +629,49 @@ def writeHistos = {
 // event loop
 //----------------------
 evCount = 0
+printDebug "Begin event loop"
 inHipoList.each { inHipoFile ->
 
-  // open skim/DST file
-  reader = new HipoDataSource()
+  // open HIPO file
+  printDebug "Open HIPO file $inHipoFile"
+  def reader = new HipoDataSource()
   reader.open(inHipoFile)
 
   // EVENT LOOP
   while(reader.hasEvent()) {
     //if(evCount>100000) break // limiter
     event = reader.getNextEvent()
+    isScalerEvent = event.hasBank("RUN::scaler")
 
     // get required banks
-    particleBank = event.getBank("REC::Particle")
-    eventBank = event.getBank("REC::Event")
-    configBank = event.getBank("RUN::config")
-    // get additional banks
+    particleBank   = event.getBank("REC::Particle")
+    eventBank      = event.getBank("REC::Event")
+    configBank     = event.getBank("RUN::config")
     FTparticleBank = event.getBank("RECFT::Particle")
-    calBank = event.getBank("REC::Calorimeter")
-    scalerBank = event.getBank("RUN::scaler")
+    calBank        = event.getBank("REC::Calorimeter")
+    scalerBank     = event.getBank("RUN::scaler")
 
+    // get event number
+    if(configBank.rows()>0) {
+      eventNum = BigInteger.valueOf(configBank.getInt('event',0))
+    } else {
+      System.err.println "WARNING: found event with no RUN::config bank"
+      continue
+    }
 
-    // get list of PIDs, with list index corresponding to bank row
-    pidList = (0..<particleBank.rows()).collect{ particleBank.getInt('pid',it) }
-    //println "pidList = $pidList"
+    // if we have enough events for a time bin, and if this is an event with a
+    // scaler readout, write out filled histos and/or create new histos
+    if(timeBinNum==-1 || (timeBinScalerCount>=MIN_NUM_SCALERS && timeBinEventCount>=MIN_NUM_EVENTS && isScalerEvent)) {
 
-
-    // if time bin number changed, write out filled histos and/or create new histos
-    if(timeBinNum==-1 || (timeBinScalerCount>=MIN_NUM_SCALERS && timeBinEventCount>=MIN_NUM_EVENTS)) {
-
-      // if this isn't the first time bin, write out filled histograms
-      if(timeBinNum>=0) writeHistos()
+      // if this isn't the first time bin, get FC info for this event, and write out filled histograms
+      if(timeBinNum>=0) {
+        printDebug "End time bin $timeBinNum"
+        printDebug " - isScalerEvent      = $isScalerEvent"
+        printDebug " - timeBinEventCount  = $timeBinEventCount"
+        printDebug " - timeBinScalerCount = $timeBinScalerCount"
+        getFCcharge(scalerBank,eventBank)  // updates FClist and UFClist with this last scaler readout
+        writeHistos()                      // resets FClist and UFClist
+      }
 
       // define new histograms
       nbins = 50
@@ -680,8 +710,22 @@ inHipoList.each { inHipoFile ->
       timeBinNum++
       timeBinEventCount = 0
       timeBinScalerCount = 0
+      printDebug "Start time bin $timeBinNum"
+      printDebug " - isScalerEvent      = $isScalerEvent"
+    }
+    printDebug "    evnum: $eventNum   time bin counts: { events => $timeBinEventCount, scalers => $timeBinScalerCount }"
+
+    // get FC charge
+    getFCcharge(scalerBank,eventBank)
+    if(isScalerEvent) {
+      printDebug "      scaler event:"
+      if(FClist.size()>0)  printDebug "       - gated FC charge: ${FClist[-1]}"
+      if(UFClist.size()>0) printDebug "       - ungated FC charge: ${UFClist[-1]}"
     }
 
+    // get list of PIDs, with list index corresponding to bank row
+    pidList = (0..<particleBank.rows()).collect{ particleBank.getInt('pid',it) }
+    //println "pidList = $pidList"
 
     // get helicity and fill helicity distribution
     if(event.hasBank("REC::Event")) helicity = eventBank.getByte('helicity',0)
@@ -692,21 +736,7 @@ inHipoList.each { inHipoFile ->
       default: helDefined = false; helicity = 0; break
     }
     histTree.helic.dist.fill(helicity)
-
     
-    // get FC charge
-    if(scalerBank.rows()>0) {
-      UFClist << scalerBank.getFloat("fcup",0) // ungated charge
-      LTlist << scalerBank.getFloat("livetime",0) // livetime
-      if(FCmode==1) {
-        FClist << scalerBank.getFloat("fcupgated",0) // gated charge
-      }
-    }
-    if(FCmode==2 && eventBank.rows()>0) {
-      FClist << eventBank.getFloat("beamCharge",0) // gated charge
-    }
-
-
     // get electron list, and increment the number of trigger electrons
     // - also finds the DIS electron, and calculates x,Q2,W,y,nu
     eleList = findParticles(11) // (`eleList` is unused)
@@ -749,22 +779,22 @@ inHipoList.each { inHipoFile ->
     }
 
     // add eventNum to the list of this time bin's event numbers; ignore empty events (eventNum==0)
-    eventNum = BigInteger.valueOf(configBank.getInt('event',0))
     if(eventNum>0) eventNumList.add(eventNum)
 
     // increment time bin event counters
     timeBinEventCount++
-    if(event.hasBank("RUN::scaler")) timeBinScalerCount++
+    if(isScalerEvent) timeBinScalerCount++
 
   } // end event loop
   reader.close()
 
-  // close reader
-  reader = null
-  System.gc()
 } // end loop over hipo files
 
 // write final time bin's histograms
+printDebug "End time bin $timeBinNum"
+printDebug " - isScalerEvent      = $isScalerEvent"
+printDebug " - timeBinEventCount  = $timeBinEventCount"
+printDebug " - timeBinScalerCount = $timeBinScalerCount"
 writeHistos()
 
 // write outHipo file
