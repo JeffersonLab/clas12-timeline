@@ -92,16 +92,16 @@ flowchart TB
     classDef misc     fill:#f8f,color:black
     classDef timeline fill:#8ff,color:black
 
-    dst[(DST Files)]:::data
+    dst[(Input HIPO Files)]:::data
 
     subgraph Data Monitoring
         subgraph "<strong>bin/run-monitoring.sh</strong>"
             monitorDetectors["<strong>Make detector histograms</strong><br/>monitoring/: org.jlab.clas12.monitoring.ana_2p2"]:::proc
             monitorPhysics["<strong>Make physics QA histograms</strong><br/>qa-physics/: monitorRead.groovy"]:::proc
         end
-        outplots[(.....detectors/$run_number/*.hipo)]:::data
-        outdat[(.....physics/$run_number/*.dat)]:::data
-        outmon[(.....physics/$run_number/*.hipo)]:::data
+        outplots[(___/detectors/$run_number/*.hipo)]:::data
+        outdat[(___/physics/$run_number/*.dat)]:::data
+        outmon[(___/physics/$run_number/*.hipo)]:::data
     end
     dst --> monitorDetectors
     dst --> monitorPhysics
@@ -193,27 +193,27 @@ outfiles
 
 # Notes on SWIF Workflows
 
-For CLAS12 `swif` workflow integration, the `bin/run-monitoring.sh` script (which normally generates `slurm` jobs) has a specific mode `--swifjob`:
+For [CLAS12 `swif` workflow](https://github.com/baltzell/clas12-workflow) integration, the `bin/run-monitoring.sh` script (which normally generates `slurm` jobs) has a specific mode `--swifjob`:
 ```bash
 bin/run-monitoring.sh --swifjob --focus-detectors   # generate files for detector timelines
 bin/run-monitoring.sh --swifjob --focus-physics     # generate files for physics QA timelines
 ```
-Either or both of these commands is _all_ that needs to be executed on a runner node; calling one of these will automatically run the wrapped code, with the following assumptions and conventions:
+Either or both of these commands is _all_ that needs to be executed on a runner node, within [`clas12-workflow`](https://github.com/baltzell/clas12-workflow); calling one of these will automatically run the wrapped code, with the following assumptions and conventions:
 - input HIPO files are at `./` and only a single run will be processed
 - run number is obtained by `RUN::config` from one of the HIPO files; all HIPO files are assumed to belong to the same run
 - all output files will be in `./outfiles` (no `$dataset` subdirectory as above)
 
-The output files `./outfiles/` are to be moved to the `swif` output target, following the usual file tree convention with run-number subdirectories:
+The output files `./outfiles/` are moved to the `swif` output target, following the usual file tree convention with run-number subdirectories:
 ```
 top_level_target_directory
   │
   ├── detectors
-  │   ├── 005000  # run 5000; corresponding output files from `--focus-detectors` in `outfiles/` should be moved here
+  │   ├── 005000  # run 5000; corresponding output files from `--focus-detectors` in `outfiles/` are moved here
   │   ├── 005001  # run 5001
   │   └── ...
   │
   ├── physics
-  │   ├── 005000  # run 5000; corresponding output files from `--focus-physics` in `outfiles/` should be moved here
+  │   ├── 005000  # run 5000; corresponding output files from `--focus-physics` in `outfiles/` are moved here
   │   └── ...
   │
   ├── recon
