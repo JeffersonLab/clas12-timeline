@@ -244,7 +244,7 @@ jobs:
     needs:
       - run_timelines
     runs-on: ubuntu-latest
-    strategy:
+    steps:
     - name: setup groovy
       uses: wtfjoke/setup-groovy@v1
       with:
