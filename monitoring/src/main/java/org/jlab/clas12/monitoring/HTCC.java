@@ -17,7 +17,7 @@ import org.jlab.groot.fitter.DataFitter;
 public class HTCC {
 
     public int runNumber;
-    boolean write_volatile;
+    public String outputDir;
     int ring, sector, hs;
     List<H1F> hiNphePMTOneHit = new ArrayList();
     List<H1F> hiTimePMTOneHit = new ArrayList();
@@ -27,9 +27,9 @@ public class HTCC {
     static double lowTime = -15; //Apr2023 changed limits from -500, 500 ns to -15 to 15 ns per D. Carman's request
     static double highTime = 15;
 
-    public HTCC(int run, boolean reqwrite_volatile) {
+    public HTCC(int run, String reqOutputDir) {
         this.runNumber = run;
-        this.write_volatile = reqwrite_volatile;
+        this.outputDir = reqOutputDir;
         for (int t = 0; t < 48; t++) {
             ring = (int) (t / 12) + 1;
             hs = (int) (t % 2) + 1;
@@ -187,18 +187,8 @@ public class HTCC {
     }
 
     public void save(EmbeddedCanvas canvas, String name) {
-        if (runNumber > 0) {
-            if (!write_volatile) {
-                canvas.save(String.format("plots" + runNumber + "/" + name + ".png"));
-            }
-            if (write_volatile) {
-                canvas.save(String.format("/volatile/clas12/rga/spring18/plots" + runNumber + "/" + name + ".png"));
-            }
-            System.out.println(String.format("saved plots" + runNumber + "/" + name + ".png"));
-        } else {
-            canvas.save(String.format("plots/" + name + ".png"));
-            System.out.println(String.format("plots/" + name + ".png"));
-        }
+        canvas.save(String.format(outputDir+"/"+name+".png"));
+        System.out.println(String.format("saved "+outputDir+"/"+name+".png"));
     }
     
     public int isSingle(double theta, double phi) {
@@ -276,7 +266,6 @@ public class HTCC {
         int count = 0;
         int runNum = 0;
         boolean useTB = true;
-        boolean useVolatile = false;
         String filelist = "list_of_files.txt";
         if (args.length > 0) {
             runNum = Integer.parseInt(args[0]);
@@ -297,7 +286,8 @@ public class HTCC {
                 useTB = false;
             }
         }
-        HTCC ana = new HTCC(runNum, useVolatile);
+        String outputDir = runNum > 0 ? "plots"+runNum : "plots";
+        HTCC ana = new HTCC(runNum, outputDir);
         List<String> toProcessFileNames = new ArrayList<String>();
         File file = new File(filelist);
         Scanner read;
@@ -354,12 +344,7 @@ public class HTCC {
         }
         dirout.addDataSet(timeAll, npheAll);
 
-        if (!write_volatile) {
-            if (runNumber > 0) {
-                dirout.writeFile("plots" + runNumber + "/out_HTCC_" + runNumber + ".hipo");
-            } else {
-                dirout.writeFile("plots/out_HTCC.hipo");
-            }
-        }
+        if(runNumber>0) dirout.writeFile(outputDir+"/out_HTCC_"+runNumber+".hipo");
+        else            dirout.writeFile(outputDir+"/out_HTCC.hipo");
     }
 }

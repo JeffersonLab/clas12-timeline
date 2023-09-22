@@ -23,8 +23,9 @@ import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class LTCC{
-	boolean userTimeBased, write_volatile;
+	boolean userTimeBased;
 	int runNum;
+        public String outputDir;
 	boolean[] trigger_bits;
 	public float EBeam;
         public int e_part_ind, e_sect, e_track_ind, pip_part_ind, pipm_part_ind, pip_sect, pim_sect;
@@ -53,9 +54,9 @@ public class LTCC{
 	public IndexedTable rfTable, rfTableOffset;
 	public ConstantsManager ccdb;
 
-	public LTCC(int reqR, float reqEb, boolean reqTimeBased, boolean reqwrite_volatile){
+	public LTCC(int reqR, String reqOutputDir, float reqEb, boolean reqTimeBased){
         	runNum = reqR;userTimeBased=reqTimeBased;
-		write_volatile = reqwrite_volatile;
+                outputDir = reqOutputDir;
 		EBeam = 2.2f;
                 if(reqEb>0 && reqEb<4)EBeam=2.22f;
                 if(reqEb>4 && reqEb<7.1)EBeam=6.42f;
@@ -501,15 +502,8 @@ public class LTCC{
 		can_e_LTCC.cd(24);can_e_LTCC.draw(H_Particle_PiPlus_nphe_LTCC);
 		can_e_LTCC.cd(25);can_e_LTCC.draw(H_Particle_PiMinus_nphe_LTCC);
 
-		if(runNum>0){
-			if(!write_volatile)can_e_LTCC.save(String.format("plots"+runNum+"/LTCC.png"));
-			if(write_volatile)can_e_LTCC.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/LTCC.png"));
-			System.out.println(String.format("saved plots"+runNum+"/LTCC.png"));
-		}
-		else{
-			can_e_LTCC.save(String.format("plots/LTCC.png"));
-			System.out.println(String.format("saved plots/LTCC.png"));
-		}
+                can_e_LTCC.save(String.format(outputDir+"/LTCC.png"));
+                System.out.println(String.format("saved "+outputDir+"/LTCC.png"));
 
 	}
 	public static void main(String[] args) {
@@ -518,7 +512,6 @@ public class LTCC{
                 int count = 0;
                 int runNum = 0;
 		boolean useTB = true;
-		boolean useVolatile = false;
                 String filelist = "list_of_files.txt";
                 if(args.length>0)runNum=Integer.parseInt(args[0]);
                 if(args.length>1)filelist = args[1];
@@ -527,7 +520,8 @@ public class LTCC{
 		float Eb =6.42f;//10.6f;
                 if(args.length>3)Eb=Float.parseFloat(args[3]);
 		if(args.length>4)if(Integer.parseInt(args[4])==0)useTB=false;
-                LTCC ana = new LTCC(runNum,Eb,useTB,useVolatile);
+                String outputDir = runNum > 0 ? "plots"+runNum : "plots";
+                LTCC ana = new LTCC(runNum,outputDir,Eb,useTB);
                 List<String> toProcessFileNames = new ArrayList<String>();
                 File file = new File(filelist);
                 Scanner read;
@@ -574,10 +568,8 @@ public class LTCC{
 			dirout.addDataSet(H_Particle_PiPlus_nphe_LTCC_S[s], H_Particle_PiMinus_nphe_LTCC_S[s]);
 		}
 
-		if(!write_volatile){
-			if(runNum>0)dirout.writeFile("plots"+runNum+"/out_LTCC_"+runNum+".hipo");
-			else dirout.writeFile("plots/out_LTCC.hipo");
-		}
+                if(runNum>0) dirout.writeFile(outputDir+"/out_LTCC_"+runNum+".hipo");
+                else         dirout.writeFile(outputDir+"/out_LTCC.hipo");
 	}
 
 }

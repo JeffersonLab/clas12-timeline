@@ -10,7 +10,7 @@ For example, the run 11127 of rg-b can be monitored in following steps.
 
 - ```ls /cache/clas12/rg-b/production/decoded/6.5.6/011127/* > list11127.txt```
 - ```mkdir plots11127```
-- ```java -DCLAS12DIR="$COATJAVA" -cp "$COATJAVA/lib/clas/*:$COATJAVA/lib/utils/*:target/*" org.jlab.clas12.monitoring.ana_2p2 11127 list11127.txt 100000000 10.4```
+- ```java -DCLAS12DIR="$COATJAVA" -cp "$COATJAVA/lib/clas/*:$COATJAVA/lib/utils/*:target/*" org.jlab.clas12.monitoring.ana_2p2 11127 plots list11127.txt 100000000 10.4```
 
 The first step is to create the list of files to be monitored, and the second one is to run the compiled codes for monitoring. Change 11127 to the wanted run number. The last two arguments are the maximum event numbers to monitor, and the beam energy (10.4 GeV for example).
 

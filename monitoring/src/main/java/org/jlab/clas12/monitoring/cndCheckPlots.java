@@ -22,8 +22,9 @@ import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class cndCheckPlots {
-		boolean userTimeBased, write_volatile;
+		boolean userTimeBased;
 		public int runNum;
+                public String outputDir;
 
 		public float STT;
 		public float RF;	
@@ -64,10 +65,10 @@ public class cndCheckPlots {
         	public IndexedTable rfTable;
         	public ConstantsManager ccdb;
 
-		public cndCheckPlots(int reqrunNum, boolean reqTimeBased, boolean reqwrite_volatile) {
+		public cndCheckPlots(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
 				userTimeBased=reqTimeBased;
-				write_volatile = reqwrite_volatile;
 				runNum = reqrunNum;
+                                outputDir = reqOutputDir;
 				rfPeriod = 4.008;
                 		ccdb = new ConstantsManager();
                 		ccdb.init(Arrays.asList(new String[]{"/daq/tt/fthodo","/calibration/eb/rf/config"}));
@@ -824,15 +825,8 @@ public class cndCheckPlots {
 								resopg2.setMarkerColor(4);resopg2.setLineColor(4);
 								can_cnd.cd(50);can_cnd.draw(resop2);can_cnd.draw(resopg2,"same");	
 
-								if(runNum>0){
-										if(!write_volatile)can_cnd.save(String.format("plots"+runNum+"/cnd.png"));
-										if(write_volatile)can_cnd.save(String.format("/volatile/clas12/rgb/spring19/plots"+runNum+"/cnd.png"));
-										System.out.println(String.format("saved plots"+runNum+"/cnd.png"));
-								}   
-								else{
-										can_cnd.save(String.format("plots/cnd.png"));
-										System.out.println(String.format("saved plots/cnd.png"));
-								}
+                                                                can_cnd.save(String.format(outputDir+"/cnd.png"));
+                                                                System.out.println(String.format("saved "+outputDir+"/cnd.png"));
 
 
 								//	can_cnd.save("cnd1.png");
@@ -945,12 +939,9 @@ public class cndCheckPlots {
 								}
 								for(int iL=0;iL<3;iL++) dirout.addDataSet(H_CND_time_z_charged[iL],H_CVT_CND_z[iL],H_CVT_CND_z1[iL],DiffZCVT[iL],DiffZCND[iL]);
 
-								if(write_volatile)if(runNum>0)dirout.writeFile("/volatile/clas12/rgb/spring19/plots"+runNum+"/out_CND_"+runNum+".hipo");
 
-								if(!write_volatile){
-										if(runNum>0)dirout.writeFile("plots"+runNum+"/out_CND_"+runNum+".hipo");
-										else dirout.writeFile("plots/out_CND.hipo");
-								}
+                                                                if(runNum>0) dirout.writeFile(outputDir+"/out_CND_"+runNum+".hipo");
+                                                                else         dirout.writeFile(outputDir+"/out_CND.hipo");
 						}
 
 
@@ -960,12 +951,12 @@ public class cndCheckPlots {
 								int count = 0;
 								int runNum = 0;
 								boolean useTB=true;
-								boolean useVolatile = false;
 								String filelist = "list_of_files.txt";
 								if(args.length>0)runNum=Integer.parseInt(args[0]);
 								if(args.length>1)filelist = args[1];
 								if(args.length>2)if(Integer.parseInt(args[2])==0)useTB=false;
-								cndCheckPlots ana = new cndCheckPlots(runNum,useTB,useVolatile);
+                                                                String outputDir = runNum > 0 ? "plots"+runNum : "plots";
+								cndCheckPlots ana = new cndCheckPlots(runNum,outputDir,useTB);
 								List<String> toProcessFileNames = new ArrayList<String>();
 								File file = new File(filelist);
 								Scanner read;

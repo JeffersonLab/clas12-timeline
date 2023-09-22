@@ -19,8 +19,8 @@ import org.jlab.clas.physics.LorentzVector;
 import org.jlab.groot.base.GStyle;
 
 public class occupancies {
-	boolean write_volatile;
 	public int runNum;
+        public String outputDir;
 	int found_elec;
 	float elec_mom, elec_th, elec_ph, elec_vz;
 	H2F H_occ_e_th_ph, H_occ_e_th_p, H_occ_e_ph_p;
@@ -42,9 +42,9 @@ public class occupancies {
 
 	H1F H_BMT_multi;
 
-	public occupancies(int reqrunNum, boolean reqwrite_volatile) {
-		write_volatile = reqwrite_volatile;
+	public occupancies(int reqrunNum, String reqOutputDir) {
 		runNum = reqrunNum;
+                outputDir = reqOutputDir;
 		H_BST_multi = new H1F("bst_multi", "bst_multi", 501, -0.5, 500.5);
         	H_BST_multi.setTitleX("hit multiplicity");
         	H_BST_multi.setTitleY("counts");
@@ -368,15 +368,8 @@ public class occupancies {
                 can_BST.cd(4);can_BST.draw(H_BST_occ_reg2_l2);
                 can_BST.cd(5);can_BST.draw(H_BST_occ_reg3_l2);
 		can_BST.cd(6);can_BST.draw(H_BST_multi);
-		if(runNum>0){
-			if(!write_volatile)can_BST.save(String.format("plots"+runNum+"/bst_occ.png"));
-			if(write_volatile)can_BST.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/bst_occ.png"));
-			System.out.println(String.format("save plots"+runNum+"/bst_occ.png"));
-		}
-		else{
-			can_BST.save("plots/bst_occ.png");
-			System.out.println("save plots/bst_occ.png");
-		}
+                can_BST.save(String.format(outputDir+"/bst_occ.png"));
+                System.out.println(String.format("save "+outputDir+"/bst_occ.png"));
 
 		EmbeddedCanvas can_BMT = new EmbeddedCanvas();
 		can_BMT.setSize(1500,3000);
@@ -392,15 +385,8 @@ public class occupancies {
 		}
 		can_BMT.cd(18);can_BMT.draw(H_BMT_multi);
 		
-		if(runNum>0){
-			if(!write_volatile)can_BMT.save(String.format("plots"+runNum+"/bmt_occ.png"));
-			if(write_volatile)can_BMT.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/bmt_occ.png"));
-			System.out.println(String.format("save plots"+runNum+"/bmt_occ.png"));
-		}
-		else{
-			can_BMT.save("plots/bmt_occ.png");
-			System.out.println("save plots/bmt_occ.png");
-		}
+                can_BMT.save(String.format(outputDir+"/bmt_occ.png"));
+                System.out.println(String.format("save "+outputDir+"/bmt_occ.png"));
 		
 		EmbeddedCanvas can_crosses = new EmbeddedCanvas();
 		can_crosses.setSize(1500,3500);
@@ -429,21 +415,13 @@ public class occupancies {
 		can_crosses.cd(18);can_crosses.draw(H_occ_e_th_ph);
 		can_crosses.cd(19);can_crosses.draw(H_occ_e_th_p);
 		can_crosses.cd(20);can_crosses.draw(H_occ_e_ph_p);
-		if(runNum>0){
-			if(!write_volatile)can_crosses.save(String.format("plots"+runNum+"/barrel_crosses.png"));
-			if(write_volatile)can_crosses.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/barrel_crosses.png"));
-			System.out.println(String.format("save plots"+runNum+"/barrel_crosses.png"));
-		}
-		else{
-			can_crosses.save("plots/barrel_crosses.png");
-			System.out.println("save plots/barrel_crosses.png");
-		}
+                can_crosses.save(String.format(outputDir+"/barrel_crosses.png"));
+                System.out.println(String.format("save "+outputDir+"/barrel_crosses.png"));
 	}
 ////////////////////////////////////////////////
         public static void main(String[] args) {
                 System.setProperty("java.awt.headless", "true");
                 int runNum = 1894;
-		boolean useVolatile = false;
 		if(args.length>0)runNum = Integer.parseInt(args[0]);
 		String listfiles = "list_of_files.txt";
 		if(args.length>1)listfiles=args[1];
@@ -465,7 +443,8 @@ public class occupancies {
                 int filetot = toProcessFileNames.size();
                 int progresscount=0;
                 int evntot=0;
-		occupancies ana = new occupancies(runNum, useVolatile);
+                String outputDir = runNum > 0 ? "plots"+runNum : "plots";
+		occupancies ana = new occupancies(runNum, outputDir);
                 java.util.Date date1 = new java.util.Date();
                 System.out.println(date1);
                 for (String runstrg : toProcessFileNames)if(evntot<evntMAX){

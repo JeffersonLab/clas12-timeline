@@ -18,8 +18,9 @@ import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class central {
-	boolean userTimeBased, write_volatile;
+	boolean userTimeBased;
 	public int runNum;
+        public String outputDir;
 	public int rf_large_integer;
 	public boolean BackToBack;
 	public float STT, RFT, MinCTOF,MaxCTOF, minSTT, maxSTT;
@@ -54,9 +55,9 @@ public class central {
 
 	public ConstantsManager ccdb;
 
-	public central(int reqrunNum, boolean reqTimeBased, boolean reqwrite_volatile) {
+	public central(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
 		runNum = reqrunNum;userTimeBased=reqTimeBased;
-		write_volatile = reqwrite_volatile;
+                outputDir = reqOutputDir;
 		counter = 0;
 		counterm = 0;
 
@@ -424,15 +425,9 @@ public class central {
 		can_central.cd(14);can_central.draw(H_CVT_t_neg);
 		can_central.cd(15);can_central.draw(H_CTOF_tdcadc_dt);
 
-		if(runNum>0){
-		if(!write_volatile)can_central.save(String.format("plots"+runNum+"/central.png"));
-		if(write_volatile)can_central.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/central.png"));
-		System.out.println(String.format("saved plots"+runNum+"/central.png"));
-		}
-		else{
-			can_central.save(String.format("plots/central.png"));
-			System.out.println(String.format("saved plots/central.png"));
-		}
+		can_central.save(String.format(outputDir+"/central.png"));
+		System.out.println(String.format("saved "+outputDir+"/central.png"));
+
 		for(int p=0;p<10;p++)System.out.print(String.format("%1.2ff , ",H_CVT_t[p].getMean()));
 		System.out.print("\n");
 		for(int p=10;p<20;p++)System.out.print(String.format("%1.2ff , ",H_CVT_t[p].getMean()));
@@ -458,12 +453,8 @@ public class central {
 		dirout.addDataSet(H_CTOF_pos_mass, H_CTOF_neg_mass, H_CTOF_vt_pim, H_CTOF_edep_pim);
 		dirout.addDataSet(H_CVT_t_neg,H_CTOF_tdcadc_dt);
 
-		if(write_volatile)if(runNum>0)dirout.writeFile("/volatile/clas12/rga/spring18/plots"+runNum+"/out_CTOF_"+runNum+".hipo");
-			
-		if(!write_volatile){
-			if(runNum>0)dirout.writeFile("plots"+runNum+"/out_CTOF_"+runNum+".hipo");
-			else dirout.writeFile("plots/out_CTOF.hipo");
-		}
+                if(runNum>0) dirout.writeFile(outputDir+"/out_CTOF_"+runNum+".hipo");
+                else         dirout.writeFile(outputDir+"/out_CTOF.hipo");
 	}   
 
 ////////////////////////////////////////////////
@@ -473,12 +464,12 @@ public class central {
 		int count = 0;
 		int runNum = 5038;
 		boolean useTB = true;
-		boolean useVolatile = false;
 		String filelist = "list_of_files.txt";
 		if(args.length>0)runNum=Integer.parseInt(args[0]);
 		if(args.length>1)filelist = args[1];
 		if(args.length>2)if(Integer.parseInt(args[2])==0)useTB=false;
-		central ana = new central(runNum,useTB,useVolatile);
+                String outputDir = runNum > 0 ? "plots"+runNum : "plots";
+		central ana = new central(runNum,outputDir,useTB);
 		List<String> toProcessFileNames = new ArrayList<String>();
 		File file = new File(filelist);
 		Scanner read;
