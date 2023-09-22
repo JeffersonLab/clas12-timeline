@@ -61,7 +61,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
   * runs `qaCut.groovy` (on electron trigger and FT)
   * runs `datasetOrganize.sh`
   * runs `monitorPlot.groovy`
-  * copies timelines to output timeline directory, `../outfiles/$dataset/timelines`,
+  * copies timelines to output timeline directory
     using `stageTimelines.sh`
   * if any of these scripts throw errors, they will be redirected and printed at the end
     of `../bin/run-physics-timelines.sh`
