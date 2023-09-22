@@ -1,5 +1,7 @@
+package org.jlab.clas.timeline.util
 import org.jlab.clas.physics.LorentzVector
 import org.jlab.clas.physics.Vector3
+import org.jlab.io.hipo.HipoDataSource
 import groovy.json.JsonOutput
 
 class Tools {
@@ -29,7 +31,7 @@ class Tools {
     def bitNum = bitNames.findIndexOf{ it==bitName }
     if(bitNum>=0 && bitNum<bitNames.size()) return bitNum
     else {
-      System.err << "ERROR bad bit name $bitName\n"
+      System.err.println "ERROR bad bit name $bitName"
       return 31
     }
   }
@@ -189,4 +191,27 @@ class Tools {
   // print text output
   def printStatus = { str -> println "STATUS: $str" }
   def printError = { str -> System.err << "ERROR: $str\n" }
+
+
+  ////////////////
+  // HIPO FILES //
+  ////////////////
+  // get a run number from RUN::config
+  def getRunNumber(infile) {
+    def reader = new HipoDataSource()
+    def runnum = 0
+    def event
+    reader.open(infile)
+    while(reader.hasEvent()) {
+      event = reader.getNextEvent()
+      if(event.hasBank("RUN::config")) {
+        runnum = BigInteger.valueOf(event.getBank("RUN::config").getInt('run',0))
+        if(runnum>0) break
+      }
+    }
+    reader.close()
+    if(runnum<=0)
+      System.err.println("[ERROR]: run number not found for file $infile")
+    return runnum
+  }
 }

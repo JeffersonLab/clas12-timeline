@@ -15,20 +15,38 @@ import org.jlab.detector.base.DetectorType
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 import java.lang.Math.*
-import Tools // (make sure `.` is in $CLASSPATH)
+import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
-// OPTIONS
-def segmentSize = 10000 // number of events in each segment
-def inHipoType = "dst" // options: "dst", "skim"
-
+// CONSTANTS
+def SEGMENT_SIZE = 10000 // number of events in each segment (for `inHipoType==skim`)
 
 // ARGUMENTS
-def inHipo = "skim/skim4_5052.hipo" // directory of DST files, or a single SKIM file
-if(args.length>=1) inHipo = args[0]
-if(args.length>=2) inHipoType = args[1]
+def inHipoType = "dst" // options: "dst", "skim"
+def runnum = 0
+if(args.length<2) {
+  System.err.println """
+  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO file directory] [output directory] [type(OPTIONAL)] [runnum(OPTIONAL)]
+         REQUIRED parameters:
+           - [HIPO file directory] should be a directory of HIPO files, either
+             DST file(s) or skim file(s)
+           - [output directory] output directory for the produced files
+         OPTIONAL parameters:
+           - [type] can be 'dst' or 'skim' (default is '$inHipoType')
+             NOTE: 'skim' file usage may not work
+           - [runnum] the run number; if not specified, it will be obtained from RUN::config
 
-
+  """
+  System.exit(101)
+}
+def inHipo = args[0]
+def outDir = args[1]
+if(args.length>=3) inHipoType = args[2]
+if(args.length>=4) runnum     = args[3].toInteger()
+System.println """
+inHipo     = $inHipo
+outDir     = $outDir
+inHipoType = $inHipoType"""
 
 // get hipo file names
 def inHipoList = []
@@ -40,29 +58,23 @@ if(inHipoType=="dst") {
   }
   inHipoList.sort()
   if(inHipoList.size()==0) {
-    System.err << "ERROR: no hipo files found in this directory\n"
-    return
+    System.err.println "ERROR: no hipo files found in this directory"
+    System.exit(100)
   }
 }
 else if(inHipoType=="skim") { inHipoList << inHipo }
 else {
-  System.err << "ERROR: unknown inHipoType setting\n"
-  return
+  System.err.println "ERROR: unknown inHipoType setting"
+  System.exit(100)
 }
 
 
-// get runnum
-def runnum
-if(inHipoType=="skim") {
-  if(inHipo.contains('postprocess'))
-    runnum = inHipo.tokenize('.')[-2].tokenize('/')[-1].toInteger()
-  else
-    runnum = inHipo.tokenize('.')[-2].tokenize('_')[-1].toInteger()
-}
-else if(inHipoType=="dst") {
-  runnum = inHipo.tokenize('/')[-1].toInteger()
-}
-println "runnum=$runnum"
+// get runnum; assumes all HIPO files have the same run number
+if(runnum<=0)
+  runnum = T.getRunNumber(inHipoList.first())
+if(runnum<=0)
+  System.exit(100)
+System.println "runnum     = $runnum"
 
 
 //////////////////////////////////////////////////////////
@@ -80,7 +92,7 @@ else if(runnum>=11093 && runnum<=11300) RG="RGB" // fall 19
 else if(runnum>=11323 && runnum<=11571) RG="RGB" // winter 20
 else if(runnum>=12210 && runnum<=12951) RG="RGF" // spring+summer 20
 else if(runnum>=15019 && runnum<=15884) RG="RGM" 
-else System.err << "WARNING: unknown run group; using default run-group-dependent settings (see monitorRead.groovy)\n"
+else System.err.println "WARNING: unknown run group; using default run-group-dependent settings (see monitorRead.groovy)"
 println "rungroup = $RG"
 
 // helFlip: if true, REC::Event.helicity has opposite sign from reality
@@ -108,25 +120,25 @@ else if(RG=="RGB") {
   else if(runnum>=11093 && runnum<=11283) EBEAM = 10.4096 // fall
   else if(runnum>=11284 && runnum<=11300) EBEAM = 4.17179 // fall BAND_FT
   else if(runnum>=11323 && runnum<=11571) EBEAM = 10.3894 // winter (RCDB may still be incorrect)
-  else System.err << "ERROR: unknown beam energy\n"
+  else System.err.println "ERROR: unknown beam energy"
 }
 else if(RG=="RGK") {
   if(runnum>=5674 && runnum<=5870) EBEAM = 7.546
   else if(runnum>=5875 && runnum<=6000) EBEAM = 6.535
-  else System.err << "ERROR: unknown beam energy\n"
+  else System.err.println "ERROR: unknown beam energy"
 }
 else if(RG=="RGF") {
   if     (runnum>=12210 && runnum<=12388) EBEAM = 10.389 // RCDB may still be incorrect
   else if(runnum>=12389 && runnum<=12443) EBEAM =  2.186 // RCDB may still be incorrect
   else if(runnum>=12444 && runnum<=12951) EBEAM = 10.389 // RCDB may still be incorrect
-  else System.err << "ERROR: unknown beam energy\n"
+  else System.err.println "ERROR: unknown beam energy"
 }
 else if(RG=="RGM") {
   if     (runnum>=15013 && runnum<=15490) EBEAM = 5.98636 
   else if(runnum>=15533 && runnum<=15727) EBEAM = 2.07052 
   else if(runnum>=15728 && runnum<=15784) EBEAM = 4.02962 
   else if(runnum>=15787 && runnum<=15884) EBEAM = 5.98636 
-  else System.err << "ERROR: unknown beam energy\n"
+  else System.err.println "ERROR: unknown beam energy"
 }
 
 /* gated FC charge determination: `FCmode`
@@ -166,7 +178,7 @@ else if(RG=="RGM") {
 }
 
 // FC attenuation fix
-// FIXME: re-define this as a closure here, when resolving https://github.com/JeffersonLab/clasqaDB/issues/12
+// FIXME: re-define this as a closure here, when resolving https://github.com/JeffersonLab/clas12-qadb/issues/12
 // RGB runs <6400 had wrong attenuation, need to use
 // fc -> fc*9.96025
 // (this is programmed in below, but mentioned here for documentation)
@@ -176,11 +188,10 @@ else if(RG=="RGM") {
 //////////////////////////////////////////////////////////
 
 // make outut directories
-"mkdir -p outdat".execute()
-"mkdir -p outmon".execute()
+"mkdir -p $outDir".execute()
 
 // prepare output table for electron count and FC charge
-def datfile = new File("outdat/data_table_${runnum}.dat")
+def datfile = new File("$outDir/data_table_${runnum}.dat")
 def datfileWriter = datfile.newWriter(false)
 
 
@@ -364,7 +375,7 @@ def countTriggerElectrons = { eleRows,eleParts ->
           }
 
         } else {
-          System.err << "WARNING: found electron with unknown sector\n"
+          System.err.println "WARNING: found electron with unknown sector"
         }
       }
 
@@ -433,7 +444,7 @@ def countTriggerElectrons = { eleRows,eleParts ->
 
     // - increment counters, and set `disEleFound`
     if(disElectronInTrigger && disElectronInFT) { // can never happen (failsafe)
-      System.err << "ERROR: disElectronInTrigger && disElectronInFT == 1; skip event\n"
+      System.err.println "ERROR: disElectronInTrigger && disElectronInFT == 1; skip event"
       return
     }
     else if(disElectronInTrigger) {
@@ -570,7 +581,7 @@ def writeHistos = {
       ufcStart = UFClist.min()
       ufcStop = UFClist.max()
     } else {
-      System.err << "WARNING: empty UFClist for run=${runnum} file=${segmentNum}\n"
+      System.err.println "WARNING: empty UFClist for run=${runnum} file=${segmentNum}"
       ufcStart = 0
       ufcStop = 0
     }
@@ -587,14 +598,13 @@ def writeHistos = {
         fcStart = FClist.min()
         fcStop = FClist.max()
       } else {
-        System.err << "WARNING: empty FClist for run=${runnum} file=${segmentNum}\n"
+        System.err.println "WARNING: empty FClist for run=${runnum} file=${segmentNum}"
         fcStart = 0
         fcStop = 0
       }
     }
     if(fcStart>fcStop || ufcStart>ufcStop) {
-      System.err << "WARNING: faraday cup start > stop for" <<
-        " run=${runnum} file=${segmentNum}\n"
+      System.err.println "WARNING: faraday cup start > stop for run=${runnum} file=${segmentNum}"
     }
 
     // RGB attenuation correction
@@ -625,8 +635,8 @@ def writeHistos = {
     */
   }
   else {
-    System.err << "WARNING: empty segment (segmentTmp=$segmentTmp)\n"
-    System.err << " if all segments in a run are empty, there will be more errors later!"
+    System.err.println "WARNING: empty segment (segmentTmp=$segmentTmp)"
+    System.err.println " if all segments in a run are empty, there will be more errors later!"
   }
 
   // reset number of trigger electrons counter and FC lists
@@ -675,7 +685,7 @@ inHipoList.each { inHipoFile ->
 
 
     // update segment number, if reading skim file
-    if(inHipoType=="skim") segment = (evCount/segmentSize).toInteger()
+    if(inHipoType=="skim") segment = (evCount/SEGMENT_SIZE).toInteger()
 
     // if segment number changed, write out filled histos 
     // and/or create new histos
@@ -807,7 +817,7 @@ inHipoList.each { inHipoFile ->
 } // end loop over hipo files
 
 // write outHipo file
-outHipoN = "outmon/monitor_${runnum}.hipo"
+outHipoN = "$outDir/monitor_${runnum}.hipo"
 File outHipoFile = new File(outHipoN)
 if(outHipoFile.exists()) outHipoFile.delete()
 outHipo.writeFile(outHipoN)

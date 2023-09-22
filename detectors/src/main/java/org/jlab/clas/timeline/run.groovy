@@ -161,19 +161,24 @@ if(eng) {
 
       TDirectory dir = new TDirectory()
       dir.readFile(arg)
-      def fname = arg.split('/')[-1]
-      def m = fname =~ /\d{4,7}/
+
+      // get run number from directory name
+      def fname = arg.split('/')[-2]
+      def m = fname =~ /\d+/
       def run = m[0].toInteger()
 
       engine.processDirectory(dir, run)
 
       println("debug: "+engine.getClass().getSimpleName()+" finished $arg")
     } catch(Exception ex) {
-      println("error: "+engine.getClass().getSimpleName()+" didn't process $arg")
+      System.err.println("error: "+engine.getClass().getSimpleName()+" didn't process $arg, due to exception:")
+      ex.printStackTrace()
+      System.exit(100)
     }
   }
   engine.close()
   println("debug: "+engine.getClass().getSimpleName()+" ended")
 } else {
-  println("error: "+args[0]+" not found")
+  System.err.println("error: "+args[0]+" not found")
+  System.exit(100)
 }

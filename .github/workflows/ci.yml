@@ -10,19 +10,263 @@ defaults:
   run:
     shell: bash
 
+env:
+  dataset: ci_test
+  validation_single_run: '011329'
+  validation_run_group: B # FIXME: not actually used; see comments mentioning this variable below
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+
+  # build
+  #############################################################################
+
+  build_timelines:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Set up JDK
+    - name: setup java
       uses: actions/setup-java@v3
       with:
         java-version: 11
         distribution: zulu
     - name: build
-      run: ./bin/build-all.sh
+      run: mvn package
+    - name: tar # to preserve any permissions
+      run: |
+        tar czvf build_detectors.tar.gz detectors/target
+        tar czvf build_monitoring.tar.gz monitoring/target
+    - uses: actions/upload-artifact@v3
+      with:
+        name: build
+        retention-days: 1
+        path: build*.tar.gz
+
+  build_coatjava:
+    runs-on: ubuntu-latest
+    steps:
+    - name: setup java
+      uses: actions/setup-java@v3
+      with:
+        java-version: 11
+        distribution: zulu
+    - name: get coatjava
+      uses: robinraju/release-downloader@v1.8
+      with:
+        repository: JeffersonLab/coatjava
+        tag: 10.0.2
+        tarBall: true
+        extract: true
+    - name: rename coatjava release directory
+      run: |
+        rm *.tar.gz
+        mv JeffersonLab-coatjava* coatjava
+    - name: build coatjava
+      run: |
+        cd coatjava
+        ./build-coatjava.sh
+    - name: tree
+      run: tree
+    - name: tar
+      run: tar czvf build_coatjava.tar.gz coatjava/coatjava
+    - uses: actions/upload-artifact@v3
+      with:
+        name: build
+        retention-days: 1
+        path: build*.tar.gz
+
+  # download test data
+  #############################################################################
+
+  download_test_data:
+    runs-on: ubuntu-latest
+    steps:
+    - name: download
+      run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
+    - uses: actions/upload-artifact@v3
+      with:
+        name: validation_files
+        retention-days: 1
+        path: validation_files.tar.gz
+
+  # monitoring
+  #############################################################################
+
+  run_monitoring:
+    needs:
+      - build_timelines
+      - build_coatjava
+      - download_test_data
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        type:
+          - detectors
+          - physics
+    steps:
+    - name: setup java
+      uses: actions/setup-java@v3
+      with:
+        java-version: 11
+        distribution: zulu
+    - name: setup groovy
+      uses: wtfjoke/setup-groovy@v1
+      with:
+        groovy-version: 4.x
+    - name: groovy version
+      run: groovy --version
+    - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
+      with:
+        name: validation_files
+    - uses: actions/download-artifact@v3
+      with:
+        name: build
+    - name: untar
+      run: ls *.tar.gz | xargs -I_ tar xzvf _
+    - name: tree
+      run: tree
+    - name: run monitoring
+      run: bin/run-monitoring.sh -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
+    - name: tree slurm
+      run: tree slurm
+    - name: tree outfiles
+      run: tree outfiles
+    - uses: actions/upload-artifact@v3
+      with:
+        name: slurm
+        retention-days: 1
+        path: slurm
+    - uses: actions/upload-artifact@v3
+      with:
+        name: outfiles
+        retention-days: 1
+        path: outfiles
+
+  test_swifjob:
+    needs:
+      - build_timelines
+      - build_coatjava
+      - download_test_data
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        type:
+          - detectors
+          - physics
+    steps:
+    - name: setup java
+      uses: actions/setup-java@v3
+      with:
+        java-version: 11
+        distribution: zulu
+    - name: setup groovy
+      uses: wtfjoke/setup-groovy@v1
+      with:
+        groovy-version: 4.x
+    - name: groovy version
+      run: groovy --version
+    - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
+      with:
+        name: validation_files
+    - uses: actions/download-artifact@v3
+      with:
+        name: build
+    - name: untar
+      run: ls *.tar.gz | xargs -I_ tar xzvf _
+    - name: tree
+      run: tree
+    - name: test monitoring swifjob
+      run: bin/test-swifjob.sh validation_files/${{env.validation_single_run}} runner --focus-${{matrix.type}}
+    - name: tree runner
+      run: tree runner
+
+  # timeline production
+  #############################################################################
+
+  run_timelines:
+    needs:
+      - run_monitoring
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        type:
+          - detectors
+          - physics
+        include:
+          - { type: detectors,  args: -n 2 -r B } # FIXME: prefer `-r ${{env.validation_run_group}}`, but that's invalid syntax for matrix arg
+          - { type: physics,    args: '' }
+    steps:
+    - name: setup java
+      uses: actions/setup-java@v3
+      with:
+        java-version: 11
+        distribution: zulu
+    - name: setup groovy
+      uses: wtfjoke/setup-groovy@v1
+      with:
+        groovy-version: 4.x
+    - name: groovy version
+      run: groovy --version
+    - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
+      with:
+        name: outfiles
+        path: outfiles
+    - uses: actions/download-artifact@v3
+      with:
+        name: build
+    - name: untar
+      run: ls *.tar.gz | xargs -I_ tar xzvf _
+    - name: tree
+      run: tree
+    - name: run timelines
+      run: bin/run-${{matrix.type}}-timelines.sh -d ${{env.dataset}} ${{matrix.args}}
+    - name: tree outfiles
+      run: tree outfiles
+    - uses: actions/upload-artifact@v3
+      with:
+        name: outfiles
+        retention-days: 1
+        path: outfiles
+
+  # timeline deployment
+  #############################################################################
+
+  deploy_timelines:
+    needs:
+      - run_timelines
+    runs-on: ubuntu-latest
+    steps:
+    - name: setup groovy
+      uses: wtfjoke/setup-groovy@v1
+      with:
+        groovy-version: 4.x
+    - name: groovy version
+      run: groovy --version
+    - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
+      with:
+        name: outfiles
+        path: outfiles
+    - uses: actions/download-artifact@v3
+      with:
+        name: build
+    - name: untar
+      run: ls *.tar.gz | xargs -I_ tar xzvf _
+    - name: tree outfiles
+      run: tree outfiles
+    - name: deploy
+      run: bin/deploy-timelines.sh -d ${{env.dataset}} -c -t web
+    - uses: actions/upload-artifact@v3
+      with:
+        name: web
+        retention-days: 7
+        path: web

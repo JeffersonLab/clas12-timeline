@@ -25,15 +25,15 @@ flowchart TB
 ```mermaid
 flowchart TB
 
-    subgraph Automated by exeSlurm.sh
+    subgraph "Automated by ../bin/run-monitoring.sh"
       dst{{DSTs}}:::data
       monitorRead[monitorRead.groovy]:::auto
-      monitorReadOut{{outdat/data_table_$run.dat<br>outmon/monitor_$run.hipo}}:::data
+      monitorReadOut{{../outfiles/$dataset/physics/data_table_$run.dat<br>../outfiles/$dataset/physics/monitor_$run.hipo}}:::data
       dst --> monitorRead
       monitorRead --> monitorReadOut
     end
 
-    subgraph Automated by exeTimelines.sh
+    subgraph "Automated by ../bin/run-physics-timelines.sh"
       datasetOrganize[datasetOrganize.sh]:::auto
       outmonFiles{{outmon.$dataset/monitor_$run.hipo}}:::data
       outdatFiles{{outdat.$dataset/data_table.dat}}:::data
@@ -62,10 +62,10 @@ flowchart TB
 
       buildCT[buildChargeTree.groovy]:::auto
       chargeTree{{outdat.$dataset/chargeTree.json}}:::data
-      deploy0[deployTimelines.sh]:::auto
+      stage0[stageTimelines.sh]:::auto
       outdatFiles --> buildCT
       buildCT --> chargeTree
-      timelineFiles --> deploy0
+      timelineFiles --> stage0
     end
     
     subgraph Manual QA, in QA subdirectory
@@ -96,14 +96,11 @@ flowchart TB
       exeQAtimelines[exeQAtimelines.sh]:::manual
       qaTreeUpdated{{outdat.$dataset/qaTree.json}}:::data
       qaTL{{outmon.$dataset.qa/$timeline.hipo}}:::timeline
-      deploy1[deployTimelines.sh]:::manual
-      release[releaseTimelines.sh]:::manual
+      stage1[stageTimelines.sh]:::manual
       qaLoc --> exeQAtimelines
       exeQAtimelines --> qaTL
       exeQAtimelines -->|updates|qaTreeUpdated
-      qaTL --> deploy1
-      deploy1 --> release
-      qaTreeUpdated --> release
+      qaTL --> stage1
     end
 
     qaTree --> cd0[cd QA]:::manual

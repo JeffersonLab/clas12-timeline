@@ -1,7 +1,7 @@
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 import java.util.Date
-import Tools
+import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 
@@ -21,14 +21,14 @@ println("\n\n")
 def cmd
 if(args.length>=1) cmd = args[0]
 else { 
-  println(
+  System.err.println(
   """
   syntax: modify.sh [command] [arguments]\n
 List of Commands:
   """)
-  usage.each{ println("- "+it.value) }
-  println("\ntype any command without arguments for usage for that command\n")
-  return
+  usage.each{ System.err.println("- "+it.value) }
+  System.err.println("\ntype any command without arguments for usage for that command\n")
+  System.exit(101)
 }
 
 
@@ -113,7 +113,7 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
   }
   else {
     def helpStr = usage["$cmd"].tokenize(':')[1]
-    println(
+    System.err.println(
     """
     SYNTAX: ${cmd} [defectBit] [run] [firstFile] [lastFile] [list_of_sectors]
       -$helpStr
@@ -121,11 +121,11 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
       - use \"all\" in place of [list_of_sectors] to apply to all sectors
       - you will be prompted to enter a comment
     """)
-    println("Bit List:\n")
+    System.err.println("Bit List:\n")
     T.bitDefinitions.size().times {
-      println("$it\t" + T.bitNames[it] + "\t" + T.bitDescripts[it] + "\n")
+      System.err.println("$it\t" + T.bitNames[it] + "\t" + T.bitDescripts[it] + "\n")
     }
-    return
+    System.exit(101)
   }
 }
 
@@ -166,7 +166,7 @@ else if(cmd=="sectorLoss") {
   }
   else {
     def helpStr = usage["$cmd"].tokenize(':')[1]
-    println(
+    System.err.println(
     """
     SYNTAX: ${cmd} [run] [firstFile] [lastFile] [list_of_sectors]
       -$helpStr
@@ -176,7 +176,7 @@ else if(cmd=="sectorLoss") {
         it will unset any other relevant bits
       - you will be prompted to enter a comment
     """)
-    return
+    System.exit(101)
   }
 }
 
@@ -214,13 +214,13 @@ else if( cmd=="addComment" || cmd=="setComment") {
     }
   }
   else {
-    println(
+    System.err.println(
     """
     SYNTAX: ${cmd} [run] [firstFile] [lastFile]
       - set [lastFile] to 1 to denote last file of run
       - you will be prompted to enter the comment
     """)
-    return
+    System.exit(101)
   }
 }
 
@@ -235,12 +235,12 @@ else if( cmd=="custom") {
   if(args.length==3) {
     rnum = args[1].toInteger()
     fnum = args[2].toInteger()
-  } else return
+  } else System.exit(101)
   */
   ///* // [runnum]; operate on full run
   if(args.length==2) {
     rnum = args[1].toInteger()
-  } else return
+  } else System.exit(101)
   //*/
 
   qaTree["$rnum"].each { k,v -> fnum = k.toInteger() // loop over files
@@ -278,7 +278,7 @@ else if( cmd=="custom") {
 }
 
 
-else { println("ERROR: unknown command!"); return }
+else { System.err.println("ERROR: unknown command!"); System.exit(100) }
 
 
 // update qaTree.json

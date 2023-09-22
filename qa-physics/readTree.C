@@ -26,7 +26,7 @@ void readTree(TString dataset="fall18") {
   TLine * eLine[2][maxN];
   int n=0;
   TTree * etr = new TTree("etr","etr");
-  etr->ReadFile(TString("epochs."+dataset+".txt"),"lb/I:ub/I");
+  etr->ReadFile(TString("epochs/epochs."+dataset+".txt"),"lb/I:ub/I");
   Int_t e[2];
   int color[2] = {kGreen+1,kRed};
   etr->SetBranchAddress("lb",&e[0]);

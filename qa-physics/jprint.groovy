@@ -1,16 +1,16 @@
 if(args.size()==0) {
-  println("\n\nARGUMENTS: jsonfile [tree-path]")
-  println("""
+  System.err.println("\n\nARGUMENTS: jsonfile [tree-path]")
+  System.err.println("""
   pretty prints a json file
   - if it is a nested map (tree), specify additional arguments
     to restrict printout to a specific sub-tree
   """)
-  return
+  System.exit(101)
 }
 
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
-import Tools
+import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 def slurper = new JsonSlurper()

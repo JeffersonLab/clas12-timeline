@@ -4,7 +4,7 @@ import org.jlab.groot.data.H1F
 import org.jlab.groot.math.F1D
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
-import Tools
+import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 //--------------------------------------------------------------------------
@@ -28,7 +28,7 @@ def jPrint = { name,object -> new File(name).write(JsonOutput.toJson(object)) }
 // read epochs list file
 def epochFile = new File("epochs/epochs.${dataset}.txt")
 if(!(epochFile.exists())) {
-  System.err << "WARNING: using epochs/epochs.default.txt\n"
+  System.err.println "WARNING: using epochs/epochs.default.txt"
   epochFile = new File("epochs/epochs.default.txt")
 }
 
@@ -144,7 +144,7 @@ inList.each { obj ->
 // subroutine for calculating median of a list
 def median = { d ->
   if(d.size()==0) {
-    System.err << "WARNING: attempt to calculate median of an empty list\n"
+    System.err.println "WARNING: attempt to calculate median of an empty list"
     return -10000
   }
   d.sort()

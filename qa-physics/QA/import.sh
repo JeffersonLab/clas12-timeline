@@ -1,13 +1,15 @@
 #!/bin/bash
 # copy qaTree.json from ../outdat.$dataset, so we can start the QA
 if [ $# -lt 1 ]; then
-  echo "USAGE: $0 [dataset] [optional: path to qaTree.json] [optional: options for parseQaTree.groovy]"
-  echo ""
-  echo "- to see parseQaTree options: $0 [dataset] -h"
-  echo "                         and: $0 [dataset] -l"
-  echo ""
-  echo "- for manual QA: $0 [dataset] -cnds=user_comment"
-  exit
+  echo """
+  USAGE: $0 [dataset] [optional: path to qaTree.json] [optional: options for parseQaTree.groovy]
+
+  - to see parseQaTree options: $0 [dataset] -h
+                           and: $0 [dataset] -l
+
+  - for manual QA: $0 [dataset] -cnds=user_comment
+  """ >&2
+  exit 101
 fi
 dataset=$1
 shift
@@ -34,4 +36,4 @@ ln -sv qa.${dataset} qa
 echo "imported $qatree to local area: qa/qaTree.json"
 
 # parse the JSON file into human-readable format
-run-groovy $CLASQA_JAVA_OPTS parseQaTree.groovy qa/qaTree.json $opts
+run-groovy $TIMELINE_GROOVY_OPTS parseQaTree.groovy qa/qaTree.json $opts

@@ -1,5 +1,5 @@
 # Physics QA Timeline Production
-Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/JeffersonLab/clasqaDB) production
+Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/JeffersonLab/clas12-qadb) production
 
 * Tracks the electron trigger count, normalized by the Faraday cup charge
 * Also implements helicity monitoring, by tracking inclusive beam spin asymmetries
@@ -11,8 +11,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
   monitor several different sets of data
 
 # Setup
-0. recommended to use `zsh` or `bash` as your shell; development has been
-   done in `zsh`
+0. recommended to use `bash` as your shell
 1. set `COATJAVA` environment
   * on `ifarm`:
     * `source /group/clas12/packages/setup.sh`
@@ -20,16 +19,12 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
   * local environment:
     * `$COATJAVA` must point to your local install
     * `run-groovy` (likely in `$COATJAVA/bin`) must be in your `$PATH`
-2. set local environment variables with `source env.sh`
-  * some primary run scripts do this automatically, in case the user forgets
+2. note for developers: set local environment variables with `source ../bin/environ.sh`
+  * wrapper scripts in `../bin/` do this automatically, but if you intend to run
+    individual scripts here (namely during manual QA), you may need to call this `source`
+    command
   * note: `JYPATH` is added to the classpath for groovy called via
     `run-groovy`, from `coatjava`
-  * the variable `CLASQAWWW` is the webserver directory to which the output
-    hipo files will be copied; this is a directory which the front-end will
-    read in order to produce the web page version of the timelines. If you are
-    not using this feature, change `CLASQAWWW` to any local directory; if you
-    don't want to edit `env.sh`, then simply create the directory `../www`,
-    which is the default value of `CLASQAWWW`
 
 ## PASS1 Procedure for Automatic QA
 * prepare run-group dependent settings in `monitorRead.groovy`
@@ -47,19 +42,9 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     * if you find that the DAQ-gated FC charge is larger than the ungated
       charge, you may have assumed here that the recharge option was ON, when
       actually it was OFF and needs to be ON
-* `exeSlurm.sh $dataset`: runs `monitorRead.groovy` on DSTs using slurm
-  * `$dataset` is specified in `datasetList.txt`, along with a range of runs
-    * the syntax of this file is `$dataset $firstRun $lastRun`
-    * several scripts use this file; some loop over all datasets, whereas
-      others require you to specify which dataset
-      * for scripts which loop over all datasets, you can restrict them by
-        commenting out lines in `datasetList.txt` (using `#`); currently
-        there are no such scripts in use
+* `../bin/run-monitoring.sh`: runs `monitorRead.groovy` on DSTs using slurm
   * wait for slurm jobs to finish
   * execute `errorPrint.sh` to inspect error logs
-  * `exeSlurm.sh` also has the ability to read files from the tape silo; however, while
-    this feature has been programmed in, it has never been used and is NOT tested! It
-    likely does not work yet, but the general idea is programmed in
   * resubmit failed jobs, e.g., those that exceeded time limit on a slow node:
     * get list of run numbers to be resubmitted: 
       `errorPrint.sh | cut -d':' -f1 | uniq | sed 's/err$/out/g' | xargs grep -i runnum`
@@ -71,27 +56,25 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
       * note: `monitorRead.groovy` will overwrite any partial files left behind by jobs
         which were terminated prematurely, there is no need to delete them prior to
         resubmission
-* `exeTimelines.sh $dataset`, which does the following:
+* `../bin/run-physics-timelines.sh $dataset`, which does the following:
   * runs `qaPlot.groovy` (on electron trigger and FT)
   * runs `qaCut.groovy` (on electron trigger and FT)
   * runs `datasetOrganize.sh`
   * runs `monitorPlot.groovy`
-  * copies timelines to webserver using `deployTimelines.sh`
+  * copies timelines to output timeline directory
+    using `stageTimelines.sh`
   * if any of these scripts throw errors, they will be redirected and printed at the end
-    of `exeTimelines.sh`
+    of `../bin/run-physics-timelines.sh`
     * if you see any errors for a script, it's best to rerun that script independently
       to diagnose the problem
 * integrity check: check if all available data were analyzed (must be done AFTER
-  `exeTimelines.sh`)
+  `../bin/run-physics-timelines.sh`)
   * `getListOfDSTs.sh [dataset]` (takes some time to run)
   * `integrityCheck.sh [dataset]`
 * perform the manual QA (see QA procedure below)
-* release timeline to main directory: use `releaseTimelines.sh`
-  * the variable `$CLASQAWWW` should point to the webserver directory
-
 
 ## Automatic QA Procedure and Script Details
-* The automatic QA is executed by `exeSlurm.sh` followed by `exeTimelines.sh`;
+* The automatic QA is executed by `../bin/run-monitoring.sh` followed by `../bin/run-physics-timelines.sh`;
   these scripts execute several groovy scripts, which are described in this
   section
 
@@ -101,12 +84,6 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     corresponding to one run
   * Skim files are assumed to be contained in a single directory, with one skim file
     corresponding to one run
-* The file `Tools.groovy` contains several subroutines used by the general monitor
-  scripts; depending on your environment, you may need to ensure that this working
-  directory is included in the environment variable `$CLASSPATH`
-  * One way to do this in `bash` is `export CLASSPATH="${CLASSPATH}:.`, which adds the
-    present working directory
-
 
 ### DST / Skim reading
 First step is to read DST or Skim files, producing hipo files and data tables
@@ -114,7 +91,7 @@ First step is to read DST or Skim files, producing hipo files and data tables
 * `groovy monitorRead.groovy __hipo_file_(directory)__ skim(dst)`
   * It is better to run this using `slurm`, but this can be run on a single skim file or
     directory of one run's DST files
-    * see `exeSlurm.sh` for example job submission scripts
+    * see `../bin/run-monitoring.sh` for example job submission scripts
   * the 2nd argument, `inHipoType` needs to be specified so that determination of run
     number and segment(file) number is done correctly
     * use `dst` for DST files
@@ -122,17 +99,20 @@ First step is to read DST or Skim files, producing hipo files and data tables
   * you may want to check the "RUN GROUP DEPENDENT SETTINGS" in the code, to make sure
     certain settings (e.g., beam energy) are correct for your run group
   * Outputs:
-    * `outdat/data_table_${run}.dat`, which is a data table with the following columns:
+    * `../outfiles/$dataset/physics/data_table_${run}.dat`, which is a data table with the following columns:
       * run number
       * 5-file number
+      * minimum event number
+      * maximum event number
       * sector
-      * number of electron triggers (`N`)
+      * number of electron triggers (`N`) in this sector
       * number of electrons in the forward tagger
-      * DAQ-gated FC charge at beginning of 5-file (`F_i`)
-      * DAQ-gated FC charge at end of 5-file (`F_f`)
-      * DAQ-ungated FC charge at beginning of 5-file
-      * DAQ-ungated FC charge at end of 5-file
-    * `outmon/monitor_${runnum}.hipo` contains several plots 
+      * DAQ-gated FC charge at beginning of 5-file (`F_i`) (minimum readout)
+      * DAQ-gated FC charge at end of 5-file (`F_f`) (maximum readout)
+      * DAQ-ungated FC charge at beginning of 5-file (minimum readout)
+      * DAQ-ungated FC charge at end of 5-file (maximum readout)
+      * average livetime
+    * `../outfiles/$dataset/physics/monitor_${runnum}.hipo` contains several plots 
       * in the script, they are organized into a tree data structure, which allows plot
         any variable, for any set of properties
         * for example, the helicity plots are for pi+,pi-, and positive helicity and
@@ -155,10 +135,10 @@ First step is to read DST or Skim files, producing hipo files and data tables
 
 ### Data Organization
 * use the script `datasetOrganize.sh [dataset]`
-  * this will concatenate files from `outdat` into a single file
+  * this will concatenate files from `../outfiles/$dataset/physics/*.dat` into a single file
     `outdat.${dataset}/data_table.dat`, for the specified dataset
   * it will also generate symlinks from `outmon.${dataset}/monitor*.hipo` to the
-    relevant `outmon/monitor*.hipo` files
+    relevant `../outfiles/$dataset/physics/monitor*.hipo` files
 
 
 ### Plotting Scripts
@@ -170,7 +150,7 @@ files can then be fed to a QA script
     * the list of timelines is at the bottom of the script, and is handled by
       the `hipoWrite` closure, which takes two arguments:
       * the name of the timeline, which will be the name of the corresponding
-        hipo file, also send to the `outmon/` directory
+        hipo file, also send to the `outmon` directory
       * a list of filters, used to access the plots that are added to that
         timeline; all plots which pass those filters will be plotted together in
         a single timeline hipo file
@@ -194,7 +174,7 @@ files can then be fed to a QA script
       timelines to the webserver
 
 * `groovy qaPlot.groovy $dataset [$useFT]` 
-  * reads `outdat.${dataset}/data_table.dat` and generates `outmon/monitorElec.hipo`
+  * reads `outdat.${dataset}/data_table.dat` and generates `outmon.${dataset}/monitorElec.hipo`
     * within this hipo file, there is one directory for each run, containing several
       plots:
       * `grA*`: N/F vs. file number (the `A` notation is so it appears first in the
@@ -229,7 +209,7 @@ generate QA timelines, and a `json` file which is used for the manual followup Q
         manually, but could be automated in a future release
 
 * `groovy qaCut.groovy $dataset [$useFT]`
-  * reads `outmon/monitorElec.hipo`, along with `epochs/epochs.${dataset}.txt`, to build
+  * reads `outmon.${dataset}/monitorElec.hipo`, along with `epochs/epochs.${dataset}.txt`, to build
     timelines for the online monitor
   * if `$useFT` is set, it will use FT electrons instead
   * the runs are organized into epochs, wherein each:
@@ -273,7 +253,7 @@ the timelines and recording features not identified by the automatic QA in
   * verify your epoch lines are where you want them
     * use `mkTree.sh`
     * look at "supplemental" `epoch view` timelines
-  * if you make changes to the epoch lines, re-run `exeTimelines.sh` to
+  * if you make changes to the epoch lines, re-run `../bin/run-physics-timelines.sh` to
     generate the updated `qaTree.json`
 * verify all the data have been analyzed by the automatic QA
   * execute `getListOfDSTs.sh [dataset]` to obtain a list of run numbers and file
@@ -344,12 +324,9 @@ directory and call `exeQAtimelines.sh` to produce the updated QA timelines
   * it copies the revised`qaTree.json` (`QA/qa.${dataset}/qaTree.json`) to
     the new QA timeline directory, which can then be deployed to the webservers
   * this final `qaTree.json` is stored in the 
-    [`clasqaDB` repository](https://github.com/JeffersonLab/clasqaDB)
+    [`clas12-qadb` repository](https://github.com/JeffersonLab/clas12-qadb)
     and should be copied there, along with `chargeTree.json`
-    * remember to run `util/syncCheck.groovy` in `clasqaDB`
-  * the scripts which copy timelines to the webserver (`deployTimelines.sh` and
-    `releaseTimelines.sh`) will copy the new `outmon.${dataset}.qa` directory's
-    timelines, but you must call these scripts manually
+    * remember to run `util/syncCheck.groovy` in `clas12-qadb`
 
 ### melding
 * This more advanced procedure is used if you need to combine two `qaTree.json` files
@@ -361,18 +338,3 @@ directory and call `exeQAtimelines.sh` to produce the updated QA timelines
     update a `qaTree.json` file, with full control of each defect bit's
     behavior
   * see `QA/meld/README.md`
-
-
-## Supplementary Scripts
-* `deployTimelines.sh __subdirectory__`
-  * reads `outmon` directory for timeline `hipo` files and copies them to the online
-    timeline webserver (you may need to edit the path), into the specified subdirectory
-
-* `indexPage.groovy`
-  * generate `ListOfTimelines.json` file, for hipo files in the online directory's
-    subirectories
-
-* `upload.sh __hipoFile(s)__`
-  * upload a file to the timeline webserver, via `scp`
-  * you may need to alter the webserver location
-
