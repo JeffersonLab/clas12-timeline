@@ -1,5 +1,6 @@
 // get run number for a given HIPO file, using RUN::config
-import org.jlab.io.hipo.HipoDataSource
+import org.jlab.clas.timeline.util.Tools
+Tools T = new Tools()
 
 if(args.length<1) {
   System.err.println """
@@ -9,22 +10,6 @@ if(args.length<1) {
   System.exit(101)
 }
 
-def infile = args[0]
-def reader = new HipoDataSource()
-def runnum = 0
-reader.open(infile)
-
-while(reader.hasEvent()) {
-  event = reader.getNextEvent()
-  if(event.hasBank("RUN::config")) {
-    runnum = BigInteger.valueOf(event.getBank("RUN::config").getInt('run',0))
-    break
-  }
-}
-reader.close()
+def runnum = T.getRunNumber(args[0])
 System.out.println(runnum)
-
-if(runnum<=0) {
-  System.err.println("[ERROR]: run number not found for file $infile")
-  System.exit(100)
-}
+if(runnum<=0) System.exit(100)

@@ -12,6 +12,8 @@ defaults:
 
 env:
   dataset: ci_test
+  validation_single_run: '011329'
+  validation_run_group: B # FIXME: not actually used; see comments mentioning this variable below
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -32,7 +34,7 @@ jobs:
         java-version: 11
         distribution: zulu
     - name: build
-      run: ./bin/build-all.sh
+      run: mvn package
     - name: tar # to preserve any permissions
       run: |
         tar czvf build_detectors.tar.gz detectors/target
@@ -124,7 +126,7 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: build
-    - name: untar build
+    - name: untar
       run: ls *.tar.gz | xargs -I_ tar xzvf _
     - name: tree
       run: tree
@@ -145,6 +147,46 @@ jobs:
         retention-days: 1
         path: outfiles
 
+  test_swifjob:
+    needs:
+      - build_timelines
+      - build_coatjava
+      - download_test_data
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        type:
+          - detectors
+          - physics
+    steps:
+    - name: setup java
+      uses: actions/setup-java@v3
+      with:
+        java-version: 11
+        distribution: zulu
+    - name: setup groovy
+      uses: wtfjoke/setup-groovy@v1
+      with:
+        groovy-version: 4.x
+    - name: groovy version
+      run: groovy --version
+    - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
+      with:
+        name: validation_files
+    - uses: actions/download-artifact@v3
+      with:
+        name: build
+    - name: untar
+      run: ls *.tar.gz | xargs -I_ tar xzvf _
+    - name: tree
+      run: tree
+    - name: test monitoring swifjob
+      run: bin/test-swifjob.sh validation_files/${{env.validation_single_run}} runner --focus-${{matrix.type}}
+    - name: tree runner
+      run: tree runner
+
   # timeline production
   #############################################################################
 
@@ -159,8 +201,8 @@ jobs:
           - detectors
           - physics
         include:
-          - { type: detectors,  args: -n 2 -r b } ###### NOTE: if validation files' run group changes, change this
-          - { type: physics,    args: ''   }
+          - { type: detectors,  args: -n 2 -r B } # FIXME: prefer `-r ${{env.validation_run_group}}`, but that's invalid syntax for matrix arg
+          - { type: physics,    args: '' }
     steps:
     - name: setup java
       uses: actions/setup-java@v3
@@ -181,7 +223,7 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: build
-    - name: untar build
+    - name: untar
       run: ls *.tar.gz | xargs -I_ tar xzvf _
     - name: tree
       run: tree

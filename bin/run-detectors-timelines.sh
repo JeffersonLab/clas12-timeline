@@ -5,10 +5,10 @@ set -u
 source $(dirname $0)/environ.sh
 
 # default options
-dataset=test_v0
-rungroup=a
 inputDir=""
-numThreads=4
+dataset=""
+rungroup=a
+numThreads=8
 singleTimeline=""
 declare -A modes
 for key in list build focus-timelines focus-qa; do
@@ -22,18 +22,28 @@ if [ $# -eq 0 ]; then
   $sep
   USAGE: $0 [OPTIONS]...
   $sep
-  Creates detector timelines locally
+  Creates web-ready detector timelines locally
 
-  OPTIONS:
+  REQUIRED OPTIONS: specify at least one of the following:
 
-    -d [DATASET_NAME]   unique dataset name, defined by the user, used for organization
-                        default = '$dataset'
+    -i [INPUT_DIR]      directory containing run subdirectories of timeline histograms
+
+    -d [DATASET_NAME]   unique dataset name, defined by the user, used for organization;
+                        output files will be written to ./outfiles/[DATASET_NAME]
+
+      NOTE:
+        - use [DATASET_NAME], not [INPUT_DIR], if your input directory is ./outfiles/[DATASET_NAME],
+          since if only [DATASET_NAME] is specified, then [INPUT_DIR] will be ./outfiles/[DATASET_NAME]
+        - if only [INPUT_DIR] is specified, then [DATASET_NAME] will be based on [INPUT_DIR]
+
+  OPTIONAL OPTIONS:
+
+    -o [OUTPUT_DIR]     output directory
+                        default = '$TIMELINESRC/outfiles/[DATASET_NAME]'
 
     -r [RUN_GROUP]      run group, for run-group specific configurations;
                         default = '$rungroup', which specifies Run Group $(echo $rungroup | tr '[:lower:]' '[:upper:]')
-
-    -i [INPUT_DIR]      directory of input files; by default this is based on [DATASET_NAME]:
-                        default = '$TIMELINESRC/outfiles/[DATASET_NAME]/detectors'
+                        (NOTE: THIS OPTION WILL BE REMOVED SOON)
 
     -n [NUM_THREADS]    number of parallel threads to run
                         default = $numThreads
@@ -53,16 +63,8 @@ if [ $# -eq 0 ]; then
 fi
 
 # parse options
-while getopts "d:r:i:n:t:-:" opt; do
+while getopts "i:d:r:n:t:-:" opt; do
   case $opt in
-    d) 
-      echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
-      [ -z "$OPTARG" ] && printError "dataset name may not be empty" && exit 100
-      dataset=$OPTARG
-      ;;
-    r) 
-      rungroup=$(echo $OPTARG | tr '[:upper:]' '[:lower:]')
-      ;;
     i) 
       if [ -d $OPTARG ]; then
         inputDir=$(realpath $OPTARG)
@@ -70,6 +72,14 @@ while getopts "d:r:i:n:t:-:" opt; do
         printError "input directory $OPTARG does not exist"
         exit 100
       fi
+      ;;
+    d) 
+      echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
+      [ -z "$OPTARG" ] && printError "dataset name may not be empty" && exit 100
+      dataset=$OPTARG
+      ;;
+    r) 
+      rungroup=$(echo $OPTARG | tr '[:upper:]' '[:lower:]')
       ;;
     n)
       numThreads=$OPTARG
@@ -87,8 +97,49 @@ while getopts "d:r:i:n:t:-:" opt; do
   esac
 done
 
-# set default input directory
-[ -z "$inputDir" ] && inputDir=$TIMELINESRC/outfiles/$dataset/detectors
+# set class path to include groovy's classpath, for `java` calls
+export CLASSPATH="$JYPATH${CLASSPATH:+:${CLASSPATH}}"
+
+# get main executable for detector timelines
+# FIXME: remove run group dependence
+MAIN="org.jlab.clas.timeline.run"
+if [[ "$rungroup" == "b" ]]; then
+  MAIN="org.jlab.clas.timeline.run_rgb"
+fi
+[[ ! "$rungroup" =~ ^[a-zA-Z] ]] && printError "unknown rungroup '$rungroup'" && exit 100
+export MAIN
+
+# list detector timelines, if requested
+if ${modes['list']}; then
+  echo $sep
+  echo "LIST OF TIMELINES"
+  echo $sep
+  java $MAIN --timelines
+  exit $?
+fi
+
+# set directories and dataset name
+# FIXME: copied implementation from `run-physics-timelines.sh`
+if [ -z "$inputDir" -a -n "$dataset" ]; then
+  inputDir=$TIMELINESRC/outfiles/$dataset/timeline_detectors # default input directory is in ./outfiles/
+elif [ -n "$inputDir" -a -z "$dataset" ]; then
+  dataset=$(ruby -e "puts '$inputDir'.split('/')[-4..].join('_')") # set dataset using last few subdirectories in inputDir dirname
+elif [ -z "$inputDir" -a -z "$dataset" ]; then
+  printError "required options, either [INPUT_DIR] or [DATASET_NAME], have not been set"
+  exit 100
+fi
+outputDir=$TIMELINESRC/outfiles/$dataset
+
+# set subdirectories
+finalDirPreQA=$outputDir/timeline_web_preQA
+finalDir=$outputDir/timeline_web
+logDir=$outputDir/log
+
+# check input directory
+if [ ! -d $inputDir ]; then
+  printError "input directory $inputDir does not exist"
+  exit 100
+fi
 
 # check focus options
 modes['focus-all']=true
@@ -96,14 +147,18 @@ for key in focus-timelines focus-qa; do
   if ${modes[$key]}; then modes['focus-all']=false; fi
 done
 
-# print arguments
+# print settings
 echo """
 Settings:
 $sep
-DATASET_NAME = $dataset
-RUN_GROUP    = $rungroup
-INPUT_DIR    = $inputDir
-NUM_THREADS  = $numThreads
+INPUT_DIR       = $inputDir
+DATASET_NAME    = $dataset
+OUTPUT_DIR      = $outputDir
+FINAL_DIR_PREQA = $finalDirPreQA
+FINAL_DIR       = $finalDir
+LOG_DIR         = $logDir
+RUN_GROUP       = $rungroup
+NUM_THREADS     = $numThreads
 OPTIONS = {"""
 for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
 echo "}"
@@ -116,18 +171,6 @@ if ${modes['build']}; then
   [ $? -ne 0 ] && exit 100
   popd
 fi
-
-# set class path
-GROOVYPATH=`which groovy`
-GROOVYBIN=`dirname $GROOVYPATH`
-export GROOVYLIB="`dirname $GROOVYBIN`/lib"
-export JARPATH="$TIMELINESRC/detectors/target"
-export CLASSPATH="${COATJAVA}/lib/clas/*:${COATJAVA}/lib/utils/*:$JARPATH/*:$GROOVYLIB/*"
-
-# output directory names
-outputDir=$TIMELINESRC/outfiles/$dataset/detectors/timelines
-finalDir=$TIMELINESRC/outfiles/$dataset/timelines
-logDir=$TIMELINESRC/outfiles/$dataset/log
 
 # output detector subdirectories
 detDirs=(
@@ -152,16 +195,13 @@ detDirs=(
 )
 
 # cleanup output directories
-backupDir=$TIMELINESRC/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
-echo ">>> backing up any previous files to $backupDir ..."
-mkdir -p $backupDir
 if ${modes['focus-all']} || ${modes['focus-timelines']}; then
-  mkdir -p $backupDir/detectors
-  [ -d $outputDir ] && mv -v $outputDir $backupDir/detectors/
-  [ -d $finalDir  ] && mv -v $finalDir  $backupDir/
-fi
-if ${modes['focus-all']} || ${modes['focus-qa']}; then
-  [ -d $finalDir ] && mv -v $finalDir $backupDir/
+  if [ -d $finalDirPreQA ]; then
+    backupDir=$TIMELINESRC/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
+    echo ">>> backing up any previous files to $backupDir ..."
+    mkdir -p $backupDir/
+    mv -v $finalDirPreQA $backupDir/
+  fi
 fi
 if [ -d $logDir ]; then
   for fail in $(find $logDir -name "*.fail"); do
@@ -170,37 +210,20 @@ if [ -d $logDir ]; then
 fi
 
 # make output directories
-mkdir -p $outputDir $logDir $finalDir
+mkdir -p $logDir $finalDirPreQA $finalDir
 
 ######################################
 # produce detector timelines
 ######################################
-if ${modes['focus-all']} || ${modes['focus-timelines']} || ${modes['list']}; then
+if ${modes['focus-all']} || ${modes['focus-timelines']}; then
 
   # change working directory to output directory
-  pushd $outputDir
+  pushd $finalDirPreQA
 
   # make detector subdirectories
   for detDir in ${detDirs[@]}; do
     mkdir -p $detDir
   done
-
-  # get main executable
-  # FIXME: remove run group dependence
-  MAIN="org.jlab.clas.timeline.run"
-  if [[ "$rungroup" == "b" ]]; then
-    MAIN="org.jlab.clas.timeline.run_rgb"
-  fi
-  [[ ! "$rungroup" =~ ^[a-zA-Z] ]] && printError "unknown rungroup '$rungroup'" && exit 100
-  export MAIN
-
-  if ${modes['list']}; then
-    echo $sep
-    echo "LIST OF TIMELINES"
-    echo $sep
-    java $MAIN --timelines
-    exit $?
-  fi
 
   # produce timelines, multithreaded
   jobCnt=1
@@ -209,7 +232,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']} || ${modes['list']}; the
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
     if [ $jobCnt -le $numThreads ]; then
       echo ">>> producing timeline '$timelineObj' ..."
-      java -DCLAS12DIR=$COATJAVA/ $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+      java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
       let jobCnt++
     else
       wait
@@ -245,6 +268,10 @@ if ${modes['focus-all']} || ${modes['focus-timelines']} || ${modes['list']}; the
     esac
   done
 
+  # check timelines
+  outputFiles=$(find . -name "*.hipo")
+  [ -n "$outputFiles" ] && $TIMELINESRC/bin/hipo-check.sh $outputFiles
+
   popd
 fi
 
@@ -255,12 +282,14 @@ fi
 # first, copy the timelines to the final timeline directory; we do this regardless of whether QA is run
 # so that (1) only `$finalDir` needs deployment and (2) we can re-run the QA with 'focus-qa' mode
 echo ">>> copy timelines to final directory..."
-cp -rL $outputDir/* $finalDir/
+cp -rL $finalDirPreQA/* $finalDir/
 
 if ${modes['focus-all']} || ${modes['focus-qa']}; then
   echo ">>> add QA lines..."
   logFile=$logDir/qa
-  run-groovy $TIMELINESRC/qa-detectors/util/applyBounds.groovy $outputDir $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
+  run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
+  outputFiles=$(find $finalDir -name "*_QA.hipo")
+  [ -n "$outputFiles" ] && $TIMELINESRC/bin/hipo-check.sh $outputFiles
 fi
 
 
@@ -268,10 +297,6 @@ fi
 # error checking
 ######################################
 
-# check output timelines
-echo ">>> checking output timelines..."
-$TIMELINESRC/bin/hipo-check.sh $(find $outputDir -name "*.hipo")
-echo ">>> done checking output timelines, all are OK"
 
 # print log file info
 echo """

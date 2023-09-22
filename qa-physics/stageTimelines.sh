@@ -1,8 +1,10 @@
 #!/bin/bash
 # copy timeline hipo files to output timelines area, staging them for deployment
 
-if [ $# -ne 1 ]; then
-  echo "USAGE: $0 [dataset]" >&2
+set -e
+
+if [ $# -ne 2 ]; then
+  echo "USAGE: $0 [dataset] [output_dir]" >&2
   exit 101
 fi
 if [ -z "$TIMELINESRC" ]; then
@@ -10,32 +12,33 @@ if [ -z "$TIMELINESRC" ]; then
   exit 100
 fi
 dataset=$1
+outputDir=$2
 
 # directory names
 inputDir=$TIMELINESRC/qa-physics/outmon.$dataset
-outputDir=$TIMELINESRC/outfiles/$dataset/timelines
 if [ ! -d $inputDir ]; then
   printError "ERROR: dataset '$dataset' files not found in $inputDir"
   exit 100
 fi
 
-# clean output directory
-mkdir -p $outputDir
-rm    -r $outputDir
-mkdir -p $outputDir
-
 # check HIPO files
-timelineFiles=$(ls $inputDir/*.hipo | grep -vE '^monitor')
+timelineFiles=$(find $inputDir -name "*.hipo" -type f | grep -v 'monitorElec')
 $TIMELINESRC/bin/hipo-check.sh $timelineFiles
 
 # copy timelines to output directory
+mkdir -p $outputDir
 for file in $timelineFiles; do
   cp -v $file $outputDir/
 done
 
 # organize them
+mkdir_clean() {
+  mkdir -p $*
+  rm -r $*
+  mkdir -p $*
+}
 pushd $outputDir
-mkdir -v phys_qa{,_extra}
+mkdir_clean phys_qa phys_qa_extra
 extraList=(
   electron_FT_yield_normalized_values
   electron_FT_yield_QA_Automatic_Result
@@ -54,10 +57,11 @@ for extraFile in ${extraList[@]}; do
   mv -v $extraFile.hipo phys_qa_extra/
 done
 mv -v *.hipo phys_qa/
-popd
 
 # if QADB timelines were produced, copy them too
 if [ -d $inputDir.qa ]; then
-  mkdir -p $outputDir/qadb
-  cp -v $inputDir.qa/* $outputDir/qadb/
+  mkdir_clean qadb
+  cp -v $inputDir.qa/* qadb/
 fi
+
+popd

@@ -4,7 +4,7 @@ import org.jlab.groot.data.H1F
 import org.jlab.groot.math.F1D
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
-import Tools
+import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 //--------------------------------------------------------------------------

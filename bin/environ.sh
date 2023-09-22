@@ -8,14 +8,6 @@ printWarning() { echo -e "\e[1;35m[WARNING]: $* \e[0m" >&2; }
 [ -z "${BASH_SOURCE[0]}" ] && thisEnv=$0 || thisEnv=${BASH_SOURCE[0]}
 export TIMELINESRC=$(realpath $(dirname $thisEnv)/..)
 
-# classpath for `run-groovy`
-for p in \
-  $TIMELINESRC/qa-detectors/src \
-  $TIMELINESRC/qa-physics       \
-  ; do
-  export JYPATH="$p${JYPATH:+:${JYPATH}}"
-done
-
 # check coatjava environment
 if [ -z "${COATJAVA-}" ]; then
   # if on a CI runner, use CI coatjava build artifacts; otherwise print error
@@ -27,3 +19,31 @@ fi
 
 # ensure coatjava executables are found
 [ -n "${COATJAVA-}" ] && export PATH="$COATJAVA/bin${PATH:+:${PATH}}"
+
+# class paths
+java_classpath=(
+  "$COATJAVA/lib/clas/*"
+  "$COATJAVA/lib/utils/*"
+  "$TIMELINESRC/monitoring/target/*"
+)
+groovy_classpath=(
+  "$TIMELINESRC/detectors/target/*"
+  "$(dirname $(dirname $(which groovy)))/lib/*"
+)
+
+# java and groovy options
+timeline_java_opts=(
+  -DCLAS12DIR=$COATJAVA/
+  -Djava.util.logging.config.file=$COATJAVA/etc/logging/debug.properties
+  -Xmx1024m
+  -XX:+UseSerialGC
+)
+timeline_groovy_opts=(
+  -Djava.awt.headless=true
+)
+
+# exports
+export CLASSPATH="$(echo "${java_classpath[*]}" | sed 's; ;:;g')${CLASSPATH:+:${CLASSPATH}}"
+export JYPATH="$(echo "${groovy_classpath[*]}" | sed 's; ;:;g')${JYPATH:+:${JYPATH}}"
+export TIMELINE_JAVA_OPTS="${timeline_java_opts[*]}"
+export TIMELINE_GROOVY_OPTS="${timeline_groovy_opts[*]}"
