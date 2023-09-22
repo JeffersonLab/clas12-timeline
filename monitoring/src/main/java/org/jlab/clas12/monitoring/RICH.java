@@ -99,10 +99,9 @@ public class RICH{
     public static boolean verbose = false;
 
 
-    public RICH(int reqR, String reqOutputDir, float reqEb, boolean reqTimeBased, boolean reqwrite_volatile){
+    public RICH(int reqR, String reqOutputDir, float reqEb, boolean reqTimeBased){
 	runNum = reqR;userTimeBased=reqTimeBased;
         outputDir = reqOutputDir;
-        if(reqwrite_volatile) outputDir = "/volatile/clas12/rga/spring18/" + outputDir;
 	EBeam = reqEb;
 	BINWINDOW = 14;
 
@@ -860,7 +859,6 @@ public class RICH{
 	int count = 0;
 	int runNum = 0;
 	boolean useTB = true;
-	boolean useVolatile = false;
 	String filelist = "list_of_files.txt";
 	if(args.length>0)runNum=Integer.parseInt(args[0]);
 	if(args.length>1)filelist = args[1];
@@ -870,7 +868,7 @@ public class RICH{
 	if(args.length>3)Eb=Float.parseFloat(args[3]);
 	if(args.length>4)if(Integer.parseInt(args[4])==0)useTB=false;
         String outputDir = runNum > 0 ? "plots"+runNum : "plots";
-	RICH ana = new RICH(runNum,outputDir,Eb,useTB,useVolatile);
+	RICH ana = new RICH(runNum,outputDir,Eb,useTB);
 	List<String> toProcessFileNames = new ArrayList<String>();
 	File file = new File(filelist);
 	Scanner read;

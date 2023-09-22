@@ -66,10 +66,9 @@ public class deuterontarget {
 	public H2F H_rho_Q2_xB, H_rho_Q2_W, H_rho_MMMM;
 	public H2F H_rho_prot, H_rho_pip_beta, H_rho_pim_beta, H_rho_deut;
 
-	public deuterontarget(int reqrunNum, String reqOutputDir, float reqEB, boolean reqTimeBased, boolean reqwrite_volatile ) {
+	public deuterontarget(int reqrunNum, String reqOutputDir, float reqEB, boolean reqTimeBased) {
 		runNum = reqrunNum;EB=reqEB;userTimeBased=reqTimeBased;
                 outputDir = reqOutputDir;
-                if(reqwrite_volatile) outputDir = "/volatile/clas12/rgb/spring19/" + outputDir;
 		Nevts=0;Nelecs=0;Ntrigs=0;
 		trigger_bits = new boolean[32];
 		Ebeam = 2.22f;
@@ -979,7 +978,6 @@ public class deuterontarget {
                 int count = 0;
 		int runNum = 0;
 		boolean useTB = true;
-		boolean useVolatile = false;
 		String filelist = "list_of_files.txt";
 		if(args.length>0)runNum=Integer.parseInt(args[0]);
 		if(args.length>1)filelist = args[1];
@@ -989,7 +987,7 @@ public class deuterontarget {
                 if(args.length>3)Eb=Float.parseFloat(args[3]);
 		if(args.length>4)if(Integer.parseInt(args[4])==0)useTB=false;
                 String outputDir = runNum > 0 ? "plots"+runNum : "plots";
-		deuterontarget ana = new deuterontarget(runNum,outputDir,Eb,useTB,useVolatile);
+		deuterontarget ana = new deuterontarget(runNum,outputDir,Eb,useTB);
 		List<String> toProcessFileNames = new ArrayList<String>();
 		File file = new File(filelist);
 		Scanner read;

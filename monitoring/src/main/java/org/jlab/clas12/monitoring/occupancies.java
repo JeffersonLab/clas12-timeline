@@ -42,10 +42,9 @@ public class occupancies {
 
 	H1F H_BMT_multi;
 
-	public occupancies(int reqrunNum, String reqOutputDir, boolean reqwrite_volatile) {
+	public occupancies(int reqrunNum, String reqOutputDir) {
 		runNum = reqrunNum;
                 outputDir = reqOutputDir;
-                if(reqwrite_volatile) outputDir = "/volatile/clas12/rga/spring18/" + outputDir;
 		H_BST_multi = new H1F("bst_multi", "bst_multi", 501, -0.5, 500.5);
         	H_BST_multi.setTitleX("hit multiplicity");
         	H_BST_multi.setTitleY("counts");
@@ -423,7 +422,6 @@ public class occupancies {
         public static void main(String[] args) {
                 System.setProperty("java.awt.headless", "true");
                 int runNum = 1894;
-		boolean useVolatile = false;
 		if(args.length>0)runNum = Integer.parseInt(args[0]);
 		String listfiles = "list_of_files.txt";
 		if(args.length>1)listfiles=args[1];
@@ -446,7 +444,7 @@ public class occupancies {
                 int progresscount=0;
                 int evntot=0;
                 String outputDir = runNum > 0 ? "plots"+runNum : "plots";
-		occupancies ana = new occupancies(runNum, outputDir, useVolatile);
+		occupancies ana = new occupancies(runNum, outputDir);
                 java.util.Date date1 = new java.util.Date();
                 System.out.println(date1);
                 for (String runstrg : toProcessFileNames)if(evntot<evntMAX){

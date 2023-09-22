@@ -67,10 +67,9 @@ public class tof_monitor {
 	public IndexedTable ftofTable, ctofTable;
 	public ConstantsManager ccdb;
 
-	public tof_monitor(int reqrunNum, String reqOutputDir, boolean reqTimeBased, boolean reqwrite_volatile) {
+	public tof_monitor(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
 		runNum = reqrunNum;userTimeBased=reqTimeBased;
                 outputDir = reqOutputDir;
-                if(reqwrite_volatile) outputDir = "/volatile/clas12/rga/spring18/" + outputDir;
 
 		rfPeriod = 4.008f;
 	   	ccdb = new ConstantsManager();
@@ -1132,13 +1131,12 @@ public class tof_monitor {
 		int count = 0;
 		int runNum = 0;
 		boolean useTB = true;
-		boolean useVolatile = false;
 		String filelist = "list_of_files.txt";
 		if(args.length>0)runNum = Integer.parseInt(args[0]);
 		if(args.length>1)filelist = args[1];
 		if(args.length>2)if(Integer.parseInt(args[2])==0)useTB=false;
                 String outputDir = runNum > 0 ? "plots"+runNum : "plots";
-		tof_monitor ana = new tof_monitor(runNum,outputDir,useTB,useVolatile);
+		tof_monitor ana = new tof_monitor(runNum,outputDir,useTB);
 		List<String> toProcessFileNames = new ArrayList<String>();
 		File file = new File(filelist);
 		Scanner read;

@@ -55,10 +55,9 @@ public class central {
 
 	public ConstantsManager ccdb;
 
-	public central(int reqrunNum, String reqOutputDir, boolean reqTimeBased, boolean reqwrite_volatile) {
+	public central(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
 		runNum = reqrunNum;userTimeBased=reqTimeBased;
                 outputDir = reqOutputDir;
-                if(reqwrite_volatile) outputDir = "/volatile/clas12/rga/spring18/" + outputDir;
 		counter = 0;
 		counterm = 0;
 
@@ -465,13 +464,12 @@ public class central {
 		int count = 0;
 		int runNum = 5038;
 		boolean useTB = true;
-		boolean useVolatile = false;
 		String filelist = "list_of_files.txt";
 		if(args.length>0)runNum=Integer.parseInt(args[0]);
 		if(args.length>1)filelist = args[1];
 		if(args.length>2)if(Integer.parseInt(args[2])==0)useTB=false;
                 String outputDir = runNum > 0 ? "plots"+runNum : "plots";
-		central ana = new central(runNum,outputDir,useTB,useVolatile);
+		central ana = new central(runNum,outputDir,useTB);
 		List<String> toProcessFileNames = new ArrayList<String>();
 		File file = new File(filelist);
 		Scanner read;

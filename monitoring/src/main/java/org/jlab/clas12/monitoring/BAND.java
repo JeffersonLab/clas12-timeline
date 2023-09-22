@@ -43,10 +43,9 @@ public class BAND{
 	public ConstantsManager ccdb;
 
 
-	public BAND(int reqR, String reqOutputDir, float reqEb, boolean reqTimeBased, boolean reqwrite_volatile){
+	public BAND(int reqR, String reqOutputDir, float reqEb, boolean reqTimeBased){
         	runNum = reqR;userTimeBased=reqTimeBased;
                 outputDir = reqOutputDir;
-                if(reqwrite_volatile) outputDir = "/volatile/clas12/rga/spring18/" + outputDir;
 		EBeam = 2.2f;
 		if(reqEb>0 && reqEb<4)EBeam=2.22f;
 		if(reqEb>4 && reqEb<7.1)EBeam=6.42f;
@@ -237,7 +236,6 @@ public class BAND{
                 int count = 0;
                 int runNum = 0;
 		boolean useTB = true;
-		boolean useVolatile = false;
                 String filelist = "list_of_files.txt";
                 if(args.length>0)runNum=Integer.parseInt(args[0]);
                 if(args.length>1)filelist = args[1];
@@ -247,7 +245,7 @@ public class BAND{
                 if(args.length>3)Eb=Float.parseFloat(args[3]);
 		if(args.length>4)if(Integer.parseInt(args[4])==0)useTB=false;
                 String outputDir = runNum > 0 ? "plots"+runNum : "plots";
-                BAND ana = new BAND(runNum,outputDir,Eb,useTB,useVolatile);
+                BAND ana = new BAND(runNum,outputDir,Eb,useTB);
                 List<String> toProcessFileNames = new ArrayList<String>();
                 File file = new File(filelist);
                 Scanner read;

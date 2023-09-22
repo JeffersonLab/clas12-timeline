@@ -180,10 +180,9 @@ public class monitor2p2GeV {
         public IndexedTable rfTable, rfTableOffset;
         public ConstantsManager ccdb;
 
-	public monitor2p2GeV(int reqrunNum, String reqOutputDir, float reqEB, boolean reqTimeBased, boolean reqwrite_volatile ) {
+	public monitor2p2GeV(int reqrunNum, String reqOutputDir, float reqEB, boolean reqTimeBased) {
 		runNum = reqrunNum;EB=reqEB;userTimeBased=reqTimeBased;
                 outputDir = reqOutputDir;
-                if(reqwrite_volatile) outputDir = "/volatile/clas12/rgb/spring19/" + outputDir;
 		Nevts=0;Nelecs=0;Ntrigs=0;
                 Nmuons=0;Nmuontrigs=0;
 		found_eTraj = 0;
@@ -4743,7 +4742,6 @@ public class monitor2p2GeV {
                 int count = 0;
 		int runNum = 0;
 		boolean useTB = true;
-		boolean useVolatile = false;
 		String filelist = "list_of_files.txt";
 		if(args.length>0)runNum=Integer.parseInt(args[0]);
 		if(args.length>1)filelist = args[1];
@@ -4753,7 +4751,7 @@ public class monitor2p2GeV {
                 if(args.length>3)Eb=Float.parseFloat(args[3]);
 		if(args.length>4)if(Integer.parseInt(args[4])==0)useTB=false;
                 String outputDir = runNum > 0 ? "plots"+runNum : "plots";
-		monitor2p2GeV ana = new monitor2p2GeV(runNum,outputDir,Eb,useTB,useVolatile);
+		monitor2p2GeV ana = new monitor2p2GeV(runNum,outputDir,Eb,useTB);
 		List<String> toProcessFileNames = new ArrayList<String>();
 		File file = new File(filelist);
 		Scanner read;

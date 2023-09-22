@@ -35,7 +35,6 @@ public class ana_2p2 {
 		int maxevents = 500000;
 		float EB = 10.2f;
 		boolean useTB=true;
-		boolean useVolatile = false;
 		if(args.length>0)runNum=Integer.parseInt(args[0]);
 		if(args.length>1)outputDir=args[1];
 		if(args.length>2)filelist=args[2];
@@ -44,18 +43,18 @@ public class ana_2p2 {
 		if(args.length>5)if(Integer.parseInt(args[5])==0)useTB=false;
 		System.out.println("will process run number "+runNum+" from list "+filelist+" looking for up to "+maxevents+" events, beam energy setting "+EB);
 
-		monitor2p2GeV ana_mon = new monitor2p2GeV(runNum,outputDir,EB,useTB,useVolatile);
-		tof_monitor ana_tof = new tof_monitor(runNum,outputDir,useTB,useVolatile);
-		central ana_cen = new central(runNum,outputDir,useTB,useVolatile);
-		occupancies ana_occ = new occupancies(runNum,outputDir,useVolatile);
-		HTCC ana_htc = new HTCC(runNum,outputDir,useVolatile);
-		LTCC ana_ltc = new LTCC(runNum,outputDir,EB,useTB,useVolatile);
-		RICH ana_rich = new RICH(runNum,outputDir,EB,useTB,useVolatile);
-		cndCheckPlots ana_cnd = new cndCheckPlots(runNum,outputDir,useTB,useVolatile);
-		FT ana_ft = new FT(runNum,outputDir,useTB,useVolatile);
+		monitor2p2GeV ana_mon = new monitor2p2GeV(runNum,outputDir,EB,useTB);
+		tof_monitor ana_tof = new tof_monitor(runNum,outputDir,useTB);
+		central ana_cen = new central(runNum,outputDir,useTB);
+		occupancies ana_occ = new occupancies(runNum,outputDir);
+		HTCC ana_htc = new HTCC(runNum,outputDir);
+		LTCC ana_ltc = new LTCC(runNum,outputDir,EB,useTB);
+		RICH ana_rich = new RICH(runNum,outputDir,EB,useTB);
+		cndCheckPlots ana_cnd = new cndCheckPlots(runNum,outputDir,useTB);
+		FT ana_ft = new FT(runNum,outputDir,useTB);
 		dst_mon ana_dst_mon = new dst_mon(runNum,outputDir,EB);
-		BAND ana_band = new BAND(runNum,outputDir,EB,useTB,useVolatile);
-		//deuterontarget ana_deuteron = new deuterontarget(runNum,EB,useTB,useVolatile);
+		BAND ana_band = new BAND(runNum,outputDir,EB,useTB);
+		//deuterontarget ana_deuteron = new deuterontarget(runNum,EB,useTB);
                 List<String> toProcessFileNames = new ArrayList<String>();
                 File file = new File(filelist);
                 Scanner read;

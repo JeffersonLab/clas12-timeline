@@ -65,11 +65,10 @@ public class cndCheckPlots {
         	public IndexedTable rfTable;
         	public ConstantsManager ccdb;
 
-		public cndCheckPlots(int reqrunNum, String reqOutputDir, boolean reqTimeBased, boolean reqwrite_volatile) {
+		public cndCheckPlots(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
 				userTimeBased=reqTimeBased;
 				runNum = reqrunNum;
                                 outputDir = reqOutputDir;
-                                if(reqwrite_volatile) outputDir = "/volatile/clas12/rgb/spring19/" + outputDir;
 				rfPeriod = 4.008;
                 		ccdb = new ConstantsManager();
                 		ccdb.init(Arrays.asList(new String[]{"/daq/tt/fthodo","/calibration/eb/rf/config"}));
@@ -952,13 +951,12 @@ public class cndCheckPlots {
 								int count = 0;
 								int runNum = 0;
 								boolean useTB=true;
-								boolean useVolatile = false;
 								String filelist = "list_of_files.txt";
 								if(args.length>0)runNum=Integer.parseInt(args[0]);
 								if(args.length>1)filelist = args[1];
 								if(args.length>2)if(Integer.parseInt(args[2])==0)useTB=false;
                                                                 String outputDir = runNum > 0 ? "plots"+runNum : "plots";
-								cndCheckPlots ana = new cndCheckPlots(runNum,outputDir,useTB,useVolatile);
+								cndCheckPlots ana = new cndCheckPlots(runNum,outputDir,useTB);
 								List<String> toProcessFileNames = new ArrayList<String>();
 								File file = new File(filelist);
 								Scanner read;

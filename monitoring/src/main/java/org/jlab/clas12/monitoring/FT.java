@@ -57,11 +57,10 @@ public class FT {
 
     public ConstantsManager ccdb;
 
-    public FT(int reqrunNum, String reqOutputDir, boolean reqTimeBased, boolean reqwrite_volatile) {
+    public FT(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
         runNum = reqrunNum;
         outputDir = reqOutputDir;
         userTimeBased = reqTimeBased;
-        if(reqwrite_volatile) outputDir = "/volatile/clas12/rgb/spring19/" + outputDir;
 
         startTime = -1000;
         rfTime = -1000;
@@ -609,7 +608,6 @@ public class FT {
         int count = 0;
         int runNum = 0;
         boolean useTB = true;
-        boolean useVolatile = false;
         String filelist = "list_of_files.txt";
         if (args.length > 0) {
             runNum = Integer.parseInt(args[0]);
@@ -623,7 +621,7 @@ public class FT {
             }
         }
         String outputDir = runNum > 0 ? "plots"+runNum : "plots";
-        FT ana = new FT(runNum, outputDir, useTB, useVolatile);
+        FT ana = new FT(runNum, outputDir, useTB);
         List<String> toProcessFileNames = new ArrayList<>();
         File file = new File(filelist);
         Scanner read;
