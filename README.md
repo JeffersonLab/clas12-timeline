@@ -1,6 +1,6 @@
 # clas12-timeline
 
-Timeline production for CLAS12. Timelines are deployed to [clas12mon](https://clas12mon.jlab.org).
+Timeline production for CLAS12. Timelines are deployed to [`clas12mon`](https://clas12mon.jlab.org).
 
 ## Setup
 

@@ -11,22 +11,22 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
   monitor several different sets of data
 
 # Setup
-0. recommended to use `bash` as your shell
-1. set `COATJAVA` environment
+1. Set `COATJAVA` environment
   * on `ifarm`:
     * `source /group/clas12/packages/setup.sh`
     * `module load clas12/pro`
   * local environment:
     * `$COATJAVA` must point to your local install
     * `run-groovy` (likely in `$COATJAVA/bin`) must be in your `$PATH`
-2. note for developers: set local environment variables with `source ../bin/environ.sh`
+2. Note for developers: set local environment variables with `source ../bin/environ.sh`
+  * it is recommended to use `bash` or `zsh` as your shell
   * wrapper scripts in `../bin/` do this automatically, but if you intend to run
     individual scripts here (namely during manual QA), you may need to call this `source`
     command
-  * note: `JYPATH` is added to the classpath for groovy called via
+  * note: `JYPATH` is added to the class path for groovy called via
     `run-groovy`, from `coatjava`
 
-## PASS1 Procedure for Automatic QA
+## Procedure for Automatic QA
 * prepare run-group dependent settings in `monitorRead.groovy`
   * guess `helFlip`; you can only know if your guess is correct after timelines
     have been produced
@@ -42,8 +42,8 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     * if you find that the DAQ-gated FC charge is larger than the ungated
       charge, you may have assumed here that the recharge option was ON, when
       actually it was OFF and needs to be ON
-* `../bin/run-monitoring.sh`: runs `monitorRead.groovy` on DSTs using slurm
-  * wait for slurm jobs to finish
+* `../bin/run-monitoring.sh`: runs `monitorRead.groovy` on DSTs using `slurm`
+  * wait for `slurm` jobs to finish
   * execute `errorPrint.sh` to inspect error logs
   * resubmit failed jobs, e.g., those that exceeded time limit on a slow node:
     * get list of run numbers to be resubmitted: 
@@ -51,8 +51,8 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     * copy relevant lines of `joblist.${dataset}.slurm` to file `joblist.resubmit.slurm`
     * copy `job.${dataset}.slurm` to `job.resubmit.slurm`, then update the array size
       and `joblist` file name
-    * delete logs from previous slurm submission
-    * submit `job.${dataset}.slurm` to slurm
+    * delete logs from previous `slurm` submission
+    * submit `job.${dataset}.slurm` to `slurm`
       * note: `monitorRead.groovy` will overwrite any partial files left behind by jobs
         which were terminated prematurely, there is no need to delete them prior to
         resubmission
@@ -86,7 +86,7 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
     corresponding to one run
 
 ### DST / Skim reading
-First step is to read DST or Skim files, producing hipo files and data tables
+First step is to read DST or Skim files, producing HIPO files and data tables
 
 * `groovy monitorRead.groovy __hipo_file_(directory)__ skim(dst)`
   * It is better to run this using `slurm`, but this can be run on a single skim file or
@@ -99,7 +99,7 @@ First step is to read DST or Skim files, producing hipo files and data tables
   * you may want to check the "RUN GROUP DEPENDENT SETTINGS" in the code, to make sure
     certain settings (e.g., beam energy) are correct for your run group
   * Outputs:
-    * `../outfiles/$dataset/physics/data_table_${run}.dat`, which is a data table with the following columns:
+    * `../outfiles/$dataset/timeline_physics/data_table_${run}.dat`, which is a data table with the following columns:
       * run number
       * 5-file number
       * minimum event number
@@ -112,7 +112,7 @@ First step is to read DST or Skim files, producing hipo files and data tables
       * DAQ-ungated FC charge at beginning of 5-file (minimum readout)
       * DAQ-ungated FC charge at end of 5-file (maximum readout)
       * average livetime
-    * `../outfiles/$dataset/physics/monitor_${runnum}.hipo` contains several plots 
+    * `../outfiles/$dataset/timeline_physics/monitor_${runnum}.hipo` contains several plots 
       * in the script, they are organized into a tree data structure, which allows plot
         any variable, for any set of properties
         * for example, the helicity plots are for pi+,pi-, and positive helicity and
@@ -127,18 +127,18 @@ First step is to read DST or Skim files, producing hipo files and data tables
           number; the standard deviation is also included, which indicates the
           temporal localization of these events; typically the standard deviation
           is much smaller than the distance between two consecutive segments'
-          averege event numbers
+          average event numbers
         * for DST files, the segment number is set to be the 5-file number, which
           is the minimum file number of the 5 consecutive, concatenated files (and
           is hence divisible by 5)
 
 
 ### Data Organization
-* use the script `datasetOrganize.sh [dataset]`
-  * this will concatenate files from `../outfiles/$dataset/physics/*.dat` into a single file
+* use the script `datasetOrganize.sh`
+  * this will concatenate `dat` files from the input directory into a single file
     `outdat.${dataset}/data_table.dat`, for the specified dataset
   * it will also generate symlinks from `outmon.${dataset}/monitor*.hipo` to the
-    relevant `../outfiles/$dataset/physics/monitor*.hipo` files
+    relevant HIPO files
 
 
 ### Plotting Scripts
@@ -150,12 +150,12 @@ files can then be fed to a QA script
     * the list of timelines is at the bottom of the script, and is handled by
       the `hipoWrite` closure, which takes two arguments:
       * the name of the timeline, which will be the name of the corresponding
-        hipo file, also send to the `outmon` directory
+        HIPO file, also send to the `outmon` directory
       * a list of filters, used to access the plots that are added to that
         timeline; all plots which pass those filters will be plotted together in
-        a single timeline hipo file
+        a single timeline HIPO file
         * these filters are just names of branches, e.g., `['helic','sinPhi']`
-          will select on the sin(phiH) helicity monitor
+          will select on the $\sin(\phi_h)$ helicity monitor
       * some of the timelines have some custom modifications, such as the
         helicity monitors, so that positive and negative helicities are plotted
         together
@@ -171,11 +171,11 @@ files can then be fed to a QA script
         * distribution of the average value of X, with one entry per segment
         * graph of the average value of X versus segment number
     * see the supplementary scripts section for some helpful scripts to upload
-      timelines to the webserver
+      timelines to the web server
 
 * `groovy qaPlot.groovy $dataset [$useFT]` 
   * reads `outdat.${dataset}/data_table.dat` and generates `outmon.${dataset}/monitorElec.hipo`
-    * within this hipo file, there is one directory for each run, containing several
+    * within this HIPO file, there is one directory for each run, containing several
       plots:
       * `grA*`: N/F vs. file number (the `A` notation is so it appears first in the
         online timeline front-end)
@@ -222,7 +222,7 @@ generate QA timelines, and a `json` file which is used for the manual followup Q
       * this is done for each sector individually
       * at this point, the automatic QA is initiated; results are stored in
         `outdat.${dataset}/qaTree.json`
-  * timelines are generated (which can be uploaded to the webserver):
+  * timelines are generated (which can be uploaded to the web server):
     * QA timeline
       * timeline is the 'pass fraction': the fraction of files in a run which pass QA
         cuts
@@ -297,22 +297,22 @@ the timelines and recording features not identified by the automatic QA in
         update `qaTable.dat`, so it is useful to have `qaTable.dat` open in a window
         which will auto-refresh whenever you call `modify.sh`
       * type `modify.sh` without any arguments for the most up-to-date usage documentation
-      * the first argument is the modifification you want to make, whether it
+      * the first argument is the modification you want to make, whether it
         is to add a defect bit, delete a defect bit, add a comment, etc.
         * call `modify.sh` with one of these arguments for additional documentation specific
           to this argument, e.g., `modify.sh addComment`
         * the subsequent arguments are typically the run number, the range of
           files, and sectors, but depends on the revision you are making
       * if you make a mistake, call `undo.sh` to revert `qaTree.json` and
-        `qaTable.dat` to the previous version; in fact, everytime you call
+        `qaTable.dat` to the previous version; in fact, every time you call
         `modify.sh`, a backup copy of `qaTree.json`, before the revision, is
         stored
   * you should also look through each timeline for any issues that may have slipped under
     the radar; revise `qaTree.json` using `modify.sh` as needed
     * in particular, check for any spin asymmetry that has the wrong sign,
-      especially the piPlus BSA; a significant asymmetry with the wrong sign
+      especially the $pi^+$ BSA; a significant asymmetry with the wrong sign
       indicates the helicity has the wrong sign
-    * check stddev timelines; usually a high standard deviation indicates a
+    * check `stddev` timelines; usually a high standard deviation indicates a
       step or change in the data, or merely a short, low statistics run
     * check fraction of events with defined helicity; if it's low it could
       indicate a problem; so far in all cases we have checked and there are no
@@ -322,7 +322,7 @@ the timelines and recording features not identified by the automatic QA in
 directory and call `exeQAtimelines.sh` to produce the updated QA timelines
   * these QA timelines are stored in `outmon.${dataset}.qa`
   * it copies the revised`qaTree.json` (`QA/qa.${dataset}/qaTree.json`) to
-    the new QA timeline directory, which can then be deployed to the webservers
+    the new QA timeline directory, which can then be deployed to the web servers
   * this final `qaTree.json` is stored in the 
     [`clas12-qadb` repository](https://github.com/JeffersonLab/clas12-qadb)
     and should be copied there, along with `chargeTree.json`

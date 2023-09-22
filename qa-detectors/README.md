@@ -1,4 +1,4 @@
-# qa-detectors
+# `qa-detectors`
 
 This procedure reads `clas12mon` detector timelines, and checks if certain parameters are within
 QA specifications.
@@ -8,7 +8,7 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
 - cuts file syntax:
   - each line should have the following columns, delimited by spaces:
     - detector name
-    - hipo file name
+    - HIPO file name
     - lower bound
     - upper bound
     - units
@@ -30,6 +30,6 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
   automatically done when running the wrapper `../bin/run-detectors-timelines.sh`)
 - The URLs for the timelines will be printed upon success
 - The new timeline files will appear in `/path/to/timelines_qa` (or in the
-  custom directory, if you specified one), where any timeline hipo file to
-  which QA cuts were applied has replaced the original hipo file, with the name
+  custom directory, if you specified one), where any timeline HIPO file to
+  which QA cuts were applied has replaced the original HIPO file, with the name
   "QA" appended to the file name

@@ -1,12 +1,9 @@
-# clas12_monitoring
+# `clas12_monitoring`
 An independent set of classes for clas12 monitoring
-
-Current active branches in the repo only supports hipo4 and coatjava6.
-
 
 ## How to run the monitoring codes
 
-For example, the run 11127 of rg-b can be monitored in following steps.
+For example, the run 11127 of Run Group B can be monitored in following steps.
 
 - ```ls /cache/clas12/rg-b/production/decoded/6.5.6/011127/* > list11127.txt```
 - ```mkdir plots11127```
