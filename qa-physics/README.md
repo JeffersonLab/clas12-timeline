@@ -88,7 +88,8 @@ Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/
 ### DST / Skim reading
 First step is to read DST or Skim files, producing HIPO files and data tables
 
-* `groovy monitorRead.groovy __hipo_file_(directory)__ skim(dst)`
+* `run-groovy monitorRead.groovy`
+  * run with no arguments for usage guide
   * It is better to run this using `slurm`, but this can be run on a single skim file or
     directory of one run's DST files
     * see `../bin/run-monitoring.sh` for example job submission scripts
@@ -99,7 +100,7 @@ First step is to read DST or Skim files, producing HIPO files and data tables
   * you may want to check the "RUN GROUP DEPENDENT SETTINGS" in the code, to make sure
     certain settings (e.g., beam energy) are correct for your run group
   * Outputs:
-    * `../outfiles/$dataset/timeline_physics/data_table_${run}.dat`, which is a data table with the following columns:
+    * `[output_directory]/data_table_${run}.dat`, which is a data table with the following columns:
       * run number
       * 5-file number
       * minimum event number
@@ -112,7 +113,7 @@ First step is to read DST or Skim files, producing HIPO files and data tables
       * DAQ-ungated FC charge at beginning of 5-file (minimum readout)
       * DAQ-ungated FC charge at end of 5-file (maximum readout)
       * average livetime
-    * `../outfiles/$dataset/timeline_physics/monitor_${runnum}.hipo` contains several plots 
+    * `[output_directory]/monitor_${runnum}.hipo` contains several plots 
       * in the script, they are organized into a tree data structure, which allows plot
         any variable, for any set of properties
         * for example, the helicity plots are for pi+,pi-, and positive helicity and
