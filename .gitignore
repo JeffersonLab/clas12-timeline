@@ -1,5 +1,22 @@
+# text editor tmp files
 .*.sw*
 .sw*
-qa-detectors/datasetList.txt
+
+# builds
 detectors/target
 monitoring/target
+
+# transient files
+*.hipo
+*.root
+*.tmp
+.nfs*
+slurm
+tmp
+outfiles
+
+# physics timelines
+qa-physics/outdat.*
+qa-physics/QA/qa
+qaTree*.json*
+chargeTree*.json*

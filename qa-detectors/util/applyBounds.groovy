@@ -5,7 +5,7 @@ import org.jlab.groot.math.F1D
 import java.lang.Math.*
 import groovy.io.FileType
 import groovy.json.JsonOutput
-import Tools
+import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 // Cuts files list //////////////////////////////////
@@ -21,29 +21,17 @@ def cutsFileList = [
 /////////////////////////////////////////////////////
 
 // parse arguments
-if(args.length<1) { System.err.println "ERROR: specify dataset name"; System.exit(100); }
-def dataset = args[0]
-
-// get www dir, by searching datasetList.txt for specified `dataset`, and set
-// `indir` and `outdir`
-def calibqadir = System.getenv('CALIBQA')
-def timelineDir = System.getenv('TIMELINEDIR')
-if(calibqadir==null) throw new Exception("env vars not set; source environ.sh")
-File datasetList = new File(calibqadir+"/datasetList.txt")
-def datasetFound = false
-def indir, outdir, inURL, outURL
-if(!(datasetList.exists())) throw new Exception("datasetList.txt not found")
-datasetList.eachLine { line ->
-  def tok = line.tokenize(' ')
-  if(dataset==tok[0]) { // find the specified dataset
-    indir  = "$timelineDir/${tok[1]}"
-    outdir = "$timelineDir/${tok[2]}"
-    inURL  = "https://clas12mon.jlab.org/${tok[1]}/tlsummary/"
-    outURL = "https://clas12mon.jlab.org/${tok[2]}/tlsummary/"
-    datasetFound = true
-  }
+if(args.length!=2) { 
+  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT TIMELINES] [OUTPUT TIMELINES]"
+  System.exit(100)
 }
-if(!datasetFound) throw new Exception("unknown dataset \"$dataset\"")
+def indir  = args[0]
+def outdir = args[1]
+
+// get source dir
+def calibqadir = System.getenv('TIMELINESRC')
+if(calibqadir==null) throw new Exception("env vars not set; source environ.sh")
+calibqadir += "/qa-detectors"
 
 // define tree "B" of closures for each calibration QA constraint
 // -first branch: detectors (=directory names)
@@ -64,8 +52,9 @@ cutsFileList.each { re, cutsFile ->
   print "Use $cutsFile?"
   if(indir =~ re) {
     println " YES."
-    File cutsFileHandle = new File("$calibqadir/cuts/$cutsFile")
-    if(!(cutsFileHandle.exists())) throw new Exception("cuts file $cutsFile not found")
+    def cutsFileName = "$calibqadir/cuts/$cutsFile"
+    File cutsFileHandle = new File(cutsFileName)
+    if(!(cutsFileHandle.exists())) throw new Exception("cuts file $cutsFileName not found")
 
     // data structures to track which leaves have been reset, which applies to the case
     // of overriding cuts files; this ensures leaves are only cleared once per cuts file
@@ -309,46 +298,3 @@ outdirHandle.eachFileRecurse(FileType.FILES) { hipoFile ->
     new File(delFile).delete()
   }
 }
-
-
-// generate index
-println "GENERATE INDEX:"
-indexJsonName = "$outdir/ListOfTimelines.json"
-if(new File(indexJsonName).exists()) {
-  println " -> already exists"
-}
-else {
-  def indexHash = [:]
-  outdirHandle.traverse(
-      type: groovy.io.FileType.FILES,
-      nameFilter: ~/.*\.hipo/
-      )
-  {
-    detName      = it.getParent().tokenize('/')[-1]
-    timelineName = it.getName().replaceAll(/\.hipo$/, '').tokenize('_')[1..-1].join(' ')
-    if(indexHash[detName]==null)
-      indexHash.put(detName, [])
-    indexHash[detName].add(timelineName)
-  }
-  indexJson = []
-  indexHash.each { detName, timelineList ->
-    indexJson.add([
-      'subsystem': detName,
-      'variables': timelineList,
-    ])
-  }
-  println T.pPrint(indexJson)
-  new File(indexJsonName).write(JsonOutput.toJson(indexJson))
-}
-
-
-// print URLs
-println """
-TIMELINE URLs:
-
-Input Timelines:
-  $inURL
-
-Output Timelines:
-  $outURL
-"""

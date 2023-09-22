@@ -1,12 +1,21 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>clas12-timeline</artifactId>
+    <groupId>org.jlab.clas.timeline</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
   <groupId>org.jlab.clas.timeline</groupId>
-  <artifactId>timelineMon</artifactId>
-  <packaging>jar</packaging>
+  <artifactId>clas12-timeline-detectors</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>timelineMon</name>
-  <url>http://maven.apache.org</url>
+  <name>clas12-timeline-detectors</name>
+  <url>http://www.github.com/JeffersonLab/clas12-timeline</url>
+
+  <packaging>jar</packaging>
+
   <build>
     <plugins>
       <plugin>
@@ -29,8 +38,8 @@
     </plugins>
   </build>
 
-
   <dependencies>
+    <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all -->
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
@@ -43,34 +52,18 @@
         </exclusion>
       </exclusions>
     </dependency>
-
     <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-dateutil -->
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-dateutil</artifactId>
       <version>3.0.7</version>
     </dependency>
-
     <!-- https://mvnrepository.com/artifact/org.codehaus.gpars/gpars -->
     <dependency>
       <groupId>org.codehaus.gpars</groupId>
       <artifactId>gpars</artifactId>
       <version>1.1.0</version>
     </dependency>
-
-    <dependency>
-      <groupId>org.jlab.coat</groupId>
-      <artifactId>coat-libs</artifactId>
-      <version>9.0.0-SNAPSHOT</version>
-    </dependency>
   </dependencies>
-
-
-  <repositories>
-    <repository>
-      <id>clas12maven</id>
-      <url>https://clasweb.jlab.org/clas12maven</url>
-    </repository>
-  </repositories>
 
 </project>

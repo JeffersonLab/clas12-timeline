@@ -19,6 +19,7 @@ import org.jlab.groot.data.TDirectory;
 import org.jlab.clas.physics.Vector3;
 import org.jlab.clas.physics.LorentzVector;
 import org.jlab.groot.base.GStyle;
+import org.jlab.logging.DefaultLogger;
 
 public class ana_2p2 {
 	public ana_2p2(){}
@@ -26,39 +27,43 @@ public class ana_2p2 {
         public static void main(String[] args) {
                 System.setProperty("java.awt.headless", "true");
 		GStyle.setPalette("kRainBow");
+                DefaultLogger.debug();
                 int count = 0;
 		int runNum = 0;
+                String outputDir = "plots";
 		String filelist = "list_of_files.txt";
 		int maxevents = 500000;
 		float EB = 10.2f;
 		boolean useTB=true;
-		boolean useVolatile = false;
 		if(args.length>0)runNum=Integer.parseInt(args[0]);
-		if(args.length>1)filelist = args[1];
-		if(args.length>2)maxevents=Integer.parseInt(args[2]);
-		if(args.length>3)EB=Float.parseFloat(args[3]);
-		if(args.length>4)if(Integer.parseInt(args[4])==0)useTB=false;
+		if(args.length>1)outputDir=args[1];
+		if(args.length>2)filelist=args[2];
+		if(args.length>3)maxevents=Integer.parseInt(args[3]);
+		if(args.length>4)EB=Float.parseFloat(args[4]);
+		if(args.length>5)if(Integer.parseInt(args[5])==0)useTB=false;
 		System.out.println("will process run number "+runNum+" from list "+filelist+" looking for up to "+maxevents+" events, beam energy setting "+EB);
 
-		monitor2p2GeV ana_mon = new monitor2p2GeV(runNum,EB,useTB,useVolatile);
-		tof_monitor ana_tof = new tof_monitor(runNum,useTB,useVolatile);
-		central ana_cen = new central(runNum,useTB,useVolatile);
-		occupancies ana_occ = new occupancies(runNum,useVolatile);
-		HTCC ana_htc = new HTCC(runNum,useVolatile);
-		LTCC ana_ltc = new LTCC(runNum,EB,useTB,useVolatile);
-		RICH ana_rich = new RICH(runNum,EB,useTB,useVolatile);
-		cndCheckPlots ana_cnd = new cndCheckPlots(runNum,useTB,useVolatile);		
-		FT ana_ft = new FT(runNum,useTB,useVolatile);
-		dst_mon ana_dst_mon = new dst_mon(runNum,EB);
-		BAND ana_band = new BAND(runNum,EB,useTB,useVolatile);
-		//deuterontarget ana_deuteron = new deuterontarget(runNum,EB,useTB,useVolatile);
+		monitor2p2GeV ana_mon = new monitor2p2GeV(runNum,outputDir,EB,useTB);
+		tof_monitor ana_tof = new tof_monitor(runNum,outputDir,useTB);
+		central ana_cen = new central(runNum,outputDir,useTB);
+		occupancies ana_occ = new occupancies(runNum,outputDir);
+		HTCC ana_htc = new HTCC(runNum,outputDir);
+		LTCC ana_ltc = new LTCC(runNum,outputDir,EB,useTB);
+		RICH ana_rich = new RICH(runNum,outputDir,EB,useTB);
+		cndCheckPlots ana_cnd = new cndCheckPlots(runNum,outputDir,useTB);
+		FT ana_ft = new FT(runNum,outputDir,useTB);
+		dst_mon ana_dst_mon = new dst_mon(runNum,outputDir,EB);
+		BAND ana_band = new BAND(runNum,outputDir,EB,useTB);
+		//deuterontarget ana_deuteron = new deuterontarget(runNum,EB,useTB);
                 List<String> toProcessFileNames = new ArrayList<String>();
                 File file = new File(filelist);
                 Scanner read;
                 try {
                         read = new Scanner(file);
                         do { 
-                                String filename = read.next();
+                                String filename = read.next()
+                                        .replaceAll("^file:", "")
+                                        .replaceAll("^mss:", "");
                                 if(runNum==0 || filename.contains(String.format("%d",runNum) ) ){
 					toProcessFileNames.add(filename);
 					System.out.println("adding "+filename);
@@ -78,7 +83,7 @@ public class ana_2p2 {
 			progresscount++;
 			System.out.println(String.format(">>>>>>>>>>>>>>>> %s",runstrg));
 			File varTmpDir = new File(runstrg);
-			if(!varTmpDir.exists()){System.out.println("FILE DOES NOT EXIST");continue;}
+			if(!varTmpDir.exists()){System.err.println(String.format("ERROR: FILE DOES NOT EXIST: '%s'",runstrg));continue;}
 			System.out.println("READING NOW "+runstrg);
 			HipoDataSource reader = new HipoDataSource();
 			reader.open(runstrg);

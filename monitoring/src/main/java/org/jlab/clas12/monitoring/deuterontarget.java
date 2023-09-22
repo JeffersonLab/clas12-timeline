@@ -19,8 +19,9 @@ import org.jlab.clas.physics.LorentzVector;
 import org.jlab.groot.base.GStyle;
 
 public class deuterontarget {
-	boolean userTimeBased, write_volatile;
+	boolean userTimeBased;
 	int Nevts, Nelecs, Ntrigs, runNum;
+        public String outputDir;
 	public int trig_sect, trig_track_ind,trig_part_ind;
 	boolean[] trigger_bits;
 	public float EB, Ebeam;
@@ -65,9 +66,9 @@ public class deuterontarget {
 	public H2F H_rho_Q2_xB, H_rho_Q2_W, H_rho_MMMM;
 	public H2F H_rho_prot, H_rho_pip_beta, H_rho_pim_beta, H_rho_deut;
 
-	public deuterontarget(int reqrunNum, float reqEB, boolean reqTimeBased, boolean reqwrite_volatile ) {
+	public deuterontarget(int reqrunNum, String reqOutputDir, float reqEB, boolean reqTimeBased) {
 		runNum = reqrunNum;EB=reqEB;userTimeBased=reqTimeBased;
-		write_volatile = reqwrite_volatile;
+                outputDir = reqOutputDir;
 		Nevts=0;Nelecs=0;Ntrigs=0;
 		trigger_bits = new boolean[32];
 		Ebeam = 2.22f;
@@ -904,15 +905,8 @@ public class deuterontarget {
 		can_2pis.cd(7);can_2pis.draw(H_rho_MMD);
 		can_2pis.cd(8);can_2pis.draw(H_rho_deut);
 		can_2pis.cd(9);can_2pis.draw(H_rho_MMMM);
-		if(runNum>0){
-			if(!write_volatile)can_2pis.save(String.format("plots"+runNum+"/two_pions.png"));
-			if(write_volatile)can_2pis.save(String.format("/volatile/clas12/rgb/spring19/plots"+runNum+"/two_pions.png"));
-			System.out.println(String.format("save plots"+runNum+"/two_pions.png"));
-		}
-		else{
-			can_2pis.save(String.format("plots/two_pions.png"));
-			System.out.println(String.format("save plots/two_pions.png"));
-		}
+                can_2pis.save(String.format(outputDir+"/two_pions.png"));
+                System.out.println(String.format("save "+outputDir+"/two_pions.png"));
 
 		EmbeddedCanvas can_e_pin = new EmbeddedCanvas();
 		can_e_pin.setSize(3500,3000);
@@ -959,15 +953,8 @@ public class deuterontarget {
 			can_e_pin.cd(35+i);can_e_pin.draw(H_MM_epin_Se[i]);
 		}
 
-		if(runNum>0){
-			if(!write_volatile)can_e_pin.save(String.format("plots"+runNum+"/e_pin.png"));
-			if(write_volatile)can_e_pin.save(String.format("/volatile/clas12/rgb/spring19/plots"+runNum+"/e_pin.png"));
-			System.out.println(String.format("save plots"+runNum+"/e_pin.png"));
-		}
-		else{
-			can_e_pin.save(String.format("plots/e_pin.png"));
-			System.out.println(String.format("save plots/e_pin.png"));
-		}
+                can_e_pin.save(String.format(outputDir+"/e_pin.png"));
+                System.out.println(String.format("save "+outputDir+"/e_pin.png"));
 	}
 
         public void write() {
@@ -980,12 +967,8 @@ public class deuterontarget {
 			dirout.addDataSet(H_e_theta_mom_S[s],H_e_W_S[s],H_e_W_phi_S[s]);
 		}
 
-		if(write_volatile)if(runNum>0)dirout.writeFile("/volatile/clas12/rgb/spring19/plots"+runNum+"/out_deuterontarget_"+runNum+".hipo");
-
-		if(!write_volatile){
-			if(runNum>0)dirout.writeFile("plots"+runNum+"/out_deuterontarget_"+runNum+".hipo");
-			else dirout.writeFile("plots/out_deuterontarget.hipo");
-		}
+                if(runNum>0) dirout.writeFile(outputDir+"/out_deuterontarget_"+runNum+".hipo");
+                else         dirout.writeFile(outputDir+"/out_deuterontarget.hipo");
 
         }
 ////////////////////////////////////////////////
@@ -995,7 +978,6 @@ public class deuterontarget {
                 int count = 0;
 		int runNum = 0;
 		boolean useTB = true;
-		boolean useVolatile = false;
 		String filelist = "list_of_files.txt";
 		if(args.length>0)runNum=Integer.parseInt(args[0]);
 		if(args.length>1)filelist = args[1];
@@ -1004,7 +986,8 @@ public class deuterontarget {
                 float Eb = 10.6f;
                 if(args.length>3)Eb=Float.parseFloat(args[3]);
 		if(args.length>4)if(Integer.parseInt(args[4])==0)useTB=false;
-		deuterontarget ana = new deuterontarget(runNum,Eb,useTB,useVolatile);
+                String outputDir = runNum > 0 ? "plots"+runNum : "plots";
+		deuterontarget ana = new deuterontarget(runNum,outputDir,Eb,useTB);
 		List<String> toProcessFileNames = new ArrayList<String>();
 		File file = new File(filelist);
 		Scanner read;

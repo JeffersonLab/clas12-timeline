@@ -15,20 +15,38 @@ import org.jlab.detector.base.DetectorType
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 import java.lang.Math.*
-import Tools // (make sure `.` is in $CLASSPATH)
+import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
-// OPTIONS
-def segmentSize = 10000 // number of events in each segment
-def inHipoType = "dst" // options: "dst", "skim"
-
+// CONSTANTS
+def SEGMENT_SIZE = 10000 // number of events in each segment (for `inHipoType==skim`)
 
 // ARGUMENTS
-def inHipo = "skim/skim4_5052.hipo" // directory of DST files, or a single SKIM file
-if(args.length>=1) inHipo = args[0]
-if(args.length>=2) inHipoType = args[1]
+def inHipoType = "dst" // options: "dst", "skim"
+def runnum = 0
+if(args.length<2) {
+  System.err.println """
+  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO file directory] [output directory] [type(OPTIONAL)] [runnum(OPTIONAL)]
+         REQUIRED parameters:
+           - [HIPO file directory] should be a directory of HIPO files, either
+             DST file(s) or skim file(s)
+           - [output directory] output directory for the produced files
+         OPTIONAL parameters:
+           - [type] can be 'dst' or 'skim' (default is '$inHipoType')
+             NOTE: 'skim' file usage may not work
+           - [runnum] the run number; if not specified, it will be obtained from RUN::config
 
-
+  """
+  System.exit(101)
+}
+def inHipo = args[0]
+def outDir = args[1]
+if(args.length>=3) inHipoType = args[2]
+if(args.length>=4) runnum     = args[3].toInteger()
+System.println """
+inHipo     = $inHipo
+outDir     = $outDir
+inHipoType = $inHipoType"""
 
 // get hipo file names
 def inHipoList = []
@@ -51,18 +69,12 @@ else {
 }
 
 
-// get runnum
-def runnum
-if(inHipoType=="skim") {
-  if(inHipo.contains('postprocess'))
-    runnum = inHipo.tokenize('.')[-2].tokenize('/')[-1].toInteger()
-  else
-    runnum = inHipo.tokenize('.')[-2].tokenize('_')[-1].toInteger()
-}
-else if(inHipoType=="dst") {
-  runnum = inHipo.tokenize('/')[-1].toInteger()
-}
-println "runnum=$runnum"
+// get runnum; assumes all HIPO files have the same run number
+if(runnum<=0)
+  runnum = T.getRunNumber(inHipoList.first())
+if(runnum<=0)
+  System.exit(100)
+System.println "runnum     = $runnum"
 
 
 //////////////////////////////////////////////////////////
@@ -176,11 +188,10 @@ else if(RG=="RGM") {
 //////////////////////////////////////////////////////////
 
 // make outut directories
-"mkdir -p outdat".execute()
-"mkdir -p outmon".execute()
+"mkdir -p $outDir".execute()
 
 // prepare output table for electron count and FC charge
-def datfile = new File("outdat/data_table_${runnum}.dat")
+def datfile = new File("$outDir/data_table_${runnum}.dat")
 def datfileWriter = datfile.newWriter(false)
 
 
@@ -674,7 +685,7 @@ inHipoList.each { inHipoFile ->
 
 
     // update segment number, if reading skim file
-    if(inHipoType=="skim") segment = (evCount/segmentSize).toInteger()
+    if(inHipoType=="skim") segment = (evCount/SEGMENT_SIZE).toInteger()
 
     // if segment number changed, write out filled histos 
     // and/or create new histos
@@ -806,7 +817,7 @@ inHipoList.each { inHipoFile ->
 } // end loop over hipo files
 
 // write outHipo file
-outHipoN = "outmon/monitor_${runnum}.hipo"
+outHipoN = "$outDir/monitor_${runnum}.hipo"
 File outHipoFile = new File(outHipoN)
 if(outHipoFile.exists()) outHipoFile.delete()
 outHipo.writeFile(outHipoN)

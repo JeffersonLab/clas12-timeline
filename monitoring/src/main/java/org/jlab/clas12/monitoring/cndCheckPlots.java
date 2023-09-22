@@ -22,8 +22,9 @@ import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class cndCheckPlots {
-		boolean userTimeBased, write_volatile;
+		boolean userTimeBased;
 		public int runNum;
+                public String outputDir;
 
 		public float STT;
 		public float RF;	
@@ -64,10 +65,10 @@ public class cndCheckPlots {
         	public IndexedTable rfTable;
         	public ConstantsManager ccdb;
 
-		public cndCheckPlots(int reqrunNum, boolean reqTimeBased, boolean reqwrite_volatile) {
+		public cndCheckPlots(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
 				userTimeBased=reqTimeBased;
-				write_volatile = reqwrite_volatile;
 				runNum = reqrunNum;
+                                outputDir = reqOutputDir;
 				rfPeriod = 4.008;
                 		ccdb = new ConstantsManager();
                 		ccdb.init(Arrays.asList(new String[]{"/daq/tt/fthodo","/calibration/eb/rf/config"}));
@@ -589,12 +590,13 @@ public class cndCheckPlots {
 								IntRes.setRange(-1.,1.);
 								IntRes.setParameter(1,0.0);
 								//IntRes.setParLimits(1,-0.2,0.2);
-								IntRes.setParameter(0,H_CND_time.getBinContent(H_CND_time.getMaximumBin()));
-								IntRes.setParLimits(0,H_CND_time.getBinContent(H_CND_time.getMaximumBin())*0.98,H_CND_time.getBinContent(H_CND_time.getMaximumBin())*1.1);
+								var H_CND_time_max_bin_content = H_CND_time.getBinContent(H_CND_time.getMaximumBin());
+								IntRes.setParameter(0,H_CND_time_max_bin_content);
+								if(H_CND_time_max_bin_content!=0) IntRes.setParLimits(0,H_CND_time_max_bin_content*0.98,H_CND_time_max_bin_content*1.1);
 								System.out.println("height "+H_CND_time.getBinContent(H_CND_time.getMaximumBin()));
 								IntRes.setParameter(2,0.2);
 								try {
-										DataFitter.fit(IntRes, H_CND_time, "");
+										DataFitter.fit(IntRes, H_CND_time, "Q");
 										H_CND_time.setTitle("Integrated vertex time. Width=" + IntRes.getParameter(2));
 								} catch (Exception ex) {
 										ex.printStackTrace();
@@ -603,12 +605,13 @@ public class cndCheckPlots {
 								IntRes1.setRange(-0.5,0.5);
 								IntRes1.setParameter(1,0.0);
 								IntRes1.setParLimits(1,-0.2,0.2);
-								IntRes1.setParameter(0,H_CND_res[0].getBinContent(H_CND_res[0].getMaximumBin()));
-								IntRes1.setParLimits(0,H_CND_res[0].getBinContent(H_CND_res[0].getMaximumBin())*0.9,H_CND_res[0].getBinContent(H_CND_res[0].getMaximumBin())*1.1);
+								var H_CND_res_max_bin_content = H_CND_res[0].getBinContent(H_CND_res[0].getMaximumBin());
+								IntRes1.setParameter(0,H_CND_res_max_bin_content);
+								if(H_CND_res_max_bin_content!=0) IntRes1.setParLimits(0,H_CND_res_max_bin_content*0.9,H_CND_res_max_bin_content*1.1);
 								System.out.println("height "+H_CND_res[0].getBinContent(H_CND_res[0].getMaximumBin()));
 								IntRes1.setParameter(2,2.0);
 								try {
-										// DataFitter.fit(IntRes1, H_CND_res[0], "");
+										// DataFitter.fit(IntRes1, H_CND_res[0], "Q");
 										//H_CND_res[0].setTitle("Integrated vertex time. Width=" + IntRes1.getParameter(2));
 								} catch (Exception ex) {
 										ex.printStackTrace();
@@ -635,7 +638,7 @@ public class cndCheckPlots {
 														fitz[(comp*3)+layer+(sector*6)].setRange(-5,5);
 														fitz[(comp*3)+layer+(sector*6)].setParameter(1,0.0);
 														fitz[(comp*3)+layer+(sector*6)].setParameter(0,maxz);
-														fitz[(comp*3)+layer+(sector*6)].setParLimits(0,maxz*0.9,maxz*1.1);
+														if(maxz!=0) fitz[(comp*3)+layer+(sector*6)].setParLimits(0,maxz*0.9,maxz*1.1);
 														fitz[(comp*3)+layer+(sector*6)].setParameter(2,3.0);
 														fitz[(comp*3)+layer+(sector*6)].setParameter(3,10.0);
 
@@ -643,20 +646,20 @@ public class cndCheckPlots {
 														fitt[(comp*3)+layer+(sector*6)].setParameter(1,0.0);
 														fitt[(comp*3)+layer+(sector*6)].setParLimits(1,-1,1);
 														fitt[(comp*3)+layer+(sector*6)].setParameter(0,maxt);
-														fitt[(comp*3)+layer+(sector*6)].setParLimits(0,maxt*0.95,maxt*1.1);
+														if(maxt!=0) fitt[(comp*3)+layer+(sector*6)].setParLimits(0,maxt*0.95,maxt*1.1);
 														fitt[(comp*3)+layer+(sector*6)].setParameter(2,0.2);
 														//fitt[(comp*3)+layer+(sector*6)].setParameter(3,0.0);
 
 														fitE[(comp*3)+layer+(sector*6)].setRange(1.5,5);
 														fitE[(comp*3)+layer+(sector*6)].setParameter(1,2.0);
 														fitE[(comp*3)+layer+(sector*6)].setParameter(0,maxE);
-														fitE[(comp*3)+layer+(sector*6)].setParLimits(0,maxE*0.9,maxE*1.1);
+														if(maxE!=0) fitE[(comp*3)+layer+(sector*6)].setParLimits(0,maxE*0.9,maxE*1.1);
 														fitE[(comp*3)+layer+(sector*6)].setParameter(2,1.0);
 														fitE[(comp*3)+layer+(sector*6)].setParameter(3,0.0);
 														fitE[(comp*3)+layer+(sector*6)].setParameter(4,0.0);
 
 														try {
-																DataFitter.fit(fitz[(comp*3)+layer+(sector*6)], H_CND_align[(comp*3)+layer+(sector*6)], "");
+																DataFitter.fit(fitz[(comp*3)+layer+(sector*6)], H_CND_align[(comp*3)+layer+(sector*6)], "Q");
 																double resz =Math.abs(fitz[(comp*3)+layer+(sector*6)].getParameter(2));
 																double alig=fitz[(comp*3)+layer+(sector*6)].getParameter(1);
 																//double aligt=fitt[(comp*3)+layer+(sector*6)].getParameter(1);
@@ -670,7 +673,7 @@ public class cndCheckPlots {
 														}
 
 														try {
-																DataFitter.fit(fitt[(comp*3)+layer+(sector*6)], H_CND_alignt[(comp*3)+layer+(sector*6)], "");
+																DataFitter.fit(fitt[(comp*3)+layer+(sector*6)], H_CND_alignt[(comp*3)+layer+(sector*6)], "Q");
 																double rest=Math.abs(fitt[(comp*3)+layer+(sector*6)].getParameter(2));
 																double aligt=fitt[(comp*3)+layer+(sector*6)].getParameter(1);
 																if(rest<0.5)resot.addPoint((comp*3)+layer+(sector*6),rest,0.,0.);
@@ -682,7 +685,7 @@ public class cndCheckPlots {
 														}
 
 														try {
-																DataFitter.fit(fitE[(comp*3)+layer+(sector*6)], H_CND_alignE[(comp*3)+layer+(sector*6)], "");
+																DataFitter.fit(fitE[(comp*3)+layer+(sector*6)], H_CND_alignE[(comp*3)+layer+(sector*6)], "Q");
 																double resE=Math.abs(fitE[(comp*3)+layer+(sector*6)].getParameter(2));
 																double aligE=fitE[(comp*3)+layer+(sector*6)].getParameter(1);
 																//if(rest<0.5)resot.addPoint((comp*3)+layer+(sector*6),rest,0.,0.);
@@ -824,15 +827,8 @@ public class cndCheckPlots {
 								resopg2.setMarkerColor(4);resopg2.setLineColor(4);
 								can_cnd.cd(50);can_cnd.draw(resop2);can_cnd.draw(resopg2,"same");	
 
-								if(runNum>0){
-										if(!write_volatile)can_cnd.save(String.format("plots"+runNum+"/cnd.png"));
-										if(write_volatile)can_cnd.save(String.format("/volatile/clas12/rgb/spring19/plots"+runNum+"/cnd.png"));
-										System.out.println(String.format("saved plots"+runNum+"/cnd.png"));
-								}   
-								else{
-										can_cnd.save(String.format("plots/cnd.png"));
-										System.out.println(String.format("saved plots/cnd.png"));
-								}
+                                                                can_cnd.save(String.format(outputDir+"/cnd.png"));
+                                                                System.out.println(String.format("saved "+outputDir+"/cnd.png"));
 
 
 								//	can_cnd.save("cnd1.png");
@@ -945,12 +941,9 @@ public class cndCheckPlots {
 								}
 								for(int iL=0;iL<3;iL++) dirout.addDataSet(H_CND_time_z_charged[iL],H_CVT_CND_z[iL],H_CVT_CND_z1[iL],DiffZCVT[iL],DiffZCND[iL]);
 
-								if(write_volatile)if(runNum>0)dirout.writeFile("/volatile/clas12/rgb/spring19/plots"+runNum+"/out_CND_"+runNum+".hipo");
 
-								if(!write_volatile){
-										if(runNum>0)dirout.writeFile("plots"+runNum+"/out_CND_"+runNum+".hipo");
-										else dirout.writeFile("plots/out_CND.hipo");
-								}
+                                                                if(runNum>0) dirout.writeFile(outputDir+"/out_CND_"+runNum+".hipo");
+                                                                else         dirout.writeFile(outputDir+"/out_CND.hipo");
 						}
 
 
@@ -960,12 +953,12 @@ public class cndCheckPlots {
 								int count = 0;
 								int runNum = 0;
 								boolean useTB=true;
-								boolean useVolatile = false;
 								String filelist = "list_of_files.txt";
 								if(args.length>0)runNum=Integer.parseInt(args[0]);
 								if(args.length>1)filelist = args[1];
 								if(args.length>2)if(Integer.parseInt(args[2])==0)useTB=false;
-								cndCheckPlots ana = new cndCheckPlots(runNum,useTB,useVolatile);
+                                                                String outputDir = runNum > 0 ? "plots"+runNum : "plots";
+								cndCheckPlots ana = new cndCheckPlots(runNum,outputDir,useTB);
 								List<String> toProcessFileNames = new ArrayList<String>();
 								File file = new File(filelist);
 								Scanner read;

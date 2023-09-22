@@ -25,6 +25,7 @@ import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class dst_mon {
 	public int Nevts, Nelecs, Ntrigs, runNum;
+        public String outputDir;
 	boolean[] trigger_bits;
 	public int[] Ntrigs_sect, Nelecs_sect;
 	public float EB, Eb, Mp;
@@ -104,8 +105,9 @@ public class dst_mon {
     	public IndexedTable rfTable;
     	public ConstantsManager ccdb;
 
-        public dst_mon(int reqrunNum, float reqEB){
+        public dst_mon(int reqrunNum, String reqOutputDir, float reqEB){
 		runNum = reqrunNum;EB=reqEB;
+                outputDir = reqOutputDir;
 		Nevts=0;Nelecs=0;Ntrigs=0;
 		Ntrigs_sect = new int[6];
 		Nelecs_sect = new int[6];
@@ -1309,14 +1311,8 @@ public class dst_mon {
 		H_e_nphe_HTCC.divide(H_e_HTCC);
 		can_e_overview.cd(16);can_e_overview.draw(H_e_nphe_HTCC);
 		can_e_overview.getPad(16).getAxisZ().setRange(5,25);
-		if(runNum>0){
-			can_e_overview.save(String.format("plots"+runNum+"/dst_e_overview.png"));
-			System.out.println(String.format("saved plots"+runNum+"/dst_e_overview.png"));
-		}
-		else{
-			can_e_overview.save(String.format("plots/dst_e_overview.png"));
-			System.out.println(String.format("saved plots/dst_e_overview.png"));
-		}
+                can_e_overview.save(String.format(outputDir+"/dst_e_overview.png"));
+                System.out.println(String.format("saved "+outputDir+"/dst_e_overview.png"));
 
 		H_e_bin_theta_HTCC.divide(H_e_HTCC);
 		H_e_bin_phi_HTCC.divide(H_e_HTCC);
@@ -1336,14 +1332,8 @@ public class dst_mon {
 		can_e_htcc.getPad(3).getAxisZ().setRange(5,25);
 		can_e_htcc.cd(4);can_e_htcc.draw(H_e_bin_theta_HTCC);
 		can_e_htcc.cd(5);can_e_htcc.draw(H_e_bin_phi_HTCC);
-		if(runNum>0){
-			can_e_htcc.save(String.format("plots"+runNum+"/dst_e_HTCC.png"));
-			System.out.println(String.format("saved plots"+runNum+"/dst_e_HTCC.png"));
-		}
-		else{
-			can_e_htcc.save(String.format("plots/dst_e_HTCC.png"));
-			System.out.println(String.format("saved plots/dst_e_HTCC.png"));
-		}
+                can_e_htcc.save(String.format(outputDir+"/dst_e_HTCC.png"));
+                System.out.println(String.format("saved "+outputDir+"/dst_e_HTCC.png"));
 		
 		for(int ic=0;ic<10;ic++)H_e_HTCC_cut[ic].divide(H_e_HTCC);
 		EmbeddedCanvas can_e_htcc_cut = new EmbeddedCanvas();
@@ -1356,14 +1346,8 @@ public class dst_mon {
 			can_e_htcc_cut.cd(ic);can_e_htcc_cut.draw(H_e_HTCC_cut[ic]);
 			can_e_htcc_cut.getPad(ic).getAxisZ().setRange(1 - 0.5 *(ic+1)/10 ,1.0);
 		}
-		if(runNum>0){
-			can_e_htcc_cut.save(String.format("plots"+runNum+"/dst_e_HTCC_cut.png"));
-			System.out.println(String.format("saved plots"+runNum+"/dst_e_HTCC_cut.png"));
-		}
-		else{
-			can_e_htcc_cut.save(String.format("plots/dst_e_HTCC_cut.png"));
-			System.out.println(String.format("saved plots/dst_e_HTCC_cut.png"));
-		}
+                can_e_htcc_cut.save(String.format(outputDir+"/dst_e_HTCC_cut.png"));
+                System.out.println(String.format("saved "+outputDir+"/dst_e_HTCC_cut.png"));
 
 
 		for(int s=0;s<6;s++){
@@ -1377,14 +1361,8 @@ public class dst_mon {
 				int pad  = ip + 30*it;
 				can_e_htcc_spectr.cd(pad);can_e_htcc_spectr.draw(H_e_bin_nphe_HTCC[s][it][ip]);
 			}
-			if(runNum>0){
-				can_e_htcc_spectr.save(String.format("plots"+runNum+"/dst_e_HTCC_sect"+(s+1)+".png"));
-				System.out.println(String.format("saved plots"+runNum+"/dst_e_HTCC_sect"+(s+1)+".png"));
-			}
-			else{
-				can_e_htcc_spectr.save(String.format("plots/dst_e_HTCC_sect"+(s+1)+".png"));
-				System.out.println(String.format("saved plots/dst_e_HTCC_sect"+(s+1)+".png"));
-			}
+                        can_e_htcc_spectr.save(String.format(outputDir+"/dst_e_HTCC_sect"+(s+1)+".png"));
+                        System.out.println(String.format("saved "+outputDir+"/dst_e_HTCC_sect"+(s+1)+".png"));
 		}
 
 		EmbeddedCanvas can_e_sectors = new EmbeddedCanvas();
@@ -1398,14 +1376,8 @@ public class dst_mon {
 			can_e_sectors.cd(s+6);can_e_sectors.draw(H_e_vz_t[s]);
 			can_e_sectors.cd(s+12);can_e_sectors.draw(H_e_vz_p[s]);
 		}
-		if(runNum>0){
-			can_e_sectors.save(String.format("plots"+runNum+"/dst_e_sectors.png"));
-			System.out.println(String.format("saved plots"+runNum+"/dst_e_sectors.png"));
-		}
-		else{
-			can_e_sectors.save(String.format("plots/dst_e_sectors.png"));
-			System.out.println(String.format("saved plots/dst_e_sectors.png"));
-		}
+                can_e_sectors.save(String.format(outputDir+"/dst_e_sectors.png"));
+                System.out.println(String.format("saved "+outputDir+"/dst_e_sectors.png"));
 
 		EmbeddedCanvas can_e_ECAL = new EmbeddedCanvas();
 		can_e_ECAL.setSize(3600,1800);
@@ -1418,14 +1390,8 @@ public class dst_mon {
 			can_e_ECAL.cd(s+6);can_e_ECAL.draw(H_e_EC_vt_theta[s]);
 			can_e_ECAL.cd(s+12);can_e_ECAL.draw(H_e_EC_XY[s]);
 		}
-		if(runNum>0){
-			can_e_ECAL.save(String.format("plots"+runNum+"/dst_e_ecal.png"));
-			System.out.println(String.format("saved plots"+runNum+"/dst_e_ecal.png"));
-		}
-		else{
-			can_e_ECAL.save(String.format("plots/dst_e_ecal.png"));
-			System.out.println(String.format("saved plots/dst_e_ecal.png"));
-		}
+                can_e_ECAL.save(String.format(outputDir+"/dst_e_ecal.png"));
+                System.out.println(String.format("saved "+outputDir+"/dst_e_ecal.png"));
 
 		EmbeddedCanvas can_e_FTOF = new EmbeddedCanvas();
 		can_e_FTOF.setSize(3600,3600);
@@ -1441,14 +1407,8 @@ public class dst_mon {
 			can_e_FTOF.cd(s+24);can_e_FTOF.draw(H_e_FTOF_XY_pad1a[s]);
 			can_e_FTOF.cd(s+30);can_e_FTOF.draw(H_e_FTOF_XY_pad1b[s]);
 		}
-		if(runNum>0){
-			can_e_FTOF.save(String.format("plots"+runNum+"/dst_e_FTOF.png"));
-			System.out.println(String.format("saved plots"+runNum+"/dst_e_FTOF.png"));
-		}
-		else{
-			can_e_FTOF.save(String.format("plots/dst_e_FTOF.png"));
-			System.out.println(String.format("saved plots/dst_e_FTOF.png"));
-		}
+                can_e_FTOF.save(String.format(outputDir+"/dst_e_FTOF.png"));
+                System.out.println(String.format("saved "+outputDir+"/dst_e_FTOF.png"));
 
 		EmbeddedCanvas can_e_FTOF1A_mass = new EmbeddedCanvas();
 		can_e_FTOF1A_mass.setSize(3600,4800);
@@ -1471,14 +1431,8 @@ public class dst_mon {
 			can_e_FTOF1A_mass.cd(s+24);can_e_FTOF1A_mass.draw(H_FTOF_neg_mass_mom_pad1a[s]);
 			can_e_FTOF1A_mass.cd(s+30);can_e_FTOF1A_mass.draw(H_FTOF_neg_beta_mom_pad1a[s]);
 		}
-		if(runNum>0){
-			can_e_FTOF1A_mass.save(String.format("plots"+runNum+"/dst_FTOF1A_mass.png"));
-			System.out.println(String.format("saved plots"+runNum+"/dst_FTOF1A_mass.png"));
-		}
-		else{
-			can_e_FTOF1A_mass.save(String.format("plots/dst_FTOF1A_mass.png"));
-			System.out.println(String.format("saved plots/dst_FTOF1A_mass.png"));
-		}
+                can_e_FTOF1A_mass.save(String.format(outputDir+"/dst_FTOF1A_mass.png"));
+                System.out.println(String.format("saved "+outputDir+"/dst_FTOF1A_mass.png"));
 
 		EmbeddedCanvas can_e_FTOF1B_mass = new EmbeddedCanvas();
 		can_e_FTOF1B_mass.setSize(3600,4800);
@@ -1501,14 +1455,8 @@ public class dst_mon {
 			can_e_FTOF1B_mass.cd(s+24);can_e_FTOF1B_mass.draw(H_FTOF_neg_mass_mom_pad1b[s]);
 			can_e_FTOF1B_mass.cd(s+30);can_e_FTOF1B_mass.draw(H_FTOF_neg_beta_mom_pad1b[s]);
 		}
-		if(runNum>0){
-			can_e_FTOF1B_mass.save(String.format("plots"+runNum+"/dst_FTOF1B_mass.png"));
-			System.out.println(String.format("saved plots"+runNum+"/dst_FTOF1B_mass.png"));
-		}
-		else{
-			can_e_FTOF1B_mass.save(String.format("plots/dst_FTOF1B_mass.png"));
-			System.out.println(String.format("saved plots/dst_FTOF1B_mass.png"));
-		}
+                can_e_FTOF1B_mass.save(String.format(outputDir+"/dst_FTOF1B_mass.png"));
+                System.out.println(String.format("saved "+outputDir+"/dst_FTOF1B_mass.png"));
 
 		EmbeddedCanvas can_e_Cerenkov = new EmbeddedCanvas();
 		can_e_Cerenkov.setSize(3600,3600);
@@ -1524,14 +1472,8 @@ public class dst_mon {
 			can_e_Cerenkov.cd(s+24);can_e_Cerenkov.draw(H_e_HTCC_nphe_theta[s]);
 			can_e_Cerenkov.cd(s+30);can_e_Cerenkov.draw(H_e_HTCC_XY[s]);
 		}
-		if(runNum>0){
-			can_e_Cerenkov.save(String.format("plots"+runNum+"/dst_e_Cerenkov.png"));
-			System.out.println(String.format("saved plots"+runNum+"/dst_e_Cerenkov.png"));
-		}
-		else{
-			can_e_Cerenkov.save(String.format("plots/dst_e_Cerenkov.png"));
-			System.out.println(String.format("saved plots/dst_e_Cerenkov.png"));
-		}
+                can_e_Cerenkov.save(String.format(outputDir+"/dst_e_Cerenkov.png"));
+                System.out.println(String.format("saved "+outputDir+"/dst_e_Cerenkov.png"));
 
 		EmbeddedCanvas can_elastic = new EmbeddedCanvas();
 		can_elastic.setSize(3600,3600);
@@ -1565,14 +1507,8 @@ public class dst_mon {
 			can_elastic.cd(36+s);can_elastic.draw(H_elast_inc_W_theta[s]);
 			can_elastic.getPad(36+s).getAxisX().setRange(0.5,2.5);
 		}
-		if(runNum>0){
-			can_elastic.save(String.format("plots"+runNum+"/dst_elastic.png"));
-			System.out.println(String.format("saved plots"+runNum+"/dst_elastic.png"));
-		}
-		else{
-			can_elastic.save(String.format("plots/dst_elastic.png"));
-			System.out.println(String.format("saved plots/dst_elastic.png"));
-		}
+                can_elastic.save(String.format(outputDir+"/dst_elastic.png"));
+                System.out.println(String.format("saved "+outputDir+"/dst_elastic.png"));
 
 		EmbeddedCanvas can_epip = new EmbeddedCanvas();
 		can_epip.setSize(3600,2400);
@@ -1597,14 +1533,8 @@ public class dst_mon {
 			can_epip.cd(18+s);can_epip.draw(H_epip_W_theta[s].projectionX());
 			can_epip.getPad(18+s).getAxisX().setRange(0.25,3.25);
 		}
-		if(runNum>0){
-			can_epip.save(String.format("plots"+runNum+"/dst_epip.png"));
-			System.out.println(String.format("saved plots"+runNum+"/dst_epip.png"));
-		}
-		else{
-			can_epip.save(String.format("plots/dst_epip.png"));
-			System.out.println(String.format("saved plots/dst_epip.png"));
-		}
+                can_epip.save(String.format(outputDir+"/dst_epip.png"));
+                System.out.println(String.format("saved "+outputDir+"/dst_epip.png"));
 
 		EmbeddedCanvas can_epi0 = new EmbeddedCanvas();
 		can_epi0.setSize(2400,1200);
@@ -1630,14 +1560,8 @@ public class dst_mon {
 		can_epi0.cd(15);can_epi0.draw(H_pi0_E_the);
 		can_epi0.cd(16);can_epi0.draw(H_pi0_phi_the);
 		can_epi0.cd(17);can_epi0.draw(H_pi0_mass);
-		if(runNum>0){
-			can_epi0.save(String.format("plots"+runNum+"/dst_epi0.png"));
-			System.out.println(String.format("saved plots"+runNum+"/dst_epi0.png"));
-		}
-		else{
-			can_epi0.save(String.format("plots/dst_epi0.png"));
-			System.out.println(String.format("saved plots/dst_epi0.png"));
-		}
+                can_epi0.save(String.format(outputDir+"/dst_epi0.png"));
+                System.out.println(String.format("saved "+outputDir+"/dst_epi0.png"));
 	}
 	
 	public void write(){
@@ -1671,8 +1595,8 @@ public class dst_mon {
 		}
 //		dirout.addDataSet(H_pi0_mass,H_pi0_G1_vt_evt,H_pi0_G2_vt_evt);
 		
-		if(runNum>0)dirout.writeFile("plots"+runNum+"/dst_mon_"+runNum+".hipo");
-               else dirout.writeFile("plots/dst_mon.hipo");
+		if(runNum>0)dirout.writeFile(outputDir+"/dst_mon_"+runNum+".hipo");
+               else dirout.writeFile(outputDir+"/dst_mon.hipo");
 	}
 
 ////////////////////////////////////////////////
@@ -1688,7 +1612,8 @@ public class dst_mon {
 		if(args.length>1)filelist = args[1];
                 if(args.length>2)maxevents=Integer.parseInt(args[2]);
                 if(args.length>3)EB=Float.parseFloat(args[3]);
-		dst_mon ana = new dst_mon(runNum,EB);
+                String outputDir = runNum > 0 ? "plots"+runNum : "plots";
+		dst_mon ana = new dst_mon(runNum,outputDir,EB);
                 List<String> toProcessFileNames = new ArrayList<String>();
                 File file = new File(filelist);
                 Scanner read;

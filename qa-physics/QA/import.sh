@@ -36,4 +36,4 @@ ln -sv qa.${dataset} qa
 echo "imported $qatree to local area: qa/qaTree.json"
 
 # parse the JSON file into human-readable format
-run-groovy $CLASQA_JAVA_OPTS parseQaTree.groovy qa/qaTree.json $opts
+run-groovy $TIMELINE_GROOVY_OPTS parseQaTree.groovy qa/qaTree.json $opts

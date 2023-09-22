@@ -21,8 +21,9 @@ import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class FT {
 
-    boolean userTimeBased, write_volatile;
+    boolean userTimeBased;
     public int runNum, trigger;
+    public String outputDir;
     public int crate;
 
     public boolean hasRF;
@@ -56,10 +57,10 @@ public class FT {
 
     public ConstantsManager ccdb;
 
-    public FT(int reqrunNum, boolean reqTimeBased, boolean reqwrite_volatile) {
+    public FT(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
         runNum = reqrunNum;
+        outputDir = reqOutputDir;
         userTimeBased = reqTimeBased;
-        write_volatile = reqwrite_volatile;
 
         startTime = -1000;
         rfTime = -1000;
@@ -472,9 +473,9 @@ public class FT {
         double hMean = hpi0sum.getAxis().getBinCenter(hpi0sum.getMaximumBin());
         double hRMS = 10; //ns
         fpi0.setParameter(0, hAmp);
-        fpi0.setParLimits(0, hAmp * 0.8, hAmp * 1.2);
+        if(hAmp!=0) fpi0.setParLimits(0, hAmp * 0.8, hAmp * 1.2);
         fpi0.setParameter(1, hMean);
-        fpi0.setParLimits(1, hMean - hRMS, hMean + hRMS);
+        if(hRMS!=0) fpi0.setParLimits(1, hMean - hRMS, hMean + hRMS);
         DataFitter.fit(fpi0, hpi0sum, "LQ");
         hpi0sum.setFunction(null);
     }
@@ -485,9 +486,9 @@ public class FT {
         double hRMS = hcharge.getRMS(); //ns
         fcharge.setRange(fcharge.getRange().getMin(), hMean * 2.0);
         fcharge.setParameter(0, hAmp);
-        fcharge.setParLimits(0, 0.5 * hAmp, 1.5 * hAmp);
+        if(hAmp!=0) fcharge.setParLimits(0, 0.5 * hAmp, 1.5 * hAmp);
         fcharge.setParameter(1, hMean);
-        fcharge.setParLimits(1, 0.8 * hMean, 1.2 * hMean);//Changed from 5-30        
+        if(hMean!=0) fcharge.setParLimits(1, 0.8 * hMean, 1.2 * hMean);//Changed from 5-30        
         fcharge.setParameter(2, 0.3);//Changed from 2
         fcharge.setParLimits(2, 0.1, 1);//Changed from 0.5-10
         fcharge.setParameter(3, 0.2 * hAmp);
@@ -503,11 +504,11 @@ public class FT {
         double pm = hRMS * 3;
         ftime.setRange(rangeMin, rangeMax);
         ftime.setParameter(0, hAmp);
-        ftime.setParLimits(0, hAmp * 0.8, hAmp * 1.2);
+        if(hAmp!=0) ftime.setParLimits(0, hAmp * 0.8, hAmp * 1.2);
         ftime.setParameter(1, hMean);
-        ftime.setParLimits(1, hMean - pm, hMean + (pm));
+        if(pm!=0) ftime.setParLimits(1, hMean - pm, hMean + (pm));
         ftime.setParameter(2, 0.2);
-        ftime.setParLimits(2, 0.1 * hRMS, 0.8 * hRMS);
+        if(hRMS!=0) ftime.setParLimits(2, 0.1 * hRMS, 0.8 * hRMS);
     }
 
     public void plot() {
@@ -576,18 +577,8 @@ public class FT {
         can_FT.cd(25);
         can_FT.draw(hmassangle);
 
-        if (runNum > 0) {
-            if (!write_volatile) {
-                can_FT.save(String.format("plots" + runNum + "/FT.png"));
-            }
-            if (write_volatile) {
-                can_FT.save(String.format("/volatile/clas12/rgb/spring19/plots" + runNum + "/FT.png"));
-            }
-            System.out.println(String.format("saved plots" + runNum + "/FT.png"));
-        } else {
-            can_FT.save(String.format("plots/FT.png"));
-            System.out.println(String.format("saved plots/FT.png"));
-        }
+        can_FT.save(String.format(outputDir+"/FT.png"));
+        System.out.println(String.format("saved "+outputDir+"/FT.png"));
 
     }
 
@@ -605,19 +596,9 @@ public class FT {
         }
         dirout.addDataSet(hi_cal_nclusters, hi_cal_clsize, hi_cal_clsize_ch, hi_cal_clsize_en, hi_cal_e_ch, hi_cal_e_all, hi_cal_theta_ch, hi_cal_phi_ch, hi_cal_time_ch, hi_cal_time_cut_ch, hi_cal_time_e_ch);
         dirout.addDataSet(hi_cal_time_theta_ch, hi_cal_time_neu, hi_cal_time_cut_neu, hi_cal_time_e_neu, hi_cal_time_theta_neu, hpi0sum, hmassangle);
-        if (write_volatile) {
-            if (runNum > 0) {
-                dirout.writeFile("/volatile/clas12/rgb/spring19/plots" + runNum + "/out_FT_" + runNum + ".hipo");
-            }
-        }
 
-        if (!write_volatile) {
-            if (runNum > 0) {
-                dirout.writeFile("plots" + runNum + "/out_FT_" + runNum + ".hipo");
-            } else {
-                dirout.writeFile("plots/out_FT.hipo");
-            }
-        }
+        if(runNum>0) dirout.writeFile(outputDir+"/out_FT_"+runNum+".hipo");
+        else         dirout.writeFile(outputDir+"/out_FT.hipo");
     }
 ////////////////////////////////////////////////
 
@@ -627,7 +608,6 @@ public class FT {
         int count = 0;
         int runNum = 0;
         boolean useTB = true;
-        boolean useVolatile = false;
         String filelist = "list_of_files.txt";
         if (args.length > 0) {
             runNum = Integer.parseInt(args[0]);
@@ -640,7 +620,8 @@ public class FT {
                 useTB = false;
             }
         }
-        FT ana = new FT(runNum, useTB, useVolatile);
+        String outputDir = runNum > 0 ? "plots"+runNum : "plots";
+        FT ana = new FT(runNum, outputDir, useTB);
         List<String> toProcessFileNames = new ArrayList<>();
         File file = new File(filelist);
         Scanner read;

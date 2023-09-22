@@ -2,27 +2,29 @@
 
 set -e
 
-if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]" >&2; exit 101; fi
+if [ $# -ne 2 ];then echo "USAGE: $0 [dataset] [input_dir]" >&2; exit 101; fi
 dataset=$1
+inputDir=$2
+
+if [ -z "$TIMELINESRC" ]; then
+  echo "ERROR: please source environ.sh first" >&2
+  exit 100
+fi
 
 # cleanup / generate new dataset subdirs
-for outdir in outmon outdat; do
-  dir=${outdir}.${dataset}
+OUTMON_DIR=$TIMELINESRC/qa-physics/outmon.${dataset}
+OUTDAT_DIR=$TIMELINESRC/qa-physics/outdat.${dataset}
+for dir in $OUTMON_DIR $OUTDAT_DIR; do
   echo "clean $dir"
   mkdir -p $dir
-  rm -r $dir
+  rm    -r $dir
   mkdir -p $dir
 done
 
 # loop over runs, copying and linking to dataset subdirs
-source datasetListParser.sh $dataset
-for file in outmon/monitor_*.hipo; do
-  run=$(echo $file | sed 's/^.*monitor_//'|sed 's/\.hipo$//')
-
-  if [ $run -ge $RUNL -a $run -le $RUNH ]; then
-    echo "file run $run to dataset $dataset"
-    cat outdat/data_table_${run}.dat >> outdat.${dataset}/data_table.dat
-    ln -sv `pwd`/outmon/monitor_${run}.hipo ./outmon.${dataset}/monitor_${run}.hipo
-  fi
-
+for file in $(find $inputDir -name "monitor_*.hipo"); do
+  ln -sv $file $OUTMON_DIR/
+done
+for file in $(find $inputDir -name "data_table_*.dat"); do
+  cat $file >> $OUTDAT_DIR/data_table.dat
 done

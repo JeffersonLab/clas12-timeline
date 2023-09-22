@@ -23,8 +23,9 @@ import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class BAND{
-	boolean userTimeBased, write_volatile;
+	boolean userTimeBased;
 	int runNum;
+        String outputDir;
 	boolean[] trigger_bits;
 	public float EBeam;
 	public float starttime;
@@ -42,9 +43,9 @@ public class BAND{
 	public ConstantsManager ccdb;
 
 
-	public BAND(int reqR, float reqEb, boolean reqTimeBased, boolean reqwrite_volatile){
+	public BAND(int reqR, String reqOutputDir, float reqEb, boolean reqTimeBased){
         	runNum = reqR;userTimeBased=reqTimeBased;
-		write_volatile = reqwrite_volatile;
+                outputDir = reqOutputDir;
 		EBeam = 2.2f;
 		if(reqEb>0 && reqEb<4)EBeam=2.22f;
 		if(reqEb>4 && reqEb<7.1)EBeam=6.42f;
@@ -225,15 +226,8 @@ public class BAND{
 		can_BAND.cd(1);can_BAND.draw(H_BAND_meantimeadc[0]);can_BAND.draw(H_BAND_meantimeadc[1],"same");
 		can_BAND.cd(2);can_BAND.draw(H_BAND_meantimetdc[0]);can_BAND.draw(H_BAND_meantimetdc[1],"same");
 		can_BAND.cd(3);can_BAND.draw(H_BAND_lasertimeadc[0]);can_BAND.draw(H_BAND_lasertimeadc[1],"same");
-		if(runNum>0){
-			if(!write_volatile)can_BAND.save(String.format("plots"+runNum+"/BAND.png"));
-			if(write_volatile)can_BAND.save(String.format("/volatile/clas12/rga/spring18/plots"+runNum+"/BAND.png"));
-			System.out.println(String.format("saved plots"+runNum+"/BAND.png"));
-		}
-		else{
-			can_BAND.save(String.format("plots/BAND.png"));
-			System.out.println(String.format("saved plots/BAND.png"));
-		}
+                can_BAND.save(String.format(outputDir+"/BAND.png"));
+                System.out.println(String.format("saved "+outputDir+"/BAND.png"));
 
 	}
 	public static void main(String[] args) {
@@ -242,7 +236,6 @@ public class BAND{
                 int count = 0;
                 int runNum = 0;
 		boolean useTB = true;
-		boolean useVolatile = false;
                 String filelist = "list_of_files.txt";
                 if(args.length>0)runNum=Integer.parseInt(args[0]);
                 if(args.length>1)filelist = args[1];
@@ -251,7 +244,8 @@ public class BAND{
 		float Eb =6.42f;//10.6f;
                 if(args.length>3)Eb=Float.parseFloat(args[3]);
 		if(args.length>4)if(Integer.parseInt(args[4])==0)useTB=false;
-                BAND ana = new BAND(runNum,Eb,useTB,useVolatile);
+                String outputDir = runNum > 0 ? "plots"+runNum : "plots";
+                BAND ana = new BAND(runNum,outputDir,Eb,useTB);
                 List<String> toProcessFileNames = new ArrayList<String>();
                 File file = new File(filelist);
                 Scanner read;
@@ -297,10 +291,8 @@ public class BAND{
 		for(int j=0;j<2;j++){
 			dirout.addDataSet(H_BAND_adcCor[j], H_BAND_meantimeadc[j], H_BAND_meantimetdc[j], H_BAND_lasertimeadc[j]);
 		}
-		if(!write_volatile){
-			if(runNum>0)dirout.writeFile("plots"+runNum+"/out_BAND_"+runNum+".hipo");
-			else dirout.writeFile("plots/out_BAND.hipo");
-		}
+                if(runNum>0) dirout.writeFile(outputDir+"/out_BAND_"+runNum+".hipo");
+                else         dirout.writeFile(outputDir+"/out_BAND.hipo");
 	}
 
 }
