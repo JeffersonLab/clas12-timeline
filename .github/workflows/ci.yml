@@ -234,5 +234,39 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: outfiles
-        retention-days: 7
+        retention-days: 1
         path: outfiles
+
+  # timeline deployment
+  #############################################################################
+
+  deploy_timelines:
+    needs:
+      - run_timelines
+    runs-on: ubuntu-latest
+    steps:
+    - name: setup groovy
+      uses: wtfjoke/setup-groovy@v1
+      with:
+        groovy-version: 4.x
+    - name: groovy version
+      run: groovy --version
+    - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
+      with:
+        name: outfiles
+        path: outfiles
+    - uses: actions/download-artifact@v3
+      with:
+        name: build
+    - name: untar
+      run: ls *.tar.gz | xargs -I_ tar xzvf _
+    - name: tree outfiles
+      run: tree outfiles
+    - name: deploy
+      run: bin/deploy-timelines.sh -d ${{env.dataset}} -c -t web
+    - uses: actions/upload-artifact@v3
+      with:
+        name: web
+        retention-days: 7
+        path: web
