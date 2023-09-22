@@ -30,7 +30,7 @@ import org.jlab.groot.base.PadAttributes;
 import java.util.ArrayList;
 
 public class RICH{
-    boolean userTimeBased, write_volatile;
+    boolean userTimeBased;
     int runNum;
     String outputDir;
     boolean[] trigger_bits;
@@ -102,7 +102,7 @@ public class RICH{
     public RICH(int reqR, String reqOutputDir, float reqEb, boolean reqTimeBased, boolean reqwrite_volatile){
 	runNum = reqR;userTimeBased=reqTimeBased;
         outputDir = reqOutputDir;
-	write_volatile = reqwrite_volatile;
+        if(reqwrite_volatile) outputDir = "/volatile/clas12/rga/spring18/" + outputDir;
 	EBeam = reqEb;
 	BINWINDOW = 14;
 
@@ -580,8 +580,7 @@ public class RICH{
 
 	}
 	
-        if(!write_volatile)can_RICH.save(String.format(outputDir+"/RICH_DeltaT.png"));
-        if(write_volatile)can_RICH.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/RICH_DeltaT.png"));
+        can_RICH.save(String.format(outputDir+"/RICH_DeltaT.png"));
         System.out.println(String.format("saved "+outputDir+"/RICH_DeltaT.png"));
 
 	for (int m=1; m<=nMODULES; m++) {
@@ -598,8 +597,7 @@ public class RICH{
 
 		can_RICH_PMT.draw(H_dt_PMT[ic][m-1]); 
 	    }
-            if(!write_volatile)can_RICH_PMT.save(String.format(outputDir+"/RICH_module"+m+"_PMT_DeltaT.png"));
-            if(write_volatile)can_RICH_PMT.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/RICH_module"+m+"_PMT_DeltaT.png"));
+            can_RICH_PMT.save(String.format(outputDir+"/RICH_module"+m+"_PMT_DeltaT.png"));
             System.out.println(String.format("saved PMT plots run "+runNum+" module "+m));
 
 	}
@@ -687,14 +685,8 @@ public class RICH{
 	    }
 
 
-            if(!write_volatile) {
-              can_RICH_detac_tile.save(String.format(outputDir+"/RICH_module"+m+"_EtaC_tile.png"));
-              can_RICH_npho_tile.save(String.format(outputDir+"/RICH_module"+m+"_Npho_tile.png"));
-            }
-            if(write_volatile) {
-              can_RICH_detac_tile.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/RICH_module"+m+"_EtaC_tile.png"));
-              can_RICH_npho_tile.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/RICH_module"+m+"_Npho_tile.png"));
-            }
+            can_RICH_detac_tile.save(String.format(outputDir+"/RICH_module"+m+"_EtaC_tile.png"));
+            can_RICH_npho_tile.save(String.format(outputDir+"/RICH_module"+m+"_Npho_tile.png"));
             System.out.println(String.format("saved "+outputDir+"/RICH_module"+m+"_EtaC_tile.png"));
             System.out.println(String.format("saved "+outputDir+"/RICH_module"+m+"_Npho_tile.png"));
 
@@ -749,8 +741,7 @@ public class RICH{
 	    }
 	}
 
-        if(!write_volatile)can_RICH_detac.save(String.format(outputDir+"/RICH_EtaC.png"));
-        if(write_volatile)can_RICH_detac.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/RICH_EtaC.png"));
+        can_RICH_detac.save(String.format(outputDir+"/RICH_EtaC.png"));
         System.out.println(String.format("saved "+outputDir+"/RICH_EtaC.png"));
 
 	// Plots for the number of photons timelines
@@ -797,8 +788,7 @@ public class RICH{
 	    }
 	}
 
-        if(!write_volatile)can_RICH_npho.save(String.format(outputDir+"/RICH_Npho.png"));
-        if(write_volatile)can_RICH_npho.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/RICH_Npho.png"));
+        can_RICH_npho.save(String.format(outputDir+"/RICH_Npho.png"));
         System.out.println(String.format("saved "+outputDir+"/RICH_Npho.png"));
 
 
@@ -826,8 +816,7 @@ public class RICH{
 	}	
 
 
-        if(!write_volatile)can_RICH_trk.save(String.format(outputDir+"/RICH_TrkMatch.png"));
-        if(write_volatile)can_RICH_trk.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/RICH_TrkMatch.png"));
+        can_RICH_trk.save(String.format(outputDir+"/RICH_TrkMatch.png"));
         System.out.println(String.format("saved "+outputDir+"/RICH_TrkMatch.png"));
 
 
@@ -855,8 +844,7 @@ public class RICH{
 	    can_RICH.cd(5);can_RICH.draw(H_npbar_tile[m-1]); 
 	    
 	    
-            if(!write_volatile)can_RICH.save(String.format(outputDir+"/RICH_module"+m+"_Counters.png", m));
-            if(write_volatile)can_RICH.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/RICH_module"+m+"_Counters.png", m));
+            can_RICH.save(String.format(outputDir+"/RICH_module"+m+"_Counters.png", m));
             System.out.println(String.format("saved "+outputDir+"/RICH_module"+m+"_Counters.png", m));
 
 
@@ -959,10 +947,8 @@ public class RICH{
 	dirout.addDataSet(H_setup);
 
 
-	if(!write_volatile){
-	    if(runNum>0)dirout.writeFile(outputDir+"/out_RICH_"+runNum+".hipo");
-	    else dirout.writeFile(outputDir+"/out_RICH.hipo");
-	}
+        if(runNum>0) dirout.writeFile(outputDir+"/out_RICH_"+runNum+".hipo");
+        else         dirout.writeFile(outputDir+"/out_RICH.hipo");
     }
 
     public float getFWHM(H1F h){

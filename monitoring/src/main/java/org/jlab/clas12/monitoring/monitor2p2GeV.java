@@ -22,7 +22,7 @@ import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class monitor2p2GeV {
-	boolean userTimeBased, write_volatile;
+	boolean userTimeBased;
 	int Nevts, Nelecs, Ntrigs, runNum, Nelec_all, N_elec_lowQ2;
         public String outputDir;
 	int event_number;
@@ -183,7 +183,7 @@ public class monitor2p2GeV {
 	public monitor2p2GeV(int reqrunNum, String reqOutputDir, float reqEB, boolean reqTimeBased, boolean reqwrite_volatile ) {
 		runNum = reqrunNum;EB=reqEB;userTimeBased=reqTimeBased;
                 outputDir = reqOutputDir;
-		write_volatile = reqwrite_volatile;
+                if(reqwrite_volatile) outputDir = "/volatile/clas12/rgb/spring19/" + outputDir;
 		Nevts=0;Nelecs=0;Ntrigs=0;
                 Nmuons=0;Nmuontrigs=0;
 		found_eTraj = 0;
@@ -3878,8 +3878,7 @@ public class monitor2p2GeV {
 		can_Verification.cd(3);can_Verification.draw(H_positive_theta_mom);
                 can_Verification.cd(4);can_Verification.draw(H_negative_theta_mom);
                 can_Verification.cd(5);can_Verification.draw(H_electron_theta_mom);
-                if(!write_volatile)can_Verification.save(String.format(outputDir+"/Verification.png"));
-                if(write_volatile)can_Verification.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/Verification.png"));
+                can_Verification.save(String.format(outputDir+"/Verification.png"));
                 System.out.println(String.format("save "+outputDir+"/Verification.png"));
 
 		EmbeddedCanvas can_TOF = new EmbeddedCanvas();
@@ -3900,8 +3899,7 @@ public class monitor2p2GeV {
 		can_TOF.cd(9);can_TOF.draw(H_TOF_vt_mom_S4p);
 		can_TOF.cd(10);can_TOF.draw(H_TOF_vt_mom_S5p);
 		can_TOF.cd(11);can_TOF.draw(H_TOF_vt_mom_S6p);
-                if(!write_volatile)can_TOF.save(String.format(outputDir+"/TOF.png"));
-                if(write_volatile)can_TOF.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/TOF.png"));
+                can_TOF.save(String.format(outputDir+"/TOF.png"));
                 System.out.println(String.format("save "+outputDir+"/TOF.png"));
 
 		EmbeddedCanvas can_2pis = new EmbeddedCanvas();
@@ -3917,8 +3915,7 @@ public class monitor2p2GeV {
 		can_2pis.cd(4);can_2pis.draw(H_rho_prot);
 		can_2pis.cd(5);can_2pis.draw(H_rho_IM);
 		can_2pis.cd(6);can_2pis.draw(H_rho_MM);
-                if(!write_volatile)can_2pis.save(String.format(outputDir+"/two_pions.png"));
-                if(write_volatile)can_2pis.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/two_pions.png"));
+                can_2pis.save(String.format(outputDir+"/two_pions.png"));
                 System.out.println(String.format("save "+outputDir+"/two_pions.png"));
 
 		//EmbeddedCanvas can_ecal_thresh = new EmbeddedCanvas();
@@ -3965,8 +3962,7 @@ public class monitor2p2GeV {
 		can_miss_trig.cd(15);can_miss_trig.draw(missTrig_S4_mf);
 		can_miss_trig.cd(16);can_miss_trig.draw(missTrig_S5_mf);
 		can_miss_trig.cd(17);can_miss_trig.draw(missTrig_S6_mf);
-                if(!write_volatile)can_miss_trig.save(String.format(outputDir+"/miss_trig.png"));
-                if(write_volatile)can_miss_trig.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/miss_trig.png"));
+                can_miss_trig.save(String.format(outputDir+"/miss_trig.png"));
                 System.out.println(String.format("saved "+outputDir+"/miss_trig.png"));
 
 		EmbeddedCanvas can_trig_sect = new EmbeddedCanvas();
@@ -4043,8 +4039,7 @@ public class monitor2p2GeV {
 		can_trig_sect.cd(52);can_trig_sect.draw(H_trig_central_kminus_rat);//checkpoint_central
                 can_trig_sect.cd(53);can_trig_sect.draw(H_trig_central_deut_rat);//checkpoint_central
 
-                if(!write_volatile)can_trig_sect.save(String.format(outputDir+"/trig_sect.png"));
-                if(write_volatile)can_trig_sect.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/trig_sect.png"));
+                can_trig_sect.save(String.format(outputDir+"/trig_sect.png"));
                 System.out.println(String.format("save "+outputDir+"/trig_sect.png"));
 
 		EmbeddedCanvas can_twosecttrig = new EmbeddedCanvas();
@@ -4061,8 +4056,7 @@ public class monitor2p2GeV {
 			can_twosecttrig.cd(s+24);can_twosecttrig.draw(H_muontrig_ECECOUT_en_S[s]);
                 }
 		
-                if(!write_volatile)can_twosecttrig.save(String.format(outputDir+"/twosect_trig.png"));
-                if(write_volatile)can_twosecttrig.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/twosect_trig.png"));
+                can_twosecttrig.save(String.format(outputDir+"/twosect_trig.png"));
                 System.out.println(String.format("save "+outputDir+"/twosect_trig.png"));
 
 		EmbeddedCanvas can_e_pip = new EmbeddedCanvas();
@@ -4112,8 +4106,7 @@ public class monitor2p2GeV {
 		}
 		can_e_pip.cd(41); can_e_pip.draw(H_pim_vtd);
 
-                if(!write_volatile)can_e_pip.save(String.format(outputDir+"/e_pip.png"));
-                if(write_volatile)can_e_pip.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/e_pip.png"));
+                can_e_pip.save(String.format(outputDir+"/e_pip.png"));
                 System.out.println(String.format("save "+outputDir+"/e_pip.png"));
 
 		EmbeddedCanvas can_CVT_elastic = new EmbeddedCanvas();
@@ -4153,8 +4146,7 @@ public class monitor2p2GeV {
 		can_CVT_elastic.cd(20);can_CVT_elastic.draw(H_CVT_corr_e_mom);
 		can_CVT_elastic.cd(21);can_CVT_elastic.draw(H_elast_W); // the number inside cd was 19, corrected.
 
-                if(!write_volatile)can_CVT_elastic.save(String.format(outputDir+"/cvt_elastic.png"));
-                if(write_volatile)can_CVT_elastic.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/cvt_elastic.png"));
+                can_CVT_elastic.save(String.format(outputDir+"/cvt_elastic.png"));
                 System.out.println(String.format("save "+outputDir+"/cvt_elastic.png"));
 
 
@@ -4195,8 +4187,7 @@ public class monitor2p2GeV {
                 //can_CVT.cd(38);can_CVT.draw(hpostrks_rat);
                 //can_CVT.cd(39);can_CVT.draw(hnegtrks_rat);
 
-                if(!write_volatile)can_CVT.save(String.format(outputDir+"/cvt.png"));
-                if(write_volatile)can_CVT.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/cvt.png"));
+                can_CVT.save(String.format(outputDir+"/cvt.png"));
                 System.out.println(String.format("save "+outputDir+"/cvt.png"));
 
         	EmbeddedCanvas can_gg = new EmbeddedCanvas();
@@ -4214,8 +4205,7 @@ public class monitor2p2GeV {
 		can_gg.cd(2);can_gg.draw(H_g1_te);
 		can_gg.cd(4);can_gg.draw(H_g2_tf);
 		can_gg.cd(5);can_gg.draw(H_g2_te);
-                if(!write_volatile)can_gg.save(String.format(outputDir+"/gg.png"));
-                if(write_volatile)can_gg.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/gg.png"));
+                can_gg.save(String.format(outputDir+"/gg.png"));
                 System.out.println(String.format("save "+outputDir+"/gg.png"));
 
 		EmbeddedCanvas can_e_ecal = new EmbeddedCanvas();
@@ -4280,8 +4270,7 @@ public class monitor2p2GeV {
 		for(int s=0;s<6;s++){
 			can_e_ecal.cd(28+s);can_e_ecal.draw(H_e_W_S[s]);
 		}
-                if(!write_volatile)can_e_ecal.save(String.format(outputDir+"/e_rec_mon.png"));
-                if(write_volatile)can_e_ecal.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/e_rec_mon.png"));
+                can_e_ecal.save(String.format(outputDir+"/e_rec_mon.png"));
                 System.out.println(String.format("save "+outputDir+"/e_rec_mon.png"));
 
 		EmbeddedCanvas can_RF = new EmbeddedCanvas(); //test plot for RF variables for run-based monitoring
@@ -4301,8 +4290,7 @@ public class monitor2p2GeV {
 		can_RF.cd(27);can_RF.draw(H_p_RFtime1_CD);
 		can_RF.cd(28);can_RF.draw(H_RFtimediff);
 		can_RF.cd(29);can_RF.draw(H_RFtimediff_corrected);
-                if(!write_volatile)can_RF.save(String.format(outputDir+"/RF.png"));
-                if(write_volatile)can_RF.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/RF.png"));
+                can_RF.save(String.format(outputDir+"/RF.png"));
                 System.out.println(String.format("save "+outputDir+"/RF.png"));
 
 
@@ -4319,8 +4307,7 @@ public class monitor2p2GeV {
 				can_e_FMM.cd(12+s);can_e_FMM.draw(H_e_FMMphi_phi[s][iP]);
 				can_e_FMM.cd(18+s);can_e_FMM.draw(H_e_FMMvz_vz[s][iP]);
 			}
-                        if(!write_volatile)can_e_FMM.save(String.format(outputDir+"/e_FMM_mon"+iP+".png"));
-                        if(write_volatile)can_e_FMM.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/e_FMM_mon"+iP+".png"));
+                        can_e_FMM.save(String.format(outputDir+"/e_FMM_mon"+iP+".png"));
                         System.out.println(String.format("save "+outputDir+"/e_FMM_mon"+iP+".png"));
 		}
 
@@ -4334,8 +4321,7 @@ public class monitor2p2GeV {
 		for(int s=0;s<7;s++)for(int it=0;it<10;it++){
 			can_e_phi_theta.cd(s+7*it);can_e_phi_theta.draw(H_trig_phi_theta_S[s][it]);
 		}
-                if(!write_volatile)can_e_phi_theta.save(String.format(outputDir+"/e_phi_sects.png"));
-                if(write_volatile)can_e_phi_theta.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/e_phi_sects.png"));
+                can_e_phi_theta.save(String.format(outputDir+"/e_phi_sects.png"));
                 System.out.println(String.format("save "+outputDir+"/e_phi_sects.png"));
 
 		EmbeddedCanvas can_e_sect = new EmbeddedCanvas();
@@ -4359,8 +4345,7 @@ public class monitor2p2GeV {
 			can_e_sect.cd(51);can_e_sect.draw(H_trig_LTCCn_theta_S[5]);
 			can_e_sect.cd(54+s);can_e_sect.draw(H_dce_chi2[s]);
 		}
-                if(!write_volatile)can_e_sect.save(String.format(outputDir+"/e_sects.png"));
-                if(write_volatile)can_e_sect.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/e_sects.png"));
+                can_e_sect.save(String.format(outputDir+"/e_sects.png"));
                 System.out.println(String.format("save "+outputDir+"/e_sects.png"));
 
 		EmbeddedCanvas can_e_sect_proj = new EmbeddedCanvas();
@@ -4407,8 +4392,7 @@ public class monitor2p2GeV {
 			Hp.setTitleX("nphe");
 			can_e_sect_proj.cd(48+s);can_e_sect_proj.draw(Hp);
 		}
-                if(!write_volatile)can_e_sect_proj.save(String.format(outputDir+"/e_sects_proj.png"));
-                if(write_volatile)can_e_sect_proj.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/e_sects_proj.png"));
+                can_e_sect_proj.save(String.format(outputDir+"/e_sects_proj.png"));
                 System.out.println(String.format("save "+outputDir+"/e_sects_proj.png"));
 
                 EmbeddedCanvas can_e_pos_sect = new EmbeddedCanvas();
@@ -4425,8 +4409,7 @@ public class monitor2p2GeV {
                         can_e_pos_sect.cd(28+s);can_e_pos_sect.draw(H_trig_DCR2_pos_S[s]);
                         can_e_pos_sect.cd(35+s);can_e_pos_sect.draw(H_trig_DCR3_pos_S[s]);
                 }
-                if(!write_volatile)can_e_pos_sect.save(String.format(outputDir+"/e_pos_sects.png"));
-                if(write_volatile)can_e_pos_sect.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/e_pos_sects.png"));
+                can_e_pos_sect.save(String.format(outputDir+"/e_pos_sects.png"));
                 System.out.println(String.format("save "+outputDir+"/e_pos_sects.png"));
 
                 EmbeddedCanvas can_e_posrat_sect = new EmbeddedCanvas();
@@ -4457,8 +4440,7 @@ public class monitor2p2GeV {
                         can_e_posrat_sect.cd(35+s);can_e_posrat_sect.draw(H_trig_DCR3_pos_S[s]);
                         if(s<6)can_e_posrat_sect.getPad(35+s).getAxisZ().setRange(0.5, 1.5);
                 }
-                if(!write_volatile)can_e_posrat_sect.save(String.format(outputDir+"/e_ratio_sects.png"));
-                if(write_volatile)can_e_posrat_sect.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/e_ratio_sects.png"));
+                can_e_posrat_sect.save(String.format(outputDir+"/e_ratio_sects.png"));
                 System.out.println(String.format("save "+outputDir+"/e_ratio_sects.png"));
 
 		EmbeddedCanvas can_e_phys = new EmbeddedCanvas();
@@ -4480,8 +4462,7 @@ public class monitor2p2GeV {
 		for(int s=0;s<6;s++){
                         can_e_phys.cd(s+12);can_e_phys.draw(H_e_Q2_S[s]);
                 }
-                if(!write_volatile)can_e_phys.save(String.format(outputDir+"/e_phys.png"));
-                if(write_volatile)can_e_phys.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/e_phys.png"));
+                can_e_phys.save(String.format(outputDir+"/e_phys.png"));
                 System.out.println(String.format("save "+outputDir+"/e_phys.png"));
 
         	EmbeddedCanvas can_dc_mon = new EmbeddedCanvas();
@@ -4558,8 +4539,7 @@ public class monitor2p2GeV {
 		can_dc_mon.draw(H_posREC_sect,"same");
 		//can_dc_mon.cd(28);can_dc_mon.draw(H_dcm_pvt_pvz);
 		//can_dc_mon.cd(29);can_dc_mon.draw(H_dcp_pvt_pvz);
-                if(!write_volatile)can_dc_mon.save(String.format(outputDir+"/dc_rec_mon.png"));
-                if(write_volatile)can_dc_mon.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/dc_rec_mon.png"));
+                can_dc_mon.save(String.format(outputDir+"/dc_rec_mon.png"));
                 System.out.println(String.format("save "+outputDir+"/dc_rec_mon.png"));
 
 
@@ -4590,8 +4570,7 @@ public class monitor2p2GeV {
 			can_dcm_vz_phi.cd(49+s);can_dcm_vz_phi.draw(H_dcm_chi2[s]);
 			can_dcm_vz_phi.cd(56+s);can_dcm_vz_phi.draw(H_R1phiDm_mom[s]);
 		}
-                if(!write_volatile)can_dcm_vz_phi.save(String.format(outputDir+"/dc_m_vz_phi.png"));
-                if(write_volatile)can_dcm_vz_phi.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/dc_m_vz_phi.png"));
+                can_dcm_vz_phi.save(String.format(outputDir+"/dc_m_vz_phi.png"));
                 System.out.println(String.format("save "+outputDir+"/dc_m_vz_phi.png"));
 
 		EmbeddedCanvas can_dcp_vz_phi = new EmbeddedCanvas();
@@ -4611,8 +4590,7 @@ public class monitor2p2GeV {
 			can_dcp_vz_phi.cd(49+s);can_dcp_vz_phi.draw(H_dcp_chi2[s]);
 			can_dcp_vz_phi.cd(56+s);can_dcp_vz_phi.draw(H_R1phiDp_mom[s]);
 		}
-                if(!write_volatile)can_dcp_vz_phi.save(String.format(outputDir+"/dc_p_vz_phi.png"));
-                if(write_volatile)can_dcp_vz_phi.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/dc_p_vz_phi.png"));
+                can_dcp_vz_phi.save(String.format(outputDir+"/dc_p_vz_phi.png"));
                 System.out.println(String.format("save "+outputDir+"/dc_p_vz_phi.png"));
 		// Test drawing for dc_e_chi2 for electrons
 		// EmbeddedCanvas can_dce_chi2 = new EmbeddedCanvas();
@@ -4624,8 +4602,7 @@ public class monitor2p2GeV {
 		// for(int s=0;s<7;s++){
 		// 	can_dce_chi2.cd(0+s);can_dce_chi2.draw(H_dce_chi2[s]);
 		// }
-                // if(!write_volatile)can_dce_chi2.save(String.format(outputDir+"/dc_e_chi2.png"));
-                // if(write_volatile)can_dce_chi2.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/dc_e_chi2.png"));
+                // can_dce_chi2.save(String.format(outputDir+"/dc_e_chi2.png"));
                 // System.out.println(String.format("save "+outputDir+"/dc_e_chi2.png"));
 
 
@@ -4636,12 +4613,9 @@ public class monitor2p2GeV {
                 verify.mkdir("/roads");
                 verify.cd("/roads");
 		verify.addDataSet(H_positive_theta_mom,H_negative_theta_mom,H_electron_theta_mom);                
-		if(write_volatile) if(runNum>0)verify.writeFile("/volatile/clas12/rgb/spring19/"+outputDir+"/verify_distributions_"+runNum+".hipo");
 
-                if(!write_volatile){
-                        if(runNum>0)verify.writeFile(outputDir+"/verify_distributions_"+runNum+".hipo");
-                        else verify.writeFile(outputDir+"/verify_distributions.hipo");
-                }
+                if(runNum>0) verify.writeFile(outputDir+"/verify_distributions_"+runNum+".hipo");
+                else         verify.writeFile(outputDir+"/verify_distributions.hipo");
 
                 TDirectory dirout = new TDirectory();
 		dirout.mkdir("/elec/");
@@ -4727,12 +4701,8 @@ public class monitor2p2GeV {
 				//dirout.mkdir("");
 		//dirout.cd("");
 
-		if(write_volatile)if(runNum>0)dirout.writeFile("/volatile/clas12/rgb/spring19/"+outputDir+"/out_monitor_"+runNum+".hipo");
-
-		if(!write_volatile){
-			if(runNum>0)dirout.writeFile(outputDir+"/out_monitor_"+runNum+".hipo");
-			else dirout.writeFile(outputDir+"/out_monitor.hipo");
-		}
+                if(runNum>0) dirout.writeFile(outputDir+"/out_monitor_"+runNum+".hipo");
+                else         dirout.writeFile(outputDir+"/out_monitor.hipo");
 
 		//dirout.addDataSet(H_XY_ECal,H_ESampl_ECal);
 		//g_m_ESampl_ECal.setName("g_m_ESampl_ECal");

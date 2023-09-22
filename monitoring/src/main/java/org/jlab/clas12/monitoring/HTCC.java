@@ -18,7 +18,6 @@ public class HTCC {
 
     public int runNumber;
     public String outputDir;
-    boolean write_volatile;
     int ring, sector, hs;
     List<H1F> hiNphePMTOneHit = new ArrayList();
     List<H1F> hiTimePMTOneHit = new ArrayList();
@@ -31,7 +30,7 @@ public class HTCC {
     public HTCC(int run, String reqOutputDir, boolean reqwrite_volatile) {
         this.runNumber = run;
         this.outputDir = reqOutputDir;
-        this.write_volatile = reqwrite_volatile;
+        if(reqwrite_volatile) this.outputDir = "/volatile/clas12/rga/spring18/" + this.outputDir;
         for (int t = 0; t < 48; t++) {
             ring = (int) (t / 12) + 1;
             hs = (int) (t % 2) + 1;
@@ -189,8 +188,7 @@ public class HTCC {
     }
 
     public void save(EmbeddedCanvas canvas, String name) {
-        if(!write_volatile)canvas.save(String.format(outputDir+"/"+name+".png"));
-        if(write_volatile)canvas.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/"+name+".png"));
+        canvas.save(String.format(outputDir+"/"+name+".png"));
         System.out.println(String.format("saved "+outputDir+"/"+name+".png"));
     }
     
@@ -348,12 +346,7 @@ public class HTCC {
         }
         dirout.addDataSet(timeAll, npheAll);
 
-        if (!write_volatile) {
-            if (runNumber > 0) {
-                dirout.writeFile(outputDir+"/out_HTCC_"+runNumber+".hipo");
-            } else {
-                dirout.writeFile(outputDir+"/out_HTCC.hipo");
-            }
-        }
+        if(runNumber>0) dirout.writeFile(outputDir+"/out_HTCC_"+runNumber+".hipo");
+        else            dirout.writeFile(outputDir+"/out_HTCC.hipo");
     }
 }

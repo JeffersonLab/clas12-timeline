@@ -18,7 +18,7 @@ import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class central {
-	boolean userTimeBased, write_volatile;
+	boolean userTimeBased;
 	public int runNum;
         public String outputDir;
 	public int rf_large_integer;
@@ -58,7 +58,7 @@ public class central {
 	public central(int reqrunNum, String reqOutputDir, boolean reqTimeBased, boolean reqwrite_volatile) {
 		runNum = reqrunNum;userTimeBased=reqTimeBased;
                 outputDir = reqOutputDir;
-		write_volatile = reqwrite_volatile;
+                if(reqwrite_volatile) outputDir = "/volatile/clas12/rga/spring18/" + outputDir;
 		counter = 0;
 		counterm = 0;
 
@@ -426,8 +426,7 @@ public class central {
 		can_central.cd(14);can_central.draw(H_CVT_t_neg);
 		can_central.cd(15);can_central.draw(H_CTOF_tdcadc_dt);
 
-		if(!write_volatile)can_central.save(String.format(outputDir+"/central.png"));
-		if(write_volatile)can_central.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/central.png"));
+		can_central.save(String.format(outputDir+"/central.png"));
 		System.out.println(String.format("saved "+outputDir+"/central.png"));
 
 		for(int p=0;p<10;p++)System.out.print(String.format("%1.2ff , ",H_CVT_t[p].getMean()));
@@ -455,12 +454,8 @@ public class central {
 		dirout.addDataSet(H_CTOF_pos_mass, H_CTOF_neg_mass, H_CTOF_vt_pim, H_CTOF_edep_pim);
 		dirout.addDataSet(H_CVT_t_neg,H_CTOF_tdcadc_dt);
 
-		if(write_volatile)if(runNum>0)dirout.writeFile("/volatile/clas12/rga/spring18/"+outputDir+"/out_CTOF_"+runNum+".hipo");
-			
-		if(!write_volatile){
-			if(runNum>0)dirout.writeFile(outputDir+"/out_CTOF_"+runNum+".hipo");
-			else dirout.writeFile(outputDir+"/out_CTOF.hipo");
-		}
+                if(runNum>0) dirout.writeFile(outputDir+"/out_CTOF_"+runNum+".hipo");
+                else         dirout.writeFile(outputDir+"/out_CTOF.hipo");
 	}   
 
 ////////////////////////////////////////////////

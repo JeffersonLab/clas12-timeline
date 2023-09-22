@@ -19,7 +19,7 @@ import org.jlab.clas.physics.LorentzVector;
 import org.jlab.groot.base.GStyle;
 
 public class deuterontarget {
-	boolean userTimeBased, write_volatile;
+	boolean userTimeBased;
 	int Nevts, Nelecs, Ntrigs, runNum;
         public String outputDir;
 	public int trig_sect, trig_track_ind,trig_part_ind;
@@ -69,7 +69,7 @@ public class deuterontarget {
 	public deuterontarget(int reqrunNum, String reqOutputDir, float reqEB, boolean reqTimeBased, boolean reqwrite_volatile ) {
 		runNum = reqrunNum;EB=reqEB;userTimeBased=reqTimeBased;
                 outputDir = reqOutputDir;
-		write_volatile = reqwrite_volatile;
+                if(reqwrite_volatile) outputDir = "/volatile/clas12/rgb/spring19/" + outputDir;
 		Nevts=0;Nelecs=0;Ntrigs=0;
 		trigger_bits = new boolean[32];
 		Ebeam = 2.22f;
@@ -906,8 +906,7 @@ public class deuterontarget {
 		can_2pis.cd(7);can_2pis.draw(H_rho_MMD);
 		can_2pis.cd(8);can_2pis.draw(H_rho_deut);
 		can_2pis.cd(9);can_2pis.draw(H_rho_MMMM);
-                if(!write_volatile)can_2pis.save(String.format(outputDir+"/two_pions.png"));
-                if(write_volatile)can_2pis.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/two_pions.png"));
+                can_2pis.save(String.format(outputDir+"/two_pions.png"));
                 System.out.println(String.format("save "+outputDir+"/two_pions.png"));
 
 		EmbeddedCanvas can_e_pin = new EmbeddedCanvas();
@@ -955,8 +954,7 @@ public class deuterontarget {
 			can_e_pin.cd(35+i);can_e_pin.draw(H_MM_epin_Se[i]);
 		}
 
-                if(!write_volatile)can_e_pin.save(String.format(outputDir+"/e_pin.png"));
-                if(write_volatile)can_e_pin.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/e_pin.png"));
+                can_e_pin.save(String.format(outputDir+"/e_pin.png"));
                 System.out.println(String.format("save "+outputDir+"/e_pin.png"));
 	}
 
@@ -970,12 +968,8 @@ public class deuterontarget {
 			dirout.addDataSet(H_e_theta_mom_S[s],H_e_W_S[s],H_e_W_phi_S[s]);
 		}
 
-		if(write_volatile)if(runNum>0)dirout.writeFile("/volatile/clas12/rgb/spring19/"+outputDir+"/out_deuterontarget_"+runNum+".hipo");
-
-		if(!write_volatile){
-			if(runNum>0)dirout.writeFile(outputDir+"/out_deuterontarget_"+runNum+".hipo");
-			else dirout.writeFile(outputDir+"/out_deuterontarget.hipo");
-		}
+                if(runNum>0) dirout.writeFile(outputDir+"/out_deuterontarget_"+runNum+".hipo");
+                else         dirout.writeFile(outputDir+"/out_deuterontarget.hipo");
 
         }
 ////////////////////////////////////////////////

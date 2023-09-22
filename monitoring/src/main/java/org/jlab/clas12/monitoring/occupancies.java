@@ -19,7 +19,6 @@ import org.jlab.clas.physics.LorentzVector;
 import org.jlab.groot.base.GStyle;
 
 public class occupancies {
-	boolean write_volatile;
 	public int runNum;
         public String outputDir;
 	int found_elec;
@@ -44,9 +43,9 @@ public class occupancies {
 	H1F H_BMT_multi;
 
 	public occupancies(int reqrunNum, String reqOutputDir, boolean reqwrite_volatile) {
-		write_volatile = reqwrite_volatile;
 		runNum = reqrunNum;
                 outputDir = reqOutputDir;
+                if(reqwrite_volatile) outputDir = "/volatile/clas12/rga/spring18/" + outputDir;
 		H_BST_multi = new H1F("bst_multi", "bst_multi", 501, -0.5, 500.5);
         	H_BST_multi.setTitleX("hit multiplicity");
         	H_BST_multi.setTitleY("counts");
@@ -370,8 +369,7 @@ public class occupancies {
                 can_BST.cd(4);can_BST.draw(H_BST_occ_reg2_l2);
                 can_BST.cd(5);can_BST.draw(H_BST_occ_reg3_l2);
 		can_BST.cd(6);can_BST.draw(H_BST_multi);
-                if(!write_volatile)can_BST.save(String.format(outputDir+"/bst_occ.png"));
-                if(write_volatile)can_BST.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/bst_occ.png"));
+                can_BST.save(String.format(outputDir+"/bst_occ.png"));
                 System.out.println(String.format("save "+outputDir+"/bst_occ.png"));
 
 		EmbeddedCanvas can_BMT = new EmbeddedCanvas();
@@ -388,8 +386,7 @@ public class occupancies {
 		}
 		can_BMT.cd(18);can_BMT.draw(H_BMT_multi);
 		
-                if(!write_volatile)can_BMT.save(String.format(outputDir+"/bmt_occ.png"));
-                if(write_volatile)can_BMT.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/bmt_occ.png"));
+                can_BMT.save(String.format(outputDir+"/bmt_occ.png"));
                 System.out.println(String.format("save "+outputDir+"/bmt_occ.png"));
 		
 		EmbeddedCanvas can_crosses = new EmbeddedCanvas();
@@ -419,8 +416,7 @@ public class occupancies {
 		can_crosses.cd(18);can_crosses.draw(H_occ_e_th_ph);
 		can_crosses.cd(19);can_crosses.draw(H_occ_e_th_p);
 		can_crosses.cd(20);can_crosses.draw(H_occ_e_ph_p);
-                if(!write_volatile)can_crosses.save(String.format(outputDir+"/barrel_crosses.png"));
-                if(write_volatile)can_crosses.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/barrel_crosses.png"));
+                can_crosses.save(String.format(outputDir+"/barrel_crosses.png"));
                 System.out.println(String.format("save "+outputDir+"/barrel_crosses.png"));
 	}
 ////////////////////////////////////////////////

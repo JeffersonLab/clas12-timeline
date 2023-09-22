@@ -22,7 +22,7 @@ import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class cndCheckPlots {
-		boolean userTimeBased, write_volatile;
+		boolean userTimeBased;
 		public int runNum;
                 public String outputDir;
 
@@ -67,9 +67,9 @@ public class cndCheckPlots {
 
 		public cndCheckPlots(int reqrunNum, String reqOutputDir, boolean reqTimeBased, boolean reqwrite_volatile) {
 				userTimeBased=reqTimeBased;
-				write_volatile = reqwrite_volatile;
 				runNum = reqrunNum;
                                 outputDir = reqOutputDir;
+                                if(reqwrite_volatile) outputDir = "/volatile/clas12/rgb/spring19/" + outputDir;
 				rfPeriod = 4.008;
                 		ccdb = new ConstantsManager();
                 		ccdb.init(Arrays.asList(new String[]{"/daq/tt/fthodo","/calibration/eb/rf/config"}));
@@ -826,8 +826,7 @@ public class cndCheckPlots {
 								resopg2.setMarkerColor(4);resopg2.setLineColor(4);
 								can_cnd.cd(50);can_cnd.draw(resop2);can_cnd.draw(resopg2,"same");	
 
-                                                                if(!write_volatile)can_cnd.save(String.format(outputDir+"/cnd.png"));
-                                                                if(write_volatile)can_cnd.save(String.format("/volatile/clas12/rgb/spring19/"+outputDir+"/cnd.png"));
+                                                                can_cnd.save(String.format(outputDir+"/cnd.png"));
                                                                 System.out.println(String.format("saved "+outputDir+"/cnd.png"));
 
 
@@ -941,12 +940,9 @@ public class cndCheckPlots {
 								}
 								for(int iL=0;iL<3;iL++) dirout.addDataSet(H_CND_time_z_charged[iL],H_CVT_CND_z[iL],H_CVT_CND_z1[iL],DiffZCVT[iL],DiffZCND[iL]);
 
-								if(write_volatile)if(runNum>0)dirout.writeFile("/volatile/clas12/rgb/spring19/"+outputDir+"/out_CND_"+runNum+".hipo");
 
-								if(!write_volatile){
-										if(runNum>0)dirout.writeFile(outputDir+"/out_CND_"+runNum+".hipo");
-										else dirout.writeFile(outputDir+"/out_CND.hipo");
-								}
+                                                                if(runNum>0) dirout.writeFile(outputDir+"/out_CND_"+runNum+".hipo");
+                                                                else         dirout.writeFile(outputDir+"/out_CND.hipo");
 						}
 
 

@@ -23,7 +23,7 @@ import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class BAND{
-	boolean userTimeBased, write_volatile;
+	boolean userTimeBased;
 	int runNum;
         String outputDir;
 	boolean[] trigger_bits;
@@ -46,7 +46,7 @@ public class BAND{
 	public BAND(int reqR, String reqOutputDir, float reqEb, boolean reqTimeBased, boolean reqwrite_volatile){
         	runNum = reqR;userTimeBased=reqTimeBased;
                 outputDir = reqOutputDir;
-		write_volatile = reqwrite_volatile;
+                if(reqwrite_volatile) outputDir = "/volatile/clas12/rga/spring18/" + outputDir;
 		EBeam = 2.2f;
 		if(reqEb>0 && reqEb<4)EBeam=2.22f;
 		if(reqEb>4 && reqEb<7.1)EBeam=6.42f;
@@ -227,8 +227,7 @@ public class BAND{
 		can_BAND.cd(1);can_BAND.draw(H_BAND_meantimeadc[0]);can_BAND.draw(H_BAND_meantimeadc[1],"same");
 		can_BAND.cd(2);can_BAND.draw(H_BAND_meantimetdc[0]);can_BAND.draw(H_BAND_meantimetdc[1],"same");
 		can_BAND.cd(3);can_BAND.draw(H_BAND_lasertimeadc[0]);can_BAND.draw(H_BAND_lasertimeadc[1],"same");
-                if(!write_volatile)can_BAND.save(String.format(outputDir+"/BAND.png"));
-                if(write_volatile)can_BAND.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/BAND.png"));
+                can_BAND.save(String.format(outputDir+"/BAND.png"));
                 System.out.println(String.format("saved "+outputDir+"/BAND.png"));
 
 	}
@@ -294,10 +293,8 @@ public class BAND{
 		for(int j=0;j<2;j++){
 			dirout.addDataSet(H_BAND_adcCor[j], H_BAND_meantimeadc[j], H_BAND_meantimetdc[j], H_BAND_lasertimeadc[j]);
 		}
-		if(!write_volatile){
-			if(runNum>0)dirout.writeFile(outputDir+"/out_BAND_"+runNum+".hipo");
-			else dirout.writeFile(outputDir+"/out_BAND.hipo");
-		}
+                if(runNum>0) dirout.writeFile(outputDir+"/out_BAND_"+runNum+".hipo");
+                else         dirout.writeFile(outputDir+"/out_BAND.hipo");
 	}
 
 }

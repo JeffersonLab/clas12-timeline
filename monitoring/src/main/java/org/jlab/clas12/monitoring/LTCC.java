@@ -23,7 +23,7 @@ import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class LTCC{
-	boolean userTimeBased, write_volatile;
+	boolean userTimeBased;
 	int runNum;
         public String outputDir;
 	boolean[] trigger_bits;
@@ -57,7 +57,7 @@ public class LTCC{
 	public LTCC(int reqR, String reqOutputDir, float reqEb, boolean reqTimeBased, boolean reqwrite_volatile){
         	runNum = reqR;userTimeBased=reqTimeBased;
                 outputDir = reqOutputDir;
-		write_volatile = reqwrite_volatile;
+                if(reqwrite_volatile) outputDir = "/volatile/clas12/rga/spring18/" + outputDir;
 		EBeam = 2.2f;
                 if(reqEb>0 && reqEb<4)EBeam=2.22f;
                 if(reqEb>4 && reqEb<7.1)EBeam=6.42f;
@@ -503,8 +503,7 @@ public class LTCC{
 		can_e_LTCC.cd(24);can_e_LTCC.draw(H_Particle_PiPlus_nphe_LTCC);
 		can_e_LTCC.cd(25);can_e_LTCC.draw(H_Particle_PiMinus_nphe_LTCC);
 
-                if(!write_volatile)can_e_LTCC.save(String.format(outputDir+"/LTCC.png"));
-                if(write_volatile)can_e_LTCC.save(String.format("/volatile/clas12/rga/spring18/"+outputDir+"/LTCC.png"));
+                can_e_LTCC.save(String.format(outputDir+"/LTCC.png"));
                 System.out.println(String.format("saved "+outputDir+"/LTCC.png"));
 
 	}
@@ -571,10 +570,8 @@ public class LTCC{
 			dirout.addDataSet(H_Particle_PiPlus_nphe_LTCC_S[s], H_Particle_PiMinus_nphe_LTCC_S[s]);
 		}
 
-		if(!write_volatile){
-			if(runNum>0)dirout.writeFile(outputDir+"/out_LTCC_"+runNum+".hipo");
-			else dirout.writeFile(outputDir+"/out_LTCC.hipo");
-		}
+                if(runNum>0) dirout.writeFile(outputDir+"/out_LTCC_"+runNum+".hipo");
+                else         dirout.writeFile(outputDir+"/out_LTCC.hipo");
 	}
 
 }
