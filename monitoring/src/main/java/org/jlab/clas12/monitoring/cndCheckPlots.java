@@ -590,12 +590,13 @@ public class cndCheckPlots {
 								IntRes.setRange(-1.,1.);
 								IntRes.setParameter(1,0.0);
 								//IntRes.setParLimits(1,-0.2,0.2);
-								IntRes.setParameter(0,H_CND_time.getBinContent(H_CND_time.getMaximumBin()));
-								IntRes.setParLimits(0,H_CND_time.getBinContent(H_CND_time.getMaximumBin())*0.98,H_CND_time.getBinContent(H_CND_time.getMaximumBin())*1.1);
+								var H_CND_time_max_bin_content = H_CND_time.getBinContent(H_CND_time.getMaximumBin());
+								IntRes.setParameter(0,H_CND_time_max_bin_content);
+								if(H_CND_time_max_bin_content!=0) IntRes.setParLimits(0,H_CND_time_max_bin_content*0.98,H_CND_time_max_bin_content*1.1);
 								System.out.println("height "+H_CND_time.getBinContent(H_CND_time.getMaximumBin()));
 								IntRes.setParameter(2,0.2);
 								try {
-										DataFitter.fit(IntRes, H_CND_time, "");
+										DataFitter.fit(IntRes, H_CND_time, "Q");
 										H_CND_time.setTitle("Integrated vertex time. Width=" + IntRes.getParameter(2));
 								} catch (Exception ex) {
 										ex.printStackTrace();
@@ -604,12 +605,13 @@ public class cndCheckPlots {
 								IntRes1.setRange(-0.5,0.5);
 								IntRes1.setParameter(1,0.0);
 								IntRes1.setParLimits(1,-0.2,0.2);
-								IntRes1.setParameter(0,H_CND_res[0].getBinContent(H_CND_res[0].getMaximumBin()));
-								IntRes1.setParLimits(0,H_CND_res[0].getBinContent(H_CND_res[0].getMaximumBin())*0.9,H_CND_res[0].getBinContent(H_CND_res[0].getMaximumBin())*1.1);
+								var H_CND_res_max_bin_content = H_CND_res[0].getBinContent(H_CND_res[0].getMaximumBin());
+								IntRes1.setParameter(0,H_CND_res_max_bin_content);
+								if(H_CND_res_max_bin_content!=0) IntRes1.setParLimits(0,H_CND_res_max_bin_content*0.9,H_CND_res_max_bin_content*1.1);
 								System.out.println("height "+H_CND_res[0].getBinContent(H_CND_res[0].getMaximumBin()));
 								IntRes1.setParameter(2,2.0);
 								try {
-										// DataFitter.fit(IntRes1, H_CND_res[0], "");
+										// DataFitter.fit(IntRes1, H_CND_res[0], "Q");
 										//H_CND_res[0].setTitle("Integrated vertex time. Width=" + IntRes1.getParameter(2));
 								} catch (Exception ex) {
 										ex.printStackTrace();
@@ -636,7 +638,7 @@ public class cndCheckPlots {
 														fitz[(comp*3)+layer+(sector*6)].setRange(-5,5);
 														fitz[(comp*3)+layer+(sector*6)].setParameter(1,0.0);
 														fitz[(comp*3)+layer+(sector*6)].setParameter(0,maxz);
-														fitz[(comp*3)+layer+(sector*6)].setParLimits(0,maxz*0.9,maxz*1.1);
+														if(maxz!=0) fitz[(comp*3)+layer+(sector*6)].setParLimits(0,maxz*0.9,maxz*1.1);
 														fitz[(comp*3)+layer+(sector*6)].setParameter(2,3.0);
 														fitz[(comp*3)+layer+(sector*6)].setParameter(3,10.0);
 
@@ -644,20 +646,20 @@ public class cndCheckPlots {
 														fitt[(comp*3)+layer+(sector*6)].setParameter(1,0.0);
 														fitt[(comp*3)+layer+(sector*6)].setParLimits(1,-1,1);
 														fitt[(comp*3)+layer+(sector*6)].setParameter(0,maxt);
-														fitt[(comp*3)+layer+(sector*6)].setParLimits(0,maxt*0.95,maxt*1.1);
+														if(maxt!=0) fitt[(comp*3)+layer+(sector*6)].setParLimits(0,maxt*0.95,maxt*1.1);
 														fitt[(comp*3)+layer+(sector*6)].setParameter(2,0.2);
 														//fitt[(comp*3)+layer+(sector*6)].setParameter(3,0.0);
 
 														fitE[(comp*3)+layer+(sector*6)].setRange(1.5,5);
 														fitE[(comp*3)+layer+(sector*6)].setParameter(1,2.0);
 														fitE[(comp*3)+layer+(sector*6)].setParameter(0,maxE);
-														fitE[(comp*3)+layer+(sector*6)].setParLimits(0,maxE*0.9,maxE*1.1);
+														if(maxE!=0) fitE[(comp*3)+layer+(sector*6)].setParLimits(0,maxE*0.9,maxE*1.1);
 														fitE[(comp*3)+layer+(sector*6)].setParameter(2,1.0);
 														fitE[(comp*3)+layer+(sector*6)].setParameter(3,0.0);
 														fitE[(comp*3)+layer+(sector*6)].setParameter(4,0.0);
 
 														try {
-																DataFitter.fit(fitz[(comp*3)+layer+(sector*6)], H_CND_align[(comp*3)+layer+(sector*6)], "");
+																DataFitter.fit(fitz[(comp*3)+layer+(sector*6)], H_CND_align[(comp*3)+layer+(sector*6)], "Q");
 																double resz =Math.abs(fitz[(comp*3)+layer+(sector*6)].getParameter(2));
 																double alig=fitz[(comp*3)+layer+(sector*6)].getParameter(1);
 																//double aligt=fitt[(comp*3)+layer+(sector*6)].getParameter(1);
@@ -671,7 +673,7 @@ public class cndCheckPlots {
 														}
 
 														try {
-																DataFitter.fit(fitt[(comp*3)+layer+(sector*6)], H_CND_alignt[(comp*3)+layer+(sector*6)], "");
+																DataFitter.fit(fitt[(comp*3)+layer+(sector*6)], H_CND_alignt[(comp*3)+layer+(sector*6)], "Q");
 																double rest=Math.abs(fitt[(comp*3)+layer+(sector*6)].getParameter(2));
 																double aligt=fitt[(comp*3)+layer+(sector*6)].getParameter(1);
 																if(rest<0.5)resot.addPoint((comp*3)+layer+(sector*6),rest,0.,0.);
@@ -683,7 +685,7 @@ public class cndCheckPlots {
 														}
 
 														try {
-																DataFitter.fit(fitE[(comp*3)+layer+(sector*6)], H_CND_alignE[(comp*3)+layer+(sector*6)], "");
+																DataFitter.fit(fitE[(comp*3)+layer+(sector*6)], H_CND_alignE[(comp*3)+layer+(sector*6)], "Q");
 																double resE=Math.abs(fitE[(comp*3)+layer+(sector*6)].getParameter(2));
 																double aligE=fitE[(comp*3)+layer+(sector*6)].getParameter(1);
 																//if(rest<0.5)resot.addPoint((comp*3)+layer+(sector*6),rest,0.,0.);

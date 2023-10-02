@@ -158,7 +158,7 @@ public class HTCC {
             timeIndPMT.get(t).setRange(maxV - 1, maxV + 1.3);
             oneHitHTCCOnly.draw(hiTimePMTOneHit.get(t));
             oneHitHTCCOnly.getPad(t).getAxisX().setRange(maxV - 10, maxV + 10);
-            DataFitter.fit(timeIndPMT.get(t), hiTimePMTOneHit.get(t), "");
+            DataFitter.fit(timeIndPMT.get(t), hiTimePMTOneHit.get(t), "Q");
             oneHitHTCCOnly.draw(timeIndPMT.get(t), "same");
         }
         this.save(oneHitHTCCOnly, "HTCC_timing");
@@ -180,7 +180,7 @@ public class HTCC {
         timeAllFit.setLineColor(2);
         timeAllFit.setLineWidth(2);
         timeAllFit.setOptStat("1100");
-        DataFitter.fit(timeAllFit, timeAll, "");
+        DataFitter.fit(timeAllFit, timeAll, "Q");
         allC.draw(timeAllFit, "same");
 
         this.save(allC, "HTCC_e");
