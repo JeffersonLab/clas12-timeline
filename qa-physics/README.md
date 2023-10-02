@@ -168,14 +168,12 @@ generate QA timelines, and a `json` file which is used for the manual followup Q
       * timelines HIPO files are also generated (which can be uploaded to the web server):
 
 ## Manual QA procedure
-This procedure is to be performed after the automatic QA; it is called "manual
+This procedure is to be performed after the automatic QA, on a _fully_ cooked dataset; it is called "manual
 QA" because it requires substantially more user interaction, carefully checking
 the timelines and recording features not identified by the automatic QA in
 `qaTree.json`
 * first, make sure you have an automatically generated `qaTree.json`
   * verify your epoch lines are where you want them
-    * use `mkTree.sh`
-    * look at "supplemental" `epoch view` timelines
   * if you make changes to the epoch lines, re-run `../bin/run-physics-timelines.sh` to
     generate the updated `qaTree.json`
 * verify all the data have been analyzed by the automatic QA
@@ -201,6 +199,21 @@ the timelines and recording features not identified by the automatic QA in
   * tip: if using `vim`, type `:LogiPat !"GOLDEN"` to search for files that are
     not `GOLDEN`, i.e., for defects; then use `n` and `N` to skip to the next
     and previous non-golden files, respectively
+  * Use `modify.sh` if you need to make revisions to `qaTree.json` and `qaTable.dat`
+    * this script allows for easy revision of the imported `qaTree.json`; it will also
+      update `qaTable.dat`, so it is useful to have `qaTable.dat` open in a window
+      which will auto-refresh whenever you call `modify.sh`
+    * type `modify.sh` without any arguments for the most up-to-date usage documentation
+    * the first argument is the modification you want to make, whether it
+      is to add a defect bit, delete a defect bit, add a comment, etc.
+      * call `modify.sh` with one of these arguments for additional documentation specific
+        to this argument, e.g., `modify.sh addComment`
+      * the subsequent arguments are typically the run number, the range of
+        files, and sectors, but depends on the revision you are making
+    * if you make a mistake, call `undo.sh` to revert `qaTree.json` and
+      `qaTable.dat` to the previous version; in fact, every time you call
+      `modify.sh`, a backup copy of `qaTree.json`, before the revision, is
+      stored
   * recommended procedures and checks:
     * use [`clas12mon`](https://clas12mon.jlab.org/rga/runs/table/) table to
       look for useful comments; it is helpful to copy/paraphrase any
@@ -211,30 +224,12 @@ the timelines and recording features not identified by the automatic QA in
       if the `clas12mon` table has any comments
     * there are some cases where the automatic QA result is not sufficient:
       * if you find a string of consecutive outliers, maybe it is a sector loss;
-        to define a sector loss period: use `modify.sh sectorLoss ...` (see below)
+        to define a sector loss period: use `modify.sh sectorLoss ...`
       * mark all files in a run with `Misc` bit for special cases which are best
         summarized in a comment; use `modify.sh addBit ...` to set the `Misc` bit
         (it will prompt you for a comment)
-    * `modify.sh` usage:
-      * this script allows for easy revision of the imported `qaTree.json`; it will also
-        update `qaTable.dat`, so it is useful to have `qaTable.dat` open in a window
-        which will auto-refresh whenever you call `modify.sh`
-      * type `modify.sh` without any arguments for the most up-to-date usage documentation
-      * the first argument is the modification you want to make, whether it
-        is to add a defect bit, delete a defect bit, add a comment, etc.
-        * call `modify.sh` with one of these arguments for additional documentation specific
-          to this argument, e.g., `modify.sh addComment`
-        * the subsequent arguments are typically the run number, the range of
-          files, and sectors, but depends on the revision you are making
-      * if you make a mistake, call `undo.sh` to revert `qaTree.json` and
-        `qaTable.dat` to the previous version; in fact, every time you call
-        `modify.sh`, a backup copy of `qaTree.json`, before the revision, is
-        stored
   * you should also look through each timeline for any issues that may have slipped under
     the radar; revise `qaTree.json` using `modify.sh` as needed
-    * in particular, check for any spin asymmetry that has the wrong sign,
-      especially the $pi^+$ BSA; a significant asymmetry with the wrong sign
-      indicates the helicity has the wrong sign
     * check `stddev` timelines; usually a high standard deviation indicates a
       step or change in the data, or merely a short, low statistics run
     * check fraction of events with defined helicity; if it's low it could
@@ -249,15 +244,14 @@ directory and call `exeQAtimelines.sh` to produce the updated QA timelines
   * this final `qaTree.json` is stored in the 
     [`clas12-qadb` repository](https://github.com/JeffersonLab/clas12-qadb)
     and should be copied there, along with `chargeTree.json`
-    * remember to run `util/syncCheck.groovy` in `clas12-qadb`
 
-### melding
+### Melding: combining `qaTree.json` file versions
 * This more advanced procedure is used if you need to combine two `qaTree.json` files
   * you must read the script carefully and edit it for your use case
   * for each run, the script will "combine" QA info from each of the
     `qaTree.json` files; the script must know what to do with each case
     * be careful if your `qaTree.json` files have different/overlapping sets of runs
-  * this procedure is useful if, e.g, you change bit definitions and want to
+  * this procedure is useful if, _e.g_, you change bit definitions and want to
     update a `qaTree.json` file, with full control of each defect bit's
     behavior
-  * see `QA/meld/README.md`
+  * see [`QA/meld/README.md`](QA/meld/README.md)
