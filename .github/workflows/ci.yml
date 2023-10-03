@@ -262,7 +262,11 @@ jobs:
     - name: untar
       run: ls *.tar.gz | xargs -I_ tar xzvf _
     - name: tree outfiles
-      run: tree outfiles
+      run: |
+        echo "# Output File Tree" >> $GITHUB_STEP_SUMMARY
+        echo "```"                >> $GITHUB_STEP_SUMMARY
+        tree outfiles             >> $GITHUB_STEP_SUMMARY
+        echo "```"                >> $GITHUB_STEP_SUMMARY
     - name: deploy
       run: bin/deploy-timelines.sh -d ${{env.dataset}} -c -t web
     - uses: actions/upload-artifact@v3
