@@ -272,6 +272,13 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   outputFiles=$(find . -name "*.hipo")
   [ -n "$outputFiles" ] && $TIMELINESRC/bin/hipo-check.sh $outputFiles
 
+  # remove any empty directories
+  echo ">>> removing any empty directories..."
+  for detDir in ${detDirs[@]}; do
+    [ -z "$(find $detDir -name '*.hipo')" ] && rm -rv $detDir
+  done
+
+  echo ">>> done producing timelines..."
   popd
 fi
 
