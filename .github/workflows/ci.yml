@@ -263,7 +263,7 @@ jobs:
       run: ls *.tar.gz | xargs -I{} tar xzvf {}
     - name: tree outfiles
       run: |
-        rm -r outfiles/log
+        rm -r outfiles/${{ env.dataset }}/log
         echo "# Output File Tree" >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
         tree outfiles | xargs -I{} echo ":   {}" >> $GITHUB_STEP_SUMMARY
