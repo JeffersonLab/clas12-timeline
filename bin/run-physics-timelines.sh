@@ -7,6 +7,7 @@ source $(dirname $0)/environ.sh
 # default options
 inputDir=""
 dataset=""
+outputDir=""
 
 # usage
 sep="================================================================"
@@ -29,12 +30,17 @@ if [ $# -eq 0 ]; then
           since if only [DATASET_NAME] is specified, then [INPUT_DIR] will be ./outfiles/[DATASET_NAME]
         - if only [INPUT_DIR] is specified, then [DATASET_NAME] will be based on [INPUT_DIR]
 
+  OPTIONAL OPTIONS:
+
+    -o [OUTPUT_DIR]     output directory
+                        default = '$TIMELINESRC/outfiles/[DATASET_NAME]'
+
   """ >&2
   exit 101
 fi
 
 # parse options
-while getopts "i:d:" opt; do
+while getopts "i:d:o:" opt; do
   case $opt in
     i) 
       if [ -d $OPTARG ]; then
@@ -49,6 +55,9 @@ while getopts "i:d:" opt; do
       [ -z "$OPTARG" ] && printError "dataset name may not be empty" && exit 100
       dataset=$OPTARG
       ;;
+    o)
+      outputDir=$OPTARG
+      ;;
   esac
 done
 
@@ -62,7 +71,7 @@ elif [ -z "$inputDir" -a -z "$dataset" ]; then
   printError "required options, either [INPUT_DIR] or [DATASET_NAME], have not been set"
   exit 100
 fi
-outputDir=$TIMELINESRC/outfiles/$dataset
+[ -z "$outputDir" ] && outputDir=$TIMELINESRC/outfiles/$dataset
 
 # set subdirectories
 finalDir=$outputDir/timeline_web

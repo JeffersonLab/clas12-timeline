@@ -7,6 +7,7 @@ source $(dirname $0)/environ.sh
 # default options
 inputDir=""
 dataset=""
+outputDir=""
 rungroup=a
 numThreads=8
 singleTimeline=""
@@ -63,7 +64,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # parse options
-while getopts "i:d:r:n:t:-:" opt; do
+while getopts "i:d:o:r:n:t:-:" opt; do
   case $opt in
     i) 
       if [ -d $OPTARG ]; then
@@ -77,6 +78,9 @@ while getopts "i:d:r:n:t:-:" opt; do
       echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
       [ -z "$OPTARG" ] && printError "dataset name may not be empty" && exit 100
       dataset=$OPTARG
+      ;;
+    o)
+      outputDir=$OPTARG
       ;;
     r) 
       rungroup=$(echo $OPTARG | tr '[:upper:]' '[:lower:]')
@@ -128,7 +132,7 @@ elif [ -z "$inputDir" -a -z "$dataset" ]; then
   printError "required options, either [INPUT_DIR] or [DATASET_NAME], have not been set"
   exit 100
 fi
-outputDir=$TIMELINESRC/outfiles/$dataset
+[ -z "$outputDir" ] && outputDir=$TIMELINESRC/outfiles/$dataset
 
 # set subdirectories
 finalDirPreQA=$outputDir/timeline_web_preQA
