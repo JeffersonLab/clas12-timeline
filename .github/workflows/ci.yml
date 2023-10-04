@@ -263,9 +263,10 @@ jobs:
       run: ls *.tar.gz | xargs -I{} tar xzvf {}
     - name: tree outfiles
       run: |
+        rm -r outfiles/log
         echo "# Output File Tree" >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
-        tree outfiles | xargs -I{} echo "{}" >> $GITHUB_STEP_SUMMARY
+        tree outfiles | xargs -I{} echo ":   {}" >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
     - name: deploy
       run: bin/deploy-timelines.sh -d ${{env.dataset}} -c -t web
