@@ -22,12 +22,18 @@ usage() {
   REQUIRED OPTIONS: copy timelines for dataset [DATASET] to [TARGET_DIRECTORY]
   -----------------
 
-  -d [DATASET]            the unique dataset name used by other scripts;
-                          final timeline files are assumed to be in the default
-                          location; if they are elsewhere, use the -i option
+  * Specify one or both of the following:
 
-  -t [TARGET_DIRECTORY]   the top-level destination where the directory of
-                          final timelines will be copied to
+    -d [DATASET_NAME]   unique dataset name, defined by the user
+                        default = based on [INPUT_DIR]
+
+    -i [INPUT_DIR]      directory containing run subdirectories of timeline histograms
+                        default = ./outfiles/[DATASET_NAME]/timeline_web
+
+  * Also, specify the target:
+
+    -t [TARGET_DIRECTORY]   the top-level destination where the directory of
+                            final timelines will be copied to
 
   NOTES:
     - [TARGET_DIRECTORY] is RELATIVE to \$TIMELINEDIR, where
@@ -53,9 +59,6 @@ usage() {
   -s [SUB_DIRECTORY]     customize the subdirectory of [TARGET_DIRECTORY] to
                          where timeline files will be copied
                            default = [DATASET]
-
-  -i [INPUT_DIRECTORY]   specify an alternate input directory of timelines
-                           default = $TIMELINESRC/outfiles/[DATASET]/timeline_web
   """ >&2
 }
 
