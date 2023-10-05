@@ -99,7 +99,7 @@ if ${modes['list']}; then
   exit $?
 fi
 
-# set directories and dataset name
+# set input/output directories and dataset name
 dataset=$($inputCmd $inputCmdOpts -D)
 inputDir=$($inputCmd $inputCmdOpts -I)
 [ -z "$outputDir" ] && outputDir=$(pwd -P)/outfiles/$dataset

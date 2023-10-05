@@ -7,8 +7,13 @@ set -u
 source $(dirname $0)/environ.sh
 
 # defaults
+inputDir=""
+subDir=""
+dataset=""
 datasetDefault="test_v0"
-subDirDefault=""
+useDefaults=false
+printDatasetOnly=false
+printInputDirOnly=false
 
 # usage guide
 usage() {
@@ -17,7 +22,7 @@ usage() {
                         default = $datasetDefault
 
     -i [INPUT_DIR]      directory containing run subdirectories of timeline histograms
-                        default = ./outfiles/[DATASET_NAME]/$subDirDefault
+                        default = ./outfiles/[DATASET_NAME]/$subDir
 
     -U                  use the above default [DATASET_NAME] and [INPUT_DIR]""" >&2
 }
@@ -39,12 +44,6 @@ if [ $# -eq 0 ]; then
 fi
 
 # parse options
-inputDir=""
-subDir=""
-dataset=""
-useDefaults=false
-printDatasetOnly=false
-printInputDirOnly=false
 while getopts "d:i:Us:hDI" opt; do
   case $opt in
     d) 
