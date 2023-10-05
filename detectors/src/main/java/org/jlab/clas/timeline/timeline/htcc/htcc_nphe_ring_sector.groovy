@@ -71,6 +71,5 @@ def close() {
   }
 
   out.writeFile('htcc_nphe_sec_ring.hipo')
-  out.writeFile('htcc_factor_sec_ring.hipo')
 }
 }

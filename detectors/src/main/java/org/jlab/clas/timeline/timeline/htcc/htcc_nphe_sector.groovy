@@ -66,6 +66,5 @@ def close() {
   }
 
   out.writeFile('htcc_nphe_sec.hipo')
-  out.writeFile('htcc_factor_sec.hipo')
 }
 }
