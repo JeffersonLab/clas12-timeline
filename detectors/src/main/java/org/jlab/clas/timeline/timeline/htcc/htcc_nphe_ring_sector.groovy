@@ -63,7 +63,7 @@ def close() {
       out.addDataSet(it.h1)
       grtl.addPoint(it.run, it.h1.getMean(), 0, 0)
       // Add the correction factor to the plot
-      grCorrection.addPoint(it.run, it.correctionFactor, 0, 0) 
+      grcorrection.addPoint(it.run, it.correctionFactor, 0, 0) 
     }
     out.cd('/timelines')
     out.addDataSet(grtl)
