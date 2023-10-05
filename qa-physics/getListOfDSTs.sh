@@ -29,5 +29,5 @@ while read dst; do
 done < dstfilelist.tmp
 rm dstfilelist.tmp
 
-cat dstlist.tmp | sort -n > dstlist.${dataset}.dat
+cat dstlist.tmp | sort -n > dstlist.dat
 rm dstlist.tmp

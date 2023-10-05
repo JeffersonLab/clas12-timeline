@@ -5,8 +5,11 @@ Tools T = new Tools()
 
 //----------------------------------------------------------------------------------
 // ARGUMENTS:
-def dataset = 'rga_inbending'
-if(args.length>=1) dataset = args[0]
+if(args.length<1) {
+  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR]"
+  System.exit(101)
+}
+inDir = args[0] + "/outdat"
 //----------------------------------------------------------------------------------
 
 def tok
@@ -21,7 +24,7 @@ def ufcCharge
 def chargeTree = [:] // [runnum][filenum] -> charge
 
 // open data_table.dat
-def dataFile = new File("outdat.${dataset}/data_table.dat")
+def dataFile = new File("${inDir}/data_table.dat")
 if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
 dataFile.eachLine { line ->
 
@@ -59,4 +62,4 @@ dataFile.eachLine { line ->
 
 chargeTree.each { chargeRun, chargeRunTree -> chargeRunTree.sort{it.key.toInteger()} }
 chargeTree.sort()
-new File("outdat.${dataset}/chargeTree.json").write(JsonOutput.toJson(chargeTree))
+new File("${inDir}/chargeTree.json").write(JsonOutput.toJson(chargeTree))

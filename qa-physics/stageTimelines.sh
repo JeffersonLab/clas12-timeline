@@ -4,22 +4,15 @@
 set -e
 
 if [ $# -ne 2 ]; then
-  echo "USAGE: $0 [dataset] [output_dir]" >&2
+  echo "USAGE: $0 [input_dir] [output_dir]" >&2
   exit 101
 fi
 if [ -z "$TIMELINESRC" ]; then
   echo "ERROR: please source environ.sh first" >&2
   exit 100
 fi
-dataset=$1
+inputDir=$1/outmon
 outputDir=$2
-
-# directory names
-inputDir=$TIMELINESRC/qa-physics/outmon.$dataset
-if [ ! -d $inputDir ]; then
-  printError "ERROR: dataset '$dataset' files not found in $inputDir"
-  exit 100
-fi
 
 # check HIPO files
 timelineFiles=$(find $inputDir -name "*.hipo" -type f | grep -v 'monitorElec')

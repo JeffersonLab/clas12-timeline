@@ -1,4 +1,4 @@
-// reads outmon.${dataset}/monitor* files and generates timeline hipo files
+// reads outmon/monitor* files and generates timeline hipo files
 // - to be executed after monitorRead.groovy
 
 import org.jlab.groot.data.TDirectory
@@ -11,12 +11,13 @@ import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 // ARGUMENTS:
-def dataset = 'inbending1'
-if(args.length>=1) dataset = args[0]
-
+if(args.length<1) {
+  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR]"
+  System.exit(101)
+}
+inDir = args[0] + "/outmon"
 
 // get list of input hipo files
-def inDir = "outmon.${dataset}"
 def inDirObj = new File(inDir)
 def inList = []
 def inFilter = ~/monitor_.*\.hipo/
@@ -53,7 +54,7 @@ def objToMonTitle = { title ->
 // - this is only used for the relative luminosity attempt
 // - not enough statistics; disabled
 /*
-def dataFile = new File("outdat.${dataset}/data_table.dat")
+def dataFile = new File("${inDir}/../outdat/data_table.dat")
 def fcTree = [:]
 def fcrun,fcfile,fcp,fcm,ufcp,ufcm
 if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
@@ -511,7 +512,7 @@ def hipoWrite = { hipoName, filterList, TLkey ->
     }
   })
 
-  def outHipoN = "outmon.${dataset}/${hipoName}.hipo"
+  def outHipoN = "${inDir}/${hipoName}.hipo"
   File outHipoFile = new File(outHipoN)
   if(outHipoFile.exists()) outHipoFile.delete()
   outHipo.writeFile(outHipoN)

@@ -1,13 +1,15 @@
 #!/bin/bash
 # build root tree
 
-if [ $# -eq 1 ]; then dataset=$1
+if [ $# -eq 2 ]; then
+  inDir=$1
+  dataset=$2
 else
-  echo "USAGE: $0 [dataset]" >&2
+  echo "USAGE: $0 [INPUT_DIR] [DATASET]" >&2
   exit 101
 fi
 
-datfile="outdat.${dataset}/data_table.dat"
+datfile="$inDir/outdat/data_table.dat"
 
 > num.tmp
 n=$(echo "`cat $datfile|wc -l`/6"|bc)

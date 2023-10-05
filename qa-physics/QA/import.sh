@@ -1,8 +1,8 @@
 #!/bin/bash
-# copy qaTree.json from ../outdat.$dataset, so we can start the QA
-if [ $# -lt 1 ]; then
+# copy qaTree.json, so we can start the QA
+if [ $# -lt 2 ]; then
   echo """
-  USAGE: $0 [dataset] [optional: path to qaTree.json] [optional: options for parseQaTree.groovy]
+  USAGE: $0 [dataset] [path to qaTree.json] [optional: options for parseQaTree.groovy]
 
   - to see parseQaTree options: $0 [dataset] -h
                            and: $0 [dataset] -l
@@ -20,13 +20,14 @@ rm -r qa.${dataset}
 mkdir -p qa.${dataset}
 
 # parse arguments
-qatree=../outdat.${dataset}/qaTree.json # default
+qatree=""
 opts=""
 for opt in "$@"; do
   if [[ $opt =~ \.json$ ]]; then qatree=$opt
   else opts="$opts $opt"
   fi
 done
+[ -z "$qatree" ] && echo "ERROR: no qaTree.json file specified" && exit 100
 
 # import the JSON file, and symlink qa
 cp -v $qatree qa.${dataset}/qaTree.json

@@ -10,31 +10,31 @@ if [ -z "$TIMELINESRC" ]; then
   exit 100
 fi
 
-if [ $# -ne 1 ];then echo "USAGE: $0 [dataset]" >&2; exit 101; fi
-dataset=$1
+if [ $# -ne 1 ];then echo "USAGE: $0 [INPUT_DIR]" >&2; exit 101; fi
+inDir=$1
 
-if [ ! -f dstlist.${dataset}.dat ]; then
-  echo "ERROR: dstlist.${dataset}.dat does not exist" >&2
+if [ ! -f dstlist.dat ]; then
+  echo "ERROR: dstlist.dat does not exist" >&2
   echo "execute getListOfDSTs.sh first" >&2
   exit 100
 fi
 
-if [ ! -f outdat.${dataset}/data_table.dat ]; then
-  echo "ERROR: outdat.${dataset}/data_table.dat does not exist" >&2
+if [ ! -f $inDir/outdat/data_table.dat ]; then
+  echo "ERROR: $inDir/outdat/data_table.dat does not exist" >&2
   echo "execute ../bin/run-physics-timelines.sh first" >&2
   exit 100
 fi
 
-cat outdat.${dataset}/data_table.dat | awk '{print $1" "$2}' > qalist.tmp
+cat $inDir/outdat/data_table.dat | awk '{print $1" "$2}' > qalist.tmp
 cat qalist.tmp | sort -n | uniq > qalist.dat
 rm qalist.tmp
 
-diff dstlist.${dataset}.dat qalist.dat | tee diff.dat
+diff dstlist.dat qalist.dat | tee diff.dat
 nl=$(cat diff.dat|wc -l)
 echo "differences printed to diff.dat, which has $nl lines"
 if [ $nl -gt 0 ]; then
   echo "integrity check FAILED"
-  echo "execute vimdiff dstlist.${dataset}.dat qalist.dat"
+  echo "execute vimdiff dstlist.dat qalist.dat"
 else
   echo "integrity check PASSED"
 fi

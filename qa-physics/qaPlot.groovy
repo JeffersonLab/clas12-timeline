@@ -7,9 +7,12 @@ import org.jlab.groot.data.GraphErrors
 
 //----------------------------------------------------------------------------------
 // ARGUMENTS:
-def dataset = 'inbending1'
+if(args.length<1) {
+  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR] [USE_FT(optional,default=false)]"
+  System.exit(101)
+}
 def useFT = false // if true, use FT electrons instead
-if(args.length>=1) dataset = args[0]
+inDir = args[0]
 if(args.length>=2) useFT = true
 //----------------------------------------------------------------------------------
 
@@ -43,8 +46,8 @@ def grA, grN, grF, grU, grT
 
 // define output hipo file
 def outHipo = new TDirectory()
-"mkdir -p outmon.${dataset}".execute()
-def outHipoN = "outmon.${dataset}/monitorElec"+(useFT?"FT":"")+".hipo"
+"mkdir -p ${inDir}/outmon".execute()
+def outHipoN = "${inDir}/outmon/monitorElec"+(useFT?"FT":"")+".hipo"
 def writeHipo = { o -> o.each{ outHipo.addDataSet(it) } }
 def writePlots = { run ->
   println "write run $run"
@@ -58,7 +61,7 @@ def writePlots = { run ->
 }
 
 // open data_table.dat
-def dataFile = new File("outdat.${dataset}/data_table.dat")
+def dataFile = new File("${inDir}/outdat/data_table.dat")
 def runnumTmp = 0
 def electronT = useFT ? "Forward Tagger Electron" : "Trigger Electron"
 if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
