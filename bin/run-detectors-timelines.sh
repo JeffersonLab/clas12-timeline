@@ -16,6 +16,10 @@ for key in list build focus-timelines focus-qa; do
   modes[$key]=false
 done
 
+# input finding command
+inputCmd="$TIMELINESRC/bin/set-input-dir.sh -s timeline_detectors"
+inputCmdOpts=""
+
 # usage
 sep="================================================================"
 if [ $# -eq 0 ]; then
@@ -25,14 +29,9 @@ if [ $# -eq 0 ]; then
   $sep
   Creates web-ready detector timelines locally
 
-  REQUIRED OPTIONS: specify one or both of the following:
-
-    -d [DATASET_NAME]   unique dataset name, defined by the user
-                        default = based on [INPUT_DIR]
-
-    -i [INPUT_DIR]      directory containing run subdirectories of timeline histograms
-                        default = ./outfiles/[DATASET_NAME]/timeline_detectors
-
+  REQUIRED OPTIONS: specify at least one of the following:""" >&2
+  $inputCmd -h
+  echo """
   OPTIONAL OPTIONS:
 
     -o [OUTPUT_DIR]     output directory
@@ -60,33 +59,15 @@ if [ $# -eq 0 ]; then
 fi
 
 # parse options
-while getopts "i:d:o:r:n:t:-:" opt; do
+while getopts "d:i:Uo:r:n:t:-:" opt; do
   case $opt in
-    i) 
-      if [ -d $OPTARG ]; then
-        inputDir=$(realpath $OPTARG)
-      else
-        printError "input directory $OPTARG does not exist"
-        exit 100
-      fi
-      ;;
-    d) 
-      echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
-      [ -z "$OPTARG" ] && printError "dataset name may not be empty" && exit 100
-      dataset=$OPTARG
-      ;;
-    o)
-      outputDir=$OPTARG
-      ;;
-    r) 
-      rungroup=$(echo $OPTARG | tr '[:upper:]' '[:lower:]')
-      ;;
-    n)
-      numThreads=$OPTARG
-      ;;
-    t)
-      singleTimeline=$OPTARG
-      ;;
+    d) inputCmdOpts+=" -d $OPTARG" ;;
+    i) inputCmdOpts+=" -i $OPTARG" ;;
+    U) inputCmdOpts+=" -U" ;;
+    o) outputDir=$OPTARG ;;
+    r) rungroup=$(echo $OPTARG | tr '[:upper:]' '[:lower:]') ;;
+    n) numThreads=$OPTARG ;;
+    t) singleTimeline=$OPTARG ;;
     -)
       for key in "${!modes[@]}"; do
         [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
@@ -119,27 +100,14 @@ if ${modes['list']}; then
 fi
 
 # set directories and dataset name
-# FIXME: copied implementation from `run-physics-timelines.sh`
-if [ -z "$inputDir" -a -n "$dataset" ]; then
-  inputDir=$(pwd -P)/outfiles/$dataset/timeline_detectors # default input directory is in ./outfiles/
-elif [ -n "$inputDir" -a -z "$dataset" ]; then
-  dataset=$(ruby -e "puts '$inputDir'.split('/')[-4..].join('_')") # set dataset using last few subdirectories in inputDir dirname
-elif [ -z "$inputDir" -a -z "$dataset" ]; then
-  printError "required options, either [INPUT_DIR] or [DATASET_NAME], have not been set"
-  exit 100
-fi
+dataset=$($inputCmd $inputCmdOpts -D)
+inputDir=$($inputCmd $inputCmdOpts -I)
 [ -z "$outputDir" ] && outputDir=$(pwd -P)/outfiles/$dataset
 
 # set subdirectories
 finalDirPreQA=$outputDir/timeline_web_preQA
 finalDir=$outputDir/timeline_web
 logDir=$outputDir/log
-
-# check input directory
-if [ ! -d $inputDir ]; then
-  printError "input directory $inputDir does not exist"
-  exit 100
-fi
 
 # check focus options
 modes['focus-all']=true
