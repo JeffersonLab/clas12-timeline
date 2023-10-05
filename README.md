@@ -1,6 +1,6 @@
 # clas12-timeline
 
-Timeline production for CLAS12. Timelines are deployed to [clas12mon](https://clas12mon.jlab.org).
+Timeline production for CLAS12. Timelines are deployed to [`clas12mon`](https://clas12mon.jlab.org).
 
 ## Setup
 
@@ -15,26 +15,25 @@ mvn package
 ```
 #### Additional Build Notes:
 - Use `mvn clean` if you want to clean build targets. 
-- The [top-level POM](pom.xml) includes the following submodules, which you may build individually with the `-f` option of `mvn`:
-  1. [`monitoring`](monitoring): generate histograms for detectors
+- Use the `-f` option of `mvn` to build individual submodules:
+  1. [`monitoring`](monitoring): generates histograms for detectors
   1. [`detectors`](detectors): uses detector histograms to generate timelines
 
 ## Procedure
 
 Two types of timelines are produced:
-1. Detector timelines, to monitor detector parameters, histograms, and calibration
-2. Physics timelines, to monitor higher-level quantities to perform Quality Assurance (QA) for physics analysis
+1. **Detector timelines**: monitor detector parameters, histograms, and calibration
+1. **Physics timelines**: monitor higher-level quantities to perform Quality Assurance (QA) for physics analysis
 
-NOTE: physics timeline production and QA are typically only valuable on high-statistics datasets; you may not want
-to produce them if you are only interested in detector timelines.
+NOTE: physics timeline production and QA are typically only valuable on high-statistics datasets, whereas detector timelines need files produced with `mon` schema, which are typically only produced with low statistics; therefore, for a given dataset, typically one set of timelines is produced but not the other.
 
-Both of these timeline types are produced in two stages:
+Both of these timeline types are produced in the following steps:
 
-### Stage 1: Data Monitoring
+### Step 1: Data Monitoring
 
-This stage reads DST files and produces histograms and auxiliary files, which are then consumed by Stage 2 to produce the timelines. Since DST files are read, it is recommended to use a computing cluster.
+This step reads input HIPO files (_e.g._, DST or `mon` files) and produces histograms and auxiliary files, which are then consumed by Step 2 to produce the timelines. Since many input files are read, it is recommended to use a computing cluster.
 
-To run this stage, execute:
+To run this step, execute:
 ```bash
 bin/run-monitoring.sh
 ```
@@ -46,9 +45,9 @@ which will print the usage guide, along with some examples (since it was called 
 - data monitoring for physics timelines is handled by the [`qa-physics/` subdirectory](qa-physics);
   see [its documentation](qa-physics/README.md)
 
-### Stage 2: Timeline Production and QA
+### Step 2: Timeline Production and QA
 
-After Stage 1 is complete, run the following Stage 2 scripts to produce the timeline `HIPO` files and to run the automatic QA procedures. Run them with no arguments to print the usage guides.
+After Step 1 is complete, run the following Step 2 scripts to produce the timeline HIPO files and to run the automatic QA procedures. There is one script for each timeline type: run them with no arguments to print the usage guides:
 
 ```bash
 bin/run-detectors-timelines.sh
@@ -63,9 +62,9 @@ bin/run-physics-timelines.sh
 - physics timeline production and QA are handled by the [`qa-physics/` subdirectory](qa-physics);
   see [their documentation](qa-physics/README.md)
 
-### Stage 3: Deployment
+### Step 3: Deployment
 
-To view the timelines on the web, you must deploy them by copying the timeline HIPO files to a directory served to the web. Note that you must have write-permission for that directory. To deploy, run (with no arguments, for the usage guide):
+To view the timelines on the web, you must deploy them by copying the timeline HIPO files to a directory with a running web server. Note that you must have write-permission for that directory. To deploy, run (with no arguments, for the usage guide):
 
 ```bash
 bin/deploy-timelines.sh
@@ -74,15 +73,8 @@ bin/deploy-timelines.sh
 If all went well, a URL for the new timelines will be printed; open it in a browser to view them.
 
 
-## QA Database (QADB) Production
-
-The [QADB](https://github.com/JeffersonLab/clas12-qadb) is produced by the physics timeline QA, typically only for a fully cooked dataset. It is automatically produced from the physics QA, but it is highly recommended to perform a "manual QA" afterward, by looking at the automatic QA results, cross checking with the experimental log book, and modifying the QADB accordingly.
-
-See [its documentation here](qa-physics) for more details.
-
-
 # Flowchart
-Here is a flowchart illustrating the data and steps for timeline production:
+Here is a flowchart illustrating the data and steps for timeline production. See the next section for details on output file organization.
 
 ```mermaid
 flowchart TB
@@ -222,8 +214,15 @@ top_level_target_directory
   │
   └── ...
 ```
-For compatibility with the file tree expected by downstream `bin/run-*-timelines.sh` scripts (see above), symbolic links may be made to these `timeline_{detectors,physics}` directories.
+For compatibility with the file tree expected by downstream `bin/run-*-timelines.sh` scripts (see above), symbolic links may be made to these `timeline_{detectors,physics}` directories, but this is not required since these scripts also allow for the specification of an input directory.
 
 Separate `--focus-detectors` and `--focus-physics` options are preferred, since:
 - offers better organization of the contract data between `swif` jobs and downstream scripts
 - often we will run one and not the other: `--focus-detectors` needs `mon` schema, whereas `--focus-physics` prefers high statistics
+
+
+## QA Database (QADB) Production
+
+The [QADB](https://github.com/JeffersonLab/clas12-qadb) is produced by the physics timeline QA, typically only for a fully cooked dataset. It is automatically produced from the physics QA, but it is highly recommended to perform a "manual QA" afterward, by looking at the automatic QA results, cross checking with the experimental log book, and modifying the QADB accordingly.
+
+See [its documentation here](qa-physics) for more details.

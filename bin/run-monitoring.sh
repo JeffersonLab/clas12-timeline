@@ -20,7 +20,6 @@ declare -A modes
 for key in findhipo rundir single series submit check-cache swifjob focus-detectors focus-physics; do
   modes[$key]=false
 done
-getDefaultOutputDir() { echo $TIMELINESRC/outfiles/$1; }
 outputDir=""
 
 # usage
@@ -50,7 +49,7 @@ if [ $# -lt 1 ]; then
                             default = '$dataset'
 
      -o [OUTPUT_DIR]        custom output directory
-                            default = $(getDefaultOutputDir [DATASET_NAME])
+                            default = ./outfiles/[DATASET_NAME]
 
      *** INPUT FINDING OPTIONS: choose only one, or the default will assume each specified
          [RUN_DIRECTORY] is a single run's directory full of HIPO files
@@ -168,7 +167,7 @@ fi
 if ${modes['swifjob']}; then
   outputDir=$(pwd -P)/outfiles
 else
-  [ -z "$outputDir" ] && outputDir=$(getDefaultOutputDir $dataset)
+  [ -z "$outputDir" ] && outputDir=$(pwd -P)/outfiles/$dataset
 fi
 mkdir -p $outputDir
 
@@ -227,7 +226,7 @@ for key in ${jobkeys[@]}; do
 done
 
 # define backup directory (used only if the output files already exist; not used `if ${modes['swifjob']}`)
-backupDir=$TIMELINESRC/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
+backupDir=$(pwd -P)/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
 
 # loop over input directories, building the job lists
 for rdir in ${rdirs[@]}; do

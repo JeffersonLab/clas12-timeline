@@ -6,5 +6,5 @@ want to "meld" the new results with old results
 * this script is "one-time-use", so you need to read it carefully before
   running it
 * it assumes the file names are `qaTree.json.old` and `qaTree.json.new`
-* the ouptut will be `qaTree.json.melded`
+* the output will be `qaTree.json.melded`
 * be sure to backup any `qaTree.json` files in case something goes wrong

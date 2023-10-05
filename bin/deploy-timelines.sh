@@ -1,40 +1,46 @@
 #!/bin/bash
 # copy timelines to a target webserver directory
 
+set -e
+set -u
 source $(dirname $0)/environ.sh
 
 # timeline webserver directory
 TIMELINEDIR=/u/group/clas/www/clas12mon/html/hipo
 
+# input finding command
+inputCmd="$TIMELINESRC/bin/set-input-dir.sh -s timeline_web"
+inputCmdOpts=""
+
 usage() {
   echo """
-  USAGE: $0 [OPTIONS]... -d [DATASET] -t [TARGET_DIRECTORY]
+  USAGE: $0 [OPTIONS]...
 
-  =================================================================
-  CAUTION: READ ALL OF THIS BEFORE RUNNING !
-
-     If you really don't want to read, do a dry run using -D:
-       $0 -D [ARGS]...
-
-  WARNING: be careful not to overwrite anything you shouldn't
-  =================================================================
+  ========================================================================
+  | CAUTION: READ ALL OF THIS GUIDE BEFORE RUNNING!
+  |
+  |   If you want a quick start, try the most typical command:
+  |     $0 -d [DATASET] -t [TARGET_DIRECTORY] -D
+  |   This will only print what will be done; remove -D to actually run
+  |
+  | WARNING: be careful not to overwrite anything you shouldn't
+  ========================================================================
 
   REQUIRED OPTIONS: copy timelines for dataset [DATASET] to [TARGET_DIRECTORY]
-  -----------------
 
-  -d [DATASET]            the unique dataset name used by other scripts;
-                          final timeline files are assumed to be in the default
-                          location; if they are elsewhere, use the -i option
+  *** Specify at least one of the following:""" >&2
+  $inputCmd -h
+  echo """
+  *** Also, specify the target:
 
-  -t [TARGET_DIRECTORY]   the top-level destination where the directory of
-                          final timelines will be copied to
+    -t [TARGET_DIRECTORY]   the top-level destination where the directory of
+                            final timelines will be copied to
 
   NOTES:
     - [TARGET_DIRECTORY] is RELATIVE to \$TIMELINEDIR, where
         TIMELINEDIR = $TIMELINEDIR
     - use the -c option for a [TARGET_DIRECTORY] not relative to \$TIMELINEDIR
     - you must have write permission to the destination directory
-    - when in doubt, explore \$TIMELINEDIR
     - recommendations for [TARGET_DIRECTORY]:
       
       \$LOGNAME                  your personal directory for testing
@@ -53,9 +59,6 @@ usage() {
   -s [SUB_DIRECTORY]     customize the subdirectory of [TARGET_DIRECTORY] to
                          where timeline files will be copied
                            default = [DATASET]
-
-  -i [INPUT_DIRECTORY]   specify an alternate input directory of timelines
-                           default = $TIMELINESRC/outfiles/[DATASET]/timeline_web
   """ >&2
 }
 
@@ -68,24 +71,25 @@ dryRun=false
 customTarget=false
 subDir=""
 inputDir=""
-while getopts "d:t:Dcs:i:" opt; do
+while getopts "d:i:Ut:Dcs:" opt; do
   case $opt in
-    d) dataset=$OPTARG      ;;
+    d) inputCmdOpts+=" -d $OPTARG" ;;
+    i) inputCmdOpts+=" -i $OPTARG" ;;
+    U) inputCmdOpts+=" -U" ;;
     t) targetDirArg=$OPTARG ;;
-    D) dryRun=true          ;;
-    c) customTarget=true    ;;
-    s) subDir=$OPTARG       ;;
-    i) inputDir=$OPTARG     ;;
-    *) exit 100             ;;
+    D) dryRun=true ;;
+    c) customTarget=true ;;
+    s) subDir=$OPTARG ;;
+    *) exit 100 ;;
   esac
 done
 
-# check required options
-[ -z "$dataset" -o -z "$targetDirArg" ] && printError "missing required options -d and -t" && usage && exit 100
+# set input directory and dataset name
+dataset=$($inputCmd $inputCmdOpts -D)
+inputDir=$($inputCmd $inputCmdOpts -I)
 
-# specify input directory
-[ -z "$inputDir" ] && inputDir=$TIMELINESRC/outfiles/$dataset/timeline_web
-[ ! -d $inputDir ] && printError "input timelines directory $inputDir does not exist" && exit 100
+# check required options
+[ -z "$dataset" -o -z "$inputDir" -o -z "$targetDirArg" ] && printError "missing one or more required options" && usage && exit 100
 
 # specify target directory
 [ -z "$subDir" ] && subDir=$dataset
