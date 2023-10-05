@@ -84,7 +84,7 @@ while getopts "d:i:Ut:Dcs:" opt; do
   esac
 done
 
-# set input/output directories and dataset name
+# set input directory and dataset name
 dataset=$($inputCmd $inputCmdOpts -D)
 inputDir=$($inputCmd $inputCmdOpts -I)
 
