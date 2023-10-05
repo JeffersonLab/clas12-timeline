@@ -17,8 +17,8 @@ useFT = false // if true, use FT electrons instead
 qaBit = -1 // if positive, produce QA timeline based on manual QA results
 inDir = args[0]
 dataset = args[1]
-if(args.length>=2) useFT = (args[2]=="FT") ? true : false
-if(args.length>=3) qaBit = args[3].toInteger()
+if(args.length>=3) useFT = (args[2]=="FT") ? true : false
+if(args.length>=4) qaBit = args[3].toInteger()
 //--------------------------------------------------------------------------
 
 // vars and subroutines
