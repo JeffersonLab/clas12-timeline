@@ -263,6 +263,7 @@ jobs:
       run: ls *.tar.gz | xargs -I{} tar xzvf {}
     - name: dump timelines
       run: |
+        source bin/environ.sh
         echo "# Timelines Dump" >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
         find outfiles/${{ env.dataset }}/timeline_web -name "*.hipo" | while read file ; do
