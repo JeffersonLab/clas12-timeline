@@ -12,7 +12,7 @@ try {
   inTdir.readFile(inFile)
 } catch(Exception ex) {
   System.err.println("ERROR: cannot read file $inFile; it may be corrupt")
-  return
+  System.exit(100)
 }
 
 def objList   = inTdir.getCompositeObjectList(inTdir)
