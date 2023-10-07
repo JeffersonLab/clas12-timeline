@@ -27,7 +27,7 @@ objList.each { objN ->
     }
   }
   else {
-    if( !(tok[1] ==~ /^fit:.*/) ) {
+    if( ! tok[1].contains(":") ) {
       plots << tok[1]
     }
   }
