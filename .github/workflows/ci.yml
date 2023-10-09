@@ -242,8 +242,6 @@ jobs:
 
   deploy_timelines:
     name: Deployment
-    needs:
-      - run_timelines
     runs-on: ubuntu-latest
     steps:
     - name: setup groovy
