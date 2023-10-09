@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: do
-      run: exit 1
+      run: exit 0
 
   dep_b:
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
         code: [0, 1]
     steps:
     - name: do
-      run: exit ${ matrix.code }
+      run: exit ${{ matrix.code }}
    
   deploy_timelines:
     name: Deployment
