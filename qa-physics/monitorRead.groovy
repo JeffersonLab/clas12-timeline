@@ -254,6 +254,7 @@ def buildHist(histName, histTitle, propList, runn, nb, lb, ub, nb2=0, lb2=0, ub2
 
 // define variables
 def event
+def timeBins = [:]
 def pidList = []
 def particleBank
 def FTparticleBank
@@ -268,11 +269,11 @@ def disElectron
 def disEleFound
 def eleSec
 def eventNum
-def eventNumList = []
-def eventNumMin, eventNumMax
-def timeBinNum = -1
-def timeBinEventCount = 0
-def timeBinScalerCount = 0
+def eventNumList = [] /////////////////// FIXME: refactor
+def eventNumMin, eventNumMax /////////////////// FIXME: refactor
+def timeBinNum = -1 /////////////////// FIXME: refactor
+def timeBinEventCount = 0 /////////////////// FIXME: refactor
+def timeBinScalerCount = 0 /////////////////// FIXME: refactor
 def helicity
 def helStr
 def helDefined
@@ -281,11 +282,11 @@ def runnumTmp = -1
 def evCount
 def nbins
 def sectors = 0..<6
-def nElec = sectors.collect{0}
-def nElecFT = 0
-def LTlist = []
-def FClist = []
-def UFClist = []
+def nElec = sectors.collect{0} /////////////////// FIXME: refactor
+def nElecFT = 0 /////////////////// FIXME: refactor
+def LTlist = [] /////////////////// FIXME: refactor
+def FClist = [] /////////////////// FIXME: refactor
+def UFClist = [] /////////////////// FIXME: refactor
 def rellumG, rellumU
 def detIdEC = DetectorType.ECAL.getDetectorId()
 def Q2
@@ -624,10 +625,57 @@ def writeHistos = {
 }
 
 
+// get list of tag1 event numbers
+printDebug "Begin tag1 event loop"
+def tag1errCnt = 0
+def tag1eventNumList = []
+inHipoList.each { inHipoFile ->
 
-//----------------------
-// event loop
-//----------------------
+  printDebug "Open HIPO file $inHipoFile"
+  def reader = new HipoDataSource()
+  reader.setTags(1)
+  reader.open(inHipoFile)
+  while(reader.hasEvent()) {
+    event = reader.getNextEvent()
+    if(!event.hasBank("RUN::scaler") || !event.hasBank("RUN::config")) {
+      if(tag1errCnt<100) {
+        System.err.println "WARNING: found tag1 event that is missing the required banks"
+        tag1errCnt++
+      }
+      continue
+    }
+    if(tag1errCnt==100) {
+      System.err.println "WARNING: suppressing further tag1 errors and warnings"
+      tag1errCnt++
+    }
+    tag1eventNumList << BigInteger.valueOf(event.getBank("RUN::config").getInt('event',0))
+  }
+  reader.close()
+}
+
+// define the tag1 bins: sort the tag1 event numbers, partition it, and define bins
+tag1eventNumList.sort().collate(MIN_NUM_SCALERS).eachWithIndex{ evnums, binNum ->
+  timeBins[binNum] = [
+    eventNumMin: it.first,
+    eventNumMax: it.last,
+    FClist:      [],
+    UFClist:     [],
+    LTlist:      [],
+    nElec:       sectors.collect{0},
+    nElecFT:     0,
+  ]
+}
+
+// subroutine to find the EARLIEST time bin for a given event number;
+// if the event number is on a time-bin boundary, the earlier time bin will be returned
+def findTimeBin = { evnum ->
+  timeBins.find{ evnum >= it["eventNumMin"] && evnum <= it["eventNumMax"] }
+}
+
+
+/////////////////////////////////////////////////////
+// EVENT LOOP
+/////////////////////////////////////////////////////
 evCount = 0
 printDebug "Begin event loop"
 inHipoList.each { inHipoFile ->
