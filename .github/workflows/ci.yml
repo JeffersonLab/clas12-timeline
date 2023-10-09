@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: do
-      run: exit 0
+      run: exit 1
 
   dep_b:
     runs-on: ubuntu-latest
