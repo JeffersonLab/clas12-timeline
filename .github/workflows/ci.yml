@@ -244,43 +244,6 @@ jobs:
     name: Deployment
     runs-on: ubuntu-latest
     steps:
-    - name: setup groovy
-      uses: wtfjoke/setup-groovy@v1
-      with:
-        groovy-version: 4.x
-    - name: groovy version
-      run: groovy --version
-    - uses: actions/checkout@v3
-    - uses: actions/download-artifact@v3
-      with:
-        name: outfiles
-        path: outfiles
-    - uses: actions/download-artifact@v3
-      with:
-        name: build
-    - name: untar
-      run: ls *.tar.gz | xargs -I{} tar xzvf {}
-    - name: dump timelines
-      run: |
-        source bin/environ.sh
-        echo "# Timelines Dump" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        find outfiles/${{ env.dataset }}/timeline_web -name "*.hipo" | while read file ; do
-          run-groovy bin/dump-timelines.groovy $file | grep -E '^>' | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
-        done
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        echo '' >> $GITHUB_STEP_SUMMARY
-    - name: tree outfiles
-      run: |
-        rm -r outfiles/${{ env.dataset }}/log
-        echo "# Output File Tree" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        tree outfiles | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-    - name: deploy
-      run: bin/deploy-timelines.sh -d ${{env.dataset}} -c -t web
-    - uses: actions/upload-artifact@v3
-      with:
-        name: web
-        retention-days: 7
-        path: web
+    - name: do
+      run: exit 0
+   
