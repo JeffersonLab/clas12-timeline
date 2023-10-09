@@ -35,7 +35,7 @@ jobs:
         code: [0, 1]
     steps:
     - name: do
-      run: exit 0
+      run: exit ${{ matrix.code }}
    
   deploy_timelines:
     name: Deployment
