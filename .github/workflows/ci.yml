@@ -24,6 +24,8 @@ jobs:
   dep_a:
     runs-on: ubuntu-latest
     steps:
+    - name: wait
+      run: sleep 30
     - name: do
       run: exit 0
 
@@ -35,7 +37,7 @@ jobs:
         code: [0, 1]
     steps:
     - name: do
-      run: exit ${{ matrix.code }}
+      run: exit 0
    
   deploy_timelines:
     name: Deployment
