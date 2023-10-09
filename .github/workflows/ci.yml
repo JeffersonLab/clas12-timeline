@@ -29,9 +29,13 @@ jobs:
 
   dep_b:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        code: [0, 1]
     steps:
     - name: do
-      run: exit 1
+      run: exit ${ matrix.code }
    
   deploy_timelines:
     name: Deployment
