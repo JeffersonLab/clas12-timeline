@@ -24,8 +24,6 @@ jobs:
   dep_a:
     runs-on: ubuntu-latest
     steps:
-    - name: wait
-      run: sleep 30
     - name: do
       run: exit 0
 
