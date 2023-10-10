@@ -621,7 +621,6 @@ def writeHistos = {
   UFClist = []
   FClist = []
   LTlist = []
-  eventNumList.clear()
 }
 
 
@@ -633,7 +632,7 @@ inHipoList.each { inHipoFile ->
 
   printDebug "Open HIPO file $inHipoFile"
   def reader = new HipoDataSource()
-  reader.setTags(1)
+  reader.getReader().setTags(1)
   reader.open(inHipoFile)
   while(reader.hasEvent()) {
     event = reader.getNextEvent()
@@ -653,11 +652,19 @@ inHipoList.each { inHipoFile ->
   reader.close()
 }
 
-// define the tag1 bins: sort the tag1 event numbers, partition it, and define bins
-tag1eventNumList.sort().collate(MIN_NUM_SCALERS).eachWithIndex{ evnums, binNum ->
+println tag1eventNumList
+System.exit(0)
+
+// define the time bin boundaries: sort the tag1 event numbers and partition it
+timeBinBounds = tag1eventNumList.sort().collate(MIN_NUM_SCALERS).collect{ evnums -> [it.first, it.last] }
+// then add the first and last bin
+timeBinBounds = [[ 0, timeBinBounds.first.first ]] + timeBinBounds + [[ timeBinBounds.last.last, 10*timeBinBounds.last.last ]]
+
+// define the time bin objects, initializing additional fields
+timeBinBounds.eachWithIndex{ evnumRange, binNum ->
   timeBins[binNum] = [
-    eventNumMin: it.first,
-    eventNumMax: it.last,
+    eventNumMin: evnumRange.first,
+    eventNumMax: evnumRange.last,
     FClist:      [],
     UFClist:     [],
     LTlist:      [],
@@ -665,6 +672,10 @@ tag1eventNumList.sort().collate(MIN_NUM_SCALERS).eachWithIndex{ evnums, binNum -
     nElecFT:     0,
   ]
 }
+printDebug "TIME BIN BOUNDARIES:"
+if(VERBOSE)
+  timeBins.each{ println it }
+
 
 // subroutine to find the EARLIEST time bin for a given event number;
 // if the event number is on a time-bin boundary, the earlier time bin will be returned
@@ -689,7 +700,6 @@ inHipoList.each { inHipoFile ->
   while(reader.hasEvent()) {
     //if(evCount>100000) break // limiter
     event = reader.getNextEvent()
-    isScalerEvent = event.hasBank("RUN::scaler")
 
     // get required banks
     particleBank   = event.getBank("REC::Particle")
@@ -704,6 +714,12 @@ inHipoList.each { inHipoFile ->
       eventNum = BigInteger.valueOf(configBank.getInt('event',0))
     } else {
       System.err.println "WARNING: found event with no RUN::config bank"
+      continue
+    }
+
+    timeBin = findTimeBin(eventNum)
+    if(timeBin == null) {
+      System.err.println "ERROR: event number $eventNum does not belong to any time bin"
       continue
     }
 
@@ -825,9 +841,6 @@ inHipoList.each { inHipoFile ->
         }
       }
     }
-
-    // add eventNum to the list of this time bin's event numbers; ignore empty events (eventNum==0)
-    if(eventNum>0) eventNumList.add(eventNum)
 
     // increment time bin event counters
     timeBinEventCount++
