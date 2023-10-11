@@ -184,74 +184,6 @@ def datfile = new File("$outDir/data_table_${runnum}.dat")
 def datfileWriter = datfile.newWriter(false)
 
 
-// property lists
-def partList = [ 'pip', 'pim' ]
-def helList = [ 'hp', 'hm' ]
-def heluList = [ 'hp', 'hm', 'hu' ]
-
-
-// build tree 'histTree', for storing histograms
-def histTree = [:]
-
-T.buildTree(histTree,'helic',[
-  ['sinPhi'],
-  partList,
-  helList
-],{ new H1F() })
-
-T.buildTree(histTree,'helic',[
-  ['dist']
-],{ new H1F() })
-
-T.buildTree(histTree,'helic',[
-  ['distGoodOnly']
-],{ new H1F() })
-
-T.buildTree(histTree,'DIS',[
-  ['Q2','W','x','y']
-],{ new H1F() })
-
-T.buildTree(histTree,"DIS",[
-  ['Q2VsW']
-],{ new H2F() })
-
-T.buildTree(histTree,"inclusive",[
-  partList,
-  ['p','pT','z','theta','phiH']
-],{ new H1F() })
-
-/*
-println("---\nhistTree:"); 
-T.printTree(histTree,{T.leaf.getClass()});
-println("---")
-*/
-
-
-// subroutine to build a histogram
-def buildHist(histName, histTitle, propList, runn, nb, lb, ub, nb2=0, lb2=0, ub2=0) {
-
-  def propT = [ 
-    'pip':'pi+',
-    'pim':'pi-', 
-    'hp':'hel+',
-    'hm':'hel-',
-    'hu':'hel?'
-  ]
-
-  def pn = propList.join('_')
-  def pt = propList.collect{ propT.containsKey(it) ? propT[it] : it }.join(' ')
-  if(propList.size()>0) { pn+='_'; }
-
-  def sn = propList.size()>0 ? '_':''
-  def st = propList.size()>0 ? ' ':''
-  def hn = "${histName}_${pn}${runn}"
-  def ht = "${pt} ${histTitle}"
-
-  if(nb2==0) return new H1F(hn,ht,nb,lb,ub)
-  else return new H2F(hn,ht,nb,lb,ub,nb2,lb2,ub2)
-}
-
-
 // define variables
 def event
 def timeBins = [:]
@@ -271,7 +203,6 @@ def eleSec
 def eventNum
 def eventNumList = [] /////////////////// FIXME: refactor
 def eventNumMin, eventNumMax /////////////////// FIXME: refactor
-def timeBinNum = -1 /////////////////// FIXME: refactor
 def timeBinEventCount = 0 /////////////////// FIXME: refactor
 def timeBinScalerCount = 0 /////////////////// FIXME: refactor
 def helicity
@@ -546,10 +477,6 @@ def writeHistos = {
 
     // loop through histTree, adding histos to the hipo file;
     T.exeLeaves( histTree, {
-      histN = T.leaf.getName() + "_${timeBinNum}"
-      histT = T.leaf.getTitle() + " :: timeBinNum=${timeBinNum}"
-      T.leaf.setName(histN)
-      T.leaf.setTitle(histT)
       outHipo.addDataSet(T.leaf) 
     })
     //println "write histograms:"; T.printTree(histTree,{T.leaf.getName()})
@@ -627,7 +554,7 @@ def writeHistos = {
 // get list of tag1 event numbers
 printDebug "Begin tag1 event loop"
 def tag1eventNumList = []
-inHipoList.each { inHipoFile ->
+inHipoList[0..5].each { inHipoFile ->   /////////////////// FIXME: short circuit
 
   printDebug "Open HIPO file $inHipoFile"
   def reader = new HipoDataSource()
@@ -658,27 +585,129 @@ timeBinBounds = timeBinBounds.collate(2)
 println "TIME BIN BOUNDARIES: ["
 timeBinBounds.each{ println "  $it," }
 println "]"
-System.exit(0)
 
 // define the time bin objects, initializing additional fields
-timeBinBounds.eachWithIndex{ evnumRange, binNum ->
+timeBinBounds.eachWithIndex{ bounds, binNum ->
   timeBins[binNum] = [
-    eventNumMin: evnumRange.first,
-    eventNumMax: evnumRange.last,
-    FClist:      [],
-    UFClist:     [],
-    LTlist:      [],
+    eventNumMin: bounds[0],
+    eventNumMax: bounds[-1],
     nElec:       sectors.collect{0},
     nElecFT:     0,
+    fcStart:     "init",
+    fcStop:      "init",
+    ufcStart:    "init",
+    ufcStop:     "init",
+    LTlist:      [],
+    histTree:    [:],
   ]
 }
 
-
 // subroutine to find the EARLIEST time bin for a given event number
-// if the event number is on a time-bin boundary, the earlier time bin will be returned
+// - if the event number is on a time-bin boundary, the earlier time bin will be returned
 def findTimeBin = { evnum ->
-  timeBins.find{ evnum >= it["eventNumMin"] && evnum <= it["eventNumMax"] }
+  s = timeBins.find{ evnum >= it.value["eventNumMin"] && evnum <= it.value["eventNumMax"] }
+  if(s==null) {
+    System.err.println "ERROR: cannot find time bin for event number $evnum"
+    return -1
+  }
+  s.key
 }
+
+// subroutine to update a min or max value in a time bin (viz. FC charge start and stop)
+def setMinMax = { binNum, minmax, key, val ->
+  valOld = timeBins[binNum][key]
+  if(valOld==null) {
+    System.err.println "ERROR: cannot find time bin $binNum with key $key"
+  } else if(valOld=="init") {
+    timeBins[binNum][key] = val
+  } else if(minmax=="min") {
+    timeBins[binNum][key] = [valOld, val].min()
+  } else if(minmax=="max") {
+    timeBins[binNum][key] = [valOld, val].max()
+  } else {
+    System.err.println "ERROR: minmax is not 'min' or 'max'"
+  }
+}
+
+// subroutine to build a histogram
+def buildHist(histName, histTitle, propList, runn, nb, lb, ub, nb2=0, lb2=0, ub2=0) {
+
+  def propT = [ 
+    'pip': 'pi+',
+    'pim': 'pi-',
+    'hp':  'hel+',
+    'hm':  'hel-',
+    'hu':  'hel?',
+  ]
+
+  def pn = propList.join('_')
+  def pt = propList.collect{ propT.containsKey(it) ? propT[it] : it }.join(' ')
+  if(propList.size()>0) { pn+='_'; }
+
+  def sn = propList.size()>0 ? '_':''
+  def st = propList.size()>0 ? ' ':''
+  def hn = "${histName}_${pn}${runn}"
+  def ht = "${pt} ${histTitle}"
+
+  if(nb2==0) return new H1F(hn,ht,nb,lb,ub)
+  else return new H2F(hn,ht,nb,lb,ub,nb2,lb2,ub2)
+}
+
+// initialize histograms for each time bin
+timeBins.each{ binNum, timeBin ->
+  def partList = [ 'pip', 'pim' ]
+  def helList  = [ 'hp',  'hm'  ]
+  def heluList = [ 'hp',  'hm', 'hu' ]
+
+  T.buildTree(timeBin.histTree, 'helic',     [['sinPhi'],partList,helList],            { new H1F() })
+  T.buildTree(timeBin.histTree, 'helic',     [['dist']],                               { new H1F() })
+  T.buildTree(timeBin.histTree, 'helic',     [['distGoodOnly']],                       { new H1F() })
+  T.buildTree(timeBin.histTree, 'DIS',       [['Q2','W','x','y']],                     { new H1F() })
+  T.buildTree(timeBin.histTree, "DIS",       [['Q2VsW']],                              { new H2F() })
+  T.buildTree(timeBin.histTree, "inclusive", [partList,['p','pT','z','theta','phiH']], { new H1F() })
+  // if(binNum==0) T.printTree(timeBin.histTree,{T.leaf.getClass()});
+
+  nbins = 50
+
+  timeBin.histTree.helic.dist         = buildHist('helic_dist','helicity',[],runnum,3,-1,2)
+  timeBin.histTree.helic.distGoodOnly = buildHist('helic_distGoodOnly','helicity (with electron cuts)',[],runnum,3,-1,2)
+  timeBin.histTree.DIS.Q2             = buildHist('DIS_Q2','Q^2',[],runnum,2*nbins,0,12)
+  timeBin.histTree.DIS.W              = buildHist('DIS_W','W',[],runnum,2*nbins,0,6)
+  timeBin.histTree.DIS.x              = buildHist('DIS_x','x',[],runnum,2*nbins,0,1)
+  timeBin.histTree.DIS.y              = buildHist('DIS_y','y',[],runnum,2*nbins,0,1)
+  timeBin.histTree.DIS.Q2VsW          = buildHist('DIS_Q2VsW','Q^2 vs W',[],runnum,nbins,0,6,nbins,0,12)
+  T.exeLeaves( timeBin.histTree.helic.sinPhi, {
+    T.leaf = buildHist('helic_sinPhi','sinPhiH',T.leafPath,runnum,nbins,-1,1) 
+  })
+  T.exeLeaves( timeBin.histTree.inclusive, {
+    def lbound=0
+    def ubound=0
+    if(T.key=='p')          { lbound=0; ubound=10 }
+    else if(T.key=='pT')    { lbound=0; ubound=4 }
+    else if(T.key=='z')     { lbound=0; ubound=1 }
+    else if(T.key=='theta') { lbound=0; ubound=Math.toRadians(90.0) }
+    else if(T.key=='phiH')  { lbound=-3.15; ubound=3.15 }
+    T.leaf = buildHist('inclusive','',T.leafPath,runnum,nbins,lbound,ubound)
+  })
+
+  T.exeLeaves( timeBin.histTree, {
+    histN = T.leaf.getName() + "_${binNum}"
+    histT = T.leaf.getTitle() + " :: timeBinNum=${binNum}"
+    T.leaf.setName(histN)
+    T.leaf.setTitle(histT)
+  })
+
+  // print the histogram names and titles
+  // if(binNum==0) {
+    println "---\nhistogram names and titles:"
+    T.printTree(timeBin.histTree,{ T.leaf.getName() +" ::: "+ T.leaf.getTitle() })
+    println "---"
+  // }
+}
+
+System.exit(0) // exit prematurely
+
+
 
 
 /////////////////////////////////////////////////////
@@ -710,15 +739,32 @@ inHipoList.each { inHipoFile ->
     if(configBank.rows()>0) {
       eventNum = BigInteger.valueOf(configBank.getInt('event',0))
     } else {
-      System.err.println "WARNING: found event with no RUN::config bank"
+      System.err.println "WARNING: cannot get event number for event with no RUN::config bank"
+      continue
+    }
+    if(eventNum==0) {
+      System.err.println "WARNING: found event with eventNum=0; banks: ${event.getBankList()}"
       continue
     }
 
+    // find the time bin that contains this event
     timeBin = findTimeBin(eventNum)
-    if(timeBin == null) {
-      System.err.println "ERROR: event number $eventNum does not belong to any time bin"
-      continue
-    }
+    if(timeBin == -1) continue
+
+    // get list of PIDs, with list index corresponding to bank row
+    pidList = (0..<particleBank.rows()).collect{ particleBank.getInt('pid',it) }
+    //println "pidList = $pidList"
+
+////////////////////////////
+////////////////////////////
+////////////////////////////
+//
+// refactoring progress marker, everything below here is broken
+// 
+////////////////////////////
+////////////////////////////
+////////////////////////////
+
 
     // if we have enough events for a time bin, and if this is an event with a
     // scaler readout, write out filled histos and/or create new histos
@@ -733,39 +779,6 @@ inHipoList.each { inHipoFile ->
         getFCcharge(scalerBank,eventBank)  // updates FClist and UFClist with this last scaler readout
         writeHistos()                      // resets FClist and UFClist
       }
-
-      // define new histograms
-      nbins = 50
-      T.exeLeaves( histTree.helic.sinPhi, {
-        T.leaf = buildHist('helic_sinPhi','sinPhiH',T.leafPath,runnum,nbins,-1,1) 
-      })
-      histTree.helic.dist = buildHist('helic_dist','helicity',[],runnum,3,-1,2)
-      histTree.helic.distGoodOnly = buildHist('helic_distGoodOnly','helicity (with electron cuts)',[],runnum,3,-1,2)
-      histTree.DIS.Q2 = buildHist('DIS_Q2','Q^2',[],runnum,2*nbins,0,12)
-      histTree.DIS.W = buildHist('DIS_W','W',[],runnum,2*nbins,0,6)
-      histTree.DIS.x = buildHist('DIS_x','x',[],runnum,2*nbins,0,1)
-      histTree.DIS.y = buildHist('DIS_y','y',[],runnum,2*nbins,0,1)
-      histTree.DIS.Q2VsW = buildHist('DIS_Q2VsW','Q^2 vs W',[],runnum,nbins,0,6,nbins,0,12)
-
-      T.exeLeaves( histTree.inclusive, {
-        def lbound=0
-        def ubound=0
-        if(T.key=='p') { lbound=0; ubound=10 }
-        else if(T.key=='pT') { lbound=0; ubound=4 }
-        else if(T.key=='z') { lbound=0; ubound=1 }
-        else if(T.key=='theta') { lbound=0; ubound=Math.toRadians(90.0) }
-        else if(T.key=='phiH') { lbound=-3.15; ubound=3.15 }
-        T.leaf = buildHist('inclusive','',T.leafPath,runnum,nbins,lbound,ubound)
-      })
-
-      // print the histogram names and titles
-      /*
-      if(timeBinNum==-1) {
-        println "---\nhistogram names and titles:"
-        T.printTree(histTree,{ T.leaf.getName() +" ::: "+ T.leaf.getTitle() })
-        println "---"
-      }
-      */
 
       // update time bin number and reset counters
       timeBinNum++
@@ -784,9 +797,6 @@ inHipoList.each { inHipoFile ->
       if(UFClist.size()>0) printDebug "       - ungated FC charge: ${UFClist[-1]}"
     }
 
-    // get list of PIDs, with list index corresponding to bank row
-    pidList = (0..<particleBank.rows()).collect{ particleBank.getInt('pid',it) }
-    //println "pidList = $pidList"
 
     // get helicity and fill helicity distribution
     if(event.hasBank("REC::Event")) helicity = eventBank.getByte('helicity',0)
