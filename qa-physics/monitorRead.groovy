@@ -19,7 +19,7 @@ import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 // CONSTANTS
-def MIN_NUM_SCALERS = 2000 // at least this many scaler readouts per time bin
+def MIN_NUM_SCALERS = 2000   // at least this many scaler readouts per time bin
 def MIN_NUM_EVENTS  = 380000 // at least this many events per time bin
 def VERBOSE         = true   // enable extra log messages, for debugging
 def printDebug = { msg -> if(VERBOSE) println "[DEBUG]: $msg" }
@@ -626,7 +626,6 @@ def writeHistos = {
 
 // get list of tag1 event numbers
 printDebug "Begin tag1 event loop"
-def tag1errCnt = 0
 def tag1eventNumList = []
 inHipoList.each { inHipoFile ->
 
@@ -636,29 +635,30 @@ inHipoList.each { inHipoFile ->
   reader.open(inHipoFile)
   while(reader.hasEvent()) {
     event = reader.getNextEvent()
-    if(!event.hasBank("RUN::scaler") || !event.hasBank("RUN::config")) {
-      if(tag1errCnt<100) {
-        System.err.println "WARNING: found tag1 event that is missing the required banks"
-        tag1errCnt++
-      }
-      continue
+    // printDebug "tag1 event bank list: ${event.getBankList()}"
+    if(event.hasBank("RUN::scaler") && event.hasBank("RUN::config")) {
+      tag1eventNumList << BigInteger.valueOf(event.getBank("RUN::config").getInt('event',0))
     }
-    if(tag1errCnt==100) {
-      System.err.println "WARNING: suppressing further tag1 errors and warnings"
-      tag1errCnt++
-    }
-    tag1eventNumList << BigInteger.valueOf(event.getBank("RUN::config").getInt('event',0))
   }
   reader.close()
 }
 
-println tag1eventNumList
+// define the time bin boundaries: first, some sorting and transformations
+timeBinBounds = tag1eventNumList
+  .sort()                         // sort the event numbers
+  .collate(MIN_NUM_SCALERS)       // partition
+  .collect{ it[0] }               // take the first event number of each subset
+  .plus(tag1eventNumList[-1])     // append the final event number
+  .collect{ [it, it] }.flatten()  // double each element (since upper bound of bin N = lower bound of bin N+1)
+// add the first and last bins by setting the absolute minimum to 0 and absolute maximum to a large number
+timeBinBounds = [0] + timeBinBounds + [10**(Math.log10(timeBinBounds[-1]).toInteger()+1)]
+// pair the elements to define the bin boundaries
+timeBinBounds = timeBinBounds.collate(2)
+// logging
+println "TIME BIN BOUNDARIES: ["
+timeBinBounds.each{ println "  $it," }
+println "]"
 System.exit(0)
-
-// define the time bin boundaries: sort the tag1 event numbers and partition it
-timeBinBounds = tag1eventNumList.sort().collate(MIN_NUM_SCALERS).collect{ evnums -> [it.first, it.last] }
-// then add the first and last bin
-timeBinBounds = [[ 0, timeBinBounds.first.first ]] + timeBinBounds + [[ timeBinBounds.last.last, 10*timeBinBounds.last.last ]]
 
 // define the time bin objects, initializing additional fields
 timeBinBounds.eachWithIndex{ evnumRange, binNum ->
@@ -672,12 +672,9 @@ timeBinBounds.eachWithIndex{ evnumRange, binNum ->
     nElecFT:     0,
   ]
 }
-printDebug "TIME BIN BOUNDARIES:"
-if(VERBOSE)
-  timeBins.each{ println it }
 
 
-// subroutine to find the EARLIEST time bin for a given event number;
+// subroutine to find the EARLIEST time bin for a given event number
 // if the event number is on a time-bin boundary, the earlier time bin will be returned
 def findTimeBin = { evnum ->
   timeBins.find{ evnum >= it["eventNumMin"] && evnum <= it["eventNumMax"] }
