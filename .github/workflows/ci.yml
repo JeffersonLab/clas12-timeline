@@ -144,7 +144,7 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: outfiles
-        retention-days: 1
+        retention-days: 14
         path: outfiles
 
   test_swifjob:
@@ -234,7 +234,7 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: outfiles
-        retention-days: 1
+        retention-days: 14
         path: outfiles
 
   # timeline deployment
@@ -284,5 +284,5 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: web
-        retention-days: 7
+        retention-days: 14
         path: web
