@@ -203,8 +203,6 @@ def eleSec
 def eventNum
 def eventNumList = [] /////////////////// FIXME: refactor
 def eventNumMin, eventNumMax /////////////////// FIXME: refactor
-def timeBinEventCount = 0 /////////////////// FIXME: refactor
-def timeBinScalerCount = 0 /////////////////// FIXME: refactor
 def helicity
 def helStr
 def helDefined
@@ -406,61 +404,6 @@ def findParticles = { pid ->
   return particleList
 }
 
-
-// subroutine to get the FC charge and livetime, depending on `FCmode`
-def getFCcharge = { scalerBankArg, eventBankArg ->
-  if(scalerBankArg.rows()>0) {
-    UFClist << scalerBankArg.getFloat("fcup",0)     // ungated charge
-    LTlist  << scalerBankArg.getFloat("livetime",0) // livetime
-    if(FCmode==1) {
-      FClist << scalerBankArg.getFloat("fcupgated",0) // gated charge
-    }
-  }
-  if(FCmode==2 && eventBankArg.rows()>0) {
-    FClist << eventBankArg.getFloat("beamCharge",0) // gated charge
-  }
-}
-
-
-// subroutine to calculate hadron (pion) kinematics, and fill histograms
-// note: needs to have some kinematics defined (vecQ,Q2,W), and helStr
-def fillHistos = { list, partN ->
-  list.each { part ->
-
-    // calculate z
-    vecH.copy(part.vector())
-    z = T.lorentzDot(vecTarget,vecH) / T.lorentzDot(vecTarget,vecQ)
-
-    // CUT for pions: particle z
-    if(z>0.3 && z<1) {
-
-      // calculate momenta, theta, phiH
-      p = vecH.p()
-      pT = Math.hypot( vecH.px(), vecH.py() )
-      theta = vecH.theta()
-      phiH = T.planeAngle( vecQ.vect(), vecEle.vect(), vecQ.vect(), vecH.vect() )
-
-      // CUT for pions: if phiH is defined
-      if(phiH>-10000) {
-
-        // fill histograms
-        if(helDefined) {
-          histTree['helic']['sinPhi'][partN][helStr].fill(Math.sin(phiH))
-        }
-        histTree['inclusive'][partN]['p'].fill(p)
-        histTree['inclusive'][partN]['pT'].fill(pT)
-        histTree['inclusive'][partN]['z'].fill(z)
-        histTree['inclusive'][partN]['theta'].fill(theta)
-        histTree['inclusive'][partN]['phiH'].fill(phiH)
-
-        // tell event counter that this event has at least one particle added to histos
-        countEvent = true
-      }
-    }
-  }
-}
-
-
 // subroutine to write out to hipo file
 def outHipo = new TDirectory()
 outHipo.mkdir("/$runnum")
@@ -496,7 +439,7 @@ def writeHistos = {
 
     def fcStart
     def fcStop
-    LTlist.removeAll{it<0} // remove undefined livetime values
+    LTlist.removeAll{it<0} // remove undefined livetime values /////////////////////// this cut has been moved to event loop
     def aveLivetime = LTlist.size()>0 ? LTlist.sum() / LTlist.size() : 0
     if(FCmode==0) {
       fcStart = ufcStart * aveLivetime // workaround method
@@ -593,10 +536,8 @@ timeBinBounds.eachWithIndex{ bounds, binNum ->
     eventNumMax: bounds[-1],
     nElec:       sectors.collect{0},
     nElecFT:     0,
-    fcStart:     "init",
-    fcStop:      "init",
-    ufcStart:    "init",
-    ufcStop:     "init",
+    fcRange:     ["init", "init"],
+    ufcRange:    ["init", "init"],
     LTlist:      [],
     histTree:    [:],
   ]
@@ -613,20 +554,13 @@ def findTimeBin = { evnum ->
   s.key
 }
 
-// subroutine to update a min or max value in a time bin (viz. FC charge start and stop)
-def setMinMax = { binNum, minmax, key, val ->
+// subroutine to update a min and/or max value in a time bin (viz. FC charge start and stop)
+def setMinMaxInTimeBin = { binNum, key, val ->
   valOld = timeBins[binNum][key]
-  if(valOld==null) {
-    System.err.println "ERROR: cannot find time bin $binNum with key $key"
-  } else if(valOld=="init") {
-    timeBins[binNum][key] = val
-  } else if(minmax=="min") {
-    timeBins[binNum][key] = [valOld, val].min()
-  } else if(minmax=="max") {
-    timeBins[binNum][key] = [valOld, val].max()
-  } else {
-    System.err.println "ERROR: minmax is not 'min' or 'max'"
-  }
+  timeBins[binNum][key] = [
+    valOld[0] == "init" ? val : [valOld[0], val].min(),
+    valOld[1] == "init" ? val : [valOld[1], val].max()
+  ]
 }
 
 // subroutine to build a histogram
@@ -705,9 +639,6 @@ timeBins.each{ binNum, timeBin ->
   // }
 }
 
-System.exit(0) // exit prematurely
-
-
 
 
 /////////////////////////////////////////////////////
@@ -748,12 +679,115 @@ inHipoList.each { inHipoFile ->
     }
 
     // find the time bin that contains this event
-    timeBin = findTimeBin(eventNum)
-    if(timeBin == -1) continue
+    timeBinNum = findTimeBin(eventNum)
+    if(timeBinNum == -1) continue
 
     // get list of PIDs, with list index corresponding to bank row
     pidList = (0..<particleBank.rows()).collect{ particleBank.getInt('pid',it) }
     //println "pidList = $pidList"
+
+    // get the FC charge and livetime, depending on `FCmode`
+    if(scalerBank.rows()>0) {
+      // ungated charge
+      setMinMaxInTimeBin(timeBinNum, "ufcRange", scalerBank.getFloat("fcup",0))
+      // livetime
+      lt = scalerBank.getFloat("livetime",0)
+      if(lt>=0) { timeBins[binNum]["LTlist"] << lt }
+      // gated charge (if trustworthy)
+      if(FCmode==1) {
+        setMinMaxInTimeBin(timeBinNum, "fcRange", scalerBank.getFloat("fcupgated",0))
+      }
+    }
+    if(FCmode==2 && eventBank.rows()>0) {
+      // gated charge only
+      setMinMaxInTimeBin(timeBinNum, "fcRange", eventBank.getFloat("beamCharge",0))
+    }
+
+    // get helicity and fill helicity distribution
+    helicity = event.hasBank("REC::Event") ? eventBank.getByte('helicity',0) : 0  // (using "0" for undefined)
+    switch(helicity) {
+      case 1:  helStr='hp'; helDefined=true; break
+      case -1: helStr='hm'; helDefined=true; break
+      default: helDefined = false; helicity = 0; break
+    }
+    timeBins[binNum].histTree.helic.dist.fill(helicity)
+    
+    // get electron list, and increment the number of trigger electrons
+    // - also finds the DIS electron, and calculates x,Q2,W,y,nu
+    eleList = findParticles(11) // (`eleList` is unused)
+
+    // CUT: if a DIS electron was found (see countTriggerElectrons)
+    if(disEleFound) {
+
+      if(disElectronInTrigger)
+        timeBins[binNum].histTree.helic.distGoodOnly.fill(helicity)
+
+      // CUT for pions: Q2 and W and y and helicity
+      if( Q2>1 && W>2 && y<0.8 && helDefined) {
+
+        // get pions, calculate their kinematics and fill histograms
+        countEvent = false
+        [
+          [ findParticles(211),  'pip' ],
+          [ findParticles(-211), 'pim' ],
+        ].each{ pionList, pionName ->
+
+          pionList.each { part ->
+
+            // calculate z
+            vecH.copy(part.vector())
+            z = T.lorentzDot(vecTarget,vecH) / T.lorentzDot(vecTarget,vecQ)
+
+            // CUT for pions: particle z
+            if(z>0.3 && z<1) {
+
+              // calculate momenta, theta, phiH
+              p     = vecH.p()
+              pT    = Math.hypot( vecH.px(), vecH.py() )
+              theta = vecH.theta()
+              phiH  = T.planeAngle( vecQ.vect(), vecEle.vect(), vecQ.vect(), vecH.vect() )
+
+              // CUT for pions: if phiH is defined
+              if(phiH>-10000) {
+
+                // fill histograms
+                if(helDefined) {
+                  timeBins[binNum]["histTree"]['helic']['sinPhi'][pionName][helStr].fill(Math.sin(phiH))
+                }
+                timeBins[binNum]["histTree"]['inclusive'][pionName]['p'].fill(p)
+                timeBins[binNum]["histTree"]['inclusive'][pionName]['pT'].fill(pT)
+                timeBins[binNum]["histTree"]['inclusive'][pionName]['z'].fill(z)
+                timeBins[binNum]["histTree"]['inclusive'][pionName]['theta'].fill(theta)
+                timeBins[binNum]["histTree"]['inclusive'][pionName]['phiH'].fill(phiH)
+
+                // tell event counter that this event has at least one particle added to histos
+                countEvent = true
+              }
+            }
+          }
+        }
+
+        if(countEvent) {
+
+          // fill event-level histograms
+          timeBins[binNum].histTree.DIS.Q2.fill(Q2)
+          timeBins[binNum].histTree.DIS.W.fill(W)
+          timeBins[binNum].histTree.DIS.x.fill(x)
+          timeBins[binNum].histTree.DIS.y.fill(y)
+          timeBins[binNum].histTree.DIS.Q2VsW.fill(W,Q2)
+
+          // increment event counter
+          evCount++
+          if(evCount % 100000 == 0) println "found $evCount events which contain a pion"
+
+        }
+      }
+    }
+
+  } // end event loop
+  reader.close()
+
+} // end loop over hipo files
 
 ////////////////////////////
 ////////////////////////////
@@ -765,105 +799,8 @@ inHipoList.each { inHipoFile ->
 ////////////////////////////
 ////////////////////////////
 
-
-    // if we have enough events for a time bin, and if this is an event with a
-    // scaler readout, write out filled histos and/or create new histos
-    if(timeBinNum==-1 || (timeBinScalerCount>=MIN_NUM_SCALERS && timeBinEventCount>=MIN_NUM_EVENTS && isScalerEvent)) {
-
-      // if this isn't the first time bin, get FC info for this event, and write out filled histograms
-      if(timeBinNum>=0) {
-        printDebug "End time bin $timeBinNum"
-        printDebug " - isScalerEvent      = $isScalerEvent"
-        printDebug " - timeBinEventCount  = $timeBinEventCount"
-        printDebug " - timeBinScalerCount = $timeBinScalerCount"
-        getFCcharge(scalerBank,eventBank)  // updates FClist and UFClist with this last scaler readout
-        writeHistos()                      // resets FClist and UFClist
-      }
-
-      // update time bin number and reset counters
-      timeBinNum++
-      timeBinEventCount = 0
-      timeBinScalerCount = 0
-      printDebug "Start time bin $timeBinNum"
-      printDebug " - isScalerEvent      = $isScalerEvent"
-    }
-    printDebug "    evnum: $eventNum   time bin counts: { events => $timeBinEventCount, scalers => $timeBinScalerCount }"
-
-    // get FC charge
-    getFCcharge(scalerBank,eventBank)
-    if(isScalerEvent) {
-      printDebug "      scaler event:"
-      if(FClist.size()>0)  printDebug "       - gated FC charge: ${FClist[-1]}"
-      if(UFClist.size()>0) printDebug "       - ungated FC charge: ${UFClist[-1]}"
-    }
-
-
-    // get helicity and fill helicity distribution
-    if(event.hasBank("REC::Event")) helicity = eventBank.getByte('helicity',0)
-    else helicity = 0 // (undefined)
-    switch(helicity) {
-      case 1:  helStr='hp'; helDefined=true; break
-      case -1: helStr='hm'; helDefined=true; break
-      default: helDefined = false; helicity = 0; break
-    }
-    histTree.helic.dist.fill(helicity)
-    
-    // get electron list, and increment the number of trigger electrons
-    // - also finds the DIS electron, and calculates x,Q2,W,y,nu
-    eleList = findParticles(11) // (`eleList` is unused)
-
-
-    // CUT: if a dis electron was found (see countTriggerElectrons)
-    if(disEleFound) {
-
-      if(disElectronInTrigger)
-        histTree.helic.distGoodOnly.fill(helicity)
-
-      // CUT for pions: Q2 and W and y and helicity
-      if( Q2>1 && W>2 && y<0.8 && helDefined) {
-
-        // get lists of pions
-        pipList = findParticles(211)
-        pimList = findParticles(-211)
-
-        // calculate pion kinematics and fill histograms
-        // countEvent will be set to true if a pion is added to the histos 
-        countEvent = false
-        fillHistos(pipList,'pip')
-        fillHistos(pimList,'pim')
-
-        if(countEvent) {
-
-          // fill event-level histograms
-          histTree.DIS.Q2.fill(Q2)
-          histTree.DIS.W.fill(W)
-          histTree.DIS.x.fill(x)
-          histTree.DIS.y.fill(y)
-          histTree.DIS.Q2VsW.fill(W,Q2)
-
-          // increment event counter
-          evCount++
-          if(evCount % 100000 == 0) println "found $evCount events which contain a pion"
-
-        }
-      }
-    }
-
-    // increment time bin event counters
-    timeBinEventCount++
-    if(isScalerEvent) timeBinScalerCount++
-
-  } // end event loop
-  reader.close()
-
-} // end loop over hipo files
-
 // write final time bin's histograms
-printDebug "End time bin $timeBinNum"
-printDebug " - isScalerEvent      = $isScalerEvent"
-printDebug " - timeBinEventCount  = $timeBinEventCount"
-printDebug " - timeBinScalerCount = $timeBinScalerCount"
-writeHistos()
+writeHistos() //////////////////////////////// FIXME: should loop over timebins
 
 // write outHipo file
 outHipoN = "$outDir/monitor_${runnum}.hipo"
