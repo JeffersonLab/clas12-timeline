@@ -27,5 +27,9 @@ for file in $(find $inputDir -name "monitor_*.hipo"); do
   ln -sv $file $OUTMON_DIR/
 done
 for file in $(find $inputDir -name "data_table_*.dat"); do
-  cat $file >> $OUTDAT_DIR/data_table.dat
+  cat $file >> $OUTDAT_DIR/data_table.dat.tmp
 done
+
+# be sure the data table is sorted
+sort -n -o $OUTDAT_DIR/data_table.dat{,.tmp}
+rm $OUTDAT_DIR/data_table.dat.tmp
