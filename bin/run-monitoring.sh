@@ -250,27 +250,6 @@ for rdir in ${rdirs[@]}; do
   [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
   realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
 
-  # get the beam energy
-  # FIXME: use a config file or RCDB; this violates DRY with qa-physics/monitorRead.groovy
-  beam_energy=`python -c """
-beamlist = [
-(3861,5673,10.6), (5674, 5870, 7.546), (5871, 6000, 6.535), (6608, 6783, 10.199),
-(11620, 11657, 2.182), (11658, 12283, 10.389), (12389, 12444, 2.182), (12445, 12951, 10.389),
-(15013,15490, 5.98636), (15533,15727, 2.07052), (15728,15784, 4.02962), (15787,15884, 5.98636),
-(16010, 16079, 2.22), (16084, 1e9, 10.54) ]
-
-ret=10.6
-for r0,r1,eb in beamlist:
-  if $runnum>=r0 and $runnum<=r1:
-    ret=eb
-    print(ret)
-"""`
-  if [ -z "$beam_energy" ]; then
-    printError "Unknown beam energy for run $runnum"
-    printWarning "Since this script is still undergoing testing, let's assume the beam energy is 10.6 GeV" # FIXME
-    beam_energy=10.6
-  fi
-
   # generate job scripts
   for key in ${jobkeys[@]}; do
 
@@ -291,6 +270,28 @@ for r0,r1,eb in beamlist:
     case $key in
 
       detectors)
+
+        # get the beam energy
+        # FIXME: use a config file or RCDB; this violates DRY with qa-physics/monitorRead.groovy
+        beam_energy=`python -c """
+beamlist = [
+(3861,5673,10.6), (5674, 5870, 7.546), (5871, 6000, 6.535), (6608, 6783, 10.199),
+(11620, 11657, 2.182), (11658, 12283, 10.389), (12389, 12444, 2.182), (12445, 12951, 10.389),
+(15013,15490, 5.98636), (15533,15727, 2.07052), (15728,15784, 4.02962), (15787,15884, 5.98636),
+(16010, 16079, 2.22), (16084, 1e9, 10.54) ]
+
+ret=10.6
+for r0,r1,eb in beamlist:
+  if $runnum>=r0 and $runnum<=r1:
+    ret=eb
+    print(ret)
+      """`
+        if [ -z "$beam_energy" ]; then
+          printError "Unknown beam energy for run $runnum"
+          printWarning "Since this script is still undergoing testing, let's assume the beam energy is 10.6 GeV" # FIXME
+          beam_energy=10.6
+        fi
+
         cat > $jobscript << EOF
 #!/bin/bash
 set -e
