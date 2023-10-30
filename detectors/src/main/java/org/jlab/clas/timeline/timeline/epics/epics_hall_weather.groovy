@@ -26,11 +26,11 @@ class epics_hall_weather {
     def (t0str, t1str) = [t0, t1].collect{DateUtilExtensions.format(it, "yyyy-MM-dd")}
 
     def epics = [:].withDefault{[:]}
-    def press = REST.get("https://epicsweb.jlab.org/myquery/interval?c=B_SYS_WEATHER_SF_L3_PRESS&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
+    def press = REST.get("https://epicsweb.jlab.org/myquery/interval?c=B_SYS_WEATHER_SF_L3_Press&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
       .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].press = it.v}
-    def temp = REST.get("https://epicsweb.jlab.org/myquery/interval?c=B_SYS_WEATHER_SF_L1_TEMP&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
+    def temp = REST.get("https://epicsweb.jlab.org/myquery/interval?c=B_SYS_WEATHER_SF_L1_Temp&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
       .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].temp = it.v}
-    def humid = REST.get("https://epicsweb.jlab.org/myquery/interval?c=B_SYS_WEATHER_SF_L1_HUMID&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
+    def humid = REST.get("https://epicsweb.jlab.org/myquery/interval?c=B_SYS_WEATHER_SF_L1_Humid&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
       .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].humid = it.v}
 
     println('dl finished')
