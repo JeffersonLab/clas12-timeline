@@ -25,9 +25,6 @@ import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
-import org.rcdb.RCDB;
-// import org.jlab.mya.nexus;
-
 public class tof_monitor {
 	boolean userTimeBased;
 	public int runNum;
@@ -58,7 +55,6 @@ public class tof_monitor {
     public H2F DC_jitterzero_sec_sl, DC_jitterone_sec_sl, DC_jittertwo_sec_sl;
     public H2F DC_hits_even_ts_sec_sl, DC_hits_odd_ts_sec_sl;
     public H1F DC_jitterdist;
-    public H1F weather_pressure;
 	public F1D[][] f_time_invertedS;
 
 	public float p1a_counter_thickness, p1b_counter_thickness, p2_counter_thickness;
@@ -97,34 +93,6 @@ public class tof_monitor {
 			phase_offset = (int)ftofTable.getDoubleValue("phase",0,0,0);
 			System.out.println(String.format("Phase Offset %d: %d",runNum,phase_offset));
 		}
-
-                //// use coatjava RCDB wrapper:
-                // var runStartTime = ccdb.getRcdbConstants(runNum).getTime("run_start_time");
-                // var runEndTime   = ccdb.getRcdbConstants(runNum).getTime("run_end_time");
-
-                //// use RCDB Kotlin API
-                var rcdb = RCDB.createProvider("mysql://rcdb@clasdb.jlab.org/rcdb");
-                rcdb.connect();
-                var runStartTime = rcdb.getCondition(runNum,"run_start_time").toTime();
-                var runEndTime   = rcdb.getCondition(runNum,"run_end_time").toTime();
-
-                System.out.println("DEBUG TIME: start=" + runStartTime + "  stop=" + runStartTime);
-
-                //// fill Hall B pressure histogram
-		weather_pressure = new H1F("weather_pressure","weather_pressure",100,0,1000);
-		weather_pressure.setTitle("Hall B Space Frame L3 Pressure");
-		weather_pressure.setTitleX("pressure [inH2O]");
-                //// - FIXME: need run start and stop times; alternatively, can we query MYA by run number?
-                /*
-                DataNexus myaNexus = new OnDemandNexus("ops");
-                Metadata<FloatEvent> myaMetadata = myaNexus.findMetadata("B_SYS_WEATHER_SF_L3_Press", FloatEvent.class);
-                EventStream<FloatEvent> myaStream = myaNexus.openEventStream(myaMetadata, TimeUtil.toLocalDT(runStartTime), TimeUtil.toLocalDT(runEndTime));
-                FloatEvent myaEvent;
-                while((myaEvent = myaStream.read()) != null) {
-                  weather_pressure.fill(myaEvent.toFloat());
-                }
-                */
-
 		p1a_counter_thickness = 5.0f; //cm
 		//phase_offset = 3; //RGA Fall 2018, RGB Spring 2019, RGA Spring 2019
 		//phase_offset = 1; //Engineering Run, RGA Spring 2018
@@ -1153,7 +1121,6 @@ public class tof_monitor {
 		}
 		dirout.addDataSet(DC_jitterzero_sec_sl, DC_jitterone_sec_sl, DC_jittertwo_sec_sl);
 		dirout.addDataSet(DC_hits_even_ts_sec_sl, DC_hits_odd_ts_sec_sl,DC_jitterdist);
-                dirout.addDataSet(weather_pressure);
                 if(runNum>0) dirout.writeFile(outputDir+"/out_TOF_"+runNum+".hipo");
                 else         dirout.writeFile(outputDir+"/out_TOF.hipo");
 	}
