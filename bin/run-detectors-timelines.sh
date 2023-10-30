@@ -165,10 +165,7 @@ detDirs=(
 # cleanup output directories
 if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   if [ -d $finalDirPreQA ]; then
-    backupDir=$(pwd -P)/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
-    echo ">>> backing up any previous files to $backupDir ..."
-    mkdir -p $backupDir/
-    mv -v $finalDirPreQA $backupDir/
+    rm -rv $finalDirPreQA
   fi
 fi
 if [ -d $logDir ]; then
