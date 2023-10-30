@@ -32,12 +32,6 @@ class epics_hall_weather {
       .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].temp = it.v}
     def humid = REST.get("https://epicsweb.jlab.org/myquery/interval?c=B_SYS_WEATHER_SF_L1_HUMID&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
       .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].humid = it.v}
-    // def xs = REST.get("https://epicsweb.jlab.org/myquery/interval?c=IPM2H01.XPOS&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
-    //   .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].x = it.v}
-    // def ys = REST.get("https://epicsweb.jlab.org/myquery/interval?c=IPM2H01.YPOS&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
-    //   .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].y = it.v}
-    // def is = REST.get("https://epicsweb.jlab.org/myquery/interval?c=IPM2H01&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
-    //   .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].i = it.v}
 
     println('dl finished')
 
@@ -69,40 +63,37 @@ class epics_hall_weather {
       out.cd("/$run")
 
       def (hPress, hTemp, hHumid) = (1..3).collect{ind->
-        // 
-        // 
-        // stopped here
-        // 
-        // 
-        def entries = vals.collectMany{[it[ind]]*(it[0]*it[3]/1000 as int)}.sort()
+        def entries = vals.collectMany{[it[ind]]}.sort()
         def nlen = entries.size()
         def (nq1,nq2,nq3) = [nlen/4 as int, nlen/2 as int, nlen*3/4 as int]
         def (q1,q2,q3) = [entries[nq1], entries[nq2], entries[nq3]]
         def (xm,dx) = [q2, q3-q1]
-        def xy = 'xy'[ind-1]
-        return new H1F("h$xy$run","$xy for run $run;$xy", 200, xm-3*dx, xm+3*dx)
+        def names = ['Pressure', 'Temperature', 'Humidity']
+        def name = names[ind-1]
+        return new H1F("h$name$run","$name for run $run;$name", 200, xm-3*dx, xm+3*dx)
       }
 
       vals.each{
-        hx.fill(it[1], it[0]*it[3]/1000)
-        hy.fill(it[2], it[0]*it[3]/1000)
+        hPress.fill(it[1])
+        hTemp.fill(it[2])
+        hHumid.fill(it[3])
       }
 
-      def fx = MoreFitter.gausFit(hx, "Q")
-      def fy = MoreFitter.gausFit(hy, "Q")
-      grPress.addPoint(run, fx.getParameter(1), 0,0)
-      grTemp.addPoint(run, fy.getParameter(1), 0,0)
-      grHumid.addPoint(run, fy.getParameter(1), 0,0)
+      def fPress = MoreFitter.gausFit(hPress, "Q")
+      def fTemp = MoreFitter.gausFit(hTemp, "Q")
+      def fHumid = MoreFitter.gausFit(hHumid, "Q")
 
-      [hx,hy,fx,fy].each{out.addDataSet(it)}
+      grPress.addPoint(run, fPress.getParameter(1), 0,0)
+      grTemp.addPoint(run, fTemp.getParameter(1), 0,0)
+      grHumid.addPoint(run, fHumid.getParameter(1), 0,0)
+
+      [hPress,fPress,hTemp,fTemp,hHumid,fHumid].each{out.addDataSet(it)}
       println("$run done")
     }
 
     out.mkdir("/timelines")
     out.cd("/timelines")
-    out.addDataSet(grPress)
-    out.addDataSet(grTemp)
-    out.addDataSet(grHumid)
+    [grPress,grTemp,grHumd].each{out.addDataSet(it)}
     out.writeFile("epics_hall_weather.hipo")
   }
 }
