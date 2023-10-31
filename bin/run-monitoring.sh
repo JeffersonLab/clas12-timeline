@@ -17,24 +17,44 @@ SLURM_LOG=/farm_out/%u/%x-%A_%a
 # default options
 dataset=test_v0
 declare -A modes
-for key in findhipo rundir single series submit check-cache swifjob focus-detectors focus-physics; do
+for key in findhipo rundir eachdir single series submit check-cache swifjob focus-detectors focus-physics help; do
   modes[$key]=false
 done
 outputDir=""
+modes['findhipo']=true
 
 # usage
 sep="================================================================"
-if [ $# -lt 1 ]; then
+usageTerse() {
+  echo """
+  Run the timeline monitoring jobs
+  $sep
+  USAGE: $0 -d [DATASET_NAME] [RUN_DIRECTORY]
+  $sep
+
+     -d [DATASET_NAME]   unique dataset name, defined by the user, used for organization
+
+     [RUN_DIRECTORY]     input data directory, with subdirectories organized by run,
+                         **must be specified last**
+
+  After running this script, run either or both of the suggested 'sbatch' command(s);
+  one is for detector QA timelines and the other is for physics QA timelines.
+  Output files will appear in ./outfiles/[DATASET_NAME]
+
+  For more options, run:
+    $0 --help
+  """ >&2
+}
+usageVerbose() {
   echo """
   $sep
   USAGE: $0  [OPTIONS]...  [RUN_DIRECTORY]...
   $sep
-  Runs the monitoring jobs, either on the farm or locally
 
   REQUIRED ARGUMENTS:
 
     [RUN_DIRECTORY]...   One or more directories, each directory corresponds to
-                         one run and should contain reconstructed hipo files
+                         one run and should contain reconstructed HIPO files
                          - See \"INPUT FINDING OPTIONS\" below for more control,
                            so that you don't have to specify each run's directory
                          - A regexp or globbing (wildcards) can be used to
@@ -51,16 +71,20 @@ if [ $# -lt 1 ]; then
      -o [OUTPUT_DIR]        custom output directory
                             default = ./outfiles/[DATASET_NAME]
 
-     *** INPUT FINDING OPTIONS: choose only one, or the default will assume each specified
-         [RUN_DIRECTORY] is a single run's directory full of HIPO files
+     *** INPUT FINDING OPTIONS: control how the input HIPO files are found;
+         choose only one:
 
        --findhipo     use \`find\` to find all HIPO files in each
                       [RUN_DIRECTORY]; this is useful if you have a
                       directory tree, e.g., runs grouped by target
+                      **this is the default option**
 
        --rundir       assume each specified [RUN_DIRECTORY] contains
                       subdirectories named as just run numbers; it is not
                       recommended to use wildcards for this option
+
+       --eachdir      assume each specified [RUN_DIRECTORY] is a single
+                      run's directory full of HIPO files
 
        --check-cache  cross check /cache directories with tape stub directories
                       (/mss) and exit without creating or running any jobs; this is
@@ -88,7 +112,7 @@ if [ $# -lt 1 ]; then
          rather than the default of running everything; you may specify more
          than one
 
-       --focus-detectors   run monitoring for detector (and QA) timelines
+       --focus-detectors   run monitoring for detector QA timelines
 
        --focus-physics     run monitoring for physics QA timelines
 
@@ -100,22 +124,26 @@ if [ $# -lt 1 ]; then
        -> submit slurm jobs for all numerical subdirectories of /volatile/mon/,
           where each subdirectory should be a run number; this is the most common usage
 
-  $  $0 -v v1.0.0 /volatile/mon/*
+  $  $0 -v v1.0.0 --eachdir /volatile/mon/*
        -> generate the slurm script to run on all subdirectories of
           /volatile/mon/ no matter their name
 
   $  $0 -v v1.0.0 --single /volatile/mon/run*
        -> run on the first directory named run[RUNNUM], where [RUNNUM] is a run number
 
-  """ >&2
+  """ # stream to stdout to permit grepping
+}
+if [ $# -lt 1 ]; then
+  usageTerse
   exit 101
 fi
 
 # parse options
-while getopts "d:o:-:" opt; do
+while getopts "d:o:h-:" opt; do
   case $opt in
     d) dataset=$OPTARG;;
     o) outputDir=$OPTARG;;
+    h) modes['help']=true;;
     -)
       for key in "${!modes[@]}"; do
         [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
@@ -127,6 +155,12 @@ while getopts "d:o:-:" opt; do
 done
 shift $((OPTIND - 1))
 
+# print full usage guide
+if ${modes['help']}; then
+  usageVerbose
+  exit 101
+fi
+
 # parse input directories
 rdirs=()
 if ${modes['swifjob']}; then
@@ -137,16 +171,7 @@ else
   for topdir in ${rdirsArgs[@]}; do
     [[ "$topdir" =~ ^- ]] && printError "option '$topdir' must be specified before run directories" && exit 100
   done
-  if ${modes['findhipo']}; then
-    for topdir in ${rdirsArgs[@]}; do
-      fileList=$(find -L $topdir -type f -name "*.hipo")
-      if [ -z "$fileList" ]; then
-        printWarning "run directory '$topdir' has no HIPO files"
-      else
-        rdirs+=($(echo $fileList | xargs dirname | sort -u))
-      fi
-    done
-  elif ${modes['rundir']}; then
+  if ${modes['rundir']}; then
     for topdir in ${rdirsArgs[@]}; do
       if [ -d $topdir ]; then
         for subdir in $(ls $topdir | grep -E "[0-9]+"); do
@@ -157,8 +182,20 @@ else
         exit 100
       fi
     done
-  else
+  elif ${modes['eachdir']}; then
     rdirs=$@
+  elif ${modes['findhipo']}; then # N.B.: the default option must be last
+    for topdir in ${rdirsArgs[@]}; do
+      fileList=$(find -L $topdir -type f -name "*.hipo")
+      if [ -z "$fileList" ]; then
+        printWarning "run directory '$topdir' has no HIPO files"
+      else
+        rdirs+=($(echo $fileList | xargs dirname | sort -u))
+      fi
+    done
+  else
+    printError "unknown input option"
+    exit 100
   fi
 fi
 [ ${#rdirs[@]} -eq 0 ] && printError "no run directories found" && exit 100

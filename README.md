@@ -37,7 +37,7 @@ To run this step, execute:
 ```bash
 bin/run-monitoring.sh
 ```
-which will print the usage guide, along with some examples (since it was called with no arguments). With this script, you may run single jobs locally or multiple jobs in parallel on the computing cluster.
+which will print the usage guide (since it was called with no arguments); use the `--help` option for more detailed guidance.
 
 #### Details
 - data monitoring for detector timelines is handled by the [`monitoring/` subdirectory](monitoring);
