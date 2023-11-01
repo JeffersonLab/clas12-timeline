@@ -33,6 +33,9 @@ class epics_hall_weather {
     def humid = REST.get("https://epicsweb.jlab.org/myquery/interval?c=B_SYS_WEATHER_SF_L1_Humid&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
       .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].humid = it.v}
 
+      // FIXME: handle empty data
+      // FIXME: are ops and history disjoint
+
     println('dl finished')
 
     def data = epics.collect{kk,vv->[ts:kk]+vv} + ts.collectMany{[[run:it[0], ts: (((long)it[1])*1000)], [run:it[0], ts: (((long)it[2])*1000)]]}
