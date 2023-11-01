@@ -1,8 +1,20 @@
 rf   rftime_electron_FD_mean     -0.010 0.010  ns
 rf   rftime_electron_FD_sigma    0      0.070  ns
 
-ltcc ltcc_elec_nphe_sec          11     14     counts sec3
-ltcc ltcc_elec_nphe_sec          11     14     counts sec5
+ltcc ltcc_elec_nphe_sec          7      9      counts  spec:sec3  color:red   run_range:5032:5666    # RGA fa18
+ltcc ltcc_elec_nphe_sec          4      6      counts  spec:sec5  color:blue  run_range:5032:5666    # RGA fa18
+# ltcc ltcc_elec_nphe_sec          10     16     counts  spec:sec3  color:red   run_range:11093:11283  # RGB fa19 outbending
+# ltcc ltcc_elec_nphe_sec          10     16     counts  spec:sec5  color:blue  run_range:11093:11283  # RGB fa19 outbending
+# ltcc ltcc_elec_nphe_sec          11     17     counts  spec:sec3  color:red   run_range:11284:11571  # RGB fa19 and wi20 inbending
+# ltcc ltcc_elec_nphe_sec          11     17     counts  spec:sec5  color:blue  run_range:11284:11571  # RGB fa19 and wi20 inbending
+ltcc ltcc_elec_nphe_sec          11     14     counts  spec:sec3  color:red                          # all other runs
+ltcc ltcc_elec_nphe_sec          11     14     counts  spec:sec5  color:blue                         # all other runs
+
+# TEST
+ltcc ltcc_elec_nphe_sec          11     11.4   counts  spec:sec3  color:red   run_range:11093:11283  # RGB fa19 outbending
+ltcc ltcc_elec_nphe_sec          13     15     counts  spec:sec5  color:blue  run_range:11093:11283  # RGB fa19 outbending
+ltcc ltcc_elec_nphe_sec          13.5   13.8   counts  spec:sec3  color:red   run_range:11284:11571  # RGB fa19 and wi20 inbending
+ltcc ltcc_elec_nphe_sec          15     16     counts  spec:sec5  color:blue  run_range:11284:11571  # RGB fa19 and wi20 inbending
 
 htcc htcc_nphe_sec               12.5   14.5   counts
 htcc htcc_vtimediff_sector_mean  -1     1      ns
@@ -20,12 +32,12 @@ ftof ftof_time_p2_sigma          0      0.350  ns
 
 ft   ftc_pi0_mass_mean           134    136    MeV
 ft   ftc_pi0_mass_sigma          0      5      MeV
-ft   fth_MIPS_energy             0.9    1.9    MeV    layer1
-ft   fth_MIPS_energy             2.3    3.3    MeV    layer2
-ft   fth_MIPS_time_mean          -0.5   0.5    ns     layer1
-ft   fth_MIPS_time_mean          -0.5   0.5    ns     layer2
-ft   fth_MIPS_time_sigma         0      1.4    ns     layer1
-ft   fth_MIPS_time_sigma         0      1.2    ns     layer2
+ft   fth_MIPS_energy             0.9    1.9    MeV    spec:layer1  color:red
+ft   fth_MIPS_energy             2.3    3.3    MeV    spec:layer2  color:blue
+ft   fth_MIPS_time_mean          -0.5   0.5    ns     spec:layer1
+ft   fth_MIPS_time_mean          -0.5   0.5    ns     spec:layer2
+ft   fth_MIPS_time_sigma         0      1.4    ns     spec:layer1  color:red
+ft   fth_MIPS_time_sigma         0      1.2    ns     spec:layer2  color:blue
 
 ec   ec_Sampling                 0.23   0.26   unitless
 ec   ec_gg_m_mean                0.129  0.133  GeV
@@ -48,11 +60,11 @@ cnd  cnd_time_neg_vtP_sigma      0      0.300  ns
 cnd  cnd_zdiff_mean              -0.4   0.4    cm
 cnd  cnd_zdiff_sigma             0      4      cm
 
-dc   dc_residuals_sec_sl_mean    -0.010 0.010  cm     R1
-dc   dc_residuals_sec_sl_mean    -0.010 0.010  cm     R2
-dc   dc_residuals_sec_sl_mean    -0.010 0.010  cm     R3
-dc   dc_residuals_sec_sl_sigma   0      0.0400 cm     R1
-dc   dc_residuals_sec_sl_sigma   0      0.0400 cm     R2
-dc   dc_residuals_sec_sl_sigma   0      0.0400 cm     R3
+dc   dc_residuals_sec_sl_mean    -0.010 0.010  cm     spec:R1
+dc   dc_residuals_sec_sl_mean    -0.010 0.010  cm     spec:R2
+dc   dc_residuals_sec_sl_mean    -0.010 0.010  cm     spec:R3
+dc   dc_residuals_sec_sl_sigma   0      0.0400 cm     spec:R1
+dc   dc_residuals_sec_sl_sigma   0      0.0400 cm     spec:R2
+dc   dc_residuals_sec_sl_sigma   0      0.0400 cm     spec:R3
 
 rich rich_time_fwhm_max          0      1      ns
