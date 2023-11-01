@@ -16,6 +16,8 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
       - `spec` key: apply the cut to a specific timeline _e.g._, sector or layer
       - `color` key: customize the cut line color
       - `run_range` key: apply to a specific run range, _e.g.,_, `run_range:5000:6000` will apply to runs $\in[5000,6000]$
+        - runs outside of all `run_range` specifiers will use the default cuts (the one(s) without the `run_range` specifier)
+        - all cuts should have a default version with no `run_range`
   - comments can be added using the symbol `#`, which is useful for commenting out timelines, especially when debugging a particular timeline
 - other files in `cuts/` may override the default file
   - **this is a deprecated feature**; it is preferred to use `run_range` keywords (see above)
