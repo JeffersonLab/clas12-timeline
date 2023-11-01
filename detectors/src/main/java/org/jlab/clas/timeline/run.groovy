@@ -31,9 +31,6 @@ def engines = [
     new cvt.cvt_d0_mean_pos(),
     new cvt.cvt_d0_sigma_pos(),
     new cvt.cvt_d0_max_pos(),
-//    new cvt.cvt_d0_mean_neg(),
-//    new cvt.cvt_d0_sigma_neg(),
-//    new cvt.cvt_d0_max_neg(),
     new trigger.rat_Km_num(),
     new trigger.rat_neg_num(),
     new trigger.rat_pos_num(),
@@ -52,11 +49,9 @@ def engines = [
     new forward.forward_Tracking_NegVz(),
     new ec.ec_Sampl(),
     new ec.ec_gg_m(),
-	new ec.ec_pcal_time(),
-	new ec.ec_ecin_time(),
-	new ec.ec_ecou_time(),
-//    new ec.ec_pip_time(),
-//    new ec.ec_pim_time(),
+    new ec.ec_pcal_time(),
+    new ec.ec_ecin_time(),
+    new ec.ec_ecou_time(),
     new ltcc.ltcc_nphe_sector(),
     new rf.rftime_diff(),
     new rf.rftime_pim_FD(),
@@ -73,7 +68,6 @@ def engines = [
     new cnd.cnd_zdiff()],
   out_CTOF: [new ctof.ctof_edep(),
     new ctof.ctof_time(),
-    // new ctof.ctof_tdcadc(),
     new ctof.ctof_tdcadc_left(),
     new ctof.ctof_tdcadc_right()],
   out_FT: [new ft.ftc_pi0_mass(),
@@ -99,9 +93,9 @@ def engines = [
     new ftof.ftof_edep_p2(),
     new ftof.ftof_time_p1a(),
     new ftof.ftof_time_p1b(),
+    new ftof.ftof_time_p2(),
     new ftof.ftof_time_noTriggers_p1a(),
     new ftof.ftof_time_noTriggers_p1b(),
-    new ftof.ftof_time_p2(),
     new ftof.ftof_tdcadc_p1a(),
     new ftof.ftof_tdcadc_p1b(),
     new ftof.ftof_tdcadc_p2(),
@@ -140,7 +134,6 @@ if(args.any{it=="--timelines"}) {
   }
   System.exit(0)
 }
-
 
 def eng = engines.collectMany{key,engs->engs.collect{[key,it]}}
   .find{name,eng->eng.getClass().getSimpleName()==args[0]}
