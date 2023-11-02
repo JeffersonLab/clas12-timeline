@@ -14,7 +14,7 @@ To build,
 mvn package
 ```
 #### Additional Build Notes:
-- Use `mvn clean` if you want to clean build targets. 
+- Use `mvn clean` if you want to clean build targets.
 - Use the `-f` option of `mvn` to build individual submodules:
   1. [`monitoring`](monitoring): generates histograms for detectors
   1. [`detectors`](detectors): uses detector histograms to generate timelines
@@ -162,6 +162,15 @@ outfiles
     │   │
     │   ├── 5001                      # for run number 5001
     │   └── ...
+    │
+    ├── timeline_physics_qa           # transient files for the physics QA
+    │   ├── outdat
+    │   │   ├── qaTree.json           # QADB
+    │   │   ├── qaTreeFT.json         # QADB for FT only
+    │   │   ├── chargeTree.json       # FC charge info
+    │   │   └── data_table.dat        # combined data_table*.dat from each run
+    │   ├── outmon                    # timeline (and other) HIPO files
+    │   └── outmon.qa                 # QADB timelines
     │
     ├── timeline_web_preQA            # detector timelines, before QA lines are drawn
     │   ├── htcc
