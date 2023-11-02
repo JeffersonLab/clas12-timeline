@@ -183,14 +183,10 @@ the timelines and recording features not identified by the automatic QA in
     will be printed, and it is recommended to re-run the automatic QA, either for
     those specific runs, or in its entirety
 * `cd QA`; this subdirectory contains code for the "manual QA"
-* `import.sh [dataset]` to import the automatically generated `qaTree.json`; this
+* `import.sh` to import the automatically generated `qaTree.json`; this
   will also generate a human-readable file, `qa/qaTable.dat`  
   * append the option `-cnds=user_comment` to copy the user comment from RCDB
     to `qa/qaTable.dat`, which is helpful for the manual QA procedure
-  * by default, the `json` file is that produced from the automatic QA;
-    you can also specify a path to a specific `qaTree.json` file; this is 
-    useful if you have a more up-to-date version somewhere else, and you
-    want to use the tools in this QA directory to make revisions
 * open `qa/qaTable.dat` in another window; this is the human-readable version of
   the imported `qaTree.json`
 * now scan through `qaTable.dat`, inspecting each run:
