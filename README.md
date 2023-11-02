@@ -209,7 +209,8 @@ outfiles
     ├── timeline_physics_qa           # transient files for the physics QA
     │   ├── outdat
     │   │   ├── qaTree.json           # QADB
-    │   │   ├── qaTreeFT.json         # QADB for FT only
+    │   │   ├── qaTreeFD.json         # QADB for Forward Detector only
+    │   │   ├── qaTreeFT.json         # QADB for Forward Tagger only
     │   │   ├── chargeTree.json       # FC charge info
     │   │   └── data_table.dat        # combined data_table*.dat from each run
     │   ├── outmon                    # timeline (and other) HIPO files
