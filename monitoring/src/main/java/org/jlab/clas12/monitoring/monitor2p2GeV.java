@@ -2283,10 +2283,8 @@ public class monitor2p2GeV {
 		for(int k = 0; k < bank.rows(); k++){
 			short pind = bank.getShort("pindex",k);
 			if(bank.getByte("detector",k)==15 && pind==e_part_ind){
-				//H_e_HTCC_nphe.fill(bank.getShort("nphe",k));
 				H_e_HTCC_nphe.fill(bank.getFloat("nphe",k));
 				H_e_HTCC_xy.fill(bank.getFloat("x",k) , bank.getFloat("y",k));
-				//e_HTCC = (float)bank.getShort("nphe",k);
 				e_HTCC = (float)bank.getFloat("nphe",k);
                                 e_HTCC_X = bank.getFloat("x",k);
                                 e_HTCC_Y = bank.getFloat("y",k);
@@ -2295,10 +2293,8 @@ public class monitor2p2GeV {
 			}
 			if(bank.getByte("detector",k)==16 && pind==e_part_ind){
 				hasLTCC = 1;
-				//H_e_LTCC_nphe.fill(bank.getShort("nphe",k));
 				H_e_LTCC_nphe.fill(bank.getFloat("nphe",k));
 				H_e_LTCC_xy.fill(bank.getFloat("x",k) , bank.getFloat("y",k));
-				//e_LTCC = (float)bank.getShort("nphe",k);
 				e_LTCC = (float)bank.getFloat("nphe",k);
 			}
 		}
@@ -2504,7 +2500,6 @@ public class monitor2p2GeV {
         int[] sectorn;
         sectorn = new int[6];
         sectorp = new int[6];
-        int sect = -1;
 		int tbit;
 
         for (int j=0; j<3; j++) {
@@ -2520,7 +2515,7 @@ public class monitor2p2GeV {
             }
             boolean inDC = (status >= 2000 && status < 4000);//Only forward detectors; CND is >=4000
             if (inDC && isDCmatch(event, k) > 0) {
-                sect = isDCmatch(event, k);
+                int sect = isDCmatch(event, k);
                 float energy_ecal_E = 0;
                 float energy_ecalout_E = 0;
                 float energy_pcal_E = 0;
@@ -2808,7 +2803,6 @@ public class monitor2p2GeV {
 				float pz = bank.getFloat("pz", k);
 				float eg = (float)Math.sqrt(px*px+py*py+pz*pz);
 				float tg = (float)Math.toDegrees(Math.acos(pz/eg));
-				float fg = (float)Math.toDegrees(Math.atan2(py,px));
 				if(eg>Ebeam*0.08 && tg>4.25){
 					ngammas++;
 					if(eg>eg1){ig1=k;eg1=eg;}
@@ -2823,14 +2817,12 @@ public class monitor2p2GeV {
 				float pz = bank.getFloat("pz", k);
 				float eg = (float)Math.sqrt(px*px+py*py+pz*pz);
 				float tg = (float)Math.toDegrees(Math.acos(pz/eg));
-				float fg = (float)Math.toDegrees(Math.atan2(py,px));
 				if(eg>Ebeam*0.08 && tg>4.25){
 					if(eg>eg2){ig2=k;eg2=eg;}
 				}
 			}
 		}
 		if(ngammas==2 && ig1>-1 && ig2>-1){
-			int k = ig1;
 			float px = bank.getFloat("px", ig1);
 			float py = bank.getFloat("py", ig1);
 			float pz = bank.getFloat("pz", ig1);
@@ -2841,7 +2833,6 @@ public class monitor2p2GeV {
 			g1_theta = tg;
 			g1_phi = fg;
 			VG1 = new LorentzVector(px,py,pz,eg);
-			k = ig1;
 			px = bank.getFloat("px", ig2);
 			py = bank.getFloat("py", ig2);
 			pz = bank.getFloat("pz", ig2);
@@ -3346,7 +3337,6 @@ public class monitor2p2GeV {
 			H_RFtimediff_corrected.fill((RFtime1-RFtime2+(rfoffset1 - rfoffset2)+1000*rfPeriod) % rfPeriod);
 			RFtime1+=rfoffset1;
 			RFtime2+=rfoffset2;
-			// RFtime2 = 0f;//bank.getFloat("time",1);
 		}
 		for(int i=1;i<7;i++)trigger_bits[i]=false;
 		if(event.hasBank("RUN::config")){
@@ -3354,7 +3344,11 @@ public class monitor2p2GeV {
             bank.getInt("event",0);
 			TriggerWord = bank.getLong("trigger",0);
 			int length=0;
-			for (int i = 31; i >= 0; i--) {trigger_bits[i] = (TriggerWord & (1 << i)) != 0;if(length==0 && trigger_bits[i])length=i+1;}
+			for (int i = 31; i >= 0; i--) {
+                trigger_bits[i] = (TriggerWord & (1 << i)) != 0;
+                if(length==0 && trigger_bits[i])
+                    length=i+1;
+            }
 		}
 		if(trigger_bits[1]||trigger_bits[2]||trigger_bits[3]||trigger_bits[4]||trigger_bits[5]||trigger_bits[6])Ntrigs++;
 		if(trigger_bits[1])H_trig_sector_count.fill(1);
@@ -3501,12 +3495,16 @@ public class monitor2p2GeV {
         }
 
         if (e_mom > Ebeam * 0.025 && e_ecal_E / e_mom > 0.15 && e_Q2 > 1.2 * 0.1 * Ebeam / 7 && trig_track_ind > -1 && e_sect == trig_sect) {
+
             H_e_theta_phi.fill(e_phi, e_theta);
             H_e_theta_mom.fill(e_mom, e_theta);
+            
             if (e_sect > 0 && e_sect < 7) {
+                
                 if (trigger_bits[31]) {
                     H_rand_trig_sector_count.fill(e_sect);
                 }
+                
                 H_e_theta_mom_S[e_sect - 1].fill(e_mom, e_theta);
                 if (trigger_bits[e_sect]) {
                     H_trig_theta_mom_S[e_sect - 1].fill(e_mom, e_theta);
@@ -4788,7 +4786,7 @@ public class monitor2p2GeV {
         }
         String outputDir = runNum > 0 ? "plots" + runNum : "plots";
         monitor2p2GeV ana = new monitor2p2GeV(runNum, outputDir, Eb, useTB);
-        List<String> toProcessFileNames = new ArrayList<String>();
+        List<String> toProcessFileNames = new ArrayList<>();
         File file = new File(filelist);
         Scanner read;
         try {
