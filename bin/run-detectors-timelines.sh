@@ -195,9 +195,9 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   for timelineObj in $(java $MAIN --timelines); do
     logFile=$logDir/$timelineObj
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
-    if [ $jobCnt -le $numThreads ]; then
-      echo ">>> producing timeline '$timelineObj' ..."
-      java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+    echo ">>> producing timeline '$timelineObj' ..."
+    java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+    if [ $jobCnt -lt $numThreads ]; then
       let jobCnt++
     else
       wait
