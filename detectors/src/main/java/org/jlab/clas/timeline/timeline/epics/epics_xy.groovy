@@ -26,9 +26,6 @@ class epics_xy {
     def (t0str, t1str) = [t0, t1].collect{DateUtilExtensions.format(it, "yyyy-MM-dd")}
 
     def epics = [:].withDefault{[:]}
-    System.err.println("DEBUG: https://epicsweb.jlab.org/myquery/interval?c=IPM2H01.XPOS&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on")
-    System.err.println("DEBUG: https://epicsweb.jlab.org/myquery/interval?c=IPM2H01.YPOS&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on")
-    System.err.println("DEBUG: https://epicsweb.jlab.org/myquery/interval?c=IPM2H01&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on")
     def xs = REST.get("https://epicsweb.jlab.org/myquery/interval?c=IPM2H01.XPOS&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
       .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].x = it.v}
     def ys = REST.get("https://epicsweb.jlab.org/myquery/interval?c=IPM2H01.YPOS&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
