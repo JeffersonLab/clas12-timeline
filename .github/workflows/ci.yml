@@ -201,7 +201,7 @@ jobs:
           - detectors
           - physics
         include:
-          - { type: detectors,  args: -n 2 -r B } # FIXME: prefer `-r ${{env.validation_run_group}}`, but that's invalid syntax for matrix arg
+          - { type: detectors,  args: -n 2 -r B --skip-mya } # FIXME: prefer `-r ${{env.validation_run_group}}`, but that's invalid syntax for matrix arg
           - { type: physics,    args: '' }
     steps:
     - name: setup java

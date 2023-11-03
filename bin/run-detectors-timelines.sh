@@ -12,7 +12,7 @@ rungroup=a
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list build focus-timelines focus-qa; do
+for key in list build skip-mya focus-timelines focus-qa; do
   modes[$key]=false
 done
 
@@ -52,6 +52,8 @@ if [ $# -eq 0 ]; then
 
     --build             cleanly-rebuild the timeline code, then run
 
+    --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
+
     --focus-timelines   only produce the detector timelines, do not run detector QA code
     --focus-qa          only run the QA code (assumes you have detector timelines already)
   """ >&2
@@ -90,12 +92,19 @@ fi
 [[ ! "$rungroup" =~ ^[a-zA-Z] ]] && printError "unknown rungroup '$rungroup'" && exit 100
 export MAIN
 
+# build list of timelines
+if ${modes['skip-mya']}; then
+  timelineList=$(java $MAIN --timelines | grep -vE '^epics_')
+else
+  timelineList=$(java $MAIN --timelines)
+fi
+
 # list detector timelines, if requested
 if ${modes['list']}; then
   echo $sep
   echo "LIST OF TIMELINES"
   echo $sep
-  java $MAIN --timelines
+  echo $timelineList | sed 's; ;\n;g'
   exit $?
 fi
 
@@ -192,7 +201,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
 
   # produce timelines, multithreaded
   jobCnt=1
-  for timelineObj in $(java $MAIN --timelines); do
+  for timelineObj in $timelineList; do
     logFile=$logDir/$timelineObj
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
     echo ">>> producing timeline '$timelineObj' ..."
