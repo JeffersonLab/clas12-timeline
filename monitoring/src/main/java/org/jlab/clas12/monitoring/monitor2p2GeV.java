@@ -3384,7 +3384,6 @@ public class monitor2p2GeV {
 		for(int i=1;i<7;i++)trigger_bits[i]=false;
 		if(event.hasBank("RUN::config")){
 			DataBank bank = event.getBank("RUN::config");
-            bank.getInt("event",0);
 			TriggerWord = bank.getLong("trigger",0);
 			int length=0;
 			for (int i = 31; i >= 0; i--) {
