@@ -16,22 +16,14 @@ class epics_xy {
   }
 
   def close() {
-    def runmin = runlist.min()
-    def runmax = runlist.max()
 
-    def ts = REST.get("https://clas12mon.jlab.org/rcdb/runs/time?runmin=$runmin&runmax=$runmax").findAll{it[0] in runlist}
-    def (t0,t1) = [ts[0][1], ts[-1][2]].collect{new Date(((long)it)*1000)}
-    t1 = DateUtilExtensions.plus(t1, 1)
-    print([t0,t1])
-    def (t0str, t1str) = [t0, t1].collect{DateUtilExtensions.format(it, "yyyy-MM-dd")}
+    def ts = MYQuery.getRunTimeStamps(runlist)
 
     def epics = [:].withDefault{[:]}
-    def xs = REST.get("https://epicsweb.jlab.org/myquery/interval?c=IPM2H01.XPOS&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
-      .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].x = it.v}
-    def ys = REST.get("https://epicsweb.jlab.org/myquery/interval?c=IPM2H01.YPOS&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
-      .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].y = it.v}
-    def is = REST.get("https://epicsweb.jlab.org/myquery/interval?c=IPM2H01&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
-      .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].i = it.v}
+    dateFormatStr = 'yyyy-MM-dd HH:mm:ss.SSS'
+    def xs = MYQuery.query('IPM2H01.XPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].x = it.v }
+    def ys = MYQuery.query('IPM2H01.YPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].y = it.v }
+    def is = MYQuery.query('IPM2H01').each{      epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].y = it.v }
 
     println('dl finished')
 
