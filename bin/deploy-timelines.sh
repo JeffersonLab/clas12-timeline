@@ -59,6 +59,8 @@ usage() {
   -s [SUB_DIRECTORY]     customize the subdirectory of [TARGET_DIRECTORY] to
                          where timeline files will be copied
                            default = [DATASET]
+
+  -h                     print this usage guide
   """ >&2
 }
 
@@ -71,7 +73,8 @@ dryRun=false
 customTarget=false
 subDir=""
 inputDir=""
-while getopts "d:i:Ut:Dcs:" opt; do
+helpMode=false
+while getopts "d:i:Ut:Dcs:h-:" opt; do
   case $opt in
     d) inputCmdOpts+=" -d $OPTARG" ;;
     i) inputCmdOpts+=" -i $OPTARG" ;;
@@ -80,9 +83,18 @@ while getopts "d:i:Ut:Dcs:" opt; do
     D) dryRun=true ;;
     c) customTarget=true ;;
     s) subDir=$OPTARG ;;
+    h) helpMode=true ;;
+    -)
+      [ "$OPTARG" != "help" ] && printError "unknown option --$OPTARG"
+      helpMode=true
+      ;;
     *) exit 100 ;;
   esac
 done
+if $helpMode; then
+  usage
+  exit 101
+fi
 
 # set input directory and dataset name
 dataset=$($inputCmd $inputCmdOpts -D)
