@@ -12,7 +12,7 @@ rungroup=a
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list build skip-mya focus-timelines focus-qa; do
+for key in list build skip-mya focus-timelines focus-qa help; do
   modes[$key]=false
 done
 
@@ -22,7 +22,7 @@ inputCmdOpts=""
 
 # usage
 sep="================================================================"
-if [ $# -eq 0 ]; then
+usage() {
   echo """
   $sep
   USAGE: $0 [OPTIONS]...
@@ -56,12 +56,17 @@ if [ $# -eq 0 ]; then
 
     --focus-timelines   only produce the detector timelines, do not run detector QA code
     --focus-qa          only run the QA code (assumes you have detector timelines already)
+
+    -h, --help          print this usage guide
   """ >&2
+}
+if [ $# -eq 0 ]; then
+  usage
   exit 101
 fi
 
 # parse options
-while getopts "d:i:Uo:r:n:t:-:" opt; do
+while getopts "d:i:Uo:r:n:t:h-:" opt; do
   case $opt in
     d) inputCmdOpts+=" -d $OPTARG" ;;
     i) inputCmdOpts+=" -i $OPTARG" ;;
@@ -70,15 +75,20 @@ while getopts "d:i:Uo:r:n:t:-:" opt; do
     r) rungroup=$(echo $OPTARG | tr '[:upper:]' '[:lower:]') ;;
     n) numThreads=$OPTARG ;;
     t) singleTimeline=$OPTARG ;;
+    h) modes['help']=true ;;
     -)
       for key in "${!modes[@]}"; do
         [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
       done
-      [ -z "${modes[$OPTARG]}" ] && printError "unknown option --$OPTARG" && exit 100
+      [ -z "${modes[$OPTARG]-}" ] && printError "unknown option --$OPTARG" && exit 100
       ;;
     *) exit 100;;
   esac
 done
+if ${modes['help']}; then
+  usage
+  exit 101
+fi
 
 # set class path to include groovy's classpath, for `java` calls
 export CLASSPATH="$JYPATH${CLASSPATH:+:${CLASSPATH}}"

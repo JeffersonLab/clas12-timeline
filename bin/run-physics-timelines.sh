@@ -15,7 +15,7 @@ inputCmdOpts=""
 
 # usage
 sep="================================================================"
-if [ $# -eq 0 ]; then
+usage() {
   echo """
   $sep
   USAGE: $0 [OPTIONS]...
@@ -30,19 +30,33 @@ if [ $# -eq 0 ]; then
     -o [OUTPUT_DIR]     output directory
                         default = ./outfiles/[DATASET_NAME]
 
+    -h, --help          print this usage guide
   """ >&2
+}
+if [ $# -eq 0 ]; then
+  usage
   exit 101
 fi
 
 # parse options
-while getopts "d:i:Uo:" opt; do
+helpMode=false
+while getopts "d:i:Uo:h-:" opt; do
   case $opt in
     d) inputCmdOpts+=" -d $OPTARG" ;;
     i) inputCmdOpts+=" -i $OPTARG" ;;
     U) inputCmdOpts+=" -U" ;;
     o) outputDir=$OPTARG ;;
+    h) helpMode=true ;;
+    -)
+      [ "$OPTARG" != "help" ] && printError "unknown option --$OPTARG"
+      helpMode=true
+      ;;
   esac
 done
+if $helpMode; then
+  usage
+  exit 101
+fi
 
 # set input/output directories and dataset name
 dataset=$($inputCmd $inputCmdOpts -D)
