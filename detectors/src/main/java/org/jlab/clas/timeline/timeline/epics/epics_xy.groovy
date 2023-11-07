@@ -23,7 +23,7 @@ class epics_xy {
     dateFormatStr = 'yyyy-MM-dd HH:mm:ss.SSS'
     def xs = MYQuery.query('IPM2H01.XPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].x = it.v }
     def ys = MYQuery.query('IPM2H01.YPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].y = it.v }
-    def is = MYQuery.query('IPM2H01').each{      epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].y = it.v }
+    def is = MYQuery.query('IPM2H01').each{      epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].i = it.v }
 
     println('dl finished')
 

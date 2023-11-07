@@ -3,10 +3,10 @@ package org.jlab.clas.timeline.timeline.epics
 class MYQuery {
 
   // MYA URL
-  def dbURL = 'https://epicsweb.jlab.org/myquery/interval'
+  private def dbURL = 'https://epicsweb.jlab.org/myquery/interval'
 
   // constant settings
-  def querySettings = [
+  public def querySettings = [
     't': 'eventsimple', // sampling type
     'f': '3',           // fractional time digits
     'v': '',            // significant figures
@@ -16,21 +16,21 @@ class MYQuery {
   ]
 
   // timestamps
-  def t0str, t1str
+  private def t0str, t1str
 
 
   // constructor
-  MYQuery() {
+  public MYQuery() {
   }
 
   // check if an object is null or empty
-  def checkObj(obj, msg) {
+  public def checkObj(obj, msg) {
     if(obj==null || obj.size()==0)
       throw new Exception(msg)
   }
 
   // get run start and stop times
-  def getRunTimeStamps(runlist) {
+  public def getRunTimeStamps(runlist) {
 
     // query RCDB
     def result = REST.get("https://clas12mon.jlab.org/rcdb/runs/time?runmin=${runlist.min()}&runmax=${runlist.max()}")
@@ -47,13 +47,29 @@ class MYQuery {
   }
 
   // query MYA database
-  def query(pvName, timeStart, timeStop, deployment) {
+  public def query(pvName) {
+    // try 'ops' deployment; if that fails, retry with 'history'
+    try {
+      def payload = queryDeployment(pvName, 'ops')
+      return payload
+    } catch(Exception ex) {
+      System.out.println("Cannot find PV='$pvName' in range '$t0str' to '$t1str' in 'ops' deployment; trying 'history' deployment...")
+    }
+    try {
+      def payload = queryDeployment(pvName, 'history')
+      return payload
+    } catch(Exception ex) {
+      System.out.println("... deployment 'history' failed too; throwing exception!")
+    }
+    throw new Exception("Cannot find PV='$pvName' in range '$t0str' to '$t1str' in MYA DB")
+  }
+  private def queryDeployment(pvName, deployment) {
 
     // build query URL
     querySettings['c'] = pvName     // channel (PV name)
     querySettings['b'] = t0str      // begin date
     querySettings['e'] = t1str      // end date
-    querySettings['d'] = deployment // MYA deployment
+    querySettings['m'] = deployment // MYA deployment
     queryStr = querySettings.collect{k,v->"$k=$v"}.join('&')
     queryURL = "${dbURL}?${queryStr}"
 
