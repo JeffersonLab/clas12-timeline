@@ -75,7 +75,7 @@ class MYQuery {
 
     // query
     def payload = REST.get(queryURL)
-    checkObj(payload, "Failed to receive payload from URL '$queryURL')
+    checkObj(payload, "Failed to receive payload from URL '$queryURL'")
     return payload.data
   }
 
