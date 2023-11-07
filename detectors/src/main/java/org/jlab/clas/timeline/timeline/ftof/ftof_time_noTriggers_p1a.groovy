@@ -15,7 +15,7 @@ def processDirectory(dir, run) {
   def chi2list = []
   def histlist =   (0..<6).collect{
     def h1 = dir.getObject('/tof/p1a_dt_notriggertrack_S'+(it+1))
-    def f1 = FTOFFitter.timefit_p1a(h1)
+    def f1 = FTOFFitter.timefit_p1(h1)
 
     funclist.add(f1)
     meanlist.add(f1.getParameter(1))
