@@ -1,6 +1,5 @@
 package org.jlab.clas.timeline.timeline.epics
 
-import org.apache.groovy.dateutil.extensions.DateUtilExtensions
 import java.text.SimpleDateFormat
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.H1F
@@ -17,13 +16,14 @@ class epics_xy {
 
   def close() {
 
-    def ts = MYQuery.getRunTimeStamps(runlist)
+    def MYQ = new MYQuery()
+    def ts = MYQ.getRunTimeStamps(runlist)
 
     def epics = [:].withDefault{[:]}
-    dateFormatStr = 'yyyy-MM-dd HH:mm:ss.SSS'
-    def xs = MYQuery.query('IPM2H01.XPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].x = it.v }
-    def ys = MYQuery.query('IPM2H01.YPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].y = it.v }
-    def is = MYQuery.query('IPM2H01').each{      epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].i = it.v }
+    def dateFormatStr = 'yyyy-MM-dd HH:mm:ss.SSS'
+    def xs = MYQ.query('IPM2H01.XPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].x = it.v }
+    def ys = MYQ.query('IPM2H01.YPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].y = it.v }
+    def is = MYQ.query('IPM2H01').each{      epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].i = it.v }
 
     println('dl finished')
 

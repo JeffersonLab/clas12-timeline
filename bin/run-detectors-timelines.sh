@@ -237,7 +237,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   # organize output timelines
   echo ">>> organizing output timelines..."
   timelineFiles=$(find -name "*.hipo")
-  [ -z "$timelineFiles" ] && printError "no timelines were produced; check error logs in $logDir/"
+  [ -z "$timelineFiles" ] && printError "no timelines were produced; check error logs in $logDir/" && exit 100
   for timelineFile in $timelineFiles; do
     det=$(basename $timelineFile | sed 's;_.*;;g')
     case $det in
