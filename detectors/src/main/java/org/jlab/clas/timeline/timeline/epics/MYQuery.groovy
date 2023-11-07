@@ -50,18 +50,23 @@ class MYQuery {
   // query MYA database
   public def query(String pvName) {
     // try 'ops' deployment; if that fails, retry with 'history'
+    def exceptionList = []
     try {
       def payload = queryDeployment(pvName, 'ops')
       return payload
     } catch(Exception ex) {
       System.out.println("Cannot find PV='$pvName' in range '$t0str' to '$t1str' in 'ops' deployment; trying 'history' deployment...")
+      exceptionList << ex
     }
     try {
       def payload = queryDeployment(pvName, 'history')
       return payload
     } catch(Exception ex) {
       System.out.println("... deployment 'history' failed too; throwing exception!")
+      exceptionList << ex
     }
+    System.err.println("MYQUERY FAILURE: printing relevant exceptions:")
+    exceptionList.each{it.printStackTrace()}
     throw new Exception("Cannot find PV='$pvName' in range '$t0str' to '$t1str' in MYA DB")
   }
   private def queryDeployment(String pvName, String deployment) {
@@ -71,13 +76,20 @@ class MYQuery {
     querySettings['b'] = t0str      // begin date
     querySettings['e'] = t1str      // end date
     querySettings['m'] = deployment // MYA deployment
-    queryStr = querySettings.collect{k,v->"$k=$v"}.join('&')
-    queryURL = "${dbURL}?${queryStr}"
+    def queryStr = querySettings.collect{k,v->"$k=$v"}.join('&')
+    def queryURL = "${dbURL}?${queryStr}"
 
     // query
     println("MYQUERY: $queryURL")
     def payload = REST.get(queryURL)
     checkObj(payload, "Failed to receive payload from URL '$queryURL'")
+    // println("PAYLOAD: $payload")
+    if(payload['returnCount']==null) {
+      throw new Exception("myquery payload has no key 'returnCount' from URL '$queryURL'")
+    }
+    if(payload.returnCount <= 2) {
+      throw new Exception("myquery payload received, but seems to be empty, from URL '$queryURL'")
+    }
     return payload.data
   }
 
