@@ -15,7 +15,7 @@ inputCmdOpts=""
 
 # usage
 sep="================================================================"
-if [ $# -eq 0 ]; then
+usage() {
   echo """
   $sep
   USAGE: $0 [OPTIONS]...
@@ -30,19 +30,33 @@ if [ $# -eq 0 ]; then
     -o [OUTPUT_DIR]     output directory
                         default = ./outfiles/[DATASET_NAME]
 
+    -h, --help          print this usage guide
   """ >&2
+}
+if [ $# -eq 0 ]; then
+  usage
   exit 101
 fi
 
 # parse options
-while getopts "d:i:Uo:" opt; do
+helpMode=false
+while getopts "d:i:Uo:h-:" opt; do
   case $opt in
     d) inputCmdOpts+=" -d $OPTARG" ;;
     i) inputCmdOpts+=" -i $OPTARG" ;;
     U) inputCmdOpts+=" -U" ;;
     o) outputDir=$OPTARG ;;
+    h) helpMode=true ;;
+    -)
+      [ "$OPTARG" != "help" ] && printError "unknown option --$OPTARG"
+      helpMode=true
+      ;;
   esac
 done
+if $helpMode; then
+  usage
+  exit 101
+fi
 
 # set input/output directories and dataset name
 dataset=$($inputCmd $inputCmdOpts -D)
@@ -50,6 +64,7 @@ inputDir=$($inputCmd $inputCmdOpts -I)
 [ -z "$outputDir" ] && outputDir=$(pwd -P)/outfiles/$dataset
 
 # set subdirectories
+qaDir=$outputDir/timeline_physics_qa
 finalDir=$outputDir/timeline_web
 logDir=$outputDir/log
 
@@ -84,22 +99,22 @@ function exe {
 }
 
 # organize the data into datasets
-exe ./datasetOrganize.sh $dataset $inputDir
+exe ./datasetOrganize.sh $dataset $inputDir $qaDir
 
 # produce chargeTree.json
-exe run-groovy $TIMELINE_GROOVY_OPTS buildChargeTree.groovy $dataset
+exe run-groovy $TIMELINE_GROOVY_OPTS buildChargeTree.groovy $qaDir
 
 # loop over datasets
 # trigger electrons monitor
-exe run-groovy $TIMELINE_GROOVY_OPTS qaPlot.groovy $dataset
-exe run-groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $dataset
+exe run-groovy $TIMELINE_GROOVY_OPTS qaPlot.groovy $qaDir
+exe run-groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $qaDir $dataset
 # FT electrons
-exe run-groovy $TIMELINE_GROOVY_OPTS qaPlot.groovy $dataset FT
-exe run-groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $dataset FT
+exe run-groovy $TIMELINE_GROOVY_OPTS qaPlot.groovy $qaDir FT
+exe run-groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $qaDir $dataset FT
 # general monitor
-exe run-groovy $TIMELINE_GROOVY_OPTS monitorPlot.groovy $dataset
+exe run-groovy $TIMELINE_GROOVY_OPTS monitorPlot.groovy $qaDir
 # move timelines to output area
-exe ./stageTimelines.sh $dataset $finalDir
+exe ./stageTimelines.sh $qaDir $finalDir
 
 popd
 

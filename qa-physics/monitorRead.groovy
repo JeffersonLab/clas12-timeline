@@ -95,18 +95,6 @@ else if(runnum>=15019 && runnum<=15884) RG="RGM"
 else System.err.println "WARNING: unknown run group; using default run-group-dependent settings (see monitorRead.groovy)"
 println "rungroup = $RG"
 
-// helFlip: if true, REC::Event.helicity has opposite sign from reality
-def helFlip = false
-if(RG=="RGA") helFlip = true
-else if(RG=="RGB") {
-  helFlip = true
-  if(runnum>=11093 && runnum<=11283) helFlip = false // fall, 10.4 GeV period only
-  else if(runnum>=11323 && runnum<=11571) helFlip = false // winter
-};
-else if(RG=="RGK") helFlip = false
-else if(RG=="RGF") helFlip = true
-else if(RG=="RGM") helFlip = true
-
 // beam energy
 // - hard-coded; could instead get from RCDB, but sometimes it is incorrect
 def EBEAM = 10.6041 // RGA default
@@ -173,12 +161,6 @@ else if(RG=="RGM") {
     FCmode = 2 //no scalars read out in this range probably dosen't work anyway 
   }
 }
-
-// FC attenuation fix
-// FIXME: re-define this as a closure here, when resolving https://github.com/JeffersonLab/clas12-qadb/issues/12
-// RGB runs <6400 had wrong attenuation, need to use
-// fc -> fc*9.96025
-// (this is programmed in below, but mentioned here for documentation)
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -604,14 +586,6 @@ def writeHistos = {
       System.err.println "WARNING: faraday cup start > stop for run=${runnum} file=${segmentNum}"
     }
 
-    // RGB attenuation correction
-    if(RG=="RGB" && runnum<6400) {
-      fcStart *= 9.96025
-      fcStop *= 9.96025
-      ufcStart *= 9.96025
-      ufcStop *= 9.96025
-    }
-
     // write number of electrons and FC charge to datfile
     sectors.each{ sec ->
       datfileWriter << [ runnum, segmentNum ].join(' ') << ' '
@@ -734,7 +708,6 @@ inHipoList.each { inHipoFile ->
     // get helicity and fill helicity distribution
     if(event.hasBank("REC::Event")) helicity = eventBank.getByte('helicity',0)
     else helicity = 0 // (undefined)
-    if(helFlip) helicity *= -1 // flip helicity (needed for RGA pass1)
     switch(helicity) {
       case 1:  helStr='hp'; helDefined=true; break
       case -1: helStr='hm'; helDefined=true; break

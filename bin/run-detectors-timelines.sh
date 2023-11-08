@@ -12,7 +12,7 @@ rungroup=a
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list build focus-timelines focus-qa; do
+for key in list build skip-mya focus-timelines focus-qa help; do
   modes[$key]=false
 done
 
@@ -22,7 +22,7 @@ inputCmdOpts=""
 
 # usage
 sep="================================================================"
-if [ $# -eq 0 ]; then
+usage() {
   echo """
   $sep
   USAGE: $0 [OPTIONS]...
@@ -52,14 +52,21 @@ if [ $# -eq 0 ]; then
 
     --build             cleanly-rebuild the timeline code, then run
 
+    --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
+
     --focus-timelines   only produce the detector timelines, do not run detector QA code
     --focus-qa          only run the QA code (assumes you have detector timelines already)
+
+    -h, --help          print this usage guide
   """ >&2
+}
+if [ $# -eq 0 ]; then
+  usage
   exit 101
 fi
 
 # parse options
-while getopts "d:i:Uo:r:n:t:-:" opt; do
+while getopts "d:i:Uo:r:n:t:h-:" opt; do
   case $opt in
     d) inputCmdOpts+=" -d $OPTARG" ;;
     i) inputCmdOpts+=" -i $OPTARG" ;;
@@ -68,15 +75,20 @@ while getopts "d:i:Uo:r:n:t:-:" opt; do
     r) rungroup=$(echo $OPTARG | tr '[:upper:]' '[:lower:]') ;;
     n) numThreads=$OPTARG ;;
     t) singleTimeline=$OPTARG ;;
+    h) modes['help']=true ;;
     -)
       for key in "${!modes[@]}"; do
         [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
       done
-      [ -z "${modes[$OPTARG]}" ] && printError "unknown option --$OPTARG" && exit 100
+      [ -z "${modes[$OPTARG]-}" ] && printError "unknown option --$OPTARG" && exit 100
       ;;
     *) exit 100;;
   esac
 done
+if ${modes['help']}; then
+  usage
+  exit 101
+fi
 
 # set class path to include groovy's classpath, for `java` calls
 export CLASSPATH="$JYPATH${CLASSPATH:+:${CLASSPATH}}"
@@ -84,18 +96,25 @@ export CLASSPATH="$JYPATH${CLASSPATH:+:${CLASSPATH}}"
 # get main executable for detector timelines
 # FIXME: remove run group dependence
 MAIN="org.jlab.clas.timeline.run"
-if [[ "$rungroup" == "b" ]]; then
+if [ "$rungroup" = "b" -o "$rungroup" = "d" ]; then
   MAIN="org.jlab.clas.timeline.run_rgb"
 fi
 [[ ! "$rungroup" =~ ^[a-zA-Z] ]] && printError "unknown rungroup '$rungroup'" && exit 100
 export MAIN
+
+# build list of timelines
+if ${modes['skip-mya']}; then
+  timelineList=$(java $MAIN --timelines | grep -vE '^epics_')
+else
+  timelineList=$(java $MAIN --timelines)
+fi
 
 # list detector timelines, if requested
 if ${modes['list']}; then
   echo $sep
   echo "LIST OF TIMELINES"
   echo $sep
-  java $MAIN --timelines
+  echo $timelineList | sed 's; ;\n;g'
   exit $?
 fi
 
@@ -165,10 +184,7 @@ detDirs=(
 # cleanup output directories
 if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   if [ -d $finalDirPreQA ]; then
-    backupDir=$(pwd -P)/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
-    echo ">>> backing up any previous files to $backupDir ..."
-    mkdir -p $backupDir/
-    mv -v $finalDirPreQA $backupDir/
+    rm -rv $finalDirPreQA
   fi
 fi
 if [ -d $logDir ]; then
@@ -195,12 +211,12 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
 
   # produce timelines, multithreaded
   jobCnt=1
-  for timelineObj in $(java $MAIN --timelines); do
+  for timelineObj in $timelineList; do
     logFile=$logDir/$timelineObj
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
-    if [ $jobCnt -le $numThreads ]; then
-      echo ">>> producing timeline '$timelineObj' ..."
-      java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+    echo ">>> producing timeline '$timelineObj' ..."
+    java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+    if [ $jobCnt -lt $numThreads ]; then
       let jobCnt++
     else
       wait

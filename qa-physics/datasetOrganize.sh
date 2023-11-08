@@ -2,9 +2,10 @@
 
 set -e
 
-if [ $# -ne 2 ];then echo "USAGE: $0 [dataset] [input_dir]" >&2; exit 101; fi
+if [ $# -ne 3 ];then echo "USAGE: $0 [dataset] [input_dir] [output_dir]" >&2; exit 101; fi
 dataset=$1
 inputDir=$2
+outputDir=$3
 
 if [ -z "$TIMELINESRC" ]; then
   echo "ERROR: please source environ.sh first" >&2
@@ -12,8 +13,8 @@ if [ -z "$TIMELINESRC" ]; then
 fi
 
 # cleanup / generate new dataset subdirs
-OUTMON_DIR=$TIMELINESRC/qa-physics/outmon.${dataset}
-OUTDAT_DIR=$TIMELINESRC/qa-physics/outdat.${dataset}
+OUTMON_DIR=$outputDir/outmon
+OUTDAT_DIR=$outputDir/outdat
 for dir in $OUTMON_DIR $OUTDAT_DIR; do
   echo "clean $dir"
   mkdir -p $dir
@@ -22,9 +23,16 @@ for dir in $OUTMON_DIR $OUTDAT_DIR; do
 done
 
 # loop over runs, copying and linking to dataset subdirs
-for file in $(find $inputDir -name "monitor_*.hipo"); do
+hipoList=$(find $inputDir -name "monitor_*.hipo")
+datList=$(find $inputDir -name "data_table_*.dat")
+[ -z "$hipoList" -o -z "$datList" ] && echo "ERROR: no monitoring HIPO and/or DAT files found in $inputDir" >&2 && exit 100
+for file in $hipoList; do
   ln -sv $file $OUTMON_DIR/
 done
-for file in $(find $inputDir -name "data_table_*.dat"); do
-  cat $file >> $OUTDAT_DIR/data_table.dat
+for file in $datList; do
+  cat $file >> $OUTDAT_DIR/data_table.dat.tmp
 done
+
+# be sure the data table is sorted
+sort -n -o $OUTDAT_DIR/data_table.dat{,.tmp}
+rm $OUTDAT_DIR/data_table.dat.tmp

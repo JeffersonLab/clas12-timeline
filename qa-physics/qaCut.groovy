@@ -9,12 +9,16 @@ Tools T = new Tools()
 
 //--------------------------------------------------------------------------
 // ARGUMENTS:
-dataset = 'inbending1'
+if(args.length<2) {
+  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR] [DATASET] [USE_FT(optional,default=false)]"
+  System.exit(101)
+}
 useFT = false // if true, use FT electrons instead
-qaBit = -1 // if positive, produce QA timeline based on QA/qa.${dataset}/qaTree.json
-if(args.length>=1) dataset = args[0]
-if(args.length>=2) useFT = (args[1]=="FT") ? true : false
-if(args.length>=3) qaBit = args[2].toInteger()
+qaBit = -1 // if positive, produce QA timeline based on manual QA results
+inDir = args[0]
+dataset = args[1]
+if(args.length>=3) useFT = (args[2]=="FT") ? true : false
+if(args.length>=4) qaBit = args[3].toInteger()
 //--------------------------------------------------------------------------
 
 // vars and subroutines
@@ -52,7 +56,7 @@ def getEpochBounds = { e ->
 
 
 // build map of (runnum,filenum) -> (evnumMin,evnumMax)
-def dataFile = new File("outdat.${dataset}/data_table.dat")
+def dataFile = new File("${inDir}/outdat/data_table.dat")
 def tok
 def evnumTree = [:]
 if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
@@ -75,7 +79,7 @@ dataFile.eachLine { line ->
 
 // open hipo file
 def inTdir = new TDirectory()
-inTdir.readFile("outmon.${dataset}/monitorElec"+(useFT?"FT":"")+".hipo")
+inTdir.readFile("${inDir}/outmon/monitorElec"+(useFT?"FT":"")+".hipo")
 def inList = inTdir.getCompositeObjectList(inTdir)
 
 // define 'ratioTree', a tree with the following structure
@@ -695,7 +699,7 @@ def writeTimeline (tdir,timeline,title,once=false) {
   else {
     timeline.each { tdir.addDataSet(it) }
   }
-  def outHipoName = "outmon.${dataset}/${title}.hipo"
+  def outHipoName = "${inDir}/outmon/${title}.hipo"
   File outHipoFile = new File(outHipoName)
   if(outHipoFile.exists()) outHipoFile.delete()
   tdir.writeFile(outHipoName)
@@ -719,7 +723,7 @@ if(!useFT) {
 outHipoEpochs.mkdir("/timelines")
 outHipoEpochs.cd("/timelines")
 outHipoEpochs.addDataSet(TLqaEpochs)
-outHipoName = "outmon.${dataset}/${electronN}_yield_QA_epoch_view.hipo"
+outHipoName = "${inDir}/outmon/${electronN}_yield_QA_epoch_view.hipo"
 File outHipoEpochsFile = new File(outHipoName)
 if(outHipoEpochsFile.exists()) outHipoEpochsFile.delete()
 outHipoEpochs.writeFile(outHipoName)
@@ -729,7 +733,7 @@ outHipoEpochs.writeFile(outHipoName)
 //println T.pPrint(qaTree)
 qaTree.each { qaRun, qaRunTree -> qaRunTree.sort{it.key.toInteger()} }
 qaTree.sort()
-new File("outdat.${dataset}/qaTree"+(useFT?"FT":"")+".json").write(JsonOutput.toJson(qaTree))
+new File("${inDir}/outdat/qaTree"+(useFT?"FT":"")+".json").write(JsonOutput.toJson(qaTree))
 
 
 // print total QA passing fractions
@@ -737,7 +741,7 @@ def PF = nGoodTotal / (nGoodTotal+nBadTotal)
 def FF = 1-PF
 if(qaBit<0) println "\nQA cut overall passing fraction: $PF"
 else {
-  def PFfile = new File("outdat.${dataset}/passFractions.dat")
+  def PFfile = new File("${inDir}/outdat/passFractions.dat")
   def PFfileWriter = PFfile.newWriter(qaBit>0?true:false)
   def PFstr = qaBit==100 ? "Fraction of golden files (no defects): $PF" :
                            "Fraction of files with "+T.bitDescripts[qaBit]+": $FF"

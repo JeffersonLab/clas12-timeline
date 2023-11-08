@@ -22,6 +22,8 @@ flowchart TB
 
 ## Flowchart
 
+Note: output directories `$output_dir` and `$qa_dir` are typically set by wrapper scripts, and may vary depending on how they are run.
+
 ```mermaid
 flowchart TB
 
@@ -35,33 +37,33 @@ flowchart TB
 
     subgraph "Automated by ../bin/run-physics-timelines.sh"
       datasetOrganize[datasetOrganize.sh]:::auto
-      outmonFiles{{outmon.$dataset/monitor_$run.hipo}}:::data
-      outdatFiles{{outdat.$dataset/data_table.dat}}:::data
+      outmonFiles{{$qa_dir/outmon/monitor_$run.hipo}}:::data
+      outdatFiles{{$qa_dir/outdat/data_table.dat}}:::data
       monitorReadOut --> datasetOrganize
       datasetOrganize --> outmonFiles
       datasetOrganize --> outdatFiles
       
       monitorPlot[monitorPlot.groovy]:::auto
-      timelineFiles{{outmon.$dataset/$timeline.hipo}}:::timeline
+      timelineFiles{{$qa_dir/outmon/$timeline.hipo}}:::timeline
       outmonFiles --> monitorPlot
       monitorPlot --> timelineFiles
 
       qaPlot[qaPlot.groovy]:::auto
       createEpochs[create or edit<br>epochs/epochs.$dataset.txt<br>see mkTree.sh]:::manual
-      monitorElec{{outmon.$dataset/monitorElec.hipo}}:::data
+      monitorElec{{$qa_dir/outmon/monitorElec.hipo}}:::data
       outdatFiles --> qaPlot
       outdatFiles --> createEpochs
       qaPlot --> monitorElec
 
       qaCut[qaCut.groovy]:::auto
-      qaTree{{outdat.$dataset/qaTree.json}}:::data
+      qaTree{{$qa_dir/outdat/qaTree.json}}:::data
       monitorElec --> qaCut
       createEpochs --> qaCut
       qaCut --> timelineFiles
       qaCut --> qaTree
 
       buildCT[buildChargeTree.groovy]:::auto
-      chargeTree{{outdat.$dataset/chargeTree.json}}:::data
+      chargeTree{{$qa_dir/outdat/chargeTree.json}}:::data
       stage0[stageTimelines.sh]:::auto
       outdatFiles --> buildCT
       buildCT --> chargeTree
@@ -94,8 +96,8 @@ flowchart TB
 
     subgraph Finalize
       exeQAtimelines[exeQAtimelines.sh]:::manual
-      qaTreeUpdated{{outdat.$dataset/qaTree.json}}:::data
-      qaTL{{outmon.$dataset.qa/$timeline.hipo}}:::timeline
+      qaTreeUpdated{{$qa_dir/outdat/qaTree.json}}:::data
+      qaTL{{$qa_dir/outmon.qa/$timeline.hipo}}:::timeline
       stage1[stageTimelines.sh]:::manual
       qaLoc --> exeQAtimelines
       exeQAtimelines --> qaTL

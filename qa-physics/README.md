@@ -84,21 +84,19 @@ First step is to read DST or Skim files, producing HIPO files and data tables
       * DAQ-ungated FC charge at beginning of 5-file (minimum readout)
       * DAQ-ungated FC charge at end of 5-file (maximum readout)
       * average livetime
-    * `[output_directory]/monitor_${runnum}.hipo` contains several plots 
+    * monitoring HIPO file, `[output_directory]/monitor_${runnum}.hipo`, contains several plots 
       * there is one plot per 'segment' where a segment is a single DST file
         (5-file) or a set of 10000 events for skim files
 
 ### Data Organization
 * use the script `datasetOrganize.sh`
   * this will concatenate `dat` files from the input directory into a single file
-    `outdat.${dataset}/data_table.dat`, for the specified dataset
-  * it will also generate symlinks from `outmon.${dataset}/monitor*.hipo` to the
-    relevant HIPO files
+  * it will also generate symlinks to the relevant monitoring HIPO files
 
 
 ### Plotting Scripts
 * `monitorPlot.groovy`
-  * this will read `outmon.${dataset}/monitor*.hipo` files and produce several timelines
+  * this will read monitoring HIPO files and produce several timelines
     * Let X represent a quantity plotted in a timeline; the timeline plots the
       average value of X, versus run number
       * Several variables may be plotted together, on the same timeline plot,
@@ -112,7 +110,7 @@ First step is to read DST or Skim files, producing HIPO files and data tables
         * graph of the average value of X versus segment number
 
 * `qaPlot.groovy` 
-  * reads `outdat.${dataset}/data_table.dat` and generates `outmon.${dataset}/monitorElec.hipo`
+  * reads data table and generates `monitorElec.hipo`
     * within this HIPO file, there is one directory for each run, containing several
       plots:
       * `grA*`: N/F vs. file number (the `A` notation is so it appears first in the
@@ -153,7 +151,7 @@ generate QA timelines, and a `json` file which is used for the manual followup Q
   * Several other timelines are generated as well, such as standard deviation of 
     the number of electrons
 * `qaCut.groovy`
-  * reads `outmon.${dataset}/monitorElec.hipo`, along with `epochs/epochs.${dataset}.txt`, to build
+  * reads `monitorElec.hipo`, along with `epochs/epochs.${dataset}.txt`, to build
     timelines for the online monitor
   * if `$useFT` is set, it will use FT electrons instead
   * the runs are organized into epochs, wherein each:
@@ -164,7 +162,7 @@ generate QA timelines, and a `json` file which is used for the manual followup Q
     * QA cut lines are set using an interquartile range (IQR) rule: `cutFactor` * IQR,
       where `cutFactor` adjusts the overall width of the cuts
       * this is done for each sector individually
-      * results are stored in `outdat.${dataset}/qaTree.json`
+      * results are stored in `qaTree.json`
       * timelines HIPO files are also generated (which can be uploaded to the web server):
 
 ## Manual QA procedure
@@ -180,19 +178,15 @@ the timelines and recording features not identified by the automatic QA in
   * execute `getListOfDSTs.sh [dataset]` to obtain a list of run numbers and file
     numbers from the DST file directory; this script takes some time to run
   * execute `integrityCheck.sh [dataset]` to compare the list of DST files
-    to those which appear in `outdat.$dataset/data_table.dat`; if any DST files
+    to those which appear in `data_table.dat`; if any DST files
     do not appear in `data_table.dat`, the check will fail, the missing files
     will be printed, and it is recommended to re-run the automatic QA, either for
     those specific runs, or in its entirety
 * `cd QA`; this subdirectory contains code for the "manual QA"
-* `import.sh [dataset]` to import the automatically generated `qaTree.json`; this
+* `import.sh` to import the automatically generated `qaTree.json`; this
   will also generate a human-readable file, `qa/qaTable.dat`  
   * append the option `-cnds=user_comment` to copy the user comment from RCDB
     to `qa/qaTable.dat`, which is helpful for the manual QA procedure
-  * by default, the `json` file is in `../outdat.${dataset}/qaTree.json`;
-    you can also specify a path to a specific `qaTree.json` file; this is 
-    useful if you have a more up-to-date version somewhere else, and you
-    want to use the tools in this QA directory to make revisions
 * open `qa/qaTable.dat` in another window; this is the human-readable version of
   the imported `qaTree.json`
 * now scan through `qaTable.dat`, inspecting each run:
@@ -238,7 +232,6 @@ the timelines and recording features not identified by the automatic QA in
       document these cases with the Misc defect bit
 * after scanning through `qaTable.dat` and revising `qaTree.json`, return to the parent
 directory and call `exeQAtimelines.sh` to produce the updated QA timelines
-  * these QA timelines are stored in `outmon.${dataset}.qa`
   * it copies the revised`qaTree.json` (`QA/qa.${dataset}/qaTree.json`) to
     the new QA timeline directory, which can then be deployed to the web servers
   * this final `qaTree.json` is stored in the 
