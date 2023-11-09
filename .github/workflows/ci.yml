@@ -262,16 +262,16 @@ jobs:
         name: build
     - name: untar
       run: ls *.tar.gz | xargs -I{} tar xzvf {}
-    - name: dump timelines
-      run: |
-        source bin/environ.sh
-        echo "# Timelines Dump" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        find outfiles/${{ env.dataset }}/timeline_web -name "*.hipo" | while read file ; do
-          run-groovy bin/dump-timelines.groovy $file | grep -E '^>' | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
-        done
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        echo '' >> $GITHUB_STEP_SUMMARY
+    # - name: dump timelines ### DISABLED, since this is slow
+    #   run: |
+    #     source bin/environ.sh
+    #     echo "# Timelines Dump" >> $GITHUB_STEP_SUMMARY
+    #     echo '```' >> $GITHUB_STEP_SUMMARY
+    #     find outfiles/${{ env.dataset }}/timeline_web -name "*.hipo" | while read file ; do
+    #       run-groovy bin/dump-timelines.groovy $file | grep -E '^>' | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
+    #     done
+    #     echo '```' >> $GITHUB_STEP_SUMMARY
+    #     echo '' >> $GITHUB_STEP_SUMMARY
     - name: tree outfiles
       run: |
         rm -r outfiles/${{ env.dataset }}/log
