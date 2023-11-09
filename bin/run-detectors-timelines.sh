@@ -12,7 +12,7 @@ rungroup=a
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list build skip-mya focus-timelines focus-qa help; do
+for key in list build skip-mya focus-timelines focus-qa debug help; do
   modes[$key]=false
 done
 
@@ -56,6 +56,9 @@ usage() {
 
     --focus-timelines   only produce the detector timelines, do not run detector QA code
     --focus-qa          only run the QA code (assumes you have detector timelines already)
+
+    --debug             enable debug mode: run a single timeline with stderr and stdout printed to screen;
+                        it is best to use this with the '-t' option to debug specific timeline issues
 
     -h, --help          print this usage guide
   """ >&2
@@ -215,7 +218,13 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
     logFile=$logDir/$timelineObj
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
     echo ">>> producing timeline '$timelineObj' ..."
-    java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+    if ${modes['debug']}; then
+      java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir
+      echo "PREMATURE EXIT, since --debug option was used"
+      exit
+    else
+      java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+    fi
     if [ $jobCnt -lt $numThreads ]; then
       let jobCnt++
     else
