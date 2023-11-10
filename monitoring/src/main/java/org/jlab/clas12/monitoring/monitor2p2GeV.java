@@ -3391,12 +3391,12 @@ public class monitor2p2GeV {
             }
 		}
 		if(trigger_bits[1]||trigger_bits[2]||trigger_bits[3]||trigger_bits[4]||trigger_bits[5]||trigger_bits[6])Ntrigs++;
-		if(trigger_bits[1])H_trig_sector_count.fill(1);
-		if(trigger_bits[2])H_trig_sector_count.fill(2);
-		if(trigger_bits[3])H_trig_sector_count.fill(3);
-		if(trigger_bits[4])H_trig_sector_count.fill(4);
-		if(trigger_bits[5])H_trig_sector_count.fill(5);
-		if(trigger_bits[6])H_trig_sector_count.fill(6);
+        for (int i=1; i<=6; ++i) {
+            if (testTriggerSector(i)) {
+                H_trig_sector_count.fill(i);
+            }
+        }
+
 		if(trigger_bits[31])H_rand_trig_sector_count.fill(7);
 		if (runNum <= 6296) {
             if(trigger_bits[7]||trigger_bits[8]||trigger_bits[9])Nmuontrigs++;
