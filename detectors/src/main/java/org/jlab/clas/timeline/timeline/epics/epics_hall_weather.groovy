@@ -27,9 +27,10 @@ class epics_hall_weather {
 
     def epics = [:].withDefault{[:]}
     def dateFormatStr = 'yyyy-MM-dd HH:mm:ss.SSS'
-    def press = MYQ.query(pvNames.pressure).each{    epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].press = it.v }
-    def temp  = MYQ.query(pvNames.temperature).each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].temp  = it.v }
-    def humid = MYQ.query(pvNames.humidity).each{    epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].humid = it.v }
+
+    pvNames.each{ name, pv ->
+      MYQ.query(pv).each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()][name] = it.v }
+    }
 
     println('dl finished')
 
@@ -38,25 +39,24 @@ class epics_hall_weather {
 
     println('data sorted')
 
-    def ts0, press0, temp0, humid0, r0=null
+    def ts0, r0=null
+    def vals0 = pvNames.collectEntries{ name, pv -> [name, null] }
     def rundata = [:].withDefault{[]}
     data.each{
       if(it.run!=null) {
         r0 = r0 ? null : it.run
       } else if(r0) {
-        rundata[r0].push(['time':it.ts-ts0, 'pressure':press0, 'temperature':temp0, 'humidity':humid0])
+        rundata[r0].push(['time':it.ts-ts0] + vals0)
       }
       ts0 = it.ts
-      if(it.press!=null) press0 = it.press
-      if(it.temp!=null)  temp0  = it.temp
-      if(it.humid!=null) humid0 = it.humid
+      pvNames.each{ name, pv -> if(it[name]!=null) vals0[name] = it[name] }
     }
 
     def out = new TDirectory()
 
-    def timelineGraphs = pvNames.collectEntries{ name,pv -> [name, new GraphErrors(pv)] }
+    def timelineGraphs = pvNames.collectEntries{ name, pv -> [name, new GraphErrors(pv)] }
 
-    rundata.each{run,vals->
+    rundata.each{run, vals->
       out.mkdir("/$run")
       out.cd("/$run")
 
@@ -73,11 +73,12 @@ class epics_hall_weather {
         hists.each{ name, hist -> hist.fill(it[name]) }
       }
 
-      def fits = hists.collectEntries{ name, hist -> MoreFitter.gausFit(hist, "Q") }
-      timelineGraphs.each{ name, gr -> gr.addPoint(run, fits[name].getParameter(1), 0, 0) }
+      timelineGraphs.each{ name, gr ->
+        def mean = hists[name].getMean()
+        gr.addPoint(run, mean, 0, 0)
+      }
 
       hists.each{ name, hist -> out.addDataSet(hist) }
-      fits.each{  name, f    -> out.addDataSet(f)    }
 
       println("$run done")
     }

@@ -21,9 +21,9 @@ class epics_xy {
 
     def epics = [:].withDefault{[:]}
     def dateFormatStr = 'yyyy-MM-dd HH:mm:ss.SSS'
-    def xs = MYQ.query('IPM2H01.XPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].x = it.v }
-    def ys = MYQ.query('IPM2H01.YPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].y = it.v }
-    def is = MYQ.query('IPM2H01').each{      epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].i = it.v }
+    MYQ.query('IPM2H01.XPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].x = it.v }
+    MYQ.query('IPM2H01.YPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].y = it.v }
+    MYQ.query('IPM2H01').each{      epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].i = it.v }
 
     println('dl finished')
 
