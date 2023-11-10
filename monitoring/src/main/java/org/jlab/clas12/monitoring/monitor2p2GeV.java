@@ -1858,7 +1858,7 @@ public class monitor2p2GeV {
                 if (bank.getByte("charge", k) > 0) {
                     H_positive_theta_mom.fill(mom, theta);
                 }
-                if (bank.getByte("charge", k) < 0) {
+                else if (bank.getByte("charge", k) < 0) {
                     H_negative_theta_mom.fill(mom, theta);
                 }
                 if (bank.getInt("pid", k) == 11) {
@@ -1899,8 +1899,6 @@ public class monitor2p2GeV {
 				pip_vy = bank.getFloat("vy", k);
 				pip_vz = bank.getFloat("vz", k);
 				pip_beta = bank.getFloat("beta", k);
-				if( pid == 211 && pip_mom>0.5 && pip_theta<40 && pip_theta>6){ }
-
 				if( q>0 && pip_mom>0.5 && pip_theta<40 && pip_theta>5 && pip_beta>0){
 					VPIP = new LorentzVector(px,py,pz,Math.sqrt(pip_mom*pip_mom+0.139*0.139));
 					return k;
@@ -1966,8 +1964,6 @@ public class monitor2p2GeV {
 			if(inDC && pid==11)foundelec=true;
 			if(inDC && q<0&&thisbeta>0)nnegatives++;
 			if(inDC && npositives==0&&q>0&&thisbeta>0)mybetap=thisbeta;
-			if(inDC && pid!=11&&nnegatives<2&&q<0&&thisbeta>0) {
-            }
 			if(inDC && q>0&&thisbeta>0)npositives++;
 		}
 
@@ -2091,14 +2087,11 @@ public class monitor2p2GeV {
 						}
 					}
 				}
-				if( HTCCnphe>1 && e_ecal_E/e_mom > 0.18){}
-				if( true || (HTCCnphe>1 && e_ecal_E/e_mom > 0.15) ){
-					e_phi = (float)Math.toDegrees(Math.atan2(py,px));
-					e_vx = bank.getFloat("vx", k);
-					e_vy = bank.getFloat("vy", k);
-					Ve = new LorentzVector(px,py,pz,e_mom);
-					return k;
-				}
+                e_phi = (float)Math.toDegrees(Math.atan2(py,px));
+                e_vx = bank.getFloat("vx", k);
+                e_vy = bank.getFloat("vy", k);
+                Ve = new LorentzVector(px,py,pz,e_mom);
+                return k;
 			}
 		}
 		return -1;
@@ -2137,14 +2130,14 @@ public class monitor2p2GeV {
                         timediff = p_vert_time - vt;
                         H_p_RFtime1_FD_S[sector - 1].fill(timediff);
                     }
-                    if (pid == 211) {
+                    else if (pid == 211) {
                         en = (float) Math.sqrt(mom2 + mass_pion * mass_pion);
                         DCbeta = mom / en;
                         pi_vert_time = scintillator.getFloat("time", kk) - scintillator.getFloat("path", kk) / (29.98f * DCbeta);
                         timediff = pi_vert_time - vt;
                         H_pip_RFtime1_FD_S[sector - 1].fill(timediff);
                     }
-                    if (pid == -211) {
+                    else if (pid == -211) {
                         en = (float) Math.sqrt(mom2 + mass_pion * mass_pion);
                         DCbeta = mom / en;
                         pi_vert_time = scintillator.getFloat("time", kk) - scintillator.getFloat("path", kk) / (29.98f * DCbeta);
@@ -2153,7 +2146,7 @@ public class monitor2p2GeV {
                     }
 
                 }
-				            if (Central && (pind == k) && (scintillator.getByte("detector", kk) == 4)) {
+                if (Central && (pind == k) && (scintillator.getByte("detector", kk) == 4)) {
                     if (pid == 2212) {
                         en = (float) Math.sqrt(mom2 + mass_proton * mass_proton);
                         Cbeta = mom / en;
@@ -2161,14 +2154,14 @@ public class monitor2p2GeV {
                         timediff = p_vert_time - vt;
                         H_p_RFtime1_CD.fill(timediff);
                     }
-                    if (pid == 211) {
+                    else if (pid == 211) {
                         en = (float) Math.sqrt(mom2 + mass_pion * mass_pion);
                         Cbeta = mom / en;
                         pi_vert_time = scintillator.getFloat("time", kk) - scintillator.getFloat("path", kk) / (29.98f * Cbeta);
                         timediff = pi_vert_time - vt;
                         H_pip_RFtime1_CD.fill(timediff);
                     }
-                    if (pid == -211) {
+                    else if (pid == -211) {
                         en = (float) Math.sqrt(mom2 + mass_pion * mass_pion);
                         Cbeta = mom / en;
                         pi_vert_time = scintillator.getFloat("time", kk) - scintillator.getFloat("path", kk) / (29.98f * Cbeta);
@@ -2192,12 +2185,12 @@ public class monitor2p2GeV {
 			byte q = bank.getByte("charge", k);
 			float beta = bank.getFloat("beta", k);
 			float px = bank.getFloat("px" , k);
-                        float py = bank.getFloat("py" , k);
-                        float pz = bank.getFloat("pz" , k);
-                        float vx = bank.getFloat("vx" , k);
-                        float vy = bank.getFloat("vy" , k);
-                        float vz = bank.getFloat("vz" , k);
-                        float mom2 = px*px+py*py+pz*pz;
+            float py = bank.getFloat("py" , k);
+            float pz = bank.getFloat("pz" , k);
+            float vx = bank.getFloat("vx" , k);
+            float vy = bank.getFloat("vy" , k);
+            float vz = bank.getFloat("vz" , k);
+            float mom2 = px*px+py*py+pz*pz;
 			float mom = (float)Math.sqrt(px*px+py*py+pz*pz);
 			float mass = mom2*(1/(beta*beta)-1);
 			int status = bank.getShort("status", k);
@@ -2220,41 +2213,41 @@ public class monitor2p2GeV {
 					H_trig_sector_prot.fill(sector);
 					H_trig_sector_prot_rat.fill(sector);
 				}
-				if(pid==211){
+                else if(pid==211){
 					H_trig_sector_piplus.fill(sector);
 					H_trig_sector_piplus_rat.fill(sector);
 				}
-				if(pid==-211){
+                else if(pid==-211){
 					H_trig_sector_piminus.fill(sector);
 					H_trig_sector_piminus_rat.fill(sector);
 				}
-				if(pid==321){
+                else if(pid==321){
 					H_trig_sector_kplus.fill(sector);
 					H_trig_sector_kplus_rat.fill(sector);
 				}
-				if(pid==-321){
+                else if(pid==-321){
 					H_trig_sector_kminus.fill(sector);
 					H_trig_sector_kminus_rat.fill(sector);
 				}
-				if(pid==22){
+                else if(pid==22){
 					H_trig_sector_photon.fill(sector);
 					H_trig_sector_photon_rat.fill(sector);
 				}
-				if(pid==2112){
+                else if(pid==2112){
 					H_trig_sector_neutron.fill(sector);
 					H_trig_sector_neutron_rat.fill(sector);
 				}
-                                if(pid==45){
-                                        H_trig_sector_deut.fill(sector);
-                                        H_trig_sector_deut_rat.fill(sector);
-                                }
+                else if(pid==45){
+                    H_trig_sector_deut.fill(sector);
+                    H_trig_sector_deut_rat.fill(sector);
+                }
 				if (q>0){
 					H_trig_sector_positive_rat.fill(sector);
 				}
-				if (q==0){
+                else if (q==0){
 					H_trig_sector_neutral_rat.fill(sector);
 				}
-				if (q<0){
+                else if (q<0){
 					H_trig_sector_negative_rat.fill(sector);
 				}
 			}
@@ -2286,76 +2279,82 @@ public class monitor2p2GeV {
 		for(int k = 0; k < bank.rows(); k++){
 			int det = bank.getInt("layer", k);
 			short pind = bank.getShort("pindex",k);
-			if(det==1 && pind==e_part_ind){
-				e_ecal_X = bank.getFloat("x",k);
-				e_ecal_Y = bank.getFloat("y",k);
-                e_ecal_Z = bank.getFloat("z",k);
-				e_ecal_E += bank.getFloat("energy",k);
-                e_pcal_e += bank.getFloat("energy",k);
-				e_sect = bank.getByte("sector",k);
-				float path = bank.getFloat("path",k);
-				e_ecal_T_PCAL = bank.getFloat("time",k)-path/29.98f-STT;
-			}
-			if(det==4 && pind==e_part_ind){
-				e_ecal_E += bank.getFloat("energy",k);
-                e_etot_e += bank.getFloat("energy",k);
-				float path = bank.getFloat("path",k);
-                e_ecal_T_ECIN = bank.getFloat("time",k)-path/29.98f-STT;
-			}
-			if(det==7 && pind==e_part_ind){
-				e_ecal_E += bank.getFloat("energy",k);
-                e_etot_e += bank.getFloat("energy",k);
-				float path = bank.getFloat("path",k);
-                e_ecal_T_ECOU = bank.getFloat("time",k)-path/29.98f-STT;
-			}
-		}
-	}
+			if(pind==e_part_ind){
+                if (det == 1) {
+                    e_ecal_X = bank.getFloat("x", k);
+                    e_ecal_Y = bank.getFloat("y", k);
+                    e_ecal_Z = bank.getFloat("z", k);
+                    e_ecal_E += bank.getFloat("energy", k);
+                    e_pcal_e += bank.getFloat("energy", k);
+                    e_sect = bank.getByte("sector", k);
+                    float path = bank.getFloat("path", k);
+                    e_ecal_T_PCAL = bank.getFloat("time", k) - path / 29.98f - STT;
+                }
+                else if (det == 4) {
+                    e_ecal_E += bank.getFloat("energy", k);
+                    e_etot_e += bank.getFloat("energy", k);
+                    float path = bank.getFloat("path", k);
+                    e_ecal_T_ECIN = bank.getFloat("time", k) - path / 29.98f - STT;
+                }
+                else if (det == 7) {
+                    e_ecal_E += bank.getFloat("energy", k);
+                    e_etot_e += bank.getFloat("energy", k);
+                    float path = bank.getFloat("path", k);
+                    e_ecal_T_ECOU = bank.getFloat("time", k) - path / 29.98f - STT;
+                }
+            }
+        }
+    }
 
 	public void getElecEBCC(DataBank bank){
 		for(int k = 0; k < bank.rows(); k++){
 			short pind = bank.getShort("pindex",k);
-			if(bank.getByte("detector",k)==15 && pind==e_part_ind){
-				H_e_HTCC_nphe.fill(bank.getFloat("nphe",k));
-				H_e_HTCC_xy.fill(bank.getFloat("x",k) , bank.getFloat("y",k));
-				e_HTCC = (float)bank.getFloat("nphe",k);
-                                e_HTCC_X = bank.getFloat("x",k);
-                                e_HTCC_Y = bank.getFloat("y",k);
-                                e_HTCC_Z = bank.getFloat("z",k);
+            if (pind==e_part_ind) {
+                if(bank.getByte("detector", k) == 15) {
+                    H_e_HTCC_nphe.fill(bank.getFloat("nphe", k));
+                    H_e_HTCC_xy.fill(bank.getFloat("x", k), bank.getFloat("y", k));
+                    e_HTCC = (float) bank.getFloat("nphe", k);
+                    e_HTCC_X = bank.getFloat("x", k);
+                    e_HTCC_Y = bank.getFloat("y", k);
+                    e_HTCC_Z = bank.getFloat("z", k);
 
-			}
-			if(bank.getByte("detector",k)==16 && pind==e_part_ind){
-				hasLTCC = 1;
-				H_e_LTCC_nphe.fill(bank.getFloat("nphe",k));
-				H_e_LTCC_xy.fill(bank.getFloat("x",k) , bank.getFloat("y",k));
-				e_LTCC = (float)bank.getFloat("nphe",k);
-			}
+                }
+                else if (bank.getByte("detector", k) == 16) {
+                    hasLTCC = 1;
+                    H_e_LTCC_nphe.fill(bank.getFloat("nphe", k));
+                    H_e_LTCC_xy.fill(bank.getFloat("x", k), bank.getFloat("y", k));
+                    e_LTCC = (float) bank.getFloat("nphe", k);
+                }
+            }
 		}
 	}
     
 	public void getElecEBTOF(DataBank bank, DataBank particle){
 		for(int k = 0; k < bank.rows(); k++){
 			short pind = bank.getShort("pindex",k);
-			if(pind==e_part_ind && bank.getFloat("energy",k)>5){
-				float vt = particle.getFloat("vt",e_part_ind);
-				H_e_TOF_xy.fill(bank.getFloat("x",k) , bank.getFloat("y",k));
-				H_e_TOF_t_path.fill(bank.getFloat("time",k),bank.getFloat("path",k));
-				e_vert_time = bank.getFloat("time",k) - bank.getFloat("path",k)/29.98f;
-                float time2 = (e_vert_time-RFtime2+(rf_large_integer+0.5f)*rfPeriod)%rfPeriod;
-                time2 -= rfPeriod/2;
-				e_vert_time_RF = e_vert_time - vt;
-				H_e_vt1.fill(e_vert_time_RF);
-				H_e_vt2.fill(time2);
-				H_e_RFtime1_FD_S[e_sect-1].fill(e_vert_time_RF);
-                                e_TOF_X = bank.getFloat("x",k);
-                                e_TOF_Y = bank.getFloat("y",k);
-                                e_TOF_Z = bank.getFloat("z",k);
-			}
-			if(pind==pip_part_ind){
+			if(pind==e_part_ind) {
+                if (bank.getFloat("energy",k)>5){
+                    float vt = particle.getFloat("vt", e_part_ind);
+                    H_e_TOF_xy.fill(bank.getFloat("x", k), bank.getFloat("y", k));
+                    H_e_TOF_t_path.fill(bank.getFloat("time", k), bank.getFloat("path", k));
+                    e_vert_time = bank.getFloat("time", k) - bank.getFloat("path", k) / 29.98f;
+                    float time2 = (e_vert_time - RFtime2 + (rf_large_integer + 0.5f) * rfPeriod) % rfPeriod;
+                    time2 -= rfPeriod / 2;
+                    e_vert_time_RF = e_vert_time - vt;
+                    H_e_vt1.fill(e_vert_time_RF);
+                    H_e_vt2.fill(time2);
+                    H_e_RFtime1_FD_S[e_sect - 1].fill(e_vert_time_RF);
+                    e_TOF_X = bank.getFloat("x", k);
+                    e_TOF_Y = bank.getFloat("y", k);
+                    e_TOF_Z = bank.getFloat("z", k);
+                }
+            }
+            else if(pind==pip_part_ind){
 				float epip = (float)Math.sqrt( pip_mom*pip_mom + 0.139f*0.139f );
 				float pipDCbeta = pip_mom/epip;
 				pip_vert_time = bank.getFloat("time",k)-bank.getFloat("path",k)/ (29.98f * pipDCbeta) ;
 			}
-			if(pind==pim_part_ind){
+            else if(pind==pim_part_ind){
 				float epim = (float)Math.sqrt( pim_mom*pim_mom + 0.139f*0.139f );
 				float pimDCbeta = pim_mom/epim;
 				pim_vert_time = bank.getFloat("time",k)-bank.getFloat("path",k)/ (29.98f * pimDCbeta) ;
@@ -2381,11 +2380,11 @@ public class monitor2p2GeV {
 				e_track_chi2 = 	bank.getFloat("chi2",k);
 				e_track_ind = bank.getShort("index",k);
 			}
-			if(pind==pip_part_ind){
+            else if(pind==pip_part_ind){
 				pip_track_chi2 = bank.getFloat("chi2",k);
 				pip_track_ind = bank.getShort("index",k);
 			}
-			if(pind==pim_part_ind){
+            else if(pind==pim_part_ind){
 				pim_track_chi2 = bank.getFloat("chi2",k);
 				pim_track_ind = bank.getShort("index",k);
 			}
@@ -2413,18 +2412,18 @@ public class monitor2p2GeV {
 				found_eTraj=1;
 				if(trajBank.getInt("detector",r) == 15) {
 					e_HTCC_tX = trajBank.getFloat("x",r);
-                                        e_HTCC_tY = trajBank.getFloat("y",r);
-                                        e_HTCC_tZ = trajBank.getFloat("z",r);
+                    e_HTCC_tY = trajBank.getFloat("y",r);
+                    e_HTCC_tZ = trajBank.getFloat("z",r);
 				}
 			}
 		}
 		for(int r=0;r<htcc.rows();r++){
-                        if(htcc.getShort("pindex",r)==e_part_ind){
-                                if(htcc.getByte("detector",r)==15){
-                                        found_eHTCC = 1;
-                                        e_HTCC_nphe = htcc.getFloat("nphe",r);
-                                }
-			}
+            if(htcc.getShort("pindex",r)==e_part_ind){
+                if(htcc.getByte("detector",r)==15){
+                    found_eHTCC = 1;
+                    e_HTCC_nphe = htcc.getFloat("nphe",r);
+                }
+            }
 		}
 		if (found_eTraj == 1 && found_eHTCC == 1) {
 			H_e_HTCC_txy.fill(e_HTCC_tX,e_HTCC_tY);
@@ -2498,7 +2497,7 @@ public class monitor2p2GeV {
                     if (ECALbank.getInt("layer", l) == 4) {
                         sectorin = ECALbank.getByte("sector", l);
                     }
-                    if (ECALbank.getInt("layer", l) == 7) {
+                    else if (ECALbank.getInt("layer", l) == 7) {
                         sectorout = ECALbank.getByte("sector", l);
                     }
                 }
@@ -2719,8 +2718,8 @@ public class monitor2p2GeV {
 			float phiR1D = (float)Math.toDegrees(Math.atan2(bank.getFloat("c1_uy",k),bank.getFloat("c1_ux",k)));
 
 			float DCR2_X = bank.getFloat("t1_x" , k);
-                        float DCR2_Y = bank.getFloat("t1_y" , k);
-                        float DCR2_Z = bank.getFloat("t1_z" , k);
+            float DCR2_Y = bank.getFloat("t1_y" , k);
+            float DCR2_Z = bank.getFloat("t1_z" , k);
 			Vector3 DCR1POS = new Vector3(DCR2_X,DCR2_Y,DCR2_Z);
 			Vector3 DCR1DIR = new Vector3(bank.getFloat("t1_px" , k),bank.getFloat("t1_py" , k),bank.getFloat("t1_pz" , k));
 			DCR1POS.rotateZ( -3.141597f*s/3f );
@@ -3033,27 +3032,27 @@ public class monitor2p2GeV {
 					if(ECAL[sect-1]>0)H_trig_S1_ECAL_E.fill(ECAL[sect-1]);
 					H_trig_S1_PCAL_E.fill(e);H_trig_S1_PCAL_XY.fill(x,y);
                 }
-				if(testTriggerSector(2) &&sect==2&&NhitsSect[sect-1]==1){
+                else if(testTriggerSector(2) &&sect==2&&NhitsSect[sect-1]==1){
                     H_trig_S2_ETOT_E.fill(ETOT[sect-1]);
 					if(ECAL[sect-1]>0)H_trig_S2_ECAL_E.fill(ECAL[sect-1]);
 					H_trig_S2_PCAL_E.fill(e);H_trig_S2_PCAL_XY.fill(x,y);
                 }
-				if(testTriggerSector(3) &&sect==3&&NhitsSect[sect-1]==1){
+                else if(testTriggerSector(3) &&sect==3&&NhitsSect[sect-1]==1){
                     H_trig_S3_ETOT_E.fill(ETOT[sect-1]);
 					if(ECAL[sect-1]>0)H_trig_S3_ECAL_E.fill(ECAL[sect-1]);
 					H_trig_S3_PCAL_E.fill(e);H_trig_S3_PCAL_XY.fill(x,y);
                 }
-				if(testTriggerSector(4) &&sect==4&&NhitsSect[sect-1]==1){
+                else if(testTriggerSector(4) &&sect==4&&NhitsSect[sect-1]==1){
                     H_trig_S4_ETOT_E.fill(ETOT[sect-1]);
 					if(ECAL[sect-1]>0)H_trig_S4_ECAL_E.fill(ECAL[sect-1]);
 					H_trig_S4_PCAL_E.fill(e);H_trig_S4_PCAL_XY.fill(x,y);
                 }
-				if(testTriggerSector(5) &&sect==5&&NhitsSect[sect-1]==1){
+                else if(testTriggerSector(5) &&sect==5&&NhitsSect[sect-1]==1){
                     H_trig_S5_ETOT_E.fill(ETOT[sect-1]);
 					if(ECAL[sect-1]>0)H_trig_S5_ECAL_E.fill(ECAL[sect-1]);
 					H_trig_S5_PCAL_E.fill(e);H_trig_S5_PCAL_XY.fill(x,y);
                 }
-				if(testTriggerSector(6) &&sect==6&&NhitsSect[sect-1]==1){
+                else if(testTriggerSector(6) &&sect==6&&NhitsSect[sect-1]==1){
                     H_trig_S6_ETOT_E.fill(ETOT[sect-1]);
 					if(ECAL[sect-1]>0)H_trig_S6_ECAL_E.fill(ECAL[sect-1]);
 					H_trig_S6_PCAL_E.fill(e);H_trig_S6_PCAL_XY.fill(x,y);
@@ -3110,18 +3109,18 @@ public class monitor2p2GeV {
 			}
 			if(true || trig_HTCC_ring==4){
 				if(sect==1 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S1_HTCC_n.fill(nphe);H_trig_S1_HTCC_N.fill(NPHE);H_trig_S1_HTCC_XY.fill(x,y);}
-				if(sect==2 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S2_HTCC_n.fill(nphe);H_trig_S2_HTCC_N.fill(NPHE);H_trig_S2_HTCC_XY.fill(x,y);}
-				if(sect==3 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S3_HTCC_n.fill(nphe);H_trig_S3_HTCC_N.fill(NPHE);H_trig_S3_HTCC_XY.fill(x,y);}
-				if(sect==4 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S4_HTCC_n.fill(nphe);H_trig_S4_HTCC_N.fill(NPHE);H_trig_S4_HTCC_XY.fill(x,y);}
-				if(sect==5 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S5_HTCC_n.fill(nphe);H_trig_S5_HTCC_N.fill(NPHE);H_trig_S5_HTCC_XY.fill(x,y);}
-				if(sect==6 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S6_HTCC_n.fill(nphe);H_trig_S6_HTCC_N.fill(NPHE);H_trig_S6_HTCC_XY.fill(x,y);}
+                else if(sect==2 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S2_HTCC_n.fill(nphe);H_trig_S2_HTCC_N.fill(NPHE);H_trig_S2_HTCC_XY.fill(x,y);}
+                else if(sect==3 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S3_HTCC_n.fill(nphe);H_trig_S3_HTCC_N.fill(NPHE);H_trig_S3_HTCC_XY.fill(x,y);}
+                else if(sect==4 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S4_HTCC_n.fill(nphe);H_trig_S4_HTCC_N.fill(NPHE);H_trig_S4_HTCC_XY.fill(x,y);}
+                else if(sect==5 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S5_HTCC_n.fill(nphe);H_trig_S5_HTCC_N.fill(NPHE);H_trig_S5_HTCC_XY.fill(x,y);}
+                else if(sect==6 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S6_HTCC_n.fill(nphe);H_trig_S6_HTCC_N.fill(NPHE);H_trig_S6_HTCC_XY.fill(x,y);}
 				if(sect>0)H_trig_S_HTCC_theta[sect-1].fill(trig_HTCC_theta);
 				if(sect==1 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S1_HTCC_N_track.fill(NPHE);}
-				if(sect==2 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S2_HTCC_N_track.fill(NPHE);}
-				if(sect==3 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S3_HTCC_N_track.fill(NPHE);}
-				if(sect==4 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S4_HTCC_N_track.fill(NPHE);}
-				if(sect==5 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S5_HTCC_N_track.fill(NPHE);}
-				if(sect==6 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S6_HTCC_N_track.fill(NPHE);}
+                else if(sect==2 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S2_HTCC_N_track.fill(NPHE);}
+                else if(sect==3 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S3_HTCC_N_track.fill(NPHE);}
+                else if(sect==4 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S4_HTCC_N_track.fill(NPHE);}
+                else if(sect==5 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S5_HTCC_N_track.fill(NPHE);}
+                else if(sect==6 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S6_HTCC_N_track.fill(NPHE);}
 			}
 		}
 	}
@@ -3146,27 +3145,27 @@ public class monitor2p2GeV {
                             missTrig_S1_mt.fill(mom, theta);
                             missTrig_S1_mf.fill(mom, phi);
                         }
-                        if (DCsect == 2 && !testTriggerSector(2)) {
+                        else if (DCsect == 2 && !testTriggerSector(2)) {
                             missTrig_S2_ft.fill(phi, theta);
                             missTrig_S2_mt.fill(mom, theta);
                             missTrig_S2_mf.fill(mom, phi);
                         }
-                        if (DCsect == 3 && !testTriggerSector(3)) {
+                        else if (DCsect == 3 && !testTriggerSector(3)) {
                             missTrig_S3_ft.fill(phi, theta);
                             missTrig_S3_mt.fill(mom, theta);
                             missTrig_S3_mf.fill(mom, phi);
                         }
-                        if (DCsect == 4 && !testTriggerSector(4)) {
+                        else if (DCsect == 4 && !testTriggerSector(4)) {
                             missTrig_S4_ft.fill(phi, theta);
                             missTrig_S4_mt.fill(mom, theta);
                             missTrig_S4_mf.fill(mom, phi);
                         }
-                        if (DCsect == 5 && !testTriggerSector(5)) {
+                        else if (DCsect == 5 && !testTriggerSector(5)) {
                             missTrig_S5_ft.fill(phi, theta);
                             missTrig_S5_mt.fill(mom, theta);
                             missTrig_S5_mf.fill(mom, phi);
                         }
-                        if (DCsect == 6 && !testTriggerSector(6)) {
+                        else if (DCsect == 6 && !testTriggerSector(6)) {
                             missTrig_S6_ft.fill(phi, theta);
                             missTrig_S6_mt.fill(mom, theta);
                             missTrig_S6_mf.fill(mom, phi);
@@ -3202,23 +3201,23 @@ public class monitor2p2GeV {
 							H_TOF_vt_S1m.fill(vert_time);
 							H_TOF_vt_mom_S1m.fill(mom,vert_time);
 						}
-						if(sector==2){
+                        else if(sector==2){
 							H_TOF_vt_S2m.fill(vert_time);
 							H_TOF_vt_mom_S2m.fill(mom,vert_time);
 						}
-						if(sector==3){
+                        else if(sector==3){
 							H_TOF_vt_S3m.fill(vert_time);
 							H_TOF_vt_mom_S3m.fill(mom,vert_time);
 						}
-						if(sector==4){
+                        else if(sector==4){
 							H_TOF_vt_S4m.fill(vert_time);
 							H_TOF_vt_mom_S4m.fill(mom,vert_time);
 						}
-						if(sector==5){
+                        else if(sector==5){
 							H_TOF_vt_S5m.fill(vert_time);
 							H_TOF_vt_mom_S5m.fill(mom,vert_time);
 						}
-						if(sector==6){
+                        else if(sector==6){
 							H_TOF_vt_S6m.fill(vert_time);
 							H_TOF_vt_mom_S6m.fill(mom,vert_time);
 						}
@@ -3228,23 +3227,23 @@ public class monitor2p2GeV {
 							H_TOF_vt_S1p.fill(vert_time);
 							H_TOF_vt_mom_S1p.fill(mom,vert_time);
 						}
-						if(sector==2){
+                        else if(sector==2){
 							H_TOF_vt_S2p.fill(vert_time);
 							H_TOF_vt_mom_S2p.fill(mom,vert_time);
 						}
-						if(sector==3){
+                        else if(sector==3){
 							H_TOF_vt_S3p.fill(vert_time);
 							H_TOF_vt_mom_S3p.fill(mom,vert_time);
 						}
-						if(sector==4){
+                        else if(sector==4){
 							H_TOF_vt_S4p.fill(vert_time);
 							H_TOF_vt_mom_S4p.fill(mom,vert_time);
 						}
-						if(sector==5){
+                        else if(sector==5){
 							H_TOF_vt_S5p.fill(vert_time);
 							H_TOF_vt_mom_S5p.fill(mom,vert_time);
 						}
-						if(sector==6){
+                        else if(sector==6){
 							H_TOF_vt_S6p.fill(vert_time);
 							H_TOF_vt_mom_S6p.fill(mom,vert_time);
 						}
@@ -3267,7 +3266,6 @@ public class monitor2p2GeV {
         float foundFCup = -1;
         float foundGatedFCup = -1;
         boolean isLong = true;
-        //boolean isLong = false;
         for (int k = 0; k < rawScaler.rows(); k++) {
             if (rawScaler.getShort("channel", k) == chan && rawScaler.getByte("slot", k) == 0) {
                 if (isLong) {
@@ -3623,19 +3621,19 @@ public class monitor2p2GeV {
             if (e_sect == 1) {
                 H_e_vz_S1.fill(e_vz);
             }
-            if (e_sect == 2) {
+            else if (e_sect == 2) {
                 H_e_vz_S2.fill(e_vz);
             }
-            if (e_sect == 3) {
+            else if (e_sect == 3) {
                 H_e_vz_S3.fill(e_vz);
             }
-            if (e_sect == 4) {
+            else if (e_sect == 4) {
                 H_e_vz_S4.fill(e_vz);
             }
-            if (e_sect == 5) {
+            else if (e_sect == 5) {
                 H_e_vz_S5.fill(e_vz);
             }
-            if (e_sect == 6) {
+            else if (e_sect == 6) {
                 H_e_vz_S6.fill(e_vz);
             }
             if (found_e_FMM == 1) {
@@ -3648,19 +3646,19 @@ public class monitor2p2GeV {
                 if (e_sect == 1) {
                     H_e_FMMvz_S1.fill(e_FMMvz[1]);
                 }
-                if (e_sect == 2) {
+                else if (e_sect == 2) {
                     H_e_FMMvz_S2.fill(e_FMMvz[1]);
                 }
-                if (e_sect == 3) {
+                else if (e_sect == 3) {
                     H_e_FMMvz_S3.fill(e_FMMvz[1]);
                 }
-                if (e_sect == 4) {
+                else if (e_sect == 4) {
                     H_e_FMMvz_S4.fill(e_FMMvz[1]);
                 }
-                if (e_sect == 5) {
+                else if (e_sect == 5) {
                     H_e_FMMvz_S5.fill(e_FMMvz[1]);
                 }
-                if (e_sect == 6) {
+                else if (e_sect == 6) {
                     H_e_FMMvz_S6.fill(e_FMMvz[1]);
                 }
             }
@@ -3773,8 +3771,8 @@ public class monitor2p2GeV {
                 }
                 float CVT_eth = 2 * 57.296f * (float) Math.atan(0.93827 / ((Ebeam + 0.93827) * Math.tan((CVT_theta) / 57.296)));
 
-                float chi2cut = 200;//200
-                int NDFcut = 2;//2
+                float chi2cut = 200;
+                int NDFcut = 2;
                 float vzCut = 25;
                 float vz0 = 0;
                 boolean vzCutIs = Math.abs(e_vz - CVT_vz - vz0) < vzCut;
