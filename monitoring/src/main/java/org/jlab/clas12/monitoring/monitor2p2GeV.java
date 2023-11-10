@@ -39,7 +39,7 @@ public class monitor2p2GeV {
             }
             return false;
         }
-        else return 1 == (TriggerWord & ( 1 << sector));
+        else return 0 != (TriggerWord & ( 1 << sector));
     }
 
 	boolean userTimeBased;
