@@ -17,10 +17,13 @@ class epics_hall_weather {
   def close() {
 
     def pvNames = [
-      'pressure':    'B_SYS_WEATHER_SF_L3_Press',
-      'temperature': 'B_SYS_WEATHER_SF_L1_Temp',
-      'humidity':    'B_SYS_WEATHER_SF_L1_Humid',
+      'pressure_hall_B':    'B_SYS_WEATHER_SF_L3_Press',
+      'pressure_hall_D':    'RESET:i:GasPanelBarPress1', // Hall D pressure (fallback for periods where HallB pressure sensor is unavailable)
+      'temperature_hall_B': 'B_SYS_WEATHER_SF_L1_Temp',
+      'humidity_hall_B':    'B_SYS_WEATHER_SF_L1_Humid',
     ]
+
+    def hallDUnitConversion = 4.015 // HallB pressure units = hallDUnitConversion * HallD pressure units
 
     def MYQ = new MYQuery()
     def ts = MYQ.getRunTimeStamps(runlist)
@@ -29,7 +32,11 @@ class epics_hall_weather {
     def dateFormatStr = 'yyyy-MM-dd HH:mm:ss.SSS'
 
     pvNames.each{ name, pv ->
-      MYQ.query(pv).each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()][name] = it.v }
+      MYQ.query(pv).each{
+        val = it.v
+        if(name=='pressure_hallD') val *= hallDUnitConversion
+        epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()][name] = val
+      }
     }
 
     println('dl finished')
@@ -54,7 +61,7 @@ class epics_hall_weather {
 
     def out = new TDirectory()
 
-    def timelineGraphs = pvNames.collectEntries{ name, pv -> [name, new GraphErrors(pv)] }
+    def timelineGraphs = pvNames.collectEntries{ name, pv -> [name, new GraphErrors(name)] }
 
     rundata.each{run, vals->
       out.mkdir("/$run")
@@ -66,7 +73,7 @@ class epics_hall_weather {
         def (nq1,nq2,nq3) = [nlen/4 as int, nlen/2 as int, nlen*3/4 as int]
         def (q1,q2,q3) = [entries[nq1], entries[nq2], entries[nq3]]
         def (xm,dx) = [q2, q3-q1]
-        [ name, new H1F("h$name$run","$name for run $run;$name", 200, xm-3*dx, xm+3*dx) ]
+        [ name, new H1F("h$name$run","$name from PV $pv for run $run;$name", 200, xm-3*dx, xm+3*dx) ]
       }
 
       vals.each{
