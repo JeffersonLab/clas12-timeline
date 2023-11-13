@@ -33,7 +33,7 @@ class epics_hall_weather {
 
     pvNames.each{ name, pv ->
       MYQ.query(pv).each{
-        val = it.v
+        def val = it.v
         if(name=='pressure_hallD') val *= hallDUnitConversion
         epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()][name] = val
       }
