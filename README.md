@@ -46,7 +46,8 @@ bin/run-monitoring.sh -d rga_sp19_v5 /volatile/clas12/rg-a/production/pass0/sp19
 ```
 - sets the `dataset` name to `"rga_sp19_v5"`, which will be referenced in subsequent steps
 - assumes the input data are found in `/volatile/clas12/rg-a/production/pass0/sp19/v5/mon`
-- then run one (or both) of the printed `sbatch` commands:
+
+Then run one (or both) of the printed `sbatch` commands:
 ```bash
 sbatch ./slurm/job.rga_sp19_v5.detectors.slurm   # for detector timelines (need mon schema)
 sbatch ./slurm/job.rga_sp19_v5.physics.slurm     # for physics timelines
