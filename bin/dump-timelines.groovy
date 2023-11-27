@@ -2,10 +2,27 @@
 import org.jlab.groot.data.TDirectory
 
 if(args.length<1) {
-  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [TIMELINE HIPO FILE]"
+  System.err.println """
+  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [TIMELINE]
+  - [TIMELINE] may either be a timeline URL or a timeline HIPO file
+  """
   System.exit(101)
 }
-def inFile = args[0]
+def inSpec = args[0]
+def inFiles = []
+if(inSpec ==~ /^https.*clas12mon.jlab.org.*timeline.*/) {
+  def inDir = inSpec.replaceAll(/^.*jlab.org/, "/u/group/clas/www/clas12mon/html/hipo")
+  inDir = "/"+inDir.tokenize('/')[0..-1].join("/")
+  def inDirObj = new File(inDir)
+  inDirObj.traverse(type: groovy.io.FileType.FILES, nameFilter: ~/.*\.hipo/) {
+    if(it.size()>0) inFiles << inDir+"/"+it.getName()
+  }
+} else {
+  inFiles << inSpec
+}
+System.out.println "inFiles:"
+inFiles.each{System.out.println " - $it"}
+System.exit(0)
 
 def inTdir = new TDirectory()
 try {
