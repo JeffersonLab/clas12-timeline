@@ -64,11 +64,11 @@ inFiles.each{ inFile ->
     .tokenize('/')[-2..-1]
     .collect{ it.replaceAll(/.hipo$/,'') }[-1]
 
-  System.out.println """
-  > ${inFileBase}
-  > timelines = $timelines
-  > plots     = $plots
-  """
+  // System.out.println """
+  // > ${inFileBase}
+  // > timelines = $timelines
+  // > plots     = $plots
+  // """
 
   def numRunsCheck = tlGraphs.collect{ it.getDataSize(0) }.unique()
   if(numRunsCheck.size()>1) {
