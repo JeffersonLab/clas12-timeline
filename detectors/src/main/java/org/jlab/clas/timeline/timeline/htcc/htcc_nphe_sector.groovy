@@ -40,7 +40,7 @@ class htcc_nphe_sector {
           graph.setTitleY("Average HTCC Number of Photoelectrons per sector")
           graph.setTitleX("run number")
         } else if (plotType == 'npheCorrectionFactor') {
-          graph = new GraphErrors("sec$sec normalization factor")
+          graph = new GraphErrors("sec$sec")
           graph.setTitle("Normalization factor (mean nphe per channel / average nphe across all channels) per sector")
           graph.setTitleY("Normalization factor per sector")
           graph.setTitleX("run number")
