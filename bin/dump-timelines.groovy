@@ -1,4 +1,4 @@
-// dump the name of all the timeline plots for a given timeline HIPO file
+// dump the contents of all the timeline plots for a given timeline HIPO file or timeline URL
 import org.jlab.groot.data.TDirectory
 
 def outFilePrefix = "out"
