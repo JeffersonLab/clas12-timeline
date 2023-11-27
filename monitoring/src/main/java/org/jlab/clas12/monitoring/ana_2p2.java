@@ -4,20 +4,8 @@ import java.io.*;
 import java.util.*;
 import java.text.SimpleDateFormat;
 
-import org.jlab.groot.math.*;
-import org.jlab.groot.data.H1F;
-import org.jlab.groot.data.H2F;
-import org.jlab.groot.math.F1D;
-import org.jlab.groot.fitter.DataFitter;
-import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.hipo.HipoDataSource;
-import org.jlab.groot.fitter.ParallelSliceFitter;
-import org.jlab.groot.graphics.EmbeddedCanvas;
-import org.jlab.groot.data.GraphErrors;
-import org.jlab.groot.data.TDirectory;
-import org.jlab.clas.physics.Vector3;
-import org.jlab.clas.physics.LorentzVector;
 import org.jlab.groot.base.GStyle;
 import org.jlab.logging.DefaultLogger;
 

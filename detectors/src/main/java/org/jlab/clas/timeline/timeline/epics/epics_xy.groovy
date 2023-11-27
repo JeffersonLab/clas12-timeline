@@ -1,6 +1,5 @@
 package org.jlab.clas.timeline.timeline.epics
 
-import org.apache.groovy.dateutil.extensions.DateUtilExtensions
 import java.text.SimpleDateFormat
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.H1F
@@ -16,22 +15,15 @@ class epics_xy {
   }
 
   def close() {
-    def runmin = runlist.min()
-    def runmax = runlist.max()
 
-    def ts = REST.get("https://clas12mon.jlab.org/rcdb/runs/time?runmin=$runmin&runmax=$runmax").findAll{it[0] in runlist}
-    def (t0,t1) = [ts[0][1], ts[-1][2]].collect{new Date(((long)it)*1000)}
-    t1 = DateUtilExtensions.plus(t1, 1)
-    print([t0,t1])
-    def (t0str, t1str) = [t0, t1].collect{DateUtilExtensions.format(it, "yyyy-MM-dd")}
+    def MYQ = new MYQuery()
+    def ts = MYQ.getRunTimeStamps(runlist)
 
     def epics = [:].withDefault{[:]}
-    def xs = REST.get("https://epicsweb.jlab.org/myquery/interval?c=IPM2H01.XPOS&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
-      .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].x = it.v}
-    def ys = REST.get("https://epicsweb.jlab.org/myquery/interval?c=IPM2H01.YPOS&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
-      .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].y = it.v}
-    def is = REST.get("https://epicsweb.jlab.org/myquery/interval?c=IPM2H01&b=$t0str&e=$t1str&l=&t=eventsimple&m=history&f=3&v=&d=on&p=on").data
-      .each{epics[new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSS').parse(it.d).getTime()].i = it.v}
+    def dateFormatStr = 'yyyy-MM-dd HH:mm:ss.SSS'
+    MYQ.query('IPM2H01.XPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].x = it.v }
+    MYQ.query('IPM2H01.YPOS').each{ epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].y = it.v }
+    MYQ.query('IPM2H01').each{      epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()].i = it.v }
 
     println('dl finished')
 
