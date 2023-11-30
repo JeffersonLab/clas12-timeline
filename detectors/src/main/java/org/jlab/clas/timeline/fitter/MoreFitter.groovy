@@ -42,7 +42,7 @@ class MoreFitter {
       f1.setParameters(amp,mu,sig)
       def rng = [mu-2.5*sig, mu+2.5*sig]
       f1.setRange(*rng)
-      DataFitter.fit(f1,h1,"Q")
+      DataFitter.fit(f1,h1,opts)
       (amp,mu,sig) = (0..<f1.getNPars()).collect{f1.getParameter(it)}
       if(mu<x1 || mu>x2 || sig>(x2-x1)) return null
       return [f1.getChiSquare(), [amp,mu,sig], rng]

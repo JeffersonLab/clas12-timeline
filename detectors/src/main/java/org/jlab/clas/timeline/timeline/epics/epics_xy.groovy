@@ -3,6 +3,7 @@ package org.jlab.clas.timeline.timeline.epics
 import java.text.SimpleDateFormat
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.H1F
+import org.jlab.groot.math.F1D
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.MoreFitter
 
@@ -14,9 +15,37 @@ class epics_xy {
     runlist.push(run)
   }
 
+  static F1D gausFit(H1F h1) {
+
+    def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -10, 10);
+    double hAmp  = h1.getBinContent(h1.getMaximumBin());
+    double hMean = h1.getAxis().getBinCenter(h1.getMaximumBin());
+    double hRMS  = Math.min(h1.getRMS(),1.0);
+    f1.setRange(hMean-2.0*hRMS, hMean+2.0*hRMS);
+    f1.setParameter(0, hAmp);
+    f1.setParameter(1, hMean);
+    f1.setParameter(2, hRMS);
+
+    def makefit = {func->
+      hMean = func.getParameter(1)
+      hRMS = func.getParameter(2).abs()
+      func.setRange(hMean-2.0*hRMS,hMean+2.0*hRMS)
+      MoreFitter.fit(func,h1,"Q")
+      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+    }
+
+    def fits1 = (0..20).collect{makefit(f1)}
+    def bestfit = fits1.sort()[0]
+    f1.setParameters(*bestfit[1])
+    return f1
+
+  }
+
+
   def close() {
 
     def MYQ = new MYQuery()
+    MYQ.querySettings['l'] = "${100*runlist.size()}" // limit the payload size with less bins than default
     def ts = MYQ.getRunTimeStamps(runlist)
 
     def epics = [:].withDefault{[:]}
@@ -69,8 +98,8 @@ class epics_xy {
         hy.fill(it[2], it[0]*it[3]/1000)
       }
 
-      def fx = MoreFitter.gausFit(hx, "Q")
-      def fy = MoreFitter.gausFit(hy, "Q")
+      def fx = gausFit(hx)
+      def fy = gausFit(hy)
       grx.addPoint(run, fx.getParameter(1), 0,0)
       gry.addPoint(run, fy.getParameter(1), 0,0)
 
