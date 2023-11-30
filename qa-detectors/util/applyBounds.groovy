@@ -17,6 +17,7 @@ Tools T = new Tools()
 def cutsFileList = [
   [ /./, "cuts.txt"], // default file
   [ /rga.*fa18/, "cuts_rga_fa18.txt"], // RGA Fall 2018
+  [ /rgc/, "cuts_rgc_su22.txt"], // RGC
 ]
 /////////////////////////////////////////////////////
 
