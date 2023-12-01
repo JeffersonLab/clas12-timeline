@@ -87,7 +87,7 @@ inFiles.each{ inFile ->
     if(it==0) {
       outFileWriter << "#runnum " << tlGraphs.collect{gr->"'${gr.getName()}'"}.join(' ') << '\n'
     }
-    outFileWriter << runnum << ' '
+    outFileWriter << runnum.toInteger() << ' '
     tlGraphs.each{ gr ->
       if(runnum != gr.getDataX(it)) {
         System.err.println("ERROR: timelines have differing run numbers")
