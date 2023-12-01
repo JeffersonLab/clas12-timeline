@@ -15,7 +15,7 @@ class epics_xy {
     runlist.push(run)
   }
 
-  static F1D gausFit(H1F h1) {
+  static F1D gausFit(H1F h1) { // FIXME: not stable...
 
     def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -10, 10);
     double hAmp  = h1.getBinContent(h1.getMaximumBin());
@@ -41,11 +41,23 @@ class epics_xy {
 
   }
 
+  static F1D justUseStats(H1F h1) { // no fit, just use mean and RMS from the histogram
+    def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -10, 10);
+    double hAmp  = h1.getBinContent(h1.getMaximumBin());
+    double hMean = h1.getMean()
+    double hRMS  = h1.getRMS()
+    f1.setRange(hMean-2.0*hRMS, hMean+2.0*hRMS);
+    f1.setParameter(0, hAmp);
+    f1.setParameter(1, hMean);
+    f1.setParameter(2, hRMS);
+    return f1
+  }
+
 
   def close() {
 
     def MYQ = new MYQuery()
-    MYQ.querySettings['l'] = "${100*runlist.size()}" // limit the payload size with less bins than default
+    MYQ.querySettings['l'] = "${1000*runlist.size()}" // downsample the payload, since it's too big for a full run period
     def ts = MYQ.getRunTimeStamps(runlist)
 
     def epics = [:].withDefault{[:]}
@@ -98,12 +110,13 @@ class epics_xy {
         hy.fill(it[2], it[0]*it[3]/1000)
       }
 
-      def fx = gausFit(hx)
-      def fy = gausFit(hy)
+      def fx = justUseStats(hx)
+      def fy = justUseStats(hy)
       grx.addPoint(run, fx.getParameter(1), 0,0)
       gry.addPoint(run, fy.getParameter(1), 0,0)
 
-      [hx,hy,fx,fy].each{out.addDataSet(it)}
+      [hx,hy].each{out.addDataSet(it)}
+      // [fx,fy].each{out.addDataSet(it)}
       println("$run done")
     }
 
