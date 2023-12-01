@@ -67,7 +67,12 @@ cutsFileList.each { re, cutsFile ->
       // tokenize
       line = line.replaceAll(/#.*/,'')
       tok = line.tokenize(' ')
-      if(tok.size()==0) return
+      if(tok.size()==0)
+        return
+      if(tok =~ /\t/) {
+        System.err.println "ERROR: $cutsFileName contains a TAB, please replace them with SPACEs"
+        System.exit(100)
+      }
       def det      = tok[0]
       def timeline = tok[1]
       def lbound   = tok[2].toDouble()
