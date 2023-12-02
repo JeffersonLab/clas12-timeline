@@ -219,11 +219,11 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
     echo ">>> producing timeline '$timelineObj' ..."
     if ${modes['debug']}; then
-      java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir
+      java $TIMELINE_JAVA_OPTS_HIGHMEM $MAIN $timelineObj $inputDir
       echo "PREMATURE EXIT, since --debug option was used"
       exit
     else
-      java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+      java $TIMELINE_JAVA_OPTS_HIGHMEM $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
     fi
     if [ $jobCnt -lt $numThreads ]; then
       let jobCnt++
