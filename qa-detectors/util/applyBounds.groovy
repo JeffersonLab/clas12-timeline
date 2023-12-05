@@ -16,7 +16,7 @@ Tools T = new Tools()
  */
 def cutsFileList = [
   [ /./, "cuts.txt"], // default file
-  // [ /rga.*fa18/, "cuts_rga_fa18.txt"], // RGA Fall 2018 // DEPRECATED, replaced with run_range feature
+  // [ /rga.*fa18/, "cuts_rga_fa18.txt"], // RGA Fall 2018 // DEPRECATED, replaced with run_range feature; here in case we need it again
 ]
 /////////////////////////////////////////////////////
 
