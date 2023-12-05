@@ -7,6 +7,8 @@ ltcc ltcc_elec_nphe_sec          4      6      counts  spec:sec5  color:blue  ru
 # ltcc ltcc_elec_nphe_sec          10     16     counts  spec:sec5  color:blue  run_range:11093:11283  # RGB fa19 outbending
 # ltcc ltcc_elec_nphe_sec          11     17     counts  spec:sec3  color:red   run_range:11284:11571  # RGB fa19 and wi20 inbending
 # ltcc ltcc_elec_nphe_sec          11     17     counts  spec:sec5  color:blue  run_range:11284:11571  # RGB fa19 and wi20 inbending
+# ltcc ltcc_elec_nphe_sec          12     18     counts  spec:sec3  color:red   run_range:16128:17811  # RGC su22, fa22, wi23
+# ltcc ltcc_elec_nphe_sec          12     18     counts  spec:sec5  color:blue  run_range:16128:17811  # RGC su22, fa22, wi23
 ltcc ltcc_elec_nphe_sec          11     14     counts  spec:sec3  color:red                          # all other runs
 ltcc ltcc_elec_nphe_sec          11     14     counts  spec:sec5  color:blue                         # all other runs
 

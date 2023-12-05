@@ -12,7 +12,7 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
     - lower bound of QA cut
     - upper bound of QA cut
     - units
-    - (optional) additional specifier(s), with the syntax `key:value`
+    - (optional) additional specifier(s), with the syntax `key:value`, each key-value pair separated by a space
       - `spec` key: apply the cut to a specific timeline _e.g._, sector or layer
       - `color` key: customize the cut line color
       - `run_range` key: apply to a specific run range, _e.g.,_, `run_range:5000:6000` will apply to runs $\in[5000,6000]$
