@@ -167,8 +167,7 @@ if(eng) {
       System.exit(100)
     }
   }
-  println("debug: trying to call close()")
-  engine.close() // leak happens here!
+  engine.close()
   println("debug: "+engine.getClass().getSimpleName()+" ended")
 } else {
   System.err.println("error: "+args[0]+" not found")
