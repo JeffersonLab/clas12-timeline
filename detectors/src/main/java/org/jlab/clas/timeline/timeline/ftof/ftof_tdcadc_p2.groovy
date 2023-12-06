@@ -18,12 +18,6 @@ def processDirectory(dir, run) {
     def h1 = HistoUtil.zoomHisto(dir.getObject('/tof/p2_tdcadc_dt_S'+(it+1)))
     def f1 = FTOFFitter.tdcadcdifffit_p2(h1)
 
-    // FIXME
-    // FIXME
-    // these fits are often bad!
-    // FIXME
-    // FIXME
-
     funclist.add(f1)
     meanlist.add(f1.getParameter(1))
     sigmalist.add(f1.getParameter(2).abs())
