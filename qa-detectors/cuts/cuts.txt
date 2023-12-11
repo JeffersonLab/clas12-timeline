@@ -4,7 +4,8 @@ rf   rftime_electron_FD_sigma    0      0.070  ns
 ltcc ltcc_elec_nphe_sec          11     14     counts sec3
 ltcc ltcc_elec_nphe_sec          11     14     counts sec5
 
-htcc htcc_nphe_sec               12.5   14.5   counts
+htcc htcc_nphe_sec_npheMean      12.5   14.5   counts
+htcc htcc_nphe_sec_normFactor    0.9    1.1    unitless
 htcc htcc_vtimediff_sector_mean  -1     1      ns
 htcc htcc_vtimediff_sector_sigma 0      1      ns
 
