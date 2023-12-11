@@ -8,12 +8,14 @@ Tools T = new Tools()
 
 def debug = false
 
+// parse arguments
 if(args.length<1) {
   System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR]"
   System.exit(101)
 }
 inDir = args[0] + "/outdat"
 
+// vars
 def fdFileN = "$inDir/qaTreeFD.json"
 def ftFileN = "$inDir/qaTreeFT.json"
 def FDFile = new File(fdFileN)
@@ -29,10 +31,8 @@ def defectMask
 def comment
 def runQAFT
 def fileQAFT
-def deleteComment
 
-
-// loop through new qaTree runs
+// loop through FD qaTree runs
 // run number loop
 qaTreeFD.each{ runnum, fileTree ->
   if(debug) println "RUN=$runnum ---------------"
@@ -45,20 +45,26 @@ qaTreeFD.each{ runnum, fileTree ->
     
     // get QA info from FT qaTree
     runQAFT = qaTreeFT[runnum]
-    if(runQAFT!=null) fileQAFT = qaTreeFT[runnum][filenum]
-    else fileQAFT = null
+    if(runQAFT != null) {
+      fileQAFT = qaTreeFT[runnum][filenum]
+    } else {
+      fileQAFT = null
+    }
 
     // get the comment from the FT qaTree file, if it exists; if not
     // grab the comment from the FD qaTree file
-    if(fileQAFT!=null) comment = T.getLeaf(fileQAFT,['comment'])
-    else comment = T.getLeaf(fileQAFD,['comment'])
-    if(comment==null) comment=""
+    if(fileQAFT != null) {
+      comment = T.getLeaf(fileQAFT,['comment'])
+    } else {
+      comment = T.getLeaf(fileQAFD,['comment'])
+    }
+    if(comment==null) {
+      comment = ""
+    }
     qaTreeMelded[runnum][filenum]['comment'] = comment
-    deleteComment = false
 
     // copy event number range from FD qaTree file
-    qaTreeMelded[runnum][filenum]['evnumMin'] = fileQAFD['evnumMin']
-    qaTreeMelded[runnum][filenum]['evnumMax'] = fileQAFD['evnumMax']
+    ['evnumMin', 'evnumMax'].each{ qaTreeMelded[runnum][filenum][it] = fileQAFD[it] }
 
     // loop through sectors and meld their defect bits
     meldListOR = []
@@ -68,25 +74,28 @@ qaTreeFD.each{ runnum, fileTree ->
       meldList = []
 
       // meld FD defect bits
-meldList+=defectListFD
+      meldList += defectListFD
+
       // meld FT defect bits
       if(fileQAFT!=null) {
         defectListFT = T.getLeaf(fileQAFT,['sectorDefects',sector])
       }
-meldList+=defectListFT
-meldList.unique()
+      meldList+=defectListFT
+
       // add this sector's meldList to the OR of each sector's meldList,
       // and to the melded tree
+      meldList.unique()
       qaTreeMelded[runnum][filenum]['sectorDefects'][sector] = meldList
       meldListOR += meldList
 
-
+      // debugging printout
       if(debug) {
         println "s${sector}"
         println "     FD: $defectListFD"
         println "     FT: $defectListFT"
         println "  melded: $meldList"
       }
+
     } // end sector loop
 
     // compute defect bitmask
@@ -97,12 +106,9 @@ meldList.unique()
       println "--> comment: $comment"
     }
     qaTreeMelded[runnum][filenum]['defect'] = defectMask
-    if(deleteComment) qaTreeMelded[runnum][filenum]['comment'] = ""
 
   } // end filenum loop
 } // end runnum loop
 
-
 // output melded qaTree.json
 new File("$inDir/qaTree.json").write(JsonOutput.toJson(qaTreeMelded))
-
