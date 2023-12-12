@@ -28,7 +28,7 @@ class htcc_nphe_ring_sector {
   }
 
   def close() {
-    ['npheMean', 'npheCorrectionFactor'].each { plotType ->
+    ['npheMean', 'normFactor'].each { plotType ->
       TDirectory out = new TDirectory()
       out.mkdir('/timelines')
 
@@ -40,7 +40,7 @@ class htcc_nphe_ring_sector {
           graph.setTitle("Average HTCC Number of Photoelectrons per sector per ring")
           graph.setTitleY("Average HTCC Number of Photoelectrons per sector per ring")
           graph.setTitleX("run number")
-        } else if (plotType == 'npheCorrectionFactor') {
+        } else if (plotType == 'normFactor') {
           graph = new GraphErrors(name + " normalization factor")
           graph.setTitle("Normalization factor (mean nphe per channel / average nphe across all channels) per sector per ring")
           graph.setTitleY("Normalization factor per sector per ring")
@@ -54,7 +54,7 @@ class htcc_nphe_ring_sector {
 
           if (plotType == 'npheMean') {
             graph.addPoint(it.run, it.h1.getMean(), 0, 0)
-          } else if (plotType == 'npheCorrectionFactor') {
+          } else if (plotType == 'normFactor') {
             graph.addPoint(it.run, it.correctionFactor, 0, 0)
           }
         }
