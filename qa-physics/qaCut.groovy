@@ -704,9 +704,9 @@ def writeTimeline (tdir,timeline,title,once=false) {
   tdir.writeFile(outHipoName)
 }
 
-electronN = "electron_" + (useFT ? "FT" : "trigger")
+electronN = "electron_" + (useFT ? "FT" : "FD")
 writeTimeline(outHipoQA,TLqa,"${electronN}_yield_QA_${qaName}",useFT)
-writeTimeline(outHipoA,TLA,"${electronN}_yield_normalized_values",useFT)
+writeTimeline(outHipoA,TLA,"${electronN}_normalized_yield",useFT)
 writeTimeline(outHipoN,TLN,"${electronN}_yield_values",useFT)
 writeTimeline(outHipoSigmaN,TLsigmaN,"${electronN}_yield_stddev",useFT)
 if(!useFT) {
