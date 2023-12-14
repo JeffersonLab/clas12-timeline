@@ -34,5 +34,5 @@ for file in $datList; do
 done
 
 # be sure the data table is sorted
-sort -n -o $OUTDAT_DIR/data_table.dat{,.tmp}
+sort -n -t ' ' -k1,1 -k2,2 -o $OUTDAT_DIR/data_table.dat{,.tmp}
 rm $OUTDAT_DIR/data_table.dat.tmp
