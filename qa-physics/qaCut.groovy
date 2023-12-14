@@ -47,12 +47,6 @@ def getEpoch = { r,s ->
   if(e<0) throw new Exception("run $r sector $s has unknown epoch")
   return e
 }
-def lowerBound, upperBound
-def getEpochBounds = { e ->
-  epochFile.eachLine { line,i ->
-    if(i==e) (lowerBound,upperBound) = line.tokenize(' ').collect{it.toInteger()}
-  }
-}
 
 
 // build map of (runnum,filenum) -> (evnumMin,evnumMax)
@@ -598,8 +592,8 @@ inList.each { obj ->
       histA_bad = buildHisto(grA_bad,250,minA,maxA)
 
       // define lines
-      lowerBound = grA.getDataX(0)
-      upperBound = grA.getDataX(grA.getDataSize(0)-1)
+      def lowerBound = grA.getDataX(0)
+      def upperBound = grA.getDataX(grA.getDataSize(0)-1)
       lineMedian = buildLine(
         grA,lowerBound,upperBound,"median",cutTree[sector][epoch]['mq'])
       lineCutLo = buildLine(
@@ -668,13 +662,16 @@ sectors.each { s ->
     outHipoEpochs.cd("/${sectorIt}")
     epochPlotTree[sectorIt].each { epochIt,map ->
 
-      getEpochBounds(epochIt) // sets lower(upper)Bound
+      def elowerBound, eupperBound
+      epochFile.eachLine { line,i ->
+        if(i==epochIt) (elowerBound,eupperBound) = line.tokenize(' ').collect{it.toInteger()}
+      }
       elineMedian = buildLine(
-        map['grA_good'],lowerBound,upperBound,"median",cutTree[sectorIt][epochIt]['mq'])
+        map['grA_good'],elowerBound,eupperBound,"median",cutTree[sectorIt][epochIt]['mq'])
       elineCutLo = buildLine(
-        map['grA_good'],lowerBound,upperBound,"cutLo",cutTree[sectorIt][epochIt]['cutLo'])
+        map['grA_good'],elowerBound,eupperBound,"cutLo",cutTree[sectorIt][epochIt]['cutLo'])
       elineCutHi = buildLine(
-        map['grA_good'],lowerBound,upperBound,"cutHi",cutTree[sectorIt][epochIt]['cutHi'])
+        map['grA_good'],elowerBound,eupperBound,"cutHi",cutTree[sectorIt][epochIt]['cutHi'])
 
       histA_good = buildHisto(map['grA_good'],500,minA,maxA)
       histA_bad = buildHisto(map['grA_bad'],500,minA,maxA)
