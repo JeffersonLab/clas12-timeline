@@ -23,7 +23,7 @@ class Tools {
     "TotalOutlierFT: outlier N/F, but not terminal, marginal, or LossFT, FT electron",
     "TerminalOutlierFT: outlier N/F of first or last file of run, not marginal, FT electron",
     "MarginalOutlierFT: marginal outlier N/F, within one stddev of cut line, FT electron",
-    "LossFT: N/F diminished within FT for several consecutive files"
+    "LossFT: N/F diminished within FT for several consecutive files",
   ]
 
   // list of bit names and descriptions
