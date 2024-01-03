@@ -111,6 +111,8 @@ exe run-groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $qaDir $dataset
 # FT electrons
 exe run-groovy $TIMELINE_GROOVY_OPTS qaPlot.groovy $qaDir FT
 exe run-groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $qaDir $dataset FT
+# meld FT and FD JSON files
+exe run-groovy $TIMELINE_GROOVY_OPTS mergeFTandFD.groovy $qaDir
 # general monitor
 exe run-groovy $TIMELINE_GROOVY_OPTS monitorPlot.groovy $qaDir
 # move timelines to output area

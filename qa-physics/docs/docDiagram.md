@@ -56,11 +56,16 @@ flowchart TB
       qaPlot --> monitorElec
 
       qaCut[qaCut.groovy]:::auto
+      mergeFTandFD[mergeFTandFD.groovy]:::auto
+      qaTreeFD{{$qa_dir/outdat/qaTreeFD.json}}:::data
+      qaTreeFT{{$qa_dir/outdat/qaTreeFT.json}}:::data
       qaTree{{$qa_dir/outdat/qaTree.json}}:::data
       monitorElec --> qaCut
       createEpochs --> qaCut
       qaCut --> timelineFiles
-      qaCut --> qaTree
+      qaCut --> qaTreeFD --> mergeFTandFD
+      qaCut --> qaTreeFT --> mergeFTandFD
+      mergeFTandFD --> qaTree
 
       buildCT[buildChargeTree.groovy]:::auto
       chargeTree{{$qa_dir/outdat/chargeTree.json}}:::data

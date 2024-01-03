@@ -17,6 +17,7 @@ Tools T = new Tools()
 def cutsFileList = [
   [ /./, "cuts.txt"], // default file
   [ /rga.*fa18/, "cuts_rga_fa18.txt"], // RGA Fall 2018
+  [ /rgc/, "cuts_rgc_su22.txt"], // RGC
 ]
 /////////////////////////////////////////////////////
 
@@ -67,7 +68,12 @@ cutsFileList.each { re, cutsFile ->
       // tokenize
       line = line.replaceAll(/#.*/,'')
       tok = line.tokenize(' ')
-      if(tok.size()==0) return
+      if(tok.size()==0)
+        return
+      if(tok =~ /\t/) {
+        System.err.println "ERROR: $cutsFileName contains a TAB, please replace them with SPACEs"
+        System.exit(100)
+      }
       def det      = tok[0]
       def timeline = tok[1]
       def lbound   = tok[2].toDouble()

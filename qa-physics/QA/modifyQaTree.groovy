@@ -14,6 +14,7 @@ usage["sectorLoss"] = "sectorLoss: specify a sector loss"
 usage["setComment"] = "setComment: change or delete the comment"
 usage["addComment"] = "addComment: append a comment"
 usage["custom"] = "custom: do a custom action (see code)"
+usage["lossFT"] = "lossFT: specify a FT loss"
 println("\n\n")
 
 
@@ -173,6 +174,50 @@ else if(cmd=="sectorLoss") {
       - set [lastFile] to 1 to denote last file of run
       - use \"all\" in place of [list_of_sectors] to apply to all sectors
       - this will set the SectorLoss bit for specified files and sectors;
+        it will unset any other relevant bits
+      - you will be prompted to enter a comment
+    """)
+    System.exit(101)
+  }
+}
+
+else if(cmd=="lossFT") {
+  def rnum,fnumL,fnumR
+  if(args.length>4) {
+    rnum = args[1].toInteger()
+    fnumL = args[2].toInteger()
+    fnumR = args[3].toInteger()
+
+    println("run $rnum files ${fnumL}-"+(fnumR==1 ? "END" : fnumR) + ": define sector loss")
+
+    println("Enter a comment, if you want, otherwise press return")
+    print("> ")
+    def cmt = System.in.newReader().readLine()
+
+    qaTree["$rnum"].each { k,v ->
+      def qaFnum = k.toInteger()
+      if( qaFnum>=fnumL && ( fnumR==1 || qaFnum<=fnumR ) ) {
+
+        qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] -= T.bit("TotalOutlierFT")
+        qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] -= T.bit("TerminalOutlierFT")
+        qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] -= T.bit("MarginalOutlierFT")
+        qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] += T.bit("LossFT")
+
+        recomputeDefMask(rnum,qaFnum)
+
+        if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
+      }
+    }
+
+  }
+  else {
+    def helpStr = usage["$cmd"].tokenize(':')[1]
+    println(
+    """
+    SYNTAX: ${cmd} [run] [firstFile] [lastFile]
+      -$helpStr
+      - set [lastFile] to 1 to denote last file of run
+      - this will set the LossFT bit for specified files;
         it will unset any other relevant bits
       - you will be prompted to enter a comment
     """)

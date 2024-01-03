@@ -14,6 +14,7 @@ class MYQuery {
     'd': 'on',          // data update events only
     'p': 'on',          // include prior point
     'm': 'history',     // MYA deployment
+    'l': '',            // limit by binning (downsample)
   ]
 
   // timestamps

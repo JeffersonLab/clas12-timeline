@@ -40,7 +40,7 @@ class ECFitter {
     double hRMS  = h1.getRMS(); //ns
     f1.setParameter(0, hAmp);
     f1.setParameter(1, hMean);
-    f1.setParameter(2, 0.1);
+    f1.setParameter(2, hRMS);
     f1.setRange(hMean-1,hMean+1)
     DataFitter.fit(f1,h1,"")
 

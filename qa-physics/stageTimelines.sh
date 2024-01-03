@@ -33,15 +33,14 @@ mkdir_clean() {
 pushd $outputDir
 mkdir_clean phys_qa phys_qa_extra
 extraList=(
-  electron_FT_yield_normalized_values
+  electron_FD_yield_QA_Automatic_Result
+  electron_FD_yield_QA_epoch_view
+  electron_FD_yield_stddev
+  electron_FD_yield_values
   electron_FT_yield_QA_Automatic_Result
-  electron_trigger_yield_QA_Automatic_Result
   electron_FT_yield_QA_epoch_view
   electron_FT_yield_stddev
   electron_FT_yield_values
-  electron_trigger_yield_QA_epoch_view
-  electron_trigger_yield_stddev
-  electron_trigger_yield_values
   faraday_cup_stddev
   helicity_sinPhi
   relative_yield

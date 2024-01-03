@@ -42,8 +42,12 @@ timeline_groovy_opts=(
   -Djava.awt.headless=true
 )
 
+# run java with more resources, to mitigate large memory residence for long run periods
+timeline_java_opts_highmem=$(echo ${timeline_java_opts[*]} | sed 's;Xmx.*m;Xmx2048m;')
+
 # exports
 export CLASSPATH="$(echo "${java_classpath[*]}" | sed 's; ;:;g')${CLASSPATH:+:${CLASSPATH}}"
 export JYPATH="$(echo "${groovy_classpath[*]}" | sed 's; ;:;g')${JYPATH:+:${JYPATH}}"
 export TIMELINE_JAVA_OPTS="${timeline_java_opts[*]}"
 export TIMELINE_GROOVY_OPTS="${timeline_groovy_opts[*]}"
+export TIMELINE_JAVA_OPTS_HIGHMEM=$timeline_java_opts_highmem

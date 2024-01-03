@@ -14,12 +14,16 @@ class Tools {
   // - bitName will be used as an enumerator; colon must follow
   // - description will be printed if desired; do not use colons in description
   def bitDefinitions = [
-    "TotalOutlier: outlier N/F, but not terminal, marginal, or sector loss",
-    "TerminalOutlier: outlier N/F of first or last file of run, not marginal",
-    "MarginalOutlier: marginal outlier N/F, within one stddev of cut line",
-    "SectorLoss: N/F diminished within a sector for several consecutive files",
+    "TotalOutlier: outlier N/F, but not terminal, marginal, or sector loss, for FD electron",
+    "TerminalOutlier: outlier N/F of first or last file of run, not marginal, for FD electron",
+    "MarginalOutlier: marginal outlier N/F, within one standard deviation of cut line, for FD electron",
+    "SectorLoss: N/F diminished within a FD sector for several consecutive files",
     "LowLiveTime: live time < 0.9",
-    "Misc: miscellaneous defect, documented as comment"
+    "Misc: miscellaneous defect, documented as comment",
+    "TotalOutlierFT: outlier N/F, but not terminal, marginal, or `LossFT`, FT electron",
+    "TerminalOutlierFT: outlier N/F of first or last file of run, not marginal, FT electron",
+    "MarginalOutlierFT: marginal outlier N/F, within one standard deviation of cut line, FT electron",
+    "LossFT: N/F diminished within FT for several consecutive files",
   ]
 
   // list of bit names and descriptions

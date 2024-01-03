@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.FTOFFitter
+import org.jlab.clas.timeline.util.HistoUtil
 
 class ftof_tdcadc_p2 {
 
@@ -14,7 +15,7 @@ def processDirectory(dir, run) {
   def sigmalist = []
   def chi2list = []
   def histlist =   (0..<6).collect{
-    def h1 = dir.getObject('/tof/p2_tdcadc_dt_S'+(it+1))
+    def h1 = HistoUtil.zoomHisto(dir.getObject('/tof/p2_tdcadc_dt_S'+(it+1)))
     def f1 = FTOFFitter.tdcadcdifffit_p2(h1)
 
     funclist.add(f1)

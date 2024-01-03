@@ -17,9 +17,17 @@ mkdir -p $qaDir
 rm -r $qaDir
 mkdir -p $qaDir
 
+echo "FD part"
 for bit in {0..5} 100; do
   run-groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $inDir $dataset false $bit
-  qa=$(ls -t $inDir/outmon/electron_trigger_*QA*.hipo | grep -v epoch | head -n1)
+  qa=$(ls -t $inDir/outmon/electron_FD_*QA*.hipo | grep -v epoch | head -n1)
+  mv $qa ${qaDir}/$(echo $qa | sed 's/^.*_QA_//g')
+done
+
+echo "FT part"
+for bit in {6..9}; do
+  run-groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $inDir $dataset useFT $bit
+  qa=$(ls -t $inDir/outmon/electron_FT_*QA*.hipo | grep -v epoch | head -n1)
   mv $qa ${qaDir}/$(echo $qa | sed 's/^.*_QA_//g')
 done
 

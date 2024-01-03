@@ -40,8 +40,9 @@ It is recommended to use `bash` or `zsh` as your shell; `tcsh` is not supported.
   * inspect error logs (_e.g._, `../bin/error-print.sh`) to make sure all jobs ran successfully
 * `../bin/run-physics-timelines.sh $dataset`, which does the following:
   * runs `datasetOrganize.sh`
-  * runs `qaPlot.groovy` (on electron trigger and FT)
-  * runs `qaCut.groovy` (on electron trigger and FT)
+  * runs `qaPlot.groovy` (on FD and FT)
+  * runs `qaCut.groovy` (on FD and FT)
+  * runs `mergeFTandFD.groovy` to combine FD and FT results
   * runs `monitorPlot.groovy`
   * copies timelines to output timeline directory
     using `stageTimelines.sh`

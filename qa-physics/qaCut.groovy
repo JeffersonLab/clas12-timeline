@@ -47,12 +47,6 @@ def getEpoch = { r,s ->
   if(e<0) throw new Exception("run $r sector $s has unknown epoch")
   return e
 }
-def lowerBound, upperBound
-def getEpochBounds = { e ->
-  epochFile.eachLine { line,i ->
-    if(i==e) (lowerBound,upperBound) = line.tokenize(' ').collect{it.toInteger()}
-  }
-}
 
 
 // build map of (runnum,filenum) -> (evnumMin,evnumMax)
@@ -164,23 +158,23 @@ def cutFactor = 4.0
 def mq,lq,uq,iqr,cutLo,cutHi
 sectors.each { s ->
   sectorIt = sec(s)
-  ratioTree[sectorIt].each { epochIt,ratioList ->
+  if( !useFT || (useFT && sectorIt==1)) {
+    ratioTree[sectorIt].each { epochIt,ratioList ->
 
-    mq = median(ratioList) // middle quartile
-    lq = median(ratioList.findAll{it<mq}) // lower quartile
-    uq = median(ratioList.findAll{it>mq}) // upper quartile
-    iqr = uq - lq // interquartile range
-    cutLo = lq - cutFactor * iqr // lower QA cut boundary
-    cutHi = uq + cutFactor * iqr // upper QA cut boundary
+      mq = median(ratioList) // middle quartile
+      lq = median(ratioList.findAll{it<mq}) // lower quartile
+      uq = median(ratioList.findAll{it>mq}) // upper quartile
+      iqr = uq - lq // interquartile range
+      cutLo = lq - cutFactor * iqr // lower QA cut boundary
+      cutHi = uq + cutFactor * iqr // upper QA cut boundary
 
-    if(useFT) cutLo = lq - 2 * cutFactor * iqr // override FT low cut to be lower
-    
-    cutTree[sectorIt][epochIt]['mq'] = mq
-    cutTree[sectorIt][epochIt]['lq'] = lq
-    cutTree[sectorIt][epochIt]['uq'] = uq
-    cutTree[sectorIt][epochIt]['iqr'] = iqr
-    cutTree[sectorIt][epochIt]['cutLo'] = cutLo
-    cutTree[sectorIt][epochIt]['cutHi'] = cutHi
+      cutTree[sectorIt][epochIt]['mq'] = mq
+      cutTree[sectorIt][epochIt]['lq'] = lq
+      cutTree[sectorIt][epochIt]['uq'] = uq
+      cutTree[sectorIt][epochIt]['iqr'] = iqr
+      cutTree[sectorIt][epochIt]['cutLo'] = cutLo
+      cutTree[sectorIt][epochIt]['cutHi'] = cutHi
+    }
   }
 }
 //jPrint("cuts.${dataset}.json",cutTree) // output cutTree to JSON
@@ -235,17 +229,19 @@ def insertEpochPlot = { map,name,plots ->
 def electronT = useFT ? "Forward Tagger Electron" : "Trigger Electron"
 sectors.each { s ->
   sectorIt = sec(s)
-  ratioTree[sectorIt].each { epochIt,ratioList ->
-    insertEpochPlot(epochPlotTree[sectorIt][epochIt],
-      "grA",defineEpochPlot("grA_epoch","${electronT} N/F",sectorIt,epochIt))
-    insertEpochPlot(epochPlotTree[sectorIt][epochIt],
-      "grN",defineEpochPlot("grN_epoch","Number ${electronT}s N",sectorIt,epochIt))
-    insertEpochPlot(epochPlotTree[sectorIt][epochIt],
-      "grF",defineEpochPlot("grF_epoch","Gated Faraday Cup charge F [nC]",sectorIt,epochIt))
-    insertEpochPlot(epochPlotTree[sectorIt][epochIt],
-      "grU",defineEpochPlot("grU_epoch","Ungated Faraday Cup charge F [nC]",sectorIt,epochIt))
-    insertEpochPlot(epochPlotTree[sectorIt][epochIt],
-      "grT",defineEpochPlot("grT_epoch","Live Time",sectorIt,epochIt))
+  if( !useFT || (useFT && sectorIt==1)) {
+   ratioTree[sectorIt].each { epochIt,ratioList ->
+      insertEpochPlot(epochPlotTree[sectorIt][epochIt],
+        "grA",defineEpochPlot("grA_epoch","${electronT} N/F",sectorIt,epochIt))
+      insertEpochPlot(epochPlotTree[sectorIt][epochIt],
+        "grN",defineEpochPlot("grN_epoch","Number ${electronT}s N",sectorIt,epochIt))
+      insertEpochPlot(epochPlotTree[sectorIt][epochIt],
+        "grF",defineEpochPlot("grF_epoch","Gated Faraday Cup charge F [nC]",sectorIt,epochIt))
+      insertEpochPlot(epochPlotTree[sectorIt][epochIt],
+        "grU",defineEpochPlot("grU_epoch","Ungated Faraday Cup charge F [nC]",sectorIt,epochIt))
+      insertEpochPlot(epochPlotTree[sectorIt][epochIt],
+        "grT",defineEpochPlot("grT_epoch","Live Time",sectorIt,epochIt))
+    }
   }
 }
 
@@ -540,18 +536,18 @@ inList.each { obj ->
           // set outlier bit
           if( NF<cutLo || NF>cutHi ) {
             if( NFerrH>cutLo && NFerrL<cutHi ) {
-              defectList.add(T.bit("MarginalOutlier"))
+              defectList.add(T.bit("MarginalOutlier${useFT?"FT":""}"))
             } else if( i==0 || i+1==grA.getDataSize(0) ) {
-              defectList.add(T.bit("TerminalOutlier"))
+              defectList.add(T.bit("TerminalOutlier${useFT?"FT":""}"))
             } else {
-              defectList.add(T.bit("TotalOutlier"))
+              defectList.add(T.bit("TotalOutlier${useFT?"FT":""}"))
             }
           }
           // set FC bit
           if( LT<0.9 ) defectList.add(T.bit("LowLiveTime"))
 
           // insert in qaTree
-          qaTree[runnum][filenum]['sectorDefects'][sector] = defectList.collect()
+          qaTree[runnum][filenum]['sectorDefects'][useFT ? 1 : sector] = defectList.collect()
           badfile = defectList.size() > 0
         }
         else {
@@ -596,8 +592,8 @@ inList.each { obj ->
       histA_bad = buildHisto(grA_bad,250,minA,maxA)
 
       // define lines
-      lowerBound = grA.getDataX(0)
-      upperBound = grA.getDataX(grA.getDataSize(0)-1)
+      def lowerBound = grA.getDataX(0)
+      def upperBound = grA.getDataX(grA.getDataSize(0)-1)
       lineMedian = buildLine(
         grA,lowerBound,upperBound,"median",cutTree[sector][epoch]['mq'])
       lineCutLo = buildLine(
@@ -666,13 +662,16 @@ sectors.each { s ->
     outHipoEpochs.cd("/${sectorIt}")
     epochPlotTree[sectorIt].each { epochIt,map ->
 
-      getEpochBounds(epochIt) // sets lower(upper)Bound
+      def elowerBound, eupperBound
+      epochFile.eachLine { line,i ->
+        if(i==epochIt) (elowerBound,eupperBound) = line.tokenize(' ').collect{it.toInteger()}
+      }
       elineMedian = buildLine(
-        map['grA_good'],lowerBound,upperBound,"median",cutTree[sectorIt][epochIt]['mq'])
+        map['grA_good'],elowerBound,eupperBound,"median",cutTree[sectorIt][epochIt]['mq'])
       elineCutLo = buildLine(
-        map['grA_good'],lowerBound,upperBound,"cutLo",cutTree[sectorIt][epochIt]['cutLo'])
+        map['grA_good'],elowerBound,eupperBound,"cutLo",cutTree[sectorIt][epochIt]['cutLo'])
       elineCutHi = buildLine(
-        map['grA_good'],lowerBound,upperBound,"cutHi",cutTree[sectorIt][epochIt]['cutHi'])
+        map['grA_good'],elowerBound,eupperBound,"cutHi",cutTree[sectorIt][epochIt]['cutHi'])
 
       histA_good = buildHisto(map['grA_good'],500,minA,maxA)
       histA_bad = buildHisto(map['grA_bad'],500,minA,maxA)
@@ -705,11 +704,11 @@ def writeTimeline (tdir,timeline,title,once=false) {
   tdir.writeFile(outHipoName)
 }
 
-electronN = "electron_" + (useFT ? "FT" : "trigger")
-writeTimeline(outHipoQA,TLqa,"${electronN}_yield_QA_${qaName}")
-writeTimeline(outHipoA,TLA,"${electronN}_yield_normalized_values")
-writeTimeline(outHipoN,TLN,"${electronN}_yield_values")
-writeTimeline(outHipoSigmaN,TLsigmaN,"${electronN}_yield_stddev")
+electronN = "electron_" + (useFT ? "FT" : "FD")
+writeTimeline(outHipoQA,TLqa,"${electronN}_yield_QA_${qaName}",useFT)
+writeTimeline(outHipoA,TLA,"${electronN}_normalized_yield",useFT)
+writeTimeline(outHipoN,TLN,"${electronN}_yield_values",useFT)
+writeTimeline(outHipoSigmaN,TLsigmaN,"${electronN}_yield_stddev",useFT)
 if(!useFT) {
   writeTimeline(outHipoU,TLU,"faraday_cup_charge_ungated",true)
   writeTimeline(outHipoF,TLF,"faraday_cup_charge_gated",true)
@@ -733,7 +732,7 @@ outHipoEpochs.writeFile(outHipoName)
 //println T.pPrint(qaTree)
 qaTree.each { qaRun, qaRunTree -> qaRunTree.sort{it.key.toInteger()} }
 qaTree.sort()
-new File("${inDir}/outdat/qaTree"+(useFT?"FT":"")+".json").write(JsonOutput.toJson(qaTree))
+new File("${inDir}/outdat/qaTree"+(useFT?"FT":"FD")+".json").write(JsonOutput.toJson(qaTree))
 
 
 // print total QA passing fractions
