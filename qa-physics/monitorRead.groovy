@@ -67,6 +67,33 @@ else {
   System.exit(100)
 }
 
+
+
+
+
+
+
+
+//          
+//          
+//          
+//          
+// FIXME: SHORT CIRCUIT
+//          
+//          
+//          
+//          
+inHipoList = inHipoList[0..5]
+System.err.println("WARNING WARNING WARNING: SHORT CIRCUIT ENABLED")
+
+
+
+
+
+
+
+
+
 // get runnum; assumes all HIPO files have the same run number
 if(runnum<=0)
   runnum = T.getRunNumber(inHipoList.first())
@@ -391,10 +418,10 @@ def findParticles = { pid, binNum ->
 def writeHistos = { itBin, itBinNum ->
 
   // loop through histTree, adding histos to the hipo file;
-  T.exeLeaves( histTree, {
+  T.exeLeaves( itBin.histTree, {
     outHipo.addDataSet(T.leaf)
   })
-  //println "write histograms:"; T.printTree(histTree,{T.leaf.getName()})
+  //println "write histograms:"; T.printTree(itBin.histTree,{T.leaf.getName()})
 
 
   // get accumulated ungated FC charge
@@ -508,7 +535,7 @@ def setMinMaxInTimeBin = { binNum, key, val ->
 // get list of tag1 event numbers
 printDebug "Begin tag1 event loop"
 def tag1eventNumList = []
-inHipoList[0..5].each { inHipoFile ->   /////////////////// FIXME: short circuit
+inHipoList.each { inHipoFile ->
 
   printDebug "Open HIPO file $inHipoFile"
   def reader = new HipoDataSource()
@@ -635,12 +662,17 @@ inHipoList.each { inHipoFile ->
     // get event number
     if(configBank.rows()>0) {
       eventNum = BigInteger.valueOf(configBank.getInt('event',0))
-    } else {
-      System.err.println "WARNING: cannot get event number for event with no RUN::config bank"
+    }
+    else if(event.getBankList().length==1 && event.getBankList().contains("COAT::config")) {
+      printDebug "Skipping event which has only 'COAT::config' bank"
+      continue
+    }
+    else {
+      System.err.println "WARNING: cannot get event number for event with no RUN::config bank; skipping this event; available banks: ${event.getBankList()}"
       continue
     }
     if(eventNum==0) {
-      System.err.println "WARNING: found event with eventNum=0; banks: ${event.getBankList()}"
+      System.err.println "WARNING: ignoring event with eventNum=0; available banks: ${event.getBankList()}"
       continue
     }
 
@@ -757,7 +789,7 @@ inHipoList.each { inHipoFile ->
 
 // write final time bin's histograms
 timeBins.each{ binNum, timeBin ->
-  writeHistos(binNum, timeBin)
+  writeHistos(timeBin, binNum)
 }
 
 // write outHipo file
