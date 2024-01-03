@@ -67,7 +67,6 @@ else {
   System.exit(100)
 }
 
-
 // get runnum; assumes all HIPO files have the same run number
 if(runnum<=0)
   runnum = T.getRunNumber(inHipoList.first())
@@ -76,9 +75,9 @@ if(runnum<=0)
 System.println "runnum     = $runnum"
 
 
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
-// RUN GROUP DEPENDENT SETTINGS //////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// RUN GROUP DEPENDENT SETTINGS ///////////////////////////////////////////////////////////////////
 
 def RG = "unknown"
 if(runnum>=4763 && runnum<=5001) RG="RGA" // early period
@@ -168,9 +167,9 @@ else if(RG=="RGM") {
   }
 }
 
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // make outut directories
 "mkdir -p $outDir".execute()
@@ -199,7 +198,6 @@ def eventNum
 def helicity
 def helStr
 def helDefined
-def evCount
 def sectors = 0..<6
 def detIdEC = DetectorType.ECAL.getDetectorId()
 def Q2
@@ -213,6 +211,7 @@ def caseCountNFTwithTrig = 0
 def nElecTotal
 def disElectronInTrigger
 def disElectronInFT
+def histN,histT
 
 // lorentz vectors
 def vecBeam = new LorentzVector(0, 0, EBEAM, EBEAM)
@@ -222,6 +221,15 @@ def vecH = new LorentzVector()
 def vecQ = new LorentzVector()
 def vecW = new LorentzVector()
 
+// define output file
+def outHipo = new TDirectory()
+outHipo.mkdir("/$runnum")
+outHipo.cd("/$runnum")
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// SUBROUTINES
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // subroutine which returns a list of Particle objects of a certain PID
 // - if `pid==11`, it will count the trigger electrons in FD and/or FT
@@ -378,11 +386,8 @@ def findParticles = { pid, binNum ->
   return particleList
 }
 
+
 // subroutine to write out to hipo file
-def outHipo = new TDirectory()
-outHipo.mkdir("/$runnum")
-outHipo.cd("/$runnum")
-def histN,histT
 def writeHistos = { itBin, itBinNum ->
 
   // loop through histTree, adding histos to the hipo file;
@@ -449,6 +454,57 @@ def writeHistos = { itBin, itBinNum ->
 }
 
 
+// subroutine to build a histogram
+def buildHist(histName, histTitle, propList, runn, nb, lb, ub, nb2=0, lb2=0, ub2=0) {
+
+  def propT = [
+    'pip': 'pi+',
+    'pim': 'pi-',
+    'hp':  'hel+',
+    'hm':  'hel-',
+    'hu':  'hel?',
+  ]
+
+  def pn = propList.join('_')
+  def pt = propList.collect{ propT.containsKey(it) ? propT[it] : it }.join(' ')
+  if(propList.size()>0) { pn+='_'; }
+
+  def sn = propList.size()>0 ? '_':''
+  def st = propList.size()>0 ? ' ':''
+  def hn = "${histName}_${pn}${runn}"
+  def ht = "${pt} ${histTitle}"
+
+  if(nb2==0) return new H1F(hn,ht,nb,lb,ub)
+  else return new H2F(hn,ht,nb,lb,ub,nb2,lb2,ub2)
+}
+
+
+// subroutine to find the EARLIEST time bin for a given event number
+// - if the event number is on a time-bin boundary, the earlier time bin will be returned
+def findTimeBin = { evnum ->
+  s = timeBins.find{ evnum >= it.value["eventNumMin"] && evnum <= it.value["eventNumMax"] }
+  if(s==null) {
+    System.err.println "ERROR: cannot find time bin for event number $evnum"
+    return -1
+  }
+  s.key
+}
+
+
+// subroutine to update a min and/or max value in a time bin (viz. FC charge start and stop)
+def setMinMaxInTimeBin = { binNum, key, val ->
+  valOld = timeBins[binNum][key]
+  timeBins[binNum][key] = [
+    valOld[0] == "init" ? val : [valOld[0], val].min(),
+    valOld[1] == "init" ? val : [valOld[1], val].max()
+  ]
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// DEFINE TIME BINS
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 // get list of tag1 event numbers
 printDebug "Begin tag1 event loop"
 def tag1eventNumList = []
@@ -496,50 +552,6 @@ timeBinBounds.eachWithIndex{ bounds, binNum ->
     LTlist:      [],
     histTree:    [:],
   ]
-}
-
-// subroutine to find the EARLIEST time bin for a given event number
-// - if the event number is on a time-bin boundary, the earlier time bin will be returned
-def findTimeBin = { evnum ->
-  s = timeBins.find{ evnum >= it.value["eventNumMin"] && evnum <= it.value["eventNumMax"] }
-  if(s==null) {
-    System.err.println "ERROR: cannot find time bin for event number $evnum"
-    return -1
-  }
-  s.key
-}
-
-// subroutine to update a min and/or max value in a time bin (viz. FC charge start and stop)
-def setMinMaxInTimeBin = { binNum, key, val ->
-  valOld = timeBins[binNum][key]
-  timeBins[binNum][key] = [
-    valOld[0] == "init" ? val : [valOld[0], val].min(),
-    valOld[1] == "init" ? val : [valOld[1], val].max()
-  ]
-}
-
-// subroutine to build a histogram
-def buildHist(histName, histTitle, propList, runn, nb, lb, ub, nb2=0, lb2=0, ub2=0) {
-
-  def propT = [
-    'pip': 'pi+',
-    'pim': 'pi-',
-    'hp':  'hel+',
-    'hm':  'hel-',
-    'hu':  'hel?',
-  ]
-
-  def pn = propList.join('_')
-  def pt = propList.collect{ propT.containsKey(it) ? propT[it] : it }.join(' ')
-  if(propList.size()>0) { pn+='_'; }
-
-  def sn = propList.size()>0 ? '_':''
-  def st = propList.size()>0 ? ' ':''
-  def hn = "${histName}_${pn}${runn}"
-  def ht = "${pt} ${histTitle}"
-
-  if(nb2==0) return new H1F(hn,ht,nb,lb,ub)
-  else return new H2F(hn,ht,nb,lb,ub,nb2,lb2,ub2)
 }
 
 // initialize histograms for each time bin
@@ -594,10 +606,11 @@ timeBins.each{ binNum, timeBin ->
 
 
 
-/////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // EVENT LOOP
-/////////////////////////////////////////////////////
-evCount = 0
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+def evCount = 0
 printDebug "Begin event loop"
 inHipoList.each { inHipoFile ->
 
