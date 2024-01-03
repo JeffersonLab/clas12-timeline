@@ -5,15 +5,11 @@
 
 import org.jlab.io.hipo.HipoDataSource
 import org.jlab.clas.physics.Particle
-import org.jlab.clas.physics.Vector3
 import org.jlab.groot.data.H1F
 import org.jlab.groot.data.H2F
 import org.jlab.groot.data.TDirectory
 import org.jlab.clas.physics.LorentzVector
-import org.jlab.clas.physics.Vector3
 import org.jlab.detector.base.DetectorType
-import groovy.json.JsonSlurper
-import groovy.json.JsonOutput
 import java.lang.Math.*
 import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
