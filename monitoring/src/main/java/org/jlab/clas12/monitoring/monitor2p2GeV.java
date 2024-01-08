@@ -18,28 +18,43 @@ import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class monitor2p2GeV {
-        
-    static final int RGD_ELECTRON_BIT_OFFSETS = 0x4081;
-        
+
     /**
-     * @param sector
-     * @return whether one of the "electron" trigger bits for the given
-     * sector was set
+     * Assume 1+6 bit groupings, one for each bit in the given
+     * offsets, and determine whether the given sector triggered.
+     * @param trigger event trigger word
+     * @param sector CLAS12 sector in question
+     * @param offsets mask of electron bit group offsets
+     * @return whether the given sector triggered 
      */
-    boolean testTriggerSector(int sector) {
-        // we've already got run number stuff embedded everywhere, so
-        // why not ...
-        if (runNum > 18300 && runNum < 20000) {
-            for (int i=0; i<32-6; i++) {
-                if (0 != (RGD_ELECTRON_BIT_OFFSETS & (1<<i)) ) {
-                    if (0 != (TriggerWord & ( 1 << (i+sector)))) {
-                        return true;
-                    }
+    static boolean testTriggerSector(long trigger, int sector, long offsets) {
+        for (int i=0; i<32-6; i++) {
+            if (0 != (offsets & (1<<i)) ) {
+                if (0 != (trigger & ( 1 << (i+sector)))) {
+                    return true;
                 }
             }
-            return false;
         }
-        else return 0 != (TriggerWord & ( 1 << sector));
+        return false;
+    }
+
+    /**
+     * Determine whether the given sector triggered.
+     * @param sector CLAS sector in question
+     * @return whether the given sector triggered 
+     */
+    boolean testTriggerSector(int sector) {
+        // FIXME:  move to CCDB
+        if (runNum > 18300 && runNum < 19131) {
+            // RG-D:   used three different primary electron triggers (0/7/14):
+            return testTriggerSector(TriggerWord, sector, 0x4081);
+        }
+        if (runNum > 16043 && runNum < 16078) {
+            // RG-C 2.2 GeV:  non-standard primary electron trigger:
+            return testTriggerSector(TriggerWord, sector, 0x4081);
+        }
+        // Default:  the primary electron trigger is the first (7) bits:
+        return testTriggerSector(TriggerWord, sector, 0x1);
     }
 
 	boolean userTimeBased;
