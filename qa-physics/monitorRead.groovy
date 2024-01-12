@@ -18,6 +18,10 @@ Tools T = new Tools()
 def MIN_NUM_SCALERS = 2000   // at least this many scaler readouts per time bin
 def VERBOSE         = true   // enable extra log messages, for debugging
 def NBINS           = 50     // number of bins in some histograms
+def SECTORS         = 0..<6  // sector range
+def ECAL_ID         = DetectorType.ECAL.getDetectorId() // ECAL detector ID
+
+// function to print a debugging message
 def printDebug = { msg -> if(VERBOSE) println "[DEBUG]: $msg" }
 
 // ARGUMENTS
@@ -198,15 +202,17 @@ else if(RG=="RGM") {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-// make outut directories
+// make outut directories and define output file
 "mkdir -p $outDir".execute()
+def outHipo = new TDirectory()
+outHipo.mkdir("/$runnum")
+outHipo.cd("/$runnum")
 
 // prepare output table for electron count and FC charge
-def datfile = new File("$outDir/data_table_${runnum}.dat")
+def datfile       = new File("$outDir/data_table_${runnum}.dat")
 def datfileWriter = datfile.newWriter(false)
 
-// define variables
-def event
+// define shared variables
 def timeBins = [:]
 def pidList = []
 def particleBank
@@ -215,43 +221,25 @@ def configBank
 def eventBank
 def calBank
 def scalerBank
-def pipList = []
-def pimList = []
-def eleList = []
-def disElectron
 def disEleFound
-def eleSec
-def eventNum
-def helicity
-def helStr
-def helDefined
-def sectors = 0..<6
-def detIdEC = DetectorType.ECAL.getDetectorId()
+def caseCountNtrigGT1 = 0
+def caseCountNFTwithTrig = 0
+def disElectronInTrigger
+def disElectronInFT
+
+// DIS kinematics
 def Q2
 def W
 def nu
-def x,y,z
-def p,pT,theta,phiH
-def countEvent
-def caseCountNtrigGT1 = 0
-def caseCountNFTwithTrig = 0
-def nElecTotal
-def disElectronInTrigger
-def disElectronInFT
-def histN,histT
-
-// lorentz vectors
+def x
+def y
+def z
 def vecBeam = new LorentzVector(0, 0, EBEAM, EBEAM)
 def vecTarget = new LorentzVector(0, 0, 0, 0.938)
 def vecEle = new LorentzVector()
 def vecH = new LorentzVector()
 def vecQ = new LorentzVector()
 def vecW = new LorentzVector()
-
-// define output file
-def outHipo = new TDirectory()
-outHipo.mkdir("/$runnum")
-outHipo.cd("/$runnum")
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -281,6 +269,8 @@ def findParticles = { pid, binNum ->
     def nTrigger = 0
     def nFT = 0
     disEleFound = false
+    def disElectron
+    def eleSec
 
     // loop over electrons from REC::Particle
     if(rowList.size()>0) {
@@ -302,7 +292,7 @@ def findParticles = { pid, binNum ->
           // get sector
           def eleSecTmp = (0..calBank.rows()).collect{
             ( calBank.getShort('pindex',it).toInteger() == row &&
-              calBank.getByte('detector',it).toInteger() == detIdEC ) ?
+              calBank.getByte('detector',it).toInteger() == ECAL_ID ) ?
               calBank.getByte('sector',it).toInteger() : null
           }.find()
 
@@ -458,7 +448,7 @@ def writeHistos = { itBin, itBinNum ->
   }
 
   // write number of electrons and FC charge to datfile
-  sectors.each{ sec ->
+  SECTORS.each{ sec ->
     datfileWriter << [ runnum, itBinNum ].join(' ') << ' '
     datfileWriter << [ itBin.eventNumMin, itBin.eventNumMax ].join(' ') << ' '
     datfileWriter << [ sec+1, itBin.nElec[sec], itBin.nElecFT ].join(' ') << ' '
@@ -470,7 +460,7 @@ def writeHistos = { itBin, itBinNum ->
 
   // print some stats
   /*
-  nElecTotal = itBin.nElec*.value.sum()
+  def nElecTotal = itBin.nElec*.value.sum()
   println "\nnumber of trigger electrons: $nElecTotal"
   println """number of electrons that satisified FD trigger cuts, but were not analyzed...
   ...because they had subdominant E: $caseCountNtrigGT1
@@ -535,17 +525,17 @@ def setMinMaxInTimeBin = { binNum, key, val ->
 // get list of tag1 event numbers
 printDebug "Begin tag1 event loop"
 def tag1eventNumList = []
+def hipoEvent
 inHipoList.each { inHipoFile ->
-
   printDebug "Open HIPO file $inHipoFile"
   def reader = new HipoDataSource()
   reader.getReader().setTags(1)
   reader.open(inHipoFile)
   while(reader.hasEvent()) {
-    event = reader.getNextEvent()
-    // printDebug "tag1 event bank list: ${event.getBankList()}"
-    if(event.hasBank("RUN::scaler") && event.hasBank("RUN::config")) {
-      tag1eventNumList << BigInteger.valueOf(event.getBank("RUN::config").getInt('event',0))
+    hipoEvent = reader.getNextEvent()
+    // printDebug "tag1 event bank list: ${hipoEvent.getBankList()}"
+    if(hipoEvent.hasBank("RUN::scaler") && hipoEvent.hasBank("RUN::config")) {
+      tag1eventNumList << BigInteger.valueOf(hipoEvent.getBank("RUN::config").getInt('event',0))
     }
   }
   reader.close()
@@ -572,7 +562,7 @@ timeBinBounds.eachWithIndex{ bounds, binNum ->
   timeBins[binNum] = [
     eventNumMin: bounds[0],
     eventNumMax: bounds[-1],
-    nElec:       sectors.collect{0},
+    nElec:       SECTORS.collect{0},
     nElecFT:     0,
     fcRange:     ["init", "init"],
     ufcRange:    ["init", "init"],
@@ -617,8 +607,8 @@ timeBins.each{ binNum, timeBin ->
   })
 
   T.exeLeaves( timeBin.histTree, {
-    histN = T.leaf.getName() + "_${binNum}"
-    histT = T.leaf.getTitle() + " :: timeBinNum=${binNum}"
+    def histN = T.leaf.getName() + "_${binNum}"
+    def histT = T.leaf.getTitle() + " :: timeBinNum=${binNum}"
     T.leaf.setName(histN)
     T.leaf.setTitle(histT)
   })
@@ -638,6 +628,7 @@ timeBins.each{ binNum, timeBin ->
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 def evCount = 0
+def countEvent
 printDebug "Begin event loop"
 inHipoList.each { inHipoFile ->
 
@@ -649,17 +640,18 @@ inHipoList.each { inHipoFile ->
   // EVENT LOOP
   while(reader.hasEvent()) {
     //if(evCount>100000) break // limiter
-    event = reader.getNextEvent()
+    hipoEvent = reader.getNextEvent()
 
     // get required banks
-    particleBank   = event.getBank("REC::Particle")
-    eventBank      = event.getBank("REC::Event")
-    configBank     = event.getBank("RUN::config")
-    FTparticleBank = event.getBank("RECFT::Particle")
-    calBank        = event.getBank("REC::Calorimeter")
-    scalerBank     = event.getBank("RUN::scaler")
+    particleBank   = hipoEvent.getBank("REC::Particle")
+    eventBank      = hipoEvent.getBank("REC::Event")
+    configBank     = hipoEvent.getBank("RUN::config")
+    FTparticleBank = hipoEvent.getBank("RECFT::Particle")
+    calBank        = hipoEvent.getBank("REC::Calorimeter")
+    scalerBank     = hipoEvent.getBank("RUN::scaler")
 
     // get event number
+    def eventNum
     if(configBank.rows()>0) {
       eventNum = BigInteger.valueOf(configBank.getInt('event',0))
     }
@@ -672,7 +664,7 @@ inHipoList.each { inHipoFile ->
       continue
     }
     if(eventNum==0) {
-      System.err.println "WARNING: ignoring event with eventNum=0; available banks: ${event.getBankList()}"
+      System.err.println "WARNING: found event with eventNum=0; banks: ${hipoEvent.getBankList()}"
       continue
     }
 
@@ -702,7 +694,9 @@ inHipoList.each { inHipoFile ->
     }
 
     // get helicity and fill helicity distribution
-    helicity = event.hasBank("REC::Event") ? eventBank.getByte('helicity',0) : 0  // (using "0" for undefined)
+    def helicity = hipoEvent.hasBank("REC::Event") ? eventBank.getByte('helicity',0) : 0  // (using "0" for undefined)
+    def helStr
+    def helDefined
     switch(helicity) {
       case 1:  helStr='hp'; helDefined=true; break
       case -1: helStr='hm'; helDefined=true; break
@@ -712,7 +706,7 @@ inHipoList.each { inHipoFile ->
 
     // get electron list, and increment the number of trigger electrons
     // - also finds the DIS electron, and calculates x,Q2,W,y,nu
-    eleList = findParticles(11, timeBinNum) // (`eleList` is unused)
+    findParticles(11, timeBinNum)
 
     // CUT: if a DIS electron was found by `findParticles`
     if(disEleFound) {
@@ -740,10 +734,10 @@ inHipoList.each { inHipoFile ->
             if(z>0.3 && z<1) {
 
               // calculate momenta, theta, phiH
-              p     = vecH.p()
-              pT    = Math.hypot( vecH.px(), vecH.py() )
-              theta = vecH.theta()
-              phiH  = T.planeAngle( vecQ.vect(), vecEle.vect(), vecQ.vect(), vecH.vect() )
+              def p     = vecH.p()
+              def pT    = Math.hypot( vecH.px(), vecH.py() )
+              def theta = vecH.theta()
+              def phiH  = T.planeAngle( vecQ.vect(), vecEle.vect(), vecQ.vect(), vecH.vect() )
 
               // CUT for pions: if phiH is defined
               if(phiH>-10000) {
