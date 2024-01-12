@@ -92,6 +92,7 @@ else if(runnum>=11093 && runnum<=11300) RG="RGB" // fall 19
 else if(runnum>=11323 && runnum<=11571) RG="RGB" // winter 20
 else if(runnum>=12210 && runnum<=12951) RG="RGF" // spring+summer 20
 else if(runnum>=15019 && runnum<=15884) RG="RGM" 
+else if(runnum>=16043 && runnum<=16772) RG="RGC" // summer 22
 else System.err.println "WARNING: unknown run group; using default run-group-dependent settings (see monitorRead.groovy)"
 println "rungroup = $RG"
 
@@ -108,6 +109,11 @@ else if(RG=="RGB") {
   else if(runnum>=11093 && runnum<=11283) EBEAM = 10.4096 // fall
   else if(runnum>=11284 && runnum<=11300) EBEAM = 4.17179 // fall BAND_FT
   else if(runnum>=11323 && runnum<=11571) EBEAM = 10.3894 // winter (RCDB may still be incorrect)
+  else System.err.println "ERROR: unknown beam energy"
+}
+else if(RG=="RGC") {
+  if(runnum>=16010 && runnum<=16078) EBEAM = 2.21
+  else if(runnum>=16079) EBEAM = 10.55
   else System.err.println "ERROR: unknown beam energy"
 }
 else if(RG=="RGK") {
@@ -153,6 +159,7 @@ else if(RG=="RGB") {
   FCmode = 1
   if( runnum in [6263, 6350, 6599, 6601, 11119] ) FCmode=0 // fcupgated charge spikes
 }
+else if(RG=="RGC") FCmode = 1
 else if(RG=="RGK") FCmode = 0
 else if(RG=="RGF") FCmode = 0
 else if(RG=="RGM") {		  
