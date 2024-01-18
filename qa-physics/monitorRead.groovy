@@ -568,7 +568,7 @@ timeBinBounds.eachWithIndex{ bounds, binNum ->
   ]
 }
 // debug logging
-if(DEBUG) {
+if(VERBOSE) {
   printDebug "TIME BIN BOUNDARIES: ["
   timeBins.each{ binNum, timeBin ->
     println "  $binNum  => {"
