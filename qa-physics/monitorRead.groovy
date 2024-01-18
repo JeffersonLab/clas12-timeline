@@ -575,7 +575,8 @@ if(DEBUG) {
     println "           eventNumMin => ${timeBin.eventNumMin},"
     println "           eventNumMax => ${timeBin.eventNumMax},"
     println "           numEvents   => ${timeBin.eventNumMax - timeBin.eventNumMin}  },"
-  println "]"
+    println "]"
+  }
 }
 
 // initialize histograms for each time bin
