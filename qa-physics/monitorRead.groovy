@@ -544,19 +544,16 @@ inHipoList.each { inHipoFile ->
 // define the time bin boundaries: first, some sorting and transformations
 timeBinBounds = tag1eventNumList
   .sort()                         // sort the event numbers
-  .collate(MIN_NUM_SCALERS)       // partition
+  .collate(MIN_NUM_SCALERS)       // partition into subsets, each with cardinality MIN_NUM_SCALERS (the last subset may be smaller)
   .collect{ it[0] }               // take the first event number of each subset
   .plus(tag1eventNumList[-1])     // append the final event number
-  .collect{ [it, it] }.flatten()  // double each element (since upper bound of bin N = lower bound of bin N+1)
-// add the first and last bins by setting the absolute minimum to 0 and absolute maximum to a large number
-timeBinBounds = [0] + timeBinBounds + [10**(Math.log10(timeBinBounds[-1]).toInteger()+1)]
+  .unique()                       // if the final subset's cardinality is 1, the final event number will appear twice in the list; remove it
+  .collect{ [it, it] }            // double each element (since upper bound of bin N = lower bound of bin N+1)
+  .flatten()                      // flatten it, since we are going to re-collate it below
+// add the first and last bin boundaries, respectively 0 and the second smallest power of 10 larger than the highest event number
+timeBinBounds = [0] + timeBinBounds + [10**(Math.log10(timeBinBounds[-1]).toInteger()+2)]
 // pair the elements to define the bin boundaries
 timeBinBounds = timeBinBounds.collate(2)
-// logging
-println "TIME BIN BOUNDARIES: ["
-timeBinBounds.each{ println "  $it," }
-println "]"
-
 // define the time bin objects, initializing additional fields
 timeBinBounds.eachWithIndex{ bounds, binNum ->
   timeBins[binNum] = [
@@ -569,6 +566,16 @@ timeBinBounds.eachWithIndex{ bounds, binNum ->
     LTlist:      [],
     histTree:    [:],
   ]
+}
+// debug logging
+if(DEBUG) {
+  printDebug "TIME BIN BOUNDARIES: ["
+  timeBins.each{ binNum, timeBin ->
+    println "  $binNum  => {"
+    println "           eventNumMin => ${timeBin.eventNumMin},"
+    println "           eventNumMax => ${timeBin.eventNumMax},"
+    println "           numEvents   => ${timeBin.eventNumMax - timeBin.eventNumMin}  },"
+  println "]"
 }
 
 // initialize histograms for each time bin
