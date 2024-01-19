@@ -524,7 +524,7 @@ def setMinMaxInTimeBin = { binNum, key, val ->
 
 // get list of tag1 event numbers
 printDebug "Begin tag1 event loop"
-def tag1eventNumList = [0] // preemptively set the 1st bin boundary to zero (since there may be events before the 1st scaler readout)
+def tag1eventNumList = []
 def hipoEvent
 inHipoList.each { inHipoFile ->
   printDebug "Open HIPO file $inHipoFile"
@@ -541,19 +541,22 @@ inHipoList.each { inHipoFile ->
   reader.close()
 }
 
+// sort the event numbers
+printDebug "Number of tag1 events: ${tag1eventNumList.size()}"
+tag1eventNumList = tag1eventNumList.sort()
+
 // define the time bin boundaries: first, some sorting and transformations
 timeBinBounds = tag1eventNumList
-  .sort()                     // sort the event numbers
   .collate(MIN_NUM_SCALERS)   // partition into subsets, each with cardinality MIN_NUM_SCALERS (the last subset may be smaller)
   .collect{ it[0] }           // take the first event number of each subset
-  .plus(tag1eventNumList[-1]) // append the final event number
-  .unique()                   // if the final subset's cardinality is 1, the final event number will appear twice in the list; remove it
-  .collect{ [it, it] }        // double each element (since upper bound of bin N = lower bound of bin N+1)
-  .flatten()                  // flatten it, since we are going to re-collate it below after adding the final bin boundary
-  .tail()                     // do not double the first bin boundary, since we are going to re-collate below
-// set the last bin boundary to a high number, because the highest event number is not yet known, since we have only read tag1 events;
-// the high number is: the 2nd smallest power of 10 larger than the highest event number that we know
-timeBinBounds = timeBinBounds + [10**(Math.log10(timeBinBounds[-1]).toInteger()+2)]
+  .plus(tag1eventNumList[-1]) // append the final tag1 event number...
+  .unique()                   // ...and make sure it's not just repeating the previous event number
+  .collect{ [it, it] }        // double each element (since upper bound of bin N = lower bound of bin N+1)...
+  .flatten()                  // ...and flatten it, since we are going to re-collate it below after adding the final bin boundaries
+// set the first bin boundary to 0
+timeBinBounds = [0] + timeBinBounds
+// set the last bin boundary to a high number, because the true highest event number is not yet known, since we have only read tag1 events;
+timeBinBounds = timeBinBounds + [10**(Math.log10(timeBinBounds[-1]).toInteger()+2)] // two orders of magnitude above largest known event number
 // pair the elements to define the bin boundaries
 timeBinBounds = timeBinBounds.collate(2)
 // define the time bin objects, initializing additional fields
@@ -569,18 +572,19 @@ timeBinBounds.eachWithIndex{ bounds, binNum ->
     histTree:    [:],
   ]
 }
-// debug logging
-if(VERBOSE) {
-  printDebug "TIME BIN BOUNDARIES: ["
-  timeBins.each{ binNum, timeBin ->
-    println """    $binNum  => {
-      eventNumMin => ${timeBin.eventNumMin},
-      eventNumMax => ${timeBin.eventNumMax},
-      numEvents   => ${binNum+1<timeBins.size() ? timeBin.eventNumMax - timeBin.eventNumMin : "'last bin, not sure yet, since we have only read tag1 events so far'"},
-    },"""
+// debug logging function (call it where you need it)
+printDebug_timeBinBounds = {
+  if(VERBOSE) {
+    printDebug "TIME BINS =============================="
+    println "@ #bin_num/L:number_of_bins/L:evnum_min/L:evnum_max/L:num_events/L"
+    timeBins.each{ binNum, timeBin ->
+      println "@ println ${binNum} ${timeBins.size()} ${timeBin.eventNumMin} ${timeBin.eventNumMax} ${timeBin.eventNumMax - timeBin.eventNumMin}"
+    }
+    printDebug "END TIME BINS =========================="
   }
-  println "]"
 }
+printDebug_timeBinBounds()
+return // FIXME
 
 // initialize histograms for each time bin
 timeBins.each{ binNum, timeBin ->
