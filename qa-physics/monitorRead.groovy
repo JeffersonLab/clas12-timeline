@@ -16,10 +16,11 @@ Tools T = new Tools()
 
 // CONSTANTS
 def MIN_NUM_SCALERS = 2000   // at least this many scaler readouts per time bin
-def VERBOSE         = true   // enable extra log messages, for debugging
 def NBINS           = 50     // number of bins in some histograms
 def SECTORS         = 0..<6  // sector range
 def ECAL_ID         = DetectorType.ECAL.getDetectorId() // ECAL detector ID
+def VERBOSE         = true   // enable extra log messages, for debugging
+def LIMITER         = 0      // if nonzero, only analyze this many DST files (for quick testing and debugging)
 
 // function to print a debugging message
 def printDebug = { msg -> if(VERBOSE) println "[DEBUG]: $msg" }
@@ -71,32 +72,11 @@ else {
   System.exit(100)
 }
 
-
-
-
-
-
-
-
-//          
-//          
-//          
-//          
-// FIXME: SHORT CIRCUIT
-//          
-//          
-//          
-//          
-inHipoList = inHipoList[0..5]
-System.err.println("WARNING WARNING WARNING: SHORT CIRCUIT ENABLED")
-
-
-
-
-
-
-
-
+// limiter: use this to only analyse a few DST files, for quicker testing
+if(LIMITER>0) {
+  inHipoList = inHipoList[0..LIMITER]
+  System.err.println("WARNING WARNING WARNING: LIMITER ENABLED, we will only be analyzing ${LIMITER} DST files, and not all of them; this is for testing only!")
+}
 
 // get runnum; assumes all HIPO files have the same run number
 if(runnum<=0)
@@ -221,6 +201,7 @@ def datfile       = new File("$outDir/data_table_${runnum}.dat")
 def datfileWriter = datfile.newWriter(false)
 
 // define shared variables
+def hipoEvent
 def timeBins = [:]
 def pidList = []
 def particleBank
@@ -425,9 +406,11 @@ def writeHistos = { itBin, itBinNum ->
   // get accumulated ungated FC charge
   def ufcStart = 0
   def ufcStop = 0
-  if(itBinNum+1<timeBins.size()) { // unknown for last time bin
+  if(itBinNum+1<timeBins.size()) { // unknown for last time bin, just let the charge be "zero"
     if(!itBin.ufcRange.contains("init")) {
-      ufcStart = itBinNum > 0 ? timeBins[itBinNum-1].ufcRange[1] : 0 // start is the end of the previous time bin
+      // "start" should be the "stop" of the previous time bin (cf. `findTimeBin`); bin 0 starts with zero charge
+      ufcStart = itBinNum > 0 ? timeBins[itBinNum-1].ufcRange[1] : 0
+      // "stop" is the maximum charge in this time bin, since events on the bin boundary are assigned to the earlier bin
       ufcStop  = itBin.ufcRange[1]
     } else {
       System.err.println "WARNING: no ungated FC charge for run ${runnum} time bin ${itBinNum}"
@@ -440,13 +423,15 @@ def writeHistos = { itBin, itBinNum ->
   def fcStart = 0
   def fcStop = 0
   def aveLivetime = itBin.LTlist.size()>0 ? itBin.LTlist.sum() / itBin.LTlist.size() : 0
-  if(itBinNum+1<timeBins.size()) { // unknown for last time bin
+  if(itBinNum+1<timeBins.size()) { // unknown for last time bin, just let the charge be "zero"
     if(FCmode==0) {
       fcStart = ufcStart * aveLivetime // workaround method
       fcStop  = ufcStop  * aveLivetime // workaround method
     } else if(FCmode==1 || FCmode==2) {
       if(!itBin.fcRange.contains("init")) {
-        fcStart = itBinNum > 0 ? timeBins[itBinNum-1].fcRange[1] : 0 // start is the end of the previous time bin
+        // "start" should be the "stop" of the previous time bin (cf. `findTimeBin`); bin 0 starts with zero charge
+        fcStart = itBinNum > 0 ? timeBins[itBinNum-1].fcRange[1] : 0
+        // "stop" is the maximum charge in this time bin, since events on the bin boundary are assigned to the earlier bin
         fcStop  = itBin.fcRange[1]
       } else {
         System.err.println "WARNING: no gated FC charge for run ${runnum} time bin ${itBinNum}"
@@ -523,10 +508,12 @@ def findTimeBin = { evnum ->
   }
   if(VERBOSE) {
     if(evnum == s.value.eventNumMin) {
-      printDebug "event number ${evnum} on lower boundary of bin ${s.key}, and assigned to that bin"
+      printDebug "event number ${evnum} on lower boundary of bin ${s.key}, and assigned to that bin..."
+      printDebug "... its banks: ${hipoEvent.getBankList()}"
     }
     else if(evnum == s.value.eventNumMax) {
-      printDebug "event number ${evnum} on upper boundary of bin ${s.key}, and assigned to that bin"
+      printDebug "event number ${evnum} on upper boundary of bin ${s.key}, and assigned to that bin..."
+      printDebug "... its banks: ${hipoEvent.getBankList()}"
     }
   }
   s.key
@@ -550,7 +537,6 @@ def setMinMaxInTimeBin = { binNum, key, val ->
 // get list of tag1 event numbers
 printDebug "Begin tag1 event loop"
 def tag1eventNumList = []
-def hipoEvent
 inHipoList.each { inHipoFile ->
   printDebug "Open HIPO file $inHipoFile"
   def reader = new HipoDataSource()
@@ -602,9 +588,13 @@ timeBinBounds.eachWithIndex{ bounds, binNum ->
 // debug `timeBins` logging function (call it where you need it)
 printDebug_timeBinBounds = {
     println "TIME BINS =============================="
-    println "@ #bin_num/L:number_of_bins/L:evnum_min/L:evnum_max/L:num_events/L"
+    println "@ #runnum/I:bin_num/L:number_of_bins/L:evnum_min/L:evnum_max/L:num_events/L"
     timeBins.each{ binNum, timeBin ->
-      println "@ ${binNum} ${timeBins.size()} ${timeBin.eventNumMin} ${timeBin.eventNumMax} ${timeBin.eventNumMax - timeBin.eventNumMin}"
+      def num_events = timeBin.eventNumMax - timeBin.eventNumMin
+      if(binNum==0) {
+        num_events++ // since first bin has no lower bound
+      }
+      println "@ ${runnum} ${binNum} ${timeBins.size()} ${timeBin.eventNumMin} ${timeBin.eventNumMax} ${num_events}"
     }
     println "END TIME BINS =========================="
 }
@@ -683,7 +673,6 @@ inHipoList.each { inHipoFile ->
 
   // EVENT LOOP
   while(reader.hasEvent()) {
-    //if(evCount>100000) break // limiter
     hipoEvent = reader.getNextEvent()
 
     // get required banks
