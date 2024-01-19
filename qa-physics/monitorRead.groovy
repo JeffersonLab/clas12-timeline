@@ -87,7 +87,7 @@ else {
 //          
 //          
 //          
-inHipoList = inHipoList[0..11]
+inHipoList = inHipoList[0..5]
 System.err.println("WARNING WARNING WARNING: SHORT CIRCUIT ENABLED")
 
 
@@ -180,6 +180,13 @@ else if(RG=="RGM") {
  *   - useful if `RUN::scaler` is unavailable
  */
 def FCmode = 1 // default assumes DAQ-gated FC charge can be trusted
+if(RG=="RGM") {
+  FCmode = 1
+  if(runnum>=15015 && runnum<=15199) {
+    FCmode = 2 // no scalars read out in this range probably dosen't work anyway
+  }
+}
+/* PASS 1 FCmode settings:
 if(RG=="RGA") {
   FCmode=1;
   if(runnum==6724) FCmode=0; // fcupgated charge spike in file 230
@@ -197,6 +204,7 @@ else if(RG=="RGM") {
     FCmode = 2 // no scalars read out in this range probably dosen't work anyway
   }
 }
+*/
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -415,37 +423,45 @@ def writeHistos = { itBin, itBinNum ->
 
 
   // get accumulated ungated FC charge
-  def ufcStart
-  def ufcStop
-  if(!itBin.ufcRange.contains("init")) {
-    ufcStart = itBin.ufcRange[0]
-    ufcStop  = itBin.ufcRange[1]
-  } else {
-    System.err.println "WARNING: no ungated FC charge for run ${runnum} time bin ${itBinNum}"
-    ufcStart = 0
-    ufcStop  = 0
+  def ufcStart = 0
+  def ufcStop = 0
+  if(itBinNum+1<timeBins.size()) { // unknown for last time bin
+    if(!itBin.ufcRange.contains("init")) {
+      ufcStart = itBinNum > 0 ? timeBins[itBinNum-1].ufcRange[1] : 0 // start is the end of the previous time bin
+      ufcStop  = itBin.ufcRange[1]
+    } else {
+      System.err.println "WARNING: no ungated FC charge for run ${runnum} time bin ${itBinNum}"
+      ufcStart = 0
+      ufcStop  = 0
+    }
   }
 
   // get accumulated gated FC charge
-  def fcStart
-  def fcStop
+  def fcStart = 0
+  def fcStop = 0
   def aveLivetime = itBin.LTlist.size()>0 ? itBin.LTlist.sum() / itBin.LTlist.size() : 0
-  if(FCmode==0) {
-    fcStart = ufcStart * aveLivetime // workaround method
-    fcStop  = ufcStop  * aveLivetime // workaround method
-  } else if(FCmode==1 || FCmode==2) {
-    if(!itBin.fcRange.contains("init")) {
-      fcStart = itBin.fcRange[0]
-      fcStop  = itBin.fcRange[1]
-    } else {
-      System.err.println "WARNING: no gated FC charge for run ${runnum} time bin ${itBinNum}"
-      fcStart = 0
-      fcStop  = 0
+  if(itBinNum+1<timeBins.size()) { // unknown for last time bin
+    if(FCmode==0) {
+      fcStart = ufcStart * aveLivetime // workaround method
+      fcStop  = ufcStop  * aveLivetime // workaround method
+    } else if(FCmode==1 || FCmode==2) {
+      if(!itBin.fcRange.contains("init")) {
+        fcStart = itBinNum > 0 ? timeBins[itBinNum-1].fcRange[1] : 0 // start is the end of the previous time bin
+        fcStop  = itBin.fcRange[1]
+      } else {
+        System.err.println "WARNING: no gated FC charge for run ${runnum} time bin ${itBinNum}"
+        fcStart = 0
+        fcStop  = 0
+      }
+    }
+    if(fcStart>fcStop || ufcStart>ufcStop) {
+      System.err.println "WARNING: faraday cup start > stop for run ${runnum} time bin ${itBinNum}"
     }
   }
-  if(fcStart>fcStop || ufcStart>ufcStop) {
-    System.err.println "WARNING: faraday cup start > stop for run ${runnum} time bin ${itBinNum}"
-  }
+
+  // set **these** FC start and stop values in `timeBins`, since we'll use bin N's `stop` as bin N+1's `start`
+  itBin.ufcRange = [ufcStart, ufcStop]
+  itBin.fcRange  = [fcStart,  fcStop]
 
   // write number of electrons and FC charge to datfile
   SECTORS.each{ sec ->
@@ -454,9 +470,10 @@ def writeHistos = { itBin, itBinNum ->
     datfileWriter << [ sec+1, itBin.nElec[sec], itBin.nElecFT ].join(' ') << ' '
     datfileWriter << [ fcStart, fcStop, ufcStart, ufcStop, aveLivetime ].join(' ') << '\n'
   }
-  printDebug " - event number range: [ ${itBin.eventNumMin}, ${itBin.eventNumMax} ]"
-  printDebug " - gated-FC charge:    [ $fcStart, $fcStop ]"
-  printDebug " - ungated-FC charge:  [ $ufcStart, $ufcStop ]"
+  printDebug " - charge for timeBin $itBinNum:"
+  printDebug "   - event number range: [ ${itBin.eventNumMin}, ${itBin.eventNumMax} ]"
+  printDebug "   - gated-FC charge:    [ $fcStart, $fcStop ]"
+  printDebug "   - ungated-FC charge:  [ $ufcStart, $ufcStop ]"
 
   // print some stats
   /*
@@ -499,10 +516,18 @@ def buildHist(histName, histTitle, propList, runn, nb, lb, ub, nb2=0, lb2=0, ub2
 // subroutine to find the EARLIEST time bin for a given event number
 // - if the event number is on a time-bin boundary, the earlier time bin will be returned
 def findTimeBin = { evnum ->
-  s = timeBins.find{ evnum >= it.value["eventNumMin"] && evnum <= it.value["eventNumMax"] }
+  s = timeBins.find{ evnum >= it.value.eventNumMin && evnum <= it.value.eventNumMax }
   if(s==null) {
     System.err.println "ERROR: cannot find time bin for event number $evnum"
     return -1
+  }
+  if(VERBOSE) {
+    if(evnum == s.value.eventNumMin) {
+      printDebug "event number ${evnum} on lower boundary of bin ${s.key}, and assigned to that bin"
+    }
+    else if(evnum == s.value.eventNumMax) {
+      printDebug "event number ${evnum} on upper boundary of bin ${s.key}, and assigned to that bin"
+    }
   }
   s.key
 }
@@ -553,9 +578,10 @@ timeBinBounds = tag1eventNumList
   .unique()                   // ...and make sure it's not just repeating the previous event number
   .collect{ [it, it] }        // double each element (since upper bound of bin N = lower bound of bin N+1)...
   .flatten()                  // ...and flatten it, since we are going to re-collate it below after adding the final bin boundaries
-// set the first bin boundary to 0
+// set the first bin boundary to 0; we'll fix it later after the main event loop
 timeBinBounds = [0] + timeBinBounds
-// set the last bin boundary to a high number, because the true highest event number is not yet known, since we have only read tag1 events;
+// set the last bin boundary to a high number, because the true highest event
+// number is not yet known; we'll fix it later after the main event loop
 timeBinBounds = timeBinBounds + [10**(Math.log10(timeBinBounds[-1]).toInteger()+2)] // two orders of magnitude above largest known event number
 // pair the elements to define the bin boundaries
 timeBinBounds = timeBinBounds.collate(2)
@@ -572,21 +598,24 @@ timeBinBounds.eachWithIndex{ bounds, binNum ->
     histTree:    [:],
   ]
 }
-// debug logging function (call it where you need it)
+
+// debug `timeBins` logging function (call it where you need it)
 printDebug_timeBinBounds = {
-  if(VERBOSE) {
-    printDebug "TIME BINS =============================="
+    println "TIME BINS =============================="
     println "@ #bin_num/L:number_of_bins/L:evnum_min/L:evnum_max/L:num_events/L"
     timeBins.each{ binNum, timeBin ->
-      println "@ println ${binNum} ${timeBins.size()} ${timeBin.eventNumMin} ${timeBin.eventNumMax} ${timeBin.eventNumMax - timeBin.eventNumMin}"
+      println "@ ${binNum} ${timeBins.size()} ${timeBin.eventNumMin} ${timeBin.eventNumMax} ${timeBin.eventNumMax - timeBin.eventNumMin}"
     }
-    printDebug "END TIME BINS =========================="
-  }
+    println "END TIME BINS =========================="
 }
-printDebug_timeBinBounds()
-return // FIXME
+// printDebug_timeBinBounds()
+
+// initialize min and max overall event numbers
+def overallMinEventNumber = timeBins[0].eventNumMax  // it will be smaller than first bin's max
+def overallMaxEventNumber = timeBins[timeBins.size()-1].eventNumMin // it will be larger than last bin's min
 
 // initialize histograms for each time bin
+printDebug "Initialize histograms for each time bin"
 timeBins.each{ binNum, timeBin ->
   def partList = [ 'pip', 'pim' ]
   def helList  = [ 'hp',  'hm'  ]
@@ -644,7 +673,7 @@ timeBins.each{ binNum, timeBin ->
 
 def evCount = 0
 def countEvent
-printDebug "Begin event loop"
+printDebug "Begin main event loop"
 inHipoList.each { inHipoFile ->
 
   // open HIPO file
@@ -670,18 +699,22 @@ inHipoList.each { inHipoFile ->
     if(configBank.rows()>0) {
       eventNum = BigInteger.valueOf(configBank.getInt('event',0))
     }
-    else if(event.getBankList().length==1 && event.getBankList().contains("COAT::config")) {
+    else if(hipoEvent.getBankList().length==1 && hipoEvent.getBankList().contains("COAT::config")) {
       printDebug "Skipping event which has only 'COAT::config' bank"
       continue
     }
     else {
-      System.err.println "WARNING: cannot get event number for event with no RUN::config bank; skipping this event; available banks: ${event.getBankList()}"
+      System.err.println "WARNING: cannot get event number for event with no RUN::config bank; skipping this event; available banks: ${hipoEvent.getBankList()}"
       continue
     }
     if(eventNum==0) {
       System.err.println "WARNING: found event with eventNum=0; banks: ${hipoEvent.getBankList()}"
       continue
     }
+
+    // set overall min and max event numbers
+    overallMinEventNumber = [ overallMinEventNumber, eventNum].min()
+    overallMaxEventNumber = [ overallMaxEventNumber, eventNum].max()
 
     // find the time bin that contains this event
     def timeBinNum = findTimeBin(eventNum)
@@ -785,7 +818,7 @@ inHipoList.each { inHipoFile ->
 
           // increment event counter
           evCount++
-          if(evCount % 100000 == 0) println "found $evCount events which contain a pion"
+          if(evCount % 100 == 0) printDebug "found $evCount events which contain a pion"
 
         }
       }
@@ -796,10 +829,17 @@ inHipoList.each { inHipoFile ->
 
 } // end loop over hipo files
 
+// correct the first and last time bins' event number ranges
+timeBins[0].eventNumMin                 = overallMinEventNumber
+timeBins[timeBins.size()-1].eventNumMax = overallMaxEventNumber
+
 // write final time bin's histograms
 timeBins.each{ binNum, timeBin ->
   writeHistos(timeBin, binNum)
 }
+
+// print the time bins
+printDebug_timeBinBounds()
 
 // write outHipo file
 outHipoN = "$outDir/monitor_${runnum}.hipo"
