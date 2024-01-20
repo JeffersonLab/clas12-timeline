@@ -393,85 +393,6 @@ def findParticles = { pid, binNum ->
 }
 
 
-// subroutine to write out to hipo file
-def writeHistos = { itBin, itBinNum ->
-
-  // loop through histTree, adding histos to the hipo file;
-  T.exeLeaves( itBin.histTree, {
-    outHipo.addDataSet(T.leaf)
-  })
-  //println "write histograms:"; T.printTree(itBin.histTree,{T.leaf.getName()})
-
-
-  // get accumulated ungated FC charge
-  def ufcStart = 0
-  def ufcStop = 0
-  if(itBinNum+1<timeBins.size()) { // unknown for last time bin, just let the charge be "zero"
-    if(!itBin.ufcRange.contains("init")) {
-      // "start" should be the "stop" of the previous time bin (cf. `findTimeBin`); bin 0 starts with zero charge
-      ufcStart = itBinNum > 0 ? timeBins[itBinNum-1].ufcRange[1] : 0
-      // "stop" is the maximum charge in this time bin, since events on the bin boundary are assigned to the earlier bin
-      ufcStop  = itBin.ufcRange[1]
-    } else {
-      System.err.println "WARNING: no ungated FC charge for run ${runnum} time bin ${itBinNum}"
-      ufcStart = 0
-      ufcStop  = 0
-    }
-  }
-
-  // get accumulated gated FC charge
-  def fcStart = 0
-  def fcStop = 0
-  def aveLivetime = itBin.LTlist.size()>0 ? itBin.LTlist.sum() / itBin.LTlist.size() : 0
-  if(itBinNum+1<timeBins.size()) { // unknown for last time bin, just let the charge be "zero"
-    if(FCmode==0) {
-      fcStart = ufcStart * aveLivetime // workaround method
-      fcStop  = ufcStop  * aveLivetime // workaround method
-    } else if(FCmode==1 || FCmode==2) {
-      if(!itBin.fcRange.contains("init")) {
-        // "start" should be the "stop" of the previous time bin (cf. `findTimeBin`); bin 0 starts with zero charge
-        fcStart = itBinNum > 0 ? timeBins[itBinNum-1].fcRange[1] : 0
-        // "stop" is the maximum charge in this time bin, since events on the bin boundary are assigned to the earlier bin
-        fcStop  = itBin.fcRange[1]
-      } else {
-        System.err.println "WARNING: no gated FC charge for run ${runnum} time bin ${itBinNum}"
-        fcStart = 0
-        fcStop  = 0
-      }
-    }
-    if(fcStart>fcStop || ufcStart>ufcStop) {
-      System.err.println "WARNING: faraday cup start > stop for run ${runnum} time bin ${itBinNum}"
-    }
-  }
-
-  // set **these** FC start and stop values in `timeBins`, since we'll use bin N's `stop` as bin N+1's `start`
-  itBin.ufcRange = [ufcStart, ufcStop]
-  itBin.fcRange  = [fcStart,  fcStop]
-
-  // write number of electrons and FC charge to datfile
-  SECTORS.each{ sec ->
-    datfileWriter << [ runnum, itBinNum ].join(' ') << ' '
-    datfileWriter << [ itBin.eventNumMin, itBin.eventNumMax ].join(' ') << ' '
-    datfileWriter << [ sec+1, itBin.nElec[sec], itBin.nElecFT ].join(' ') << ' '
-    datfileWriter << [ fcStart, fcStop, ufcStart, ufcStop, aveLivetime ].join(' ') << '\n'
-  }
-  printDebug " - charge for timeBin $itBinNum:"
-  printDebug "   - event number range: [ ${itBin.eventNumMin}, ${itBin.eventNumMax} ]"
-  printDebug "   - gated-FC charge:    [ $fcStart, $fcStop ]"
-  printDebug "   - ungated-FC charge:  [ $ufcStart, $ufcStop ]"
-
-  // print some stats
-  /*
-  def nElecTotal = itBin.nElec*.value.sum()
-  println "\nnumber of trigger electrons: $nElecTotal"
-  println """number of electrons that satisified FD trigger cuts, but were not analyzed...
-  ...because they had subdominant E: $caseCountNtrigGT1
-  ...because there was a higher-E electron satisfying FT cuts: $caseCountNFTwithTrig"""
-  caseCountNtrigGT1=0
-  caseCountNFTwithTrig=0
-  */
-}
-
 
 // subroutine to build a histogram
 def buildHist(histName, histTitle, propList, runn, nb, lb, ub, nb2=0, lb2=0, ub2=0) {
@@ -501,22 +422,12 @@ def buildHist(histName, histTitle, propList, runn, nb, lb, ub, nb2=0, lb2=0, ub2
 // subroutine to find the EARLIEST time bin for a given event number
 // - if the event number is on a time-bin boundary, the earlier time bin will be returned
 def findTimeBin = { evnum ->
-  s = timeBins.find{ evnum >= it.value.eventNumMin && evnum <= it.value.eventNumMax }
+  def s = timeBins.find{ evnum >= it.value.eventNumMin && evnum <= it.value.eventNumMax }
   if(s==null) {
     System.err.println "ERROR: cannot find time bin for event number $evnum"
     return -1
   }
-  if(VERBOSE) {
-    if(evnum == s.value.eventNumMin) {
-      printDebug "event number ${evnum} on lower boundary of bin ${s.key}, and assigned to that bin..."
-      printDebug "... its banks: ${hipoEvent.getBankList()}"
-    }
-    else if(evnum == s.value.eventNumMax) {
-      printDebug "event number ${evnum} on upper boundary of bin ${s.key}, and assigned to that bin..."
-      printDebug "... its banks: ${hipoEvent.getBankList()}"
-    }
-  }
-  s.key
+  [ s.key, s.value ]
 }
 
 
@@ -534,56 +445,61 @@ def setMinMaxInTimeBin = { binNum, key, val ->
 // DEFINE TIME BINS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-// get list of tag1 event numbers
-printDebug "Begin tag1 event loop"
-def tag1eventNumList = []
-inHipoList.each { inHipoFile ->
-  printDebug "Open HIPO file $inHipoFile"
-  def reader = new HipoDataSource()
-  reader.getReader().setTags(1)
-  reader.open(inHipoFile)
-  while(reader.hasEvent()) {
-    hipoEvent = reader.getNextEvent()
-    // printDebug "tag1 event bank list: ${hipoEvent.getBankList()}"
-    if(hipoEvent.hasBank("RUN::scaler") && hipoEvent.hasBank("RUN::config")) {
-      tag1eventNumList << BigInteger.valueOf(hipoEvent.getBank("RUN::config").getInt('event',0))
+defineTimeBins = { // in its own closure, so giant data structures are garbage collected
+  // get list of tag1 event numbers
+  printDebug "Begin tag1 event loop"
+  def tag1eventNumList = []
+  inHipoList.each { inHipoFile ->
+    printDebug "Open HIPO file $inHipoFile"
+    def reader = new HipoDataSource()
+    reader.getReader().setTags(1)
+    reader.open(inHipoFile)
+    while(reader.hasEvent()) {
+      hipoEvent = reader.getNextEvent()
+      // printDebug "tag1 event bank list: ${hipoEvent.getBankList()}"
+      if(hipoEvent.hasBank("RUN::scaler") && hipoEvent.hasBank("RUN::config")) {
+        tag1eventNumList << BigInteger.valueOf(hipoEvent.getBank("RUN::config").getInt('event',0))
+      }
     }
+    reader.close()
   }
-  reader.close()
-}
 
-// sort the event numbers
-printDebug "Number of tag1 events: ${tag1eventNumList.size()}"
-tag1eventNumList = tag1eventNumList.sort()
+  // sort the event numbers
+  printDebug "Number of tag1 events: ${tag1eventNumList.size()}"
+  tag1eventNumList = tag1eventNumList.sort()
 
-// define the time bin boundaries: first, some sorting and transformations
-timeBinBounds = tag1eventNumList
-  .collate(MIN_NUM_SCALERS)   // partition into subsets, each with cardinality MIN_NUM_SCALERS (the last subset may be smaller)
-  .collect{ it[0] }           // take the first event number of each subset
-  .plus(tag1eventNumList[-1]) // append the final tag1 event number...
-  .unique()                   // ...and make sure it's not just repeating the previous event number
-  .collect{ [it, it] }        // double each element (since upper bound of bin N = lower bound of bin N+1)...
-  .flatten()                  // ...and flatten it, since we are going to re-collate it below after adding the final bin boundaries
-// set the first bin boundary to 0; we'll fix it later after the main event loop
-timeBinBounds = [0] + timeBinBounds
-// set the last bin boundary to a high number, because the true highest event
-// number is not yet known; we'll fix it later after the main event loop
-timeBinBounds = timeBinBounds + [10**(Math.log10(timeBinBounds[-1]).toInteger()+2)] // two orders of magnitude above largest known event number
-// pair the elements to define the bin boundaries
-timeBinBounds = timeBinBounds.collate(2)
-// define the time bin objects, initializing additional fields
-timeBinBounds.eachWithIndex{ bounds, binNum ->
-  timeBins[binNum] = [
-    eventNumMin: bounds[0],
-    eventNumMax: bounds[-1],
-    nElec:       SECTORS.collect{0},
-    nElecFT:     0,
-    fcRange:     ["init", "init"],
-    ufcRange:    ["init", "init"],
-    LTlist:      [],
-    histTree:    [:],
-  ]
+  // define the time bin boundaries: first, some sorting and transformations
+  def timeBinBounds = tag1eventNumList
+    .collate(MIN_NUM_SCALERS)   // partition into subsets, each with cardinality MIN_NUM_SCALERS (the last subset may be smaller)
+    .collect{ it[0] }           // take the first event number of each subset
+    .plus(tag1eventNumList[-1]) // append the final tag1 event number...
+    .unique()                   // ...and make sure it's not just repeating the previous event number
+    .collect{ [it, it] }        // double each element (since upper bound of bin N = lower bound of bin N+1)...
+    .flatten()                  // ...and flatten it, since we are going to re-collate it below after adding the final bin boundaries
+  // set the first bin boundary to 0; we'll fix it later after the main event loop
+  timeBinBounds = [0] + timeBinBounds
+  // set the last bin boundary to a high number, because the true highest event
+  // number is not yet known; we'll fix it later after the main event loop
+  timeBinBounds = timeBinBounds + [10**(Math.log10(timeBinBounds[-1]).toInteger()+2)] // two orders of magnitude above largest known event number
+  // pair the elements to define the bin boundaries
+  timeBinBounds = timeBinBounds.collate(2)
+  // define the time bin objects, initializing additional fields
+  timeBinBounds.eachWithIndex{ bounds, binNum ->
+    timeBins[binNum] = [
+      eventNumMin:  bounds[0],           // event number range
+      eventNumMax:  bounds[-1],
+      nElec:        SECTORS.collect{0},  // number of electrons for each FD sector
+      nElecFT:      0,                   // number of electrons for FT
+      fcRange:      ["init", "init"],    // gated FC charge at the bin boundaries
+      ufcRange:     ["init", "init"],    // ungated  ""             ""
+      fcRangeTest:  ["init", "init"],    // gated FC charge min,max (to check if they are within the boundaries set in `fcRange`)
+      ufcRangeTest: ["init", "init"],    // ungated  ""             ""
+      LTlist:       [],
+      histTree:     [:],
+    ]
+  }
 }
+defineTimeBins()
 
 // debug `timeBins` logging function (call it where you need it)
 printDebug_timeBinBounds = {
@@ -706,28 +622,54 @@ inHipoList.each { inHipoFile ->
     overallMaxEventNumber = [ overallMaxEventNumber, eventNum].max()
 
     // find the time bin that contains this event
-    def timeBinNum = findTimeBin(eventNum)
-    if(timeBinNum == -1) continue
+    def (thisTimeBinNum, thisTimeBin) = findTimeBin(eventNum)
+    if(thisTimeBinNum == -1) continue
 
     // get list of PIDs, with list index corresponding to bank row
     pidList = (0..<particleBank.rows()).collect{ particleBank.getInt('pid',it) }
     //println "pidList = $pidList"
 
+
     // get the FC charge and livetime, depending on `FCmode`
+    // - also sets the min and max FC charges, for this time bin
+    def lt
+    def fc  = -1.0
+    def ufc = -1.0
     if(scalerBank.rows()>0) {
       // ungated charge
-      setMinMaxInTimeBin(timeBinNum, "ufcRange", scalerBank.getFloat("fcup",0))
+      ufc = scalerBank.getFloat("fcup",0)
+      setMinMaxInTimeBin(thisTimeBinNum, "ufcRangeTest", ufc)
       // livetime
       lt = scalerBank.getFloat("livetime",0)
-      if(lt>=0) { timeBins[timeBinNum]["LTlist"] << lt }
+      if(lt>=0) { thisTimeBin.LTlist << lt }
       // gated charge (if trustworthy)
       if(FCmode==1) {
-        setMinMaxInTimeBin(timeBinNum, "fcRange", scalerBank.getFloat("fcupgated",0))
+        fc = scalerBank.getFloat("fcupgated",0)
+        setMinMaxInTimeBin(thisTimeBinNum, "fcRangeTest", fc)
       }
     }
     if(FCmode==2 && eventBank.rows()>0) {
       // gated charge only
-      setMinMaxInTimeBin(timeBinNum, "fcRange", eventBank.getFloat("beamCharge",0))
+      fc = eventBank.getFloat("beamCharge",0)
+      setMinMaxInTimeBin(thisTimeBinNum, "fcRangeTest", fc)
+    }
+
+    // if this event is on a bin boundary, update `fcRange` and `ufcRange`
+    // FIXME: this will only work for FCmode==1; need to figure out how to handle the others
+    if(eventNum == thisTimeBin.eventNumMax) {
+      // events on the boundary are assigned to earlier bin; this FC charge is that bin's max charge
+      thisTimeBin.fcRange[1]  = fc
+      thisTimeBin.ufcRange[1] = ufc
+      // this FC charge is also the next bin's min charge
+      def nextTimeBin = timeBins[thisTimeBinNum+1]
+      if(nextTimeBin==null) { System.err.println "ERROR: found a time bin that has no subsequent bin, and is not the latest bin" }
+      nextTimeBin.fcRange[0]  = fc
+      nextTimeBin.ufcRange[0] = ufc
+      printDebug "event number ${eventNum} on upper boundary of bin ${thisTimeBinNum}, and assigned to that bin..."
+      printDebug "... its banks: ${hipoEvent.getBankList()}"
+    }
+    if(eventNum == thisTimeBin.eventNumMin) {
+      System.err.println "ERROR: event number ${eventNum} on lower boundary of bin ${thisTimeBinNum}, and assigned to that bin; this shouldn't happen in the current binning scheme."
     }
 
     // get helicity and fill helicity distribution
@@ -739,17 +681,17 @@ inHipoList.each { inHipoFile ->
       case -1: helStr='hm'; helDefined=true; break
       default: helDefined = false; helicity = 0; break
     }
-    timeBins[timeBinNum].histTree.helic.dist.fill(helicity)
+    thisTimeBin.histTree.helic.dist.fill(helicity)
 
     // get electron list, and increment the number of trigger electrons
     // - also finds the DIS electron, and calculates x,Q2,W,y,nu
-    findParticles(11, timeBinNum)
+    findParticles(11, thisTimeBinNum)
 
     // CUT: if a DIS electron was found by `findParticles`
     if(disEleFound) {
 
       if(disElectronInTrigger)
-        timeBins[timeBinNum].histTree.helic.distGoodOnly.fill(helicity)
+        thisTimeBin.histTree.helic.distGoodOnly.fill(helicity)
 
       // CUT for pions: Q2 and W and y and helicity
       if( Q2>1 && W>2 && y<0.8 && helDefined) {
@@ -757,8 +699,8 @@ inHipoList.each { inHipoFile ->
         // get pions, calculate their kinematics and fill histograms
         countEvent = false
         [
-          [ findParticles(211, timeBinNum),  'pip' ],
-          [ findParticles(-211, timeBinNum), 'pim' ],
+          [ findParticles(211, thisTimeBinNum),  'pip' ],
+          [ findParticles(-211, thisTimeBinNum), 'pim' ],
         ].each{ pionList, pionName ->
 
           pionList.each { part ->
@@ -781,13 +723,13 @@ inHipoList.each { inHipoFile ->
 
                 // fill histograms
                 if(helDefined) {
-                  timeBins[timeBinNum]["histTree"]['helic']['sinPhi'][pionName][helStr].fill(Math.sin(phiH))
+                  thisTimeBin["histTree"]['helic']['sinPhi'][pionName][helStr].fill(Math.sin(phiH))
                 }
-                timeBins[timeBinNum]["histTree"]['inclusive'][pionName]['p'].fill(p)
-                timeBins[timeBinNum]["histTree"]['inclusive'][pionName]['pT'].fill(pT)
-                timeBins[timeBinNum]["histTree"]['inclusive'][pionName]['z'].fill(z)
-                timeBins[timeBinNum]["histTree"]['inclusive'][pionName]['theta'].fill(theta)
-                timeBins[timeBinNum]["histTree"]['inclusive'][pionName]['phiH'].fill(phiH)
+                thisTimeBin["histTree"]['inclusive'][pionName]['p'].fill(p)
+                thisTimeBin["histTree"]['inclusive'][pionName]['pT'].fill(pT)
+                thisTimeBin["histTree"]['inclusive'][pionName]['z'].fill(z)
+                thisTimeBin["histTree"]['inclusive'][pionName]['theta'].fill(theta)
+                thisTimeBin["histTree"]['inclusive'][pionName]['phiH'].fill(phiH)
 
                 // tell event counter that this event has at least one particle added to histos
                 countEvent = true
@@ -799,11 +741,11 @@ inHipoList.each { inHipoFile ->
         if(countEvent) {
 
           // fill event-level histograms
-          timeBins[timeBinNum].histTree.DIS.Q2.fill(Q2)
-          timeBins[timeBinNum].histTree.DIS.W.fill(W)
-          timeBins[timeBinNum].histTree.DIS.x.fill(x)
-          timeBins[timeBinNum].histTree.DIS.y.fill(y)
-          timeBins[timeBinNum].histTree.DIS.Q2VsW.fill(W,Q2)
+          thisTimeBin.histTree.DIS.Q2.fill(Q2)
+          thisTimeBin.histTree.DIS.W.fill(W)
+          thisTimeBin.histTree.DIS.x.fill(x)
+          thisTimeBin.histTree.DIS.y.fill(y)
+          thisTimeBin.histTree.DIS.Q2VsW.fill(W,Q2)
 
           // increment event counter
           evCount++
@@ -818,17 +760,115 @@ inHipoList.each { inHipoFile ->
 
 } // end loop over hipo files
 
-// correct the first and last time bins' event number ranges
-timeBins[0].eventNumMin                 = overallMinEventNumber
-timeBins[timeBins.size()-1].eventNumMax = overallMaxEventNumber
+
+// correct the first and last time bins' event number ranges, and their FC charge ranges
+def firstTimeBin = timeBins[0]
+def lastTimeBin = timeBins[timeBins.size()-1]
+firstTimeBin.eventNumMin     = overallMinEventNumber
+firstTimeBin.fcRange[0]      = 0 // charge accumulation starts at 0
+firstTimeBin.fcRangeTest[0]  = 0
+firstTimeBin.ufcRange[0]     = 0
+firstTimeBin.ufcRangeTest[0] = 0
+lastTimeBin.eventNumMax     = overallMaxEventNumber
+lastTimeBin.fcRange[1]      = 0 // absolute maximum charge is unknown
+lastTimeBin.fcRangeTest[1]  = 0
+lastTimeBin.ufcRange[1]     = 0
+lastTimeBin.ufcRangeTest[1] = 0
 
 // write final time bin's histograms
-timeBins.each{ binNum, timeBin ->
-  writeHistos(timeBin, binNum)
+timeBins.each{ itBinNum, itBin ->
+
+  // loop through histTree, adding histos to the hipo file;
+  T.exeLeaves( itBin.histTree, {
+    outHipo.addDataSet(T.leaf)
+  })
+  //println "write histograms:"; T.printTree(itBin.histTree,{T.leaf.getName()})
+
+
+  // get accumulated ungated FC charge
+  def ufcStart = 0
+  def ufcStop  = 0
+  if(itBinNum+1<timeBins.size()) { // unknown for last time bin, just let the charge be "zero"
+    if(!itBin.ufcRange.contains("init")) {
+      ufcStart = itBin.ufcRange[0]
+      ufcStop  = itBin.ufcRange[1]
+    } else {
+      System.err.println "WARNING: no ungated FC charge for run ${runnum} time bin ${itBinNum}"
+    }
+  }
+
+  // get accumulated gated FC charge
+  def fcStart = 0
+  def fcStop  = 0
+  def aveLivetime = itBin.LTlist.size()>0 ? itBin.LTlist.sum() / itBin.LTlist.size() : 0
+  if(itBinNum+1<timeBins.size()) { // unknown for last time bin, just let the charge be "zero"
+    if(FCmode==0) {
+      fcStart = ufcStart * aveLivetime // workaround method
+      fcStop  = ufcStop  * aveLivetime // workaround method
+    } else if(FCmode==1 || FCmode==2) {
+      if(!itBin.fcRange.contains("init")) {
+        fcStart = itBin.fcRange[0]
+        fcStop  = itBin.fcRange[1]
+      } else {
+        System.err.println "WARNING: no gated FC charge for run ${runnum} time bin ${itBinNum}"
+      }
+    }
+    if(fcStart>fcStop || ufcStart>ufcStop) {
+      System.err.println "WARNING: faraday cup start > stop for run ${runnum} time bin ${itBinNum}"
+    }
+  }
+
+  // write number of electrons and FC charge to datfile
+  SECTORS.each{ sec ->
+    datfileWriter << [ runnum, itBinNum ].join(' ') << ' '
+    datfileWriter << [ itBin.eventNumMin, itBin.eventNumMax ].join(' ') << ' '
+    datfileWriter << [ sec+1, itBin.nElec[sec], itBin.nElecFT ].join(' ') << ' '
+    datfileWriter << [ fcStart, fcStop, ufcStart, ufcStop, aveLivetime ].join(' ') << '\n'
+  }
+  printDebug " - charge for timeBin $itBinNum:"
+  printDebug "   - event number range: [ ${itBin.eventNumMin}, ${itBin.eventNumMax} ]"
+  printDebug "   - gated-FC charge:    [ $fcStart, $fcStop ]"
+  printDebug "   - ungated-FC charge:  [ $ufcStart, $ufcStop ]"
+
+  // print some stats
+  /*
+  def nElecTotal = itBin.nElec*.value.sum()
+  println "\nnumber of trigger electrons: $nElecTotal"
+  println """number of electrons that satisified FD trigger cuts, but were not analyzed...
+  ...because they had subdominant E: $caseCountNtrigGT1
+  ...because there was a higher-E electron satisfying FT cuts: $caseCountNFTwithTrig"""
+  caseCountNtrigGT1=0
+  caseCountNFTwithTrig=0
+  */
 }
+
 
 // print the time bins
 printDebug_timeBinBounds()
+
+
+// cross check: is each time bin's min and max FC charge within the FC charge values at the bin boundaries?
+timeBins.each{ itBinNum, itBin ->
+  if(itBinNum+1 == timeBins.size()) return // can't cross check the last bin
+  def (fc_lb,   fc_ub)   = itBin.fcRange
+  def (fc_min,  fc_max)  = itBin.fcRangeTest
+  def (ufc_lb,  ufc_ub)  = itBin.ufcRange
+  def (ufc_min, ufc_max) = itBin.ufcRangeTest
+  printDebug "FC charge cross check for bin ${itBinNum}"
+  printDebug "  gated:   (lb,ub)   = [${fc_lb}, ${fc_ub}]"
+  printDebug "           (min,max) = [${fc_min}, ${fc_max}]"
+  printDebug "  ungated: (lb,ub)   = [${ufc_lb}, ${ufc_ub}]"
+  printDebug "           (min,max) = [${ufc_min}, ${ufc_max}]"
+  def problems = []
+  if(fc_min < fc_lb) { problems << [ "minimum gated", "less", "${fc_min} < ${fc_lb}" ] }
+  if(fc_max > fc_ub) { problems << [ "maximum gated", "more", "${fc_max} > ${fc_ub}" ] }
+  if(ufc_min < ufc_lb) { problems << [ "minimum ungated", "less", "${ufc_min} < ${ufc_lb}" ] }
+  if(ufc_max > ufc_ub) { problems << [ "maximum ungated", "more", "${ufc_max} > ${ufc_ub}" ] }
+  problems.each{
+    System.err.println "ERROR: ${it[0]} FC charge is ${it[1]} than that at bin boundary, for bin number ${itBinNum}  (${it[2]})"
+  }
+}
+
 
 // write outHipo file
 outHipoN = "$outDir/monitor_${runnum}.hipo"
