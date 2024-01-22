@@ -19,8 +19,10 @@ def MIN_NUM_SCALERS = 2000   // at least this many scaler readouts per time bin
 def NBINS           = 50     // number of bins in some histograms
 def SECTORS         = 0..<6  // sector range
 def ECAL_ID         = DetectorType.ECAL.getDetectorId() // ECAL detector ID
-def VERBOSE         = true   // enable extra log messages, for debugging
-def LIMITER         = 0      // if nonzero, only analyze this many DST files (for quick testing and debugging)
+// debugging settings
+def VERBOSE = true   // enable extra log messages, for debugging
+def LIMITER = 0      // if nonzero, only analyze this many DST files (for quick testing and debugging)
+def AUXFILE = false  // enable auxfile production, an event-by-event table (a large text file)
 
 // function to print a debugging message
 def printDebug = { msg -> if(VERBOSE) println "[DEBUG]: $msg" }
@@ -196,9 +198,28 @@ def outHipo = new TDirectory()
 outHipo.mkdir("/$runnum")
 outHipo.cd("/$runnum")
 
-// prepare output table for electron count and FC charge
-def datfile       = new File("$outDir/data_table_${runnum}.dat")
+// prepare time-binned output table for electron count and FC charge
+def datfileName   = "$outDir/data_table_${runnum}.dat"
+def datfile       = new File(datfileName)
 def datfileWriter = datfile.newWriter(false)
+// prepare auxiliary, event-by-event output table (for debugging)
+def auxfileName
+def auxfile
+def auxfileWriter
+if(AUXFILE) {
+  auxfileName   = "$outDir/aux_table_${runnum}.dat"
+  auxfile       = new File(auxfileName)
+  auxfileWriter = auxfile.newWriter(false)
+  auxfileWriter << [
+    "runnum/I",
+    "binnum/I",
+    "on_bin_boundary/I", // actually a boolean
+    "has_run_scaler_bank/I", // actually a boolean
+    "evnum/L",
+    "fc/D",
+    "ufc/D",
+  ].join(':') << '\n'
+}
 
 // define shared variables
 def hipoEvent
@@ -504,7 +525,7 @@ defineTimeBins()
 // debug `timeBins` logging function (call it where you need it)
 printDebug_timeBinBounds = {
     println "TIME BINS =============================="
-    println "@ #runnum/I:bin_num/L:number_of_bins/L:evnum_min/L:evnum_max/L:num_events/L"
+    println "@ #runnum/I:binnum/I:number_of_bins/I:evnum_min/L:evnum_max/L:num_events/L"
     timeBins.each{ binNum, timeBin ->
       def num_events = timeBin.eventNumMax - timeBin.eventNumMin
       if(binNum==0) {
@@ -574,7 +595,7 @@ timeBins.each{ binNum, timeBin ->
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// EVENT LOOP
+// MAIN EVENT LOOP
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 def evCount = 0
@@ -654,22 +675,42 @@ inHipoList.each { inHipoFile ->
       setMinMaxInTimeBin(thisTimeBinNum, "fcRangeTest", fc)
     }
 
-    // if this event is on a bin boundary, update `fcRange` and `ufcRange`
+    // if this event is on a bin boundary, and it has `scalerBank`, update `fcRange` and `ufcRange`
     // FIXME: this will only work for FCmode==1; need to figure out how to handle the others
+    def onBinBoundary = false
     if(eventNum == thisTimeBin.eventNumMax) {
-      // events on the boundary are assigned to earlier bin; this FC charge is that bin's max charge
-      thisTimeBin.fcRange[1]  = fc
-      thisTimeBin.ufcRange[1] = ufc
-      // this FC charge is also the next bin's min charge
-      def nextTimeBin = timeBins[thisTimeBinNum+1]
-      if(nextTimeBin==null) { System.err.println "ERROR: found a time bin that has no subsequent bin, and is not the latest bin" }
-      nextTimeBin.fcRange[0]  = fc
-      nextTimeBin.ufcRange[0] = ufc
-      printDebug "event number ${eventNum} on upper boundary of bin ${thisTimeBinNum}, and assigned to that bin..."
-      printDebug "... its banks: ${hipoEvent.getBankList()}"
+      onBinBoundary = true
+      if(scalerBank.rows()>0) { // must have scalerBank, so `fc` and `ufc` are set
+        // events on the boundary are assigned to earlier bin; this FC charge is that bin's max charge
+        thisTimeBin.fcRange[1]  = fc
+        thisTimeBin.ufcRange[1] = ufc
+        // this FC charge is also the next bin's min charge
+        def nextTimeBin = timeBins[thisTimeBinNum+1]
+        if(nextTimeBin==null) { System.err.println "ERROR: found a time bin that has no subsequent bin, and is not the latest bin" }
+        nextTimeBin.fcRange[0]  = fc
+        nextTimeBin.ufcRange[0] = ufc
+        printDebug "event number ${eventNum} on upper boundary of bin ${thisTimeBinNum}, and assigned to that bin:"
+        printDebug "  - gated charge:   ${fc}"
+        printDebug "  - ungated charge: ${ufc}"
+        printDebug "  - banks: ${hipoEvent.getBankList()}"
+      }
     }
     if(eventNum == thisTimeBin.eventNumMin) {
+      onBinBoundary = true
       System.err.println "ERROR: event number ${eventNum} on lower boundary of bin ${thisTimeBinNum}, and assigned to that bin; this shouldn't happen in the current binning scheme."
+    }
+
+    // dump event-level info to a text file
+    if(AUXFILE) {
+      auxfileWriter << [
+        runnum,
+        thisTimeBinNum,
+        onBinBoundary ? 1 : 0,
+        scalerBank.rows() > 0 ? 1 : 0,
+        eventNum,
+        fc,
+        ufc,
+      ].join(' ') << '\n'
     }
 
     // get helicity and fill helicity distribution
@@ -870,8 +911,22 @@ timeBins.each{ itBinNum, itBin ->
 }
 
 
+// close output text files
+datfileWriter.flush()
+datfileWriter.close()
+if(AUXFILE) {
+  auxfileWriter.flush()
+  auxfileWriter.close()
+}
+
 // write outHipo file
 outHipoN = "$outDir/monitor_${runnum}.hipo"
 File outHipoFile = new File(outHipoN)
 if(outHipoFile.exists()) outHipoFile.delete()
 outHipo.writeFile(outHipoN)
+println("Wrote the following files:")
+println(" - $outHipoN")
+println(" - $datfileName")
+if(AUXFILE) {
+  println(" - $auxfileName")
+}
