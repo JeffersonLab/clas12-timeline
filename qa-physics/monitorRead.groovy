@@ -513,8 +513,8 @@ defineTimeBins = { // in its own closure, so giant data structures are garbage c
       nElecFT:      0,                   // number of electrons for FT
       fcRange:      ["init", "init"],    // gated FC charge at the bin boundaries
       ufcRange:     ["init", "init"],    // ungated  ""             ""
-      fcRangeTest:  ["init", "init"],    // gated FC charge min,max (to check if they are within the boundaries set in `fcRange`)
-      ufcRangeTest: ["init", "init"],    // ungated  ""             ""
+      fcMinMax:     ["init", "init"],    // gated FC charge min,max (to check if they are within the boundaries set in `fcRange`)
+      ufcMinMax:    ["init", "init"],    // ungated  ""             ""
       LTlist:       [],
       histTree:     [:],
     ]
@@ -659,20 +659,20 @@ inHipoList.each { inHipoFile ->
     if(scalerBank.rows()>0) {
       // ungated charge
       ufc = scalerBank.getFloat("fcup",0)
-      setMinMaxInTimeBin(thisTimeBinNum, "ufcRangeTest", ufc)
+      setMinMaxInTimeBin(thisTimeBinNum, "ufcMinMax", ufc)
       // livetime
       lt = scalerBank.getFloat("livetime",0)
       if(lt>=0) { thisTimeBin.LTlist << lt }
       // gated charge (if trustworthy)
       if(FCmode==1) {
         fc = scalerBank.getFloat("fcupgated",0)
-        setMinMaxInTimeBin(thisTimeBinNum, "fcRangeTest", fc)
+        setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
       }
     }
     if(FCmode==2 && eventBank.rows()>0) {
       // gated charge only
       fc = eventBank.getFloat("beamCharge",0)
-      setMinMaxInTimeBin(thisTimeBinNum, "fcRangeTest", fc)
+      setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
     }
 
     // if this event is on a bin boundary, and it has `scalerBank`, update `fcRange` and `ufcRange`
@@ -805,16 +805,16 @@ inHipoList.each { inHipoFile ->
 // correct the first and last time bins' event number ranges, and their FC charge ranges
 def firstTimeBin = timeBins[0]
 def lastTimeBin = timeBins[timeBins.size()-1]
-firstTimeBin.eventNumMin     = overallMinEventNumber
-firstTimeBin.fcRange[0]      = 0 // charge accumulation starts at 0
-firstTimeBin.fcRangeTest[0]  = 0
-firstTimeBin.ufcRange[0]     = 0
-firstTimeBin.ufcRangeTest[0] = 0
-lastTimeBin.eventNumMax     = overallMaxEventNumber
-lastTimeBin.fcRange[1]      = 0 // absolute maximum charge is unknown
-lastTimeBin.fcRangeTest[1]  = 0
-lastTimeBin.ufcRange[1]     = 0
-lastTimeBin.ufcRangeTest[1] = 0
+firstTimeBin.eventNumMin  = overallMinEventNumber
+firstTimeBin.fcRange[0]   = 0 // charge accumulation starts at 0
+firstTimeBin.fcMinMax[0]  = 0
+firstTimeBin.ufcRange[0]  = 0
+firstTimeBin.ufcMinMax[0] = 0
+lastTimeBin.eventNumMax   = overallMaxEventNumber
+lastTimeBin.fcRange[1]    = 0 // absolute maximum charge is unknown
+lastTimeBin.fcMinMax[1]   = 0
+lastTimeBin.ufcRange[1]   = 0
+lastTimeBin.ufcMinMax[1]  = 0
 
 // write final time bin's histograms
 timeBins.each{ itBinNum, itBin ->
@@ -910,9 +910,9 @@ may be smaller or larger than the FC charge values at the bin boundaries
 timeBins.each{ itBinNum, itBin ->
   if(itBinNum+1 == timeBins.size()) return // can't cross check the last bin
   def (fc_lb,   fc_ub)   = itBin.fcRange
-  def (fc_min,  fc_max)  = itBin.fcRangeTest
+  def (fc_min,  fc_max)  = itBin.fcMinMax
   def (ufc_lb,  ufc_ub)  = itBin.ufcRange
-  def (ufc_min, ufc_max) = itBin.ufcRangeTest
+  def (ufc_min, ufc_max) = itBin.ufcMinMax
   printDebug "FC charge cross check for bin ${itBinNum}"
   printDebug "  gated:   (lb,ub)   = [${fc_lb}, ${fc_ub}]"
   printDebug "           (min,max) = [${fc_min}, ${fc_max}]"
