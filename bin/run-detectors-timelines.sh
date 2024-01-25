@@ -242,14 +242,13 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   for timelineFile in $timelineFiles; do
     det=$(basename $timelineFile | sed 's;_.*;;g')
     case $det in
-      bmt)      mv $timelineFile bmtbst/   ;;
-      bst)      mv $timelineFile bmtbst/   ;;
-      cen)      mv $timelineFile central/  ;;
-      ftc)      mv $timelineFile ft/       ;;
-      fth)      mv $timelineFile ft/       ;;
-      helicity) mv $timelineFile helicity/ ;;
-      rat)      mv $timelineFile trigger/  ;;
-      rftime)   mv $timelineFile rf/       ;;
+      bmt)    mv $timelineFile bmtbst/  ;;
+      bst)    mv $timelineFile bmtbst/  ;;
+      cen)    mv $timelineFile central/ ;;
+      ftc)    mv $timelineFile ft/      ;;
+      fth)    mv $timelineFile ft/      ;;
+      rat)    mv $timelineFile trigger/ ;;
+      rftime) mv $timelineFile rf/      ;;
       ctof|ftof)
         [[ "$timelineFile" =~ _m2_ ]] && mv $timelineFile m2_ctof_ftof/ || mv $timelineFile $det/
         ;;
