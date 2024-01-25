@@ -43,12 +43,12 @@ public class helicity {
         }
     }
 
-    public void write(int runNumber) {
+    public void write(String outputDir, int runNumber) {
 		TDirectory dir = new TDirectory();
 		dir.mkdir("/HELICITY/");
 		dir.cd("/HELICITY/");
         for (H1Fb h : this.histos) dir.addDataSet(h);
-        dir.writeFile(String.format("outfiles/out_HELICITY_%d.hipo",runNumber));
+        dir.writeFile(outputDir + String.format("/out_HELICITY_%d.hipo",runNumber));
 	}
 
 }

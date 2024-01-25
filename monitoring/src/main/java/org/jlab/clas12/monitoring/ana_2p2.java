@@ -42,7 +42,7 @@ public class ana_2p2 {
 		FT ana_ft = new FT(runNum,outputDir,useTB);
 		dst_mon ana_dst_mon = new dst_mon(runNum,outputDir,EB);
 		BAND ana_band = new BAND(runNum,outputDir,EB,useTB);
-        helicity helicity = new helicity();
+		helicity helicity = new helicity();
 		//deuterontarget ana_deuteron = new deuterontarget(runNum,EB,useTB);
                 List<String> toProcessFileNames = new ArrayList<String>();
                 File file = new File(filelist);
@@ -134,6 +134,6 @@ public class ana_2p2 {
 		ana_rich.postProcess();
 		ana_rich.write();
 		//ana_deuteron.plot();
-        helicity.write(runNum);
+		helicity.write(outputDir, runNum);
         }
 }
