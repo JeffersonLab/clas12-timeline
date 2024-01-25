@@ -139,7 +139,7 @@ jobs:
       run: tree outfiles
     - uses: actions/upload-artifact@v4
       with:
-        name: slurm
+        name: slurm_${{ matrix.type }}
         retention-days: 1
         path: slurm
     - uses: actions/upload-artifact@v4
