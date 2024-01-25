@@ -260,7 +260,7 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         pattern: outfiles_*
-        merge-multipe: true
+        merge-multiple: true
         path: outfiles
     - uses: actions/download-artifact@v4
       with:
