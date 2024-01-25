@@ -126,6 +126,7 @@ def engines = [
        new rich.rich_nkp_m(), 
        new rich.rich_npro_m(), 
        new rich.rich_npbar_m()],
+  out_HELICITY: [new helicity.helicity()],
   dst_mon: [new particle_mass_ctof_and_ftof.ftof_m2_p1a_pim(),
     new particle_mass_ctof_and_ftof.ftof_m2_p1a_pip(),
     new particle_mass_ctof_and_ftof.ftof_m2_p1a_prot(),
