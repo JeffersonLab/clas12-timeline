@@ -41,7 +41,7 @@ jobs:
         tar czvf build_monitoring.tar.gz monitoring/target
     - uses: actions/upload-artifact@v4
       with:
-        name: build
+        name: build_timelines
         retention-days: 1
         path: build*.tar.gz
 
@@ -74,7 +74,7 @@ jobs:
       run: tar czvf build_coatjava.tar.gz coatjava/coatjava
     - uses: actions/upload-artifact@v4
       with:
-        name: build
+        name: build_coatjava
         retention-days: 1
         path: build*.tar.gz
 
@@ -125,7 +125,8 @@ jobs:
         name: validation_files
     - uses: actions/download-artifact@v4
       with:
-        name: build
+        pattern: build_*
+        merge-multiple: true
     - name: untar
       run: ls *.tar.gz | xargs -I{} tar xzvf {}
     - name: tree
@@ -143,7 +144,7 @@ jobs:
         path: slurm
     - uses: actions/upload-artifact@v4
       with:
-        name: outfiles
+        name: outfiles_monitoring_${{ matrix.type }}
         retention-days: 14
         path: outfiles
 
@@ -177,7 +178,8 @@ jobs:
         name: validation_files
     - uses: actions/download-artifact@v4
       with:
-        name: build
+        pattern: build_*
+        merge-multiple: true
     - name: untar
       run: ls *.tar.gz | xargs -I{} tar xzvf {}
     - name: tree
@@ -218,11 +220,13 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
       with:
-        name: outfiles
+        pattern: outfiles_*
+        merge-multiple: true
         path: outfiles
     - uses: actions/download-artifact@v4
       with:
-        name: build
+        pattern: build_*
+        merge-multiple: true
     - name: untar
       run: ls *.tar.gz | xargs -I{} tar xzvf {}
     - name: tree
@@ -233,7 +237,7 @@ jobs:
       run: tree outfiles
     - uses: actions/upload-artifact@v4
       with:
-        name: outfiles
+        name: outfiles_timelines_${{ matrix.type }}
         retention-days: 14
         path: outfiles
 
@@ -255,11 +259,13 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
       with:
-        name: outfiles
+        pattern: outfiles_*
+        merge-multipe: true
         path: outfiles
     - uses: actions/download-artifact@v4
       with:
-        name: build
+        pattern: build_*
+        merge-multiple: true
     - name: untar
       run: ls *.tar.gz | xargs -I{} tar xzvf {}
     - name: tree outfiles
