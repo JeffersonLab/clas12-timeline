@@ -30,24 +30,25 @@ public class helicity {
 
     public helicity() {
         histos = new ArrayList<>();
-        histos.add(new H1Fb("helOnlineRaw","HEL::online","helicityRaw"));
-        histos.add(new H1Fb("helOfflineRaw","REC::Event","helicityRaw"));
-        histos.add(new H1Fb("helOnline","HEL::online","helicity"));
-        histos.add(new H1Fb("helOffline","REC::Event","helicity"));
-        histos.add(new H1Fb("helBoardRaw","HEL::decoder","helicity"));
+        histos.add(new H1Fb("onlineRaw","HEL::online","helicityRaw"));
+        histos.add(new H1Fb("offlineRaw","REC::Event","helicityRaw"));
+        histos.add(new H1Fb("online","HEL::online","helicity"));
+        histos.add(new H1Fb("offline","REC::Event","helicity"));
+        histos.add(new H1Fb("boardRaw","HEL::decoder","helicity"));
     }
 
     public void processEvent(DataEvent event){
-        for (H1Fb h : this.histos) h.fill(event);
+        for (H1Fb h : this.histos) {
+            h.fill(event);
+        }
     }
 
     public void write(int runNumber) {
-        String path = runNumber>0 ? "plots"+runNumber : "plots";
 		TDirectory dir = new TDirectory();
 		dir.mkdir("/HELICITY/");
 		dir.cd("/HELICITY/");
         for (H1Fb h : this.histos) dir.addDataSet(h);
-        dir.writeFile(path+"/out_HELICITY.hipo");
+        dir.writeFile(String.format("outfiles/out_HELICITY_%d.hipo",runNumber));
 	}
 
 }
