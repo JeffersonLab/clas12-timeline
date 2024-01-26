@@ -22,6 +22,7 @@ class helicity {
             gr.setTitleY("Efficiency")
             gr.setTitleX("run number")
             data.sort{it.key}.each{run,it->
+                it[name].setTitle("$name Helicity")
                 out.mkdir('/'+it.run)
                 out.cd('/'+it.run)
                 out.addDataSet(it[name])
