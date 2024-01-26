@@ -523,19 +523,19 @@ defineTimeBins = { // in its own closure, so giant data structures are garbage c
 defineTimeBins()
 
 // debug `timeBins` logging function (call it where you need it)
-printDebug_timeBinBounds = {
-    println "TIME BINS =============================="
-    println "@ #runnum/I:binnum/I:number_of_bins/I:evnum_min/L:evnum_max/L:num_events/L"
-    timeBins.each{ binNum, timeBin ->
-      def num_events = timeBin.eventNumMax - timeBin.eventNumMin
-      if(binNum==0) {
-        num_events++ // since first bin has no lower bound
-      }
-      println "@ ${runnum} ${binNum} ${timeBins.size()} ${timeBin.eventNumMin} ${timeBin.eventNumMax} ${num_events}"
+print_timeBinBounds = {
+  println "TIME BINS =============================="
+  println "@ #runnum/I:binnum/I:number_of_bins/I:evnum_min/L:evnum_max/L:num_events/L"
+  timeBins.each{ binNum, timeBin ->
+    def num_events = timeBin.eventNumMax - timeBin.eventNumMin
+    if(binNum==0) {
+      num_events++ // since first bin has no lower bound
     }
-    println "END TIME BINS =========================="
+    println "@ ${runnum} ${binNum} ${timeBins.size()} ${timeBin.eventNumMin} ${timeBin.eventNumMax} ${num_events}"
+  }
+  println "END TIME BINS =========================="
 }
-// printDebug_timeBinBounds()
+// print_timeBinBounds()
 
 // initialize min and max overall event numbers
 def overallMinEventNumber = timeBins[0].eventNumMax  // it will be smaller than first bin's max
@@ -885,7 +885,7 @@ timeBins.each{ itBinNum, itBin ->
 
 
 // print the time bins
-printDebug_timeBinBounds()
+print_timeBinBounds()
 
 
 // cross check: is each time bin's min and max FC charge within the FC charge values at the bin boundaries?
