@@ -93,5 +93,5 @@ void studyCharge(TString infileN="tree.root") {
 
   // compare total charge of runs, rather than charge per file, since longer duration charge should be more accurate
   // -- can do this readingn QADB, but need to add livetime and ungated charge readers to QADB
-  // -- or just query the QADB by file number...
+  // -- or just query the QADB by time bin...
 }

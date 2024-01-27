@@ -74,16 +74,16 @@ First step is to read DST or Skim files, producing HIPO files and data tables
   * Outputs:
     * `[output_directory]/data_table_${run}.dat`, which is a data table with the following columns:
       * run number
-      * 5-file number
+      * time bin number
       * minimum event number
       * maximum event number
       * sector
       * number of electron triggers in this sector
       * number of electrons in the forward tagger
-      * DAQ-gated FC charge at beginning of 5-file (minimum readout)
-      * DAQ-gated FC charge at end of 5-file (maximum readout)
-      * DAQ-ungated FC charge at beginning of 5-file (minimum readout)
-      * DAQ-ungated FC charge at end of 5-file (maximum readout)
+      * DAQ-gated FC charge at beginning of time bin
+      * DAQ-gated FC charge at end of time bin
+      * DAQ-ungated FC charge at beginning of time bin
+      * DAQ-ungated FC charge at end of time bin
       * average livetime
     * monitoring HIPO file, `[output_directory]/monitor_${runnum}.hipo`, contains several plots 
       * there is one plot per 'time bin', defined as a set of consecutive events satisfying:
@@ -115,11 +115,11 @@ First step is to read DST or Skim files, producing HIPO files and data tables
   * reads data table and generates `monitorElec.hipo`
     * within this HIPO file, there is one directory for each run, containing several
       plots:
-      * `grA*`: N/F vs. file number (the `A` notation is so it appears first in the
+      * `grA*`: N/F vs. time bin (the `A` notation is so it appears first in the
         online timeline front-end)
-      * `grF*`: F vs. file number
-      * `grN*`: N vs. file number
-      * `grT*`: livetime vs. file number
+      * `grF*`: F vs. time bin
+      * `grN*`: N vs. time bin
+      * `grT*`: livetime vs. time bin
 
 ### Automated QA of Normalized Electron Yield
 This section will run the automated QA of the FC-charge normalized electron yield (N/F); it will ultimately
@@ -144,7 +144,7 @@ generate QA timelines, and a `json` file which is used for the manual followup Q
     * the timeline is just a list of the 6 sectors; clicking on one of them will show
       plots of N/F, N, F, and livetime, for each epoch
       * the horizontal axis of these plots is a file index, defined as the run
-        number plus a small offset (<1) proportional to the file number
+        number plus a small offset (<1) proportional to the time bin
     * the N/F plots include the cut lines: here you can zoom in and see how
       well-defined the cut lines are for each epoch
       * if there are any significant 'jumps' in the N/F value, the cut lines may be

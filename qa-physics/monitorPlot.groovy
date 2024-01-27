@@ -50,7 +50,7 @@ def objToMonTitle = { title ->
 }
 
 
-// build map of (runnum,filenum) -> (FC charges)
+// build map of (runnum,binnum) -> (FC charges)
 // - this is only used for the relative luminosity attempt
 // - not enough statistics; disabled
 /*
@@ -61,14 +61,14 @@ if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
 dataFile.eachLine { line ->
   tok = line.tokenize(' ')
   fcrun = tok[0].toInteger()
-  fcfile = tok[1].toInteger()
+  fcbin = tok[1].toInteger()
   fcp = tok[11].toBigDecimal()
   fcm = tok[12].toBigDecimal()
   ufcp = tok[13].toBigDecimal()
   ufcm = tok[14].toBigDecimal()
   if(!fcTree.containsKey(fcrun)) fcTree[fcrun] = [:]
-  if(!fcTree[fcrun].containsKey(fcfile)) {
-    fcTree[fcrun][fcfile] = [
+  if(!fcTree[fcrun].containsKey(fcbin)) {
+    fcTree[fcrun][fcbin] = [
       'fcP':fcp,
       'fcM':fcm,
       'ufcP':ufcp,
