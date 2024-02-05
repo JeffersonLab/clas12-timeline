@@ -9,3 +9,12 @@ out_file=time_bins.dat
 grep -hE '^@' $file_list | head -n1 | sed 's;^.*#;;' > $out_file
 grep -hE '^@' $file_list | sed 's;^@ ;;' | grep -v '^#' >> $out_file
 
+echo "produced $out_file"
+echo "here are some lines from it:"
+head $out_file
+echo "============="
+
+echo """Done. now call:
+
+root -b -q $(dirname $0)/timebin_plot.C'(\"$out_file\")'
+"""

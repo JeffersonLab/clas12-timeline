@@ -1,6 +1,81 @@
 // make plots for time bin sizes, etc.
 
-void time_bin_plot(TString in_file="time_bins.dat") {
+void timebin_plot(TString in_file="time_bins.dat") {
+
+  gStyle->SetOptStat(0);
+
+  const Int_t MIN_NUM_SCALERS = 2000;   // at least this many scaler readouts per time bin; must match that in ../monitorRead.groovy
+  const Int_t NUM_EVENTS_WITH_NO_BEAM = MIN_NUM_SCALERS * 40; // bins with no beam should have this many events
+
+  // read the file
   auto tr = new TTree("tr", "tr");
   tr->ReadFile(in_file);
+
+  // get run number range
+  Int_t runnum_min = tr->GetMinimum("runnum");
+  Int_t runnum_max = tr->GetMaximum("runnum");
+  auto runnum_nbins = runnum_max - runnum_min + 1;
+
+  // define histograms
+  auto num_events_primary = new TH1D(
+      "num_events_primary",
+      "Number of Events per Non-Terminal Time Bin",
+      1000,
+      0,
+      tr->GetMaximum("num_events") + 1
+      );
+  auto num_events_terminal = new TH1D(
+      "num_events_terminal",
+      "Number of Events per Terminal Time Bin",
+      1000,
+      num_events_primary->GetXaxis()->GetXmin(),
+      1000
+      );
+  auto num_events_primary_vs_runnum = new TH2D(
+      "num_events_primary_vs_runnum",
+      "Number of Non-Terminal-Time-Bin Events vs. Run Number;Run Number;Num Events",
+      runnum_nbins,
+      runnum_min,
+      runnum_max + 1,
+      num_events_primary->GetNbinsX(),
+      num_events_primary->GetXaxis()->GetXmin(),
+      num_events_primary->GetXaxis()->GetXmax()
+      );
+
+  // set cuts
+  std::string is_terminal_bin = "binnum==0 || binnum+1==number_of_bins";
+  std::string is_primary_bin  = "!(" + is_terminal_bin + ")";
+
+  // project histograms
+  tr->Project("num_events_primary",  "num_events", is_primary_bin.c_str());
+  tr->Project("num_events_terminal", "num_events", is_terminal_bin.c_str());
+  tr->Project("num_events_primary_vs_runnum", "num_events:runnum", is_primary_bin.c_str());
+
+  // check for underflow and overflow
+  for(auto& hist : {num_events_primary, num_events_terminal}) {
+    auto underflow = hist->GetBinContent(0);
+    auto overflow  = hist->GetBinContent(hist->GetNbinsX()+1);
+    if(underflow>0) std::cerr << "WARNING: histogram '" << hist->GetName() << "' has underflow of " << underflow << std::endl;
+    if(overflow>0)  std::cerr << "WARNING: histogram '" << hist->GetName() << "' has overflow  of " << overflow  << std::endl;
+  }
+
+  // format histograms
+  for(auto& hist : {num_events_primary, num_events_terminal}) {
+    hist->SetFillColor(kCyan+2);
+    hist->SetLineColor(kCyan+2);
+  }
+
+  // draw
+  auto canv0 = new TCanvas("canv0", "canv0", 1600, 600);
+  canv0->Divide(2,1);
+  for(int i=1; i<=2; i++) canv0->GetPad(i)->SetGrid(1,1);
+  canv0->cd(1);
+  num_events_primary->Draw();
+  canv0->cd(2);
+  num_events_terminal->Draw();
+
+  auto canv1 = new TCanvas("canv1", "canv1", 800, 600);
+  canv1->SetGrid(1,1);
+  canv1->SetLogz();
+  num_events_primary_vs_runnum->Draw("colz");
 }
