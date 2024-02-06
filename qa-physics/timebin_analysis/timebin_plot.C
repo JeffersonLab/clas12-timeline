@@ -1,6 +1,9 @@
 // make plots for time bin sizes, etc.
 
-void timebin_plot(TString in_file="time_bins.dat") {
+void timebin_plot(
+    TString dat_file="data_table.dat" // concatenated table from monitorRead.groovy -> datasetOrganize.sh
+    )
+{
 
   gStyle->SetOptStat(0);
 
@@ -9,12 +12,70 @@ void timebin_plot(TString in_file="time_bins.dat") {
 
   // read the file
   auto tr = new TTree("tr", "tr");
-  tr->ReadFile(in_file);
+  std::vector<TString> branch_list = {
+    "runnum/I",
+    ":binnum/I",
+    ":eventNumMin/L",
+    ":eventNumMax/L",
+    ":sector/I",
+    ":nElecFD/L",
+    ":nElecFT/L",
+    ":fcStart/D",
+    ":fcStop/D",
+    ":ufcStart/D",
+    ":ufcStop/D",
+    ":aveLiveTime/D"
+  };
+  TString branch_list_joined = "";
+  for(auto branch : branch_list)
+    branch_list_joined += branch;
+  tr->ReadFile(dat_file, branch_list_joined.Data());
+  Int_t    runnum;
+  Int_t    binnum;
+  Long64_t eventNumMin;
+  Long64_t eventNumMax;
+  Int_t    sector;
+  Long64_t nElecFD;
+  Long64_t nElecFT;
+  Double_t fcStart;
+  Double_t fcStop;
+  Double_t ufcStart;
+  Double_t ufcStop;
+  Double_t aveLiveTime;
+  tr->SetBranchAddress("runnum",      &runnum);
+  tr->SetBranchAddress("binnum",      &binnum);
+  tr->SetBranchAddress("eventNumMin", &eventNumMin);
+  tr->SetBranchAddress("eventNumMax", &eventNumMax);
+  tr->SetBranchAddress("sector",      &sector);
+  tr->SetBranchAddress("nElecFD",     &nElecFD);
+  tr->SetBranchAddress("nElecFT",     &nElecFT);
+  tr->SetBranchAddress("fcStart",     &fcStart);
+  tr->SetBranchAddress("fcStop",      &fcStop);
+  tr->SetBranchAddress("ufcStart",    &ufcStart);
+  tr->SetBranchAddress("ufcStop",     &ufcStop);
+  tr->SetBranchAddress("aveLiveTime", &aveLiveTime);
 
   // get run number range
   Int_t runnum_min = tr->GetMinimum("runnum");
   Int_t runnum_max = tr->GetMaximum("runnum");
   auto runnum_nbins = runnum_max - runnum_min + 1;
+
+  // PRE LOOP
+  // - get the number of bins for each run number
+  // - get the maximum number of events
+  std::unordered_map<Int_t,Int_t> number_of_bins_map;
+  Long64_t max_num_events = 0;
+  for(Long64_t e=0; e<tr->GetEntries(); e++) {
+    tr->GetEntry(e);
+    auto it = number_of_bins_map.find(runnum);
+    if(it == number_of_bins_map.end())
+      number_of_bins_map.insert({runnum, binnum});
+    else {
+      if(binnum > it->second)
+        number_of_bins_map[runnum] = binnum;
+    }
+    max_num_events = std::max(max_num_events, eventNumMax-eventNumMin);
+  }
 
   // define histograms
   auto num_events_primary = new TH1D(
@@ -22,7 +83,7 @@ void timebin_plot(TString in_file="time_bins.dat") {
       "Number of Events per Non-Terminal Time Bin",
       1000,
       0,
-      tr->GetMaximum("num_events") + 1
+      max_num_events + 1
       );
   auto num_events_terminal = new TH1D(
       "num_events_terminal",
@@ -42,14 +103,28 @@ void timebin_plot(TString in_file="time_bins.dat") {
       num_events_primary->GetXaxis()->GetXmax()
       );
 
-  // set cuts
-  std::string is_terminal_bin = "binnum==0 || binnum+1==number_of_bins";
-  std::string is_primary_bin  = "!(" + is_terminal_bin + ")";
 
-  // project histograms
-  tr->Project("num_events_primary",  "num_events", is_primary_bin.c_str());
-  tr->Project("num_events_terminal", "num_events", is_terminal_bin.c_str());
-  tr->Project("num_events_primary_vs_runnum", "num_events:runnum", is_primary_bin.c_str());
+  // MAIN LOOP
+  for(Long64_t e=0; e<tr->GetEntries(); e++) {
+    tr->GetEntry(e);
+
+    // get the number of events
+    auto num_events = eventNumMax - eventNumMin;
+    if(binnum==0) num_events++; // since first bin has no lower bound
+
+    // check if this is a terminal bin
+    auto number_of_bins = number_of_bins_map[runnum];
+    bool is_terminal_bin = binnum==0 || binnum+1==number_of_bins;
+
+    // fill histograms
+    if(is_terminal_bin) {
+      num_events_terminal->Fill(num_events);
+    }
+    else {
+      num_events_primary->Fill(num_events);
+      num_events_primary_vs_runnum->Fill(runnum, num_events);
+    }
+  }
 
   // check for underflow and overflow
   for(auto& hist : {num_events_primary, num_events_terminal}) {
