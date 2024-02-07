@@ -621,12 +621,8 @@ public class tof_monitor {
         public void fillCTOFFTOFTiming(DataBank part, DataBank sc, DataBank trk, DataBank ctof, DataBank cvttrk){
 		int N_electrons_FD=0;
 		int N_pim_CD=0;
-		double[] FTOF_vtime;
-		double[] CTOF_vtime;
-		FTOF_vtime = new double[10];
-		CTOF_vtime = new double[10];
-		//FTOF_vtime.fill(0);
-		//CTOF_vtime.fill(0);
+		ArrayList<Double> FTOF_vtime = new ArrayList<Double>();
+		ArrayList<Double> CTOF_vtime = new ArrayList<Double>();
 
 		int sector = 0;
 		int index_ftof = 0;
@@ -671,7 +667,7 @@ public class tof_monitor {
                                                 //if (pid == 11 && inDC && mom > 0.4 && mom < 10. && energy > 0.5 && reducedchi2 < 75 && theta <= 11.) {
 						if (pid == 11 && inDC) {
                                                         flighttime = pathlength/PhysicsConstants.speedOfLight();
-                                                        FTOF_vtime[N_electrons_FD] = (time - flighttime);
+                                                        FTOF_vtime.add(time - flighttime);
 							//System.out.println(String.format(" Sector FTOF: "+sector+"\n"));
 							N_electrons_FD++;
 
@@ -721,7 +717,7 @@ public class tof_monitor {
 							beta = mom/Math.sqrt(Math.pow(mom,2)+Math.pow(PhysicsConstants.massPionCharged(),2));
                                                         flighttime_ctof = pathlength_ctof/beta/PhysicsConstants.speedOfLight();
                                                         timediff_ctof = (time_ctof - flighttime_ctof);
-							CTOF_vtime[N_pim_CD] = ctof_vtime;
+							CTOF_vtime.add(ctof_vtime);
 							N_pim_CD++;
 //System.out.println(String.format("Part momentum: "+mom+" CVT momentum: "+mom_cvt+" Scintillator time: "+time_ctof+" CTOF time: "+t+" Scntillator pathlength: "+pathlength_ctof+" CTOF pathlength: "+p+" VertTDiff_SCBank: "+timediff_ctof+" VertTDiff_CTOFBank: "+CTOF_vtime+"\n"));
 //System.out.println(String.format("CTOF pad: "+paddle_ctof+" SC pad: "+pad_ctof+" Energy CTOF: "+e+" Energy SC: "+energy_ctof+" Sector CTOF: "+sec_ctof+" Sector SC: "+sector_ctof+"\n"));
@@ -736,8 +732,8 @@ public class tof_monitor {
 			for (int n=0;n<N_electrons_FD;n++) {
 				for (int nn=0;nn<N_pim_CD;nn++) {
 			//System.out.println(String.format("Number electrons FD within cuts: "+N_electrons_FD+" Number of pi- CD within cuts: "+N_pim_CD+"\n"));
-					//System.out.println(String.format("FTOF vtime: "+FTOF_vtime[n]+" CTOF_vtime: "+CTOF_vtime[nn]+"\n"));
-					ftof_ctof_vtdiff[sector-1].fill(FTOF_vtime[n]-CTOF_vtime[nn]);
+					//System.out.println(String.format("FTOF vtime: "+FTOF_vtime.get(n)+" CTOF_vtime: "+CTOF_vtime.get(nn)+"\n"));
+					ftof_ctof_vtdiff[sector-1].fill(FTOF_vtime.get(n)-CTOF_vtime.get(nn));
 				}
 			}
 		}
