@@ -60,21 +60,33 @@ void timebin_plot(
   Int_t runnum_max = tr->GetMaximum("runnum");
   auto runnum_nbins = runnum_max - runnum_min + 1;
 
-  // PRE LOOP
-  // - get the number of bins for each run number
-  // - get the maximum number of events
+  // get the number of bins for each run number
   std::unordered_map<Int_t,Int_t> number_of_bins_map;
-  Long64_t max_num_events = 0;
   for(Long64_t e=0; e<tr->GetEntries(); e++) {
     tr->GetEntry(e);
     auto it = number_of_bins_map.find(runnum);
     if(it == number_of_bins_map.end())
       number_of_bins_map.insert({runnum, binnum});
-    else {
-      if(binnum > it->second)
-        number_of_bins_map[runnum] = binnum;
+    else if(binnum > it->second)
+      number_of_bins_map[runnum] = binnum;
+  }
+  for(const auto& [r,b] : number_of_bins_map)
+    number_of_bins_map[r]++; // if bin number starts at zero, make sure it is counted
+
+  // check if a certain bin is a primary bin (i.e., not a terminal bin)
+  auto is_primary_bin = [] (Int_t binnum_, Int_t number_of_bins_) {
+    return binnum_>0 && binnum_+1<number_of_bins_;
+  };
+
+  // get maxima
+  Long64_t max_num_events = 0;
+  Double_t max_fc         = 0;
+  for(Long64_t e=0; e<tr->GetEntries(); e++) {
+    tr->GetEntry(e);
+    if(is_primary_bin(binnum, number_of_bins_map[runnum])) {
+      max_num_events = std::max(max_num_events, eventNumMax-eventNumMin);
+      max_fc = std::max(max_fc, fcStop-fcStart);
     }
-    max_num_events = std::max(max_num_events, eventNumMax-eventNumMin);
   }
 
   // define histograms
@@ -92,8 +104,8 @@ void timebin_plot(
       num_events_primary->GetXaxis()->GetXmin(),
       1000
       );
-  auto num_events_primary_vs_runnum = new TH2D(
-      "num_events_primary_vs_runnum",
+  auto num_events_vs_runnum = new TH2D(
+      "num_events_vs_runnum",
       "Number of Non-Terminal-Time-Bin Events vs. Run Number;Run Number;Num Events",
       runnum_nbins,
       runnum_min,
@@ -102,7 +114,16 @@ void timebin_plot(
       num_events_primary->GetXaxis()->GetXmin(),
       num_events_primary->GetXaxis()->GetXmax()
       );
-
+  auto num_events_vs_charge = new TH2D(
+      "num_events_vs_charge",
+      "Number of Non-Terminal-Time-Bin Events vs. Gated FC Charge;Charge;Num Events",
+      1000,
+      0,
+      max_fc,
+      num_events_primary->GetNbinsX(),
+      num_events_primary->GetXaxis()->GetXmin(),
+      num_events_primary->GetXaxis()->GetXmax()
+      );
 
   // MAIN LOOP
   for(Long64_t e=0; e<tr->GetEntries(); e++) {
@@ -112,17 +133,14 @@ void timebin_plot(
     auto num_events = eventNumMax - eventNumMin;
     if(binnum==0) num_events++; // since first bin has no lower bound
 
-    // check if this is a terminal bin
-    auto number_of_bins = number_of_bins_map[runnum];
-    bool is_terminal_bin = binnum==0 || binnum+1==number_of_bins;
-
     // fill histograms
-    if(is_terminal_bin) {
-      num_events_terminal->Fill(num_events);
+    if(is_primary_bin(binnum, number_of_bins_map[runnum])) {
+      num_events_primary->Fill(num_events);
+      num_events_vs_runnum->Fill(runnum, num_events);
+      num_events_vs_charge->Fill(fcStop-fcStart, num_events);
     }
     else {
-      num_events_primary->Fill(num_events);
-      num_events_primary_vs_runnum->Fill(runnum, num_events);
+      num_events_terminal->Fill(num_events);
     }
   }
 
@@ -152,5 +170,9 @@ void timebin_plot(
   auto canv1 = new TCanvas("canv1", "canv1", 800, 600);
   canv1->SetGrid(1,1);
   canv1->SetLogz();
-  num_events_primary_vs_runnum->Draw("colz");
+  num_events_vs_runnum->Draw("colz");
+
+  auto canv2 = new TCanvas("canv2", "canv2", 800, 600);
+  canv1->SetGrid(1,1);
+  num_events_vs_charge->Draw("colz");
 }
