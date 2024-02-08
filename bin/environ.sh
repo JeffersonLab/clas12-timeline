@@ -11,7 +11,7 @@ export TIMELINESRC=$(realpath $(dirname $thisEnv)/..)
 # check coatjava environment
 if [ -z "${COATJAVA-}" ]; then
   # if on a CI runner, use CI coatjava build artifacts; otherwise print error
-  coatjava_ci=$TIMELINESRC/coatjava/coatjava
+  coatjava_ci=$TIMELINESRC/coatjava
   [ -d $coatjava_ci ] &&
     export COATJAVA=$coatjava_ci ||
     printError "cannot find coatjava; please make sure environment variable COATJAVA is set to your coatjava installation"
