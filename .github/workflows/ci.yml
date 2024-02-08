@@ -53,25 +53,17 @@ jobs:
       with:
         java-version: 11
         distribution: zulu
-    - name: get coatjava
-      uses: robinraju/release-downloader@v1.9
+    - name: checkout coatjava
+      uses: actions/checkout@v4
       with:
         repository: JeffersonLab/coatjava
-        tag: 10.0.2
-        tarBall: true
-        extract: true
-    - name: rename coatjava release directory
-      run: |
-        rm *.tar.gz
-        mv JeffersonLab-coatjava* coatjava
+        ref: development
     - name: build coatjava
-      run: |
-        cd coatjava
-        ./build-coatjava.sh
+      run: ./build-coatjava.sh
     - name: tree
       run: tree
     - name: tar
-      run: tar czvf build_coatjava.tar.gz coatjava/coatjava
+      run: tar czvf build_coatjava.tar.gz coatjava
     - uses: actions/upload-artifact@v4
       with:
         name: build_coatjava
