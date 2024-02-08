@@ -804,17 +804,17 @@ inHipoList.each { inHipoFile ->
 
 // correct the first and last time bins' event number ranges, and their FC charge ranges
 def firstTimeBin = timeBins[0]
-def lastTimeBin = timeBins[timeBins.size()-1]
-firstTimeBin.eventNumMin  = overallMinEventNumber
-firstTimeBin.fcRange[0]   = 0 // charge accumulation starts at 0
-firstTimeBin.fcMinMax[0]  = 0
-firstTimeBin.ufcRange[0]  = 0
-firstTimeBin.ufcMinMax[0] = 0
-lastTimeBin.eventNumMax   = overallMaxEventNumber
-lastTimeBin.fcRange[1]    = 0 // absolute maximum charge is unknown
-lastTimeBin.fcMinMax[1]   = 0
-lastTimeBin.ufcRange[1]   = 0
-lastTimeBin.ufcMinMax[1]  = 0
+def lastTimeBin  = timeBins[timeBins.size()-1]
+firstTimeBin.eventNumMin = overallMinEventNumber
+firstTimeBin.fcRange     = [ 0, 0 ] // unknown accumulated charge (NOTE: first scaler readout may have NEGATIVE FC charge); just set it to zero
+firstTimeBin.fcMinMax    = [ 0, 0 ]
+firstTimeBin.ufcRange    = [ 0, 0 ]
+firstTimeBin.ufcMinMax   = [ 0, 0 ]
+lastTimeBin.eventNumMax  = overallMaxEventNumber
+lastTimeBin.fcRange      = [ 0, 0 ] // unknown absolute maximum of FC charge; just set it to zero
+lastTimeBin.fcMinMax     = [ 0, 0 ]
+lastTimeBin.ufcRange     = [ 0, 0 ]
+lastTimeBin.ufcMinMax    = [ 0, 0 ]
 
 // write final time bin's histograms
 timeBins.each{ itBinNum, itBin ->

@@ -74,8 +74,8 @@ void timebin_plot(
     number_of_bins_map[r]++; // if bin number starts at zero, make sure it is counted
 
   // check if a certain bin is a primary bin (i.e., not a terminal bin)
-  auto is_primary_bin = [] (Int_t binnum_, Int_t number_of_bins_) {
-    return binnum_>0 && binnum_+1<number_of_bins_;
+  auto is_primary_bin = [&number_of_bins_map] (Int_t runnum_, Int_t binnum_) {
+    return binnum_>0 && binnum_+1<number_of_bins_map[runnum_];
   };
 
   // get maxima
@@ -83,10 +83,34 @@ void timebin_plot(
   Double_t max_fc         = 0;
   for(Long64_t e=0; e<tr->GetEntries(); e++) {
     tr->GetEntry(e);
-    if(is_primary_bin(binnum, number_of_bins_map[runnum])) {
+    if(is_primary_bin(runnum, binnum)) {
       max_num_events = std::max(max_num_events, eventNumMax-eventNumMin);
       max_fc = std::max(max_fc, fcStop-fcStart);
     }
+  }
+
+  // various checks
+  auto warn_check = [&is_primary_bin] (Int_t runnum_, Int_t binnum_, TString message_) {
+    std::cerr << "WARNING: runnum=" << runnum_ << " binnum=" << binnum_ << ": " << message_;
+    if(!is_primary_bin(runnum_, binnum_))
+      std::cerr << " -- TERMINAL BIN";
+    std::cerr << std::endl;
+  };
+  decltype(runnum) runnum_prev = 0;
+  decltype(fcStop) fcStop_prev = 0;
+  for(Long64_t e=0; e<tr->GetEntries(); e++) {
+    tr->GetEntry(e);
+    if(sector!=1) continue;
+    if(runnum != runnum_prev) runnum_prev = runnum;
+    if(binnum>0) {
+      if(fcStart != fcStop_prev)
+        warn_check(runnum, binnum, "fcStart is not fcStop of previous bin");
+    }
+    if(fcStart > fcStop)
+      warn_check(runnum, binnum, Form("gated FC charge is negative: %f", fcStop - fcStart));
+    if(ufcStart > ufcStop)
+      warn_check(runnum, binnum, Form("ungated FC charge is negative: %f", ufcStop - ufcStart));
+    fcStop_prev = fcStop;
   }
 
   // define histograms
@@ -125,7 +149,7 @@ void timebin_plot(
       num_events_primary->GetXaxis()->GetXmax()
       );
 
-  // MAIN LOOP
+  // fill histograms
   for(Long64_t e=0; e<tr->GetEntries(); e++) {
     tr->GetEntry(e);
 
@@ -134,7 +158,7 @@ void timebin_plot(
     if(binnum==0) num_events++; // since first bin has no lower bound
 
     // fill histograms
-    if(is_primary_bin(binnum, number_of_bins_map[runnum])) {
+    if(is_primary_bin(runnum, binnum)) {
       num_events_primary->Fill(num_events);
       num_events_vs_runnum->Fill(runnum, num_events);
       num_events_vs_charge->Fill(fcStop-fcStart, num_events);
