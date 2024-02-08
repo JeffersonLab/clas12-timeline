@@ -90,8 +90,19 @@ void timebin_plot(
   }
 
   // various checks
-  auto warn_check = [&is_primary_bin] (Int_t runnum_, Int_t binnum_, TString message_) {
-    std::cerr << "WARNING: runnum=" << runnum_ << " binnum=" << binnum_ << ": " << message_;
+  auto warn_check = [&is_primary_bin] (
+      decltype(runnum) runnum_,
+      decltype(binnum) binnum_,
+      decltype(eventNumMin) eventNumMin_,
+      decltype(eventNumMax) eventNumMax_,
+      TString message_
+      )
+  {
+    std::cerr
+      << "WARNING: runnum=" << runnum_
+      << " binnum=" << binnum_
+      << " eventNumMax-Min=" << eventNumMax_-eventNumMin_
+      << ": " << message_;
     if(!is_primary_bin(runnum_, binnum_))
       std::cerr << " -- TERMINAL BIN";
     std::cerr << std::endl;
@@ -104,12 +115,12 @@ void timebin_plot(
     if(runnum != runnum_prev) runnum_prev = runnum;
     if(binnum>0) {
       if(fcStart != fcStop_prev)
-        warn_check(runnum, binnum, "fcStart is not fcStop of previous bin");
+        warn_check(runnum, binnum, eventNumMin, eventNumMax, "fcStart is not fcStop of previous bin");
     }
     if(fcStart > fcStop)
-      warn_check(runnum, binnum, Form("gated FC charge is negative: %f", fcStop - fcStart));
+      warn_check(runnum, binnum, eventNumMin, eventNumMax, Form("gated FC charge is negative: %f", fcStop - fcStart));
     if(ufcStart > ufcStop)
-      warn_check(runnum, binnum, Form("ungated FC charge is negative: %f", ufcStop - ufcStart));
+      warn_check(runnum, binnum, eventNumMin, eventNumMax, Form("ungated FC charge is negative: %f", ufcStop - ufcStart));
     fcStop_prev = fcStop;
   }
 
