@@ -623,7 +623,7 @@ inHipoList.each { inHipoFile ->
     // get event number
     def eventNum
     if(configBank.rows()>0) {
-      eventNum = BigInteger.valueOf(configBank.getInt('timestamp',0))
+      eventNum = BigInteger.valueOf(configBank.getLong('timestamp',0))
     }
     else if(hipoEvent.getBankList().length==1 && hipoEvent.getBankList().contains("COAT::config")) {
       printDebug "Skipping event which has only 'COAT::config' bank"
