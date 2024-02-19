@@ -8,6 +8,10 @@ printWarning() { echo -e "\e[1;35m[WARNING]: $* \e[0m" >&2; }
 [ -z "${BASH_SOURCE[0]}" ] && thisEnv=$0 || thisEnv=${BASH_SOURCE[0]}
 export TIMELINESRC=$(realpath $(dirname $thisEnv)/..)
 
+# RCDB
+[ -z "${RCDB_CONNECTION-}" ] && RCDB_CONNECTION=mysql://rcdb@clasdb-farm.jlab.org/rcdb
+export RCDB_CONNECTION
+
 # check coatjava environment
 if [ -z "${COATJAVA-}" ]; then
   # if on a CI runner, use CI coatjava build artifacts; otherwise print error
