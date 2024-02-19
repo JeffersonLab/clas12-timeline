@@ -79,8 +79,8 @@ bin/run-physics-timelines.sh
 ```
 
 > [!IMPORTANT]
-> If you are processing a large data set on `ifarm`, direct your output files to `/volatile`. Either:
-> - make a symbolic link named `outfiles` pointing to a location within `/volatile`
+> If you are processing a large data set on `ifarm`, direct your output files to a location within `/volatile`. Either:
+> - make a symbolic link in your working directory named `outfiles` pointing to a location within `/volatile`
 > - use the scripts' `-o` option to set the output locations
 
 #### Example
