@@ -35,7 +35,7 @@ Two types of timelines are produced:
 Both of these timeline types are produced in the following steps.
 
 > [!NOTE]
-> NOTE: physics timeline production and QA are typically only valuable on high-statistics datasets, whereas detector timelines need files produced with `mon` schema, which are typically only produced with low statistics; therefore, for a given dataset, typically one set of timelines is produced but not the other.
+> Physics timeline production and QA are typically only valuable on high-statistics datasets, whereas detector timelines need files produced with `mon` schema, which are typically only produced with low statistics; therefore, for a given dataset, typically one set of timelines is produced but not the other.
 
 ### Step 1: Data Monitoring
 
