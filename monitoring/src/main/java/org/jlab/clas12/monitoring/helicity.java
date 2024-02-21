@@ -60,6 +60,7 @@ public class helicity {
 		dir.mkdir("/HELICITY/");
 		dir.cd("/HELICITY/");
         for (H1Fb h : this.histos) dir.addDataSet(h);
+        dir.addDataSet(hboard);
         dir.writeFile(outputDir + String.format("/out_HELICITY_%d.hipo",runNumber));
 	}
 
