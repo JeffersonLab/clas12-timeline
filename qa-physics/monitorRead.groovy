@@ -651,7 +651,7 @@ inHipoList.each { inHipoFile ->
       continue
     }
     if(eventNum==0) {
-      System.err.println "WARNING: found event with eventNum=0; banks: ${hipoEvent.getBankList()}"
+      // System.err.println "WARNING: found event with eventNum=0; banks: ${hipoEvent.getBankList()}"
       continue
     }
 
@@ -675,8 +675,8 @@ inHipoList.each { inHipoFile ->
     // get the FC charge and livetime, depending on `FCmode`
     // - also sets the min and max FC charges, for this time bin
     def lt
-    def fc  = -1.0
-    def ufc = -1.0
+    def fc  = "init"
+    def ufc = "init"
     if(scalerBank.rows()>0) {
       // ungated charge
       ufc = scalerBank.getFloat("fcup",0)
@@ -701,7 +701,7 @@ inHipoList.each { inHipoFile ->
     def onBinBoundary = false
     if(eventNum == thisTimeBin.eventNumMax) {
       onBinBoundary = true
-      if(scalerBank.rows()>0) { // must have scalerBank, so `fc` and `ufc` are set
+      if(scalerBank.rows()>0) { // must have scalerBank, so `fc` and `ufc` are set (we'll check if any `(u)fcRange` values are still "init" later)
         // events on the boundary are assigned to earlier bin; this FC charge is that bin's max charge
         thisTimeBin.fcRange[1]   = fc
         thisTimeBin.ufcRange[1]  = ufc
@@ -716,9 +716,6 @@ inHipoList.each { inHipoFile ->
         printDebug "  - gated charge:   ${fc}"
         printDebug "  - ungated charge: ${ufc}"
         printDebug "  - banks: ${hipoEvent.getBankList()}"
-      }
-      else {
-        System.err.println "ERROR: event number ${eventNum} on boundary of bin ${thisTimeBinNum} has no scaler bank."
       }
     }
     if(eventNum == thisTimeBin.eventNumMin) {
@@ -863,7 +860,7 @@ timeBins.each{ itBinNum, itBin ->
       ufcStart = itBin.ufcRange[0]
       ufcStop  = itBin.ufcRange[1]
     } else {
-      System.err.println "WARNING: no ungated FC charge for run ${runnum} time bin ${itBinNum}"
+      System.err.println "ERROR: no ungated FC charge for run ${runnum} time bin ${itBinNum}"
     }
   }
 
@@ -880,11 +877,11 @@ timeBins.each{ itBinNum, itBin ->
         fcStart = itBin.fcRange[0]
         fcStop  = itBin.fcRange[1]
       } else {
-        System.err.println "WARNING: no gated FC charge for run ${runnum} time bin ${itBinNum}"
+        System.err.println "ERROR: no gated FC charge for run ${runnum} time bin ${itBinNum}"
       }
     }
     if(fcStart>fcStop || ufcStart>ufcStop) {
-      System.err.println "WARNING: faraday cup start > stop for run ${runnum} time bin ${itBinNum}"
+      System.err.println "ERROR: faraday cup start > stop for run ${runnum} time bin ${itBinNum}"
     }
   }
 
@@ -956,7 +953,7 @@ timeBins.each{ itBinNum, itBin ->
   if(ufc_max > ufc_ub) { problems << [ "maximum ungated", "more", "${ufc_max} > ${ufc_ub}", calculate_amount(ufc_lb, ufc_ub, ufc_max-ufc_ub) ] }
   problems.each{
     // TODO: these "off by" amounts should go in a dedicated timeline; until then, pester the user with these errors
-    System.err.println "ERROR: ${it[0]} FC charge is ${it[1]} than that at bin boundary, for bin number ${itBinNum}  (${it[2]}); off by ${100.0*it[3]}%"
+    // System.err.println "WARNING: ${it[0]} FC charge is ${it[1]} than that at bin boundary, for bin number ${itBinNum}  (${it[2]}); off by ${100.0*it[3]}%"
   }
 }
 
