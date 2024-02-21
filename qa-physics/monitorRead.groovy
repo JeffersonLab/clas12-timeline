@@ -479,8 +479,10 @@ defineTimeBins = { // in its own closure, so giant data structures are garbage c
     while(reader.hasEvent()) {
       hipoEvent = reader.getNextEvent()
       // printDebug "tag1 event bank list: ${hipoEvent.getBankList()}"
-      if(hipoEvent.hasBank("RUN::scaler") && hipoEvent.hasBank("RUN::config")) {
-        tag1events <<  [
+      if(hipoEvent.hasBank("RUN::scaler") && hipoEvent.getBank("RUN::scaler").rows()>0 &&
+         hipoEvent.hasBank("RUN::config") && hipoEvent.getBank("RUN::config").rows()>0)
+      {
+        tag1events << [
           BigInteger.valueOf(hipoEvent.getBank("RUN::config").getInt('event',0)),
           BigInteger.valueOf(hipoEvent.getBank("RUN::config").getLong('timestamp',0))
         ]
