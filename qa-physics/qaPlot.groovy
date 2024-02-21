@@ -21,7 +21,9 @@ def sectors = 0..<6
 def sec = { int i -> i+1 }
 def tok
 int r=0
-def runnum, binnum, eventNumMin, eventNumMax, sector
+def runnum, binnum, sector
+def eventNumMin, eventNumMax
+def timestampMin, timestampMax
 def nElec, nElecFT
 def fcStart, fcStop
 def ufcStart, ufcStop
@@ -74,6 +76,8 @@ dataFile.eachLine { line ->
   binnum = tok[r++].toInteger()
   eventNumMin = tok[r++].toInteger()
   eventNumMax = tok[r++].toInteger()
+  timestampMin = tok[r++].toInteger()
+  timestampMax = tok[r++].toInteger()
   sector = tok[r++].toInteger()
   nElec = tok[r++].toBigDecimal()
   nElecFT = tok[r++].toBigDecimal()

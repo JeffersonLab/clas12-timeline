@@ -77,6 +77,8 @@ First step is to read DST or Skim files, producing HIPO files and data tables
       * time bin number
       * minimum event number
       * maximum event number
+      * minimum timestamp
+      * maximum timestamp
       * sector
       * number of electron triggers in this sector
       * number of electrons in the forward tagger

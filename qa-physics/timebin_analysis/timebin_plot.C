@@ -17,6 +17,8 @@ void timebin_plot(
     ":binnum/I",
     ":eventNumMin/L",
     ":eventNumMax/L",
+    ":timestampMin/L",
+    ":timestampMax/L",
     ":sector/I",
     ":nElecFD/L",
     ":nElecFT/L",
@@ -34,6 +36,8 @@ void timebin_plot(
   Int_t    binnum;
   Long64_t eventNumMin;
   Long64_t eventNumMax;
+  Long64_t timestampMin;
+  Long64_t timestampMax;
   Int_t    sector;
   Long64_t nElecFD;
   Long64_t nElecFT;
@@ -42,18 +46,20 @@ void timebin_plot(
   Double_t ufcStart;
   Double_t ufcStop;
   Double_t aveLiveTime;
-  tr->SetBranchAddress("runnum",      &runnum);
-  tr->SetBranchAddress("binnum",      &binnum);
-  tr->SetBranchAddress("eventNumMin", &eventNumMin);
-  tr->SetBranchAddress("eventNumMax", &eventNumMax);
-  tr->SetBranchAddress("sector",      &sector);
-  tr->SetBranchAddress("nElecFD",     &nElecFD);
-  tr->SetBranchAddress("nElecFT",     &nElecFT);
-  tr->SetBranchAddress("fcStart",     &fcStart);
-  tr->SetBranchAddress("fcStop",      &fcStop);
-  tr->SetBranchAddress("ufcStart",    &ufcStart);
-  tr->SetBranchAddress("ufcStop",     &ufcStop);
-  tr->SetBranchAddress("aveLiveTime", &aveLiveTime);
+  tr->SetBranchAddress("runnum",       &runnum);
+  tr->SetBranchAddress("binnum",       &binnum);
+  tr->SetBranchAddress("eventNumMin",  &eventNumMin);
+  tr->SetBranchAddress("eventNumMax",  &eventNumMax);
+  tr->SetBranchAddress("timestampMin", &timestampMin);
+  tr->SetBranchAddress("timestampMax", &timestampMax);
+  tr->SetBranchAddress("sector",       &sector);
+  tr->SetBranchAddress("nElecFD",      &nElecFD);
+  tr->SetBranchAddress("nElecFT",      &nElecFT);
+  tr->SetBranchAddress("fcStart",      &fcStart);
+  tr->SetBranchAddress("fcStop",       &fcStop);
+  tr->SetBranchAddress("ufcStart",     &ufcStart);
+  tr->SetBranchAddress("ufcStop",      &ufcStop);
+  tr->SetBranchAddress("aveLiveTime",  &aveLiveTime);
 
   // get run number range
   Int_t runnum_min = tr->GetMinimum("runnum");

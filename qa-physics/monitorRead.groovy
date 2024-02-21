@@ -62,7 +62,7 @@ if(inHipoType=="dst") {
   inHipoDirObj.traverse( type: groovy.io.FileType.FILES, nameFilter: inHipoFilter ) {
     if(it.size()>0) inHipoList << inHipo+"/"+it.getName()
   }
-  inHipoList.sort()
+  inHipoList.sort(true)
   if(inHipoList.size()==0) {
     System.err.println "ERROR: no hipo files found in this directory"
     System.exit(100)
@@ -216,6 +216,7 @@ if(AUXFILE) {
     "on_bin_boundary/I", // actually a boolean
     "has_run_scaler_bank/I", // actually a boolean
     "evnum/L",
+    "timestamp/L",
     "fc/D",
     "ufc/D",
   ].join(':') << '\n'
@@ -469,7 +470,7 @@ def setMinMaxInTimeBin = { binNum, key, val ->
 defineTimeBins = { // in its own closure, so giant data structures are garbage collected
   // get list of tag1 event numbers
   printDebug "Begin tag1 event loop"
-  def tag1eventNumList = []
+  def tag1events = []
   inHipoList.each { inHipoFile ->
     printDebug "Open HIPO file $inHipoFile"
     def reader = new HipoDataSource()
@@ -479,15 +480,23 @@ defineTimeBins = { // in its own closure, so giant data structures are garbage c
       hipoEvent = reader.getNextEvent()
       // printDebug "tag1 event bank list: ${hipoEvent.getBankList()}"
       if(hipoEvent.hasBank("RUN::scaler") && hipoEvent.hasBank("RUN::config")) {
-        tag1eventNumList << BigInteger.valueOf(hipoEvent.getBank("RUN::config").getInt('event',0))
+        tag1events <<  [
+          BigInteger.valueOf(hipoEvent.getBank("RUN::config").getInt('event',0)),
+          BigInteger.valueOf(hipoEvent.getBank("RUN::config").getLong('timestamp',0))
+        ]
       }
     }
     reader.close()
   }
+  printDebug "Number of tag1 events: ${tag1events.size()}"
 
-  // sort the event numbers
-  printDebug "Number of tag1 events: ${tag1eventNumList.size()}"
-  tag1eventNumList = tag1eventNumList.sort()
+  // sort the events by event number
+  tag1eventNumList = tag1events.sort(false){it[0]}.collect{it[0]}
+  // check that we would get the same result, if we instead sorted by timestamp
+  if(tag1eventNumList != tag1events.sort(false){it[1]}.collect{it[0]}) {
+    System.err.println "ERROR: sorting tag1 events by event number is DIFFERENT than sorting by timestamp"
+    System.exit(100)
+  }
 
   // define the time bin boundaries: first, some sorting and transformations
   def timeBinBounds = tag1eventNumList
@@ -509,6 +518,8 @@ defineTimeBins = { // in its own closure, so giant data structures are garbage c
     timeBins[binNum] = [
       eventNumMin:  bounds[0],           // event number range
       eventNumMax:  bounds[-1],
+      timestampMin: "init",              // timestamp range
+      timestampMax: "init",
       nElec:        SECTORS.collect{0},  // number of electrons for each FD sector
       nElecFT:      0,                   // number of electrons for FT
       fcRange:      ["init", "init"],    // gated FC charge at the bin boundaries
@@ -525,21 +536,23 @@ defineTimeBins()
 // debug `timeBins` logging function (call it where you need it)
 print_timeBinBounds = {
   println "TIME BINS =============================="
-  println "@ #runnum/I:binnum/I:number_of_bins/I:evnum_min/L:evnum_max/L:num_events/L"
+  println "@ #runnum/I:binnum/I:number_of_bins/I:evnum_min/L:evnum_max/L:timestamp_min/L:timestamp_max/L:num_events/L"
   timeBins.each{ binNum, timeBin ->
     def num_events = timeBin.eventNumMax - timeBin.eventNumMin
     if(binNum==0) {
       num_events++ // since first bin has no lower bound
     }
-    println "@ ${runnum} ${binNum} ${timeBins.size()} ${timeBin.eventNumMin} ${timeBin.eventNumMax} ${num_events}"
+    println "@ ${runnum} ${binNum} ${timeBins.size()} ${timeBin.eventNumMin} ${timeBin.eventNumMax} ${timeBin.timestampMin} ${timeBin.timestampMax} ${num_events}"
   }
   println "END TIME BINS =========================="
 }
 // print_timeBinBounds()
 
-// initialize min and max overall event numbers
+// initialize min and max overall event numbers and timestamps
 def overallMinEventNumber = timeBins[0].eventNumMax  // it will be smaller than first bin's max
 def overallMaxEventNumber = timeBins[timeBins.size()-1].eventNumMin // it will be larger than last bin's min
+def overallMinTimestamp   = "init"
+def overallMaxTimestamp   = "init"
 
 // initialize histograms for each time bin
 printDebug "Initialize histograms for each time bin"
@@ -622,8 +635,10 @@ inHipoList.each { inHipoFile ->
 
     // get event number
     def eventNum
+    def timestamp
     if(configBank.rows()>0) {
       eventNum = BigInteger.valueOf(configBank.getInt('event',0))
+      timestamp = BigInteger.valueOf(configBank.getLong('timestamp',0))
     }
     else if(hipoEvent.getBankList().length==1 && hipoEvent.getBankList().contains("COAT::config")) {
       printDebug "Skipping event which has only 'COAT::config' bank"
@@ -638,9 +653,13 @@ inHipoList.each { inHipoFile ->
       continue
     }
 
-    // set overall min and max event numbers
+    // set overall min and max event numbers and timestamps
     overallMinEventNumber = [ overallMinEventNumber, eventNum].min()
     overallMaxEventNumber = [ overallMaxEventNumber, eventNum].max()
+    if(overallMinTimestamp == "init") overallMinTimestamp = timestamp
+    else overallMinTimestamp = [ overallMinTimestamp, timestamp ].min()
+    if(overallMaxTimestamp == "init") overallMaxTimestamp = timestamp
+    else overallMaxTimestamp = [ overallMaxTimestamp, timestamp ].max()
 
     // find the time bin that contains this event
     def (thisTimeBinNum, thisTimeBin) = findTimeBin(eventNum)
@@ -682,17 +701,22 @@ inHipoList.each { inHipoFile ->
       onBinBoundary = true
       if(scalerBank.rows()>0) { // must have scalerBank, so `fc` and `ufc` are set
         // events on the boundary are assigned to earlier bin; this FC charge is that bin's max charge
-        thisTimeBin.fcRange[1]  = fc
-        thisTimeBin.ufcRange[1] = ufc
+        thisTimeBin.fcRange[1]   = fc
+        thisTimeBin.ufcRange[1]  = ufc
+        thisTimeBin.timestampMax = timestamp
         // this FC charge is also the next bin's min charge
         def nextTimeBin = timeBins[thisTimeBinNum+1]
         if(nextTimeBin==null) { System.err.println "ERROR: found a time bin that has no subsequent bin, and is not the latest bin" }
-        nextTimeBin.fcRange[0]  = fc
-        nextTimeBin.ufcRange[0] = ufc
+        nextTimeBin.fcRange[0]   = fc
+        nextTimeBin.ufcRange[0]  = ufc
+        nextTimeBin.timestampMin = timestamp
         printDebug "event number ${eventNum} on upper boundary of bin ${thisTimeBinNum}, and assigned to that bin:"
         printDebug "  - gated charge:   ${fc}"
         printDebug "  - ungated charge: ${ufc}"
         printDebug "  - banks: ${hipoEvent.getBankList()}"
+      }
+      else {
+        System.err.println "ERROR: event number ${eventNum} on boundary of bin ${thisTimeBinNum} has no scaler bank."
       }
     }
     if(eventNum == thisTimeBin.eventNumMin) {
@@ -708,6 +732,7 @@ inHipoList.each { inHipoFile ->
         onBinBoundary ? 1 : 0,
         scalerBank.rows() > 0 ? 1 : 0,
         eventNum,
+        timestamp,
         fc,
         ufc,
       ].join(' ') << '\n'
@@ -805,16 +830,18 @@ inHipoList.each { inHipoFile ->
 // correct the first and last time bins' event number ranges, and their FC charge ranges
 def firstTimeBin = timeBins[0]
 def lastTimeBin  = timeBins[timeBins.size()-1]
-firstTimeBin.eventNumMin = overallMinEventNumber
-firstTimeBin.fcRange     = [ 0, 0 ] // unknown accumulated charge (NOTE: first scaler readout may have NEGATIVE FC charge); just set it to zero
-firstTimeBin.fcMinMax    = [ 0, 0 ]
-firstTimeBin.ufcRange    = [ 0, 0 ]
-firstTimeBin.ufcMinMax   = [ 0, 0 ]
-lastTimeBin.eventNumMax  = overallMaxEventNumber
-lastTimeBin.fcRange      = [ 0, 0 ] // unknown absolute maximum of FC charge; just set it to zero
-lastTimeBin.fcMinMax     = [ 0, 0 ]
-lastTimeBin.ufcRange     = [ 0, 0 ]
-lastTimeBin.ufcMinMax    = [ 0, 0 ]
+firstTimeBin.eventNumMin  = overallMinEventNumber
+firstTimeBin.timestampMin = overallMinTimestamp
+firstTimeBin.fcRange      = [ 0, 0 ] // unknown accumulated charge (NOTE: first scaler readout may have NEGATIVE FC charge); just set it to zero
+firstTimeBin.fcMinMax     = [ 0, 0 ]
+firstTimeBin.ufcRange     = [ 0, 0 ]
+firstTimeBin.ufcMinMax    = [ 0, 0 ]
+lastTimeBin.eventNumMax   = overallMaxEventNumber
+lastTimeBin.timestampMax  = overallMaxTimestamp
+lastTimeBin.fcRange       = [ 0, 0 ] // unknown absolute maximum of FC charge; just set it to zero
+lastTimeBin.fcMinMax      = [ 0, 0 ]
+lastTimeBin.ufcRange      = [ 0, 0 ]
+lastTimeBin.ufcMinMax     = [ 0, 0 ]
 
 // write final time bin's histograms
 timeBins.each{ itBinNum, itBin ->
@@ -863,6 +890,7 @@ timeBins.each{ itBinNum, itBin ->
   SECTORS.each{ sec ->
     datfileWriter << [ runnum, itBinNum ].join(' ') << ' '
     datfileWriter << [ itBin.eventNumMin, itBin.eventNumMax ].join(' ') << ' '
+    datfileWriter << [ itBin.timestampMin, itBin.timestampMax ].join(' ') << ' '
     datfileWriter << [ sec+1, itBin.nElec[sec], itBin.nElecFT ].join(' ') << ' '
     datfileWriter << [ fcStart, fcStop, ufcStart, ufcStop, aveLivetime ].join(' ') << '\n'
   }
