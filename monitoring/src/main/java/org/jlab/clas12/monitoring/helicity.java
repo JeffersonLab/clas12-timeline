@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.io.base.DataEvent;
+import org.jlab.io.base.DataBank;
+import org.jlab.detector.helicity.DecoderBoardUtil;
 
 /**
  *
@@ -11,6 +13,8 @@ import org.jlab.io.base.DataEvent;
  */
 public class helicity {
 
+    public static final byte DELAY_WINDOWS = 8;
+    
     private class H1Fb extends H1F {
         String bankName;
         String varName;
@@ -23,10 +27,11 @@ public class helicity {
             if (event.hasBank(this.bankName) && event.getBank(this.bankName).rows()>0) {
                 this.fill(event.getBank(this.bankName).getByte(this.varName, 0));
             }
-        } 
+        }
     }
 
     ArrayList<H1Fb> histos;
+    H1F hboard;
 
     public helicity() {
         histos = new ArrayList<>();
@@ -34,12 +39,19 @@ public class helicity {
         histos.add(new H1Fb("offlineRaw","REC::Event","helicityRaw"));
         histos.add(new H1Fb("online","HEL::online","helicity"));
         histos.add(new H1Fb("offline","REC::Event","helicity"));
-        histos.add(new H1Fb("boardRaw","HEL::decoder","helicity"));
+        hboard = histos.get(0).histClone("boardRaw");
     }
 
     public void processEvent(DataEvent event){
         for (H1Fb h : this.histos) {
             h.fill(event);
+        }
+        if (event.hasBank("HEL::decoder") && event.getBank("HEL::decoder").rows()>0) {
+            DataBank bank = event.getBank("HEL::decoder");
+            int h = DecoderBoardUtil.QUARTET.check(bank) ?
+                -1+2*DecoderBoardUtil.QUARTET.getWindowHelicity(bank, DELAY_WINDOWS) :
+                0;
+            this.hboard.fill(h);
         }
     }
 

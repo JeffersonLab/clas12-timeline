@@ -10,13 +10,14 @@ class helicity {
     def processDirectory(dir, run) {
         def h1 = dir.getObject('/HELICITY/offlineRaw')
         def h2 = dir.getObject('/HELICITY/onlineRaw')
-        data[run] = [run:run, OfflineRaw:h1, OnlineRaw:h2]
+        def h3 = dir.getObject('/HELICITY/boardRaw')
+        data[run] = [run:run, OfflineRaw:h1, OnlineRaw:h2, BoardRaw:h3]
     }
 
     def close() {
         TDirectory out = new TDirectory()
         out.mkdir('/timelines')
-        ["OfflineRaw", "OnlineRaw"].each{ name ->
+        ["OfflineRaw", "OnlineRaw","BoardRaw"].each{ name ->
             def gr = new GraphErrors(name)
             gr.setTitle("Helicity Delay Correction Infficiency")
             gr.setTitleY("Efficiency")
