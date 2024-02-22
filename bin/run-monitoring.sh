@@ -9,7 +9,7 @@ source $(dirname $0)/environ.sh
 MAX_NUM_EVENTS=100000000
 # slurm settings
 SLURM_MEMORY=1500
-SLURM_TIME=4:00:00
+SLURM_TIME=10:00:00
 SLURM_LOG=/farm_out/%u/%x-%A_%a
 ########################################################################
 
