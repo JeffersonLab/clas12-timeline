@@ -24,7 +24,8 @@ if(args.length>=4) qaBit = args[3].toInteger()
 // vars and subroutines
 def sectors = 0..<6
 def sec = { int i -> i+1 }
-def runnum, binnum, sector, epoch, evnumMin, evnumMax
+def runnum, binnum, sector, epoch
+def evnumMin, evnumMax
 def gr
 def jPrint = { name,object -> new File(name).write(JsonOutput.toJson(object)) }
 
@@ -58,8 +59,8 @@ dataFile.eachLine { line ->
   tok = line.tokenize(' ')
   runnum = tok[0].toInteger()
   binnum = tok[1].toInteger()
-  evnumMin = tok[2].toInteger()
-  evnumMax = tok[3].toInteger()
+  evnumMin = tok[2].toBigInteger()
+  evnumMax = tok[3].toBigInteger()
   if(!evnumTree.containsKey(runnum))
     evnumTree[runnum] = [:]
   if(!evnumTree[runnum].containsKey(binnum)) {

@@ -160,7 +160,8 @@ def hel
 def varStr
 def varNB
 def varLB,varUB
-def runnum,timeBinNum
+def runnum
+def timeBinNum
 def obj
 def aveX
 def aveXerr
