@@ -7,9 +7,6 @@ void timebin_plot(
 
   gStyle->SetOptStat(0);
 
-  const Int_t MIN_NUM_SCALERS = 2000;   // at least this many scaler readouts per time bin; must match that in ../monitorRead.groovy
-  const Int_t NUM_EVENTS_WITH_NO_BEAM = MIN_NUM_SCALERS * 40; // bins with no beam should have this many events
-
   // read the file
   auto tr = new TTree("tr", "tr");
   std::vector<TString> branch_list = {
@@ -61,6 +58,11 @@ void timebin_plot(
   tr->SetBranchAddress("ufcStop",      &ufcStop);
   tr->SetBranchAddress("aveLiveTime",  &aveLiveTime);
 
+  // convert a `timestamp` to number of seconds
+  auto timestamp_to_sec = [] (decltype(timestampMin) t) -> Long64_t {
+    return t * 4e-9;
+  };
+
   // get run number range
   Int_t runnum_min = tr->GetMinimum("runnum");
   Int_t runnum_max = tr->GetMaximum("runnum");
@@ -86,14 +88,18 @@ void timebin_plot(
 
   // get maxima
   Long64_t max_num_events = 0;
+  Long64_t max_duration   = 0;
   Double_t max_fc         = 0;
   for(Long64_t e=0; e<tr->GetEntries(); e++) {
     tr->GetEntry(e);
     if(is_primary_bin(runnum, binnum)) {
       max_num_events = std::max(max_num_events, eventNumMax-eventNumMin);
+      max_duration   = std::max(max_duration,   timestamp_to_sec(timestampMax-timestampMin));
       max_fc = std::max(max_fc, fcStop-fcStart);
     }
   }
+  // since sometimes the FC charge spikes, guess a more reasonable maximum here:
+  max_fc = 3000;
 
   // various checks
   auto warn_check = [&is_primary_bin] (
@@ -119,35 +125,53 @@ void timebin_plot(
     tr->GetEntry(e);
     if(sector!=1) continue;
     if(runnum != runnum_prev) runnum_prev = runnum;
-    if(binnum>0) {
+    if(binnum!=1 && is_primary_bin(runnum,binnum)) { // don't do this check on the first 2 bins or the last bin, since the first and last bins' charge range is [0, 0]
       if(fcStart != fcStop_prev)
         warn_check(runnum, binnum, eventNumMin, eventNumMax, "fcStart is not fcStop of previous bin");
     }
+    /* // ignore these, since we'll use a defect bit instead
     if(fcStart > fcStop)
       warn_check(runnum, binnum, eventNumMin, eventNumMax, Form("gated FC charge is negative: %f", fcStop - fcStart));
     if(ufcStart > ufcStop)
       warn_check(runnum, binnum, eventNumMin, eventNumMax, Form("ungated FC charge is negative: %f", ufcStop - ufcStart));
+    */
     fcStop_prev = fcStop;
   }
 
   // define histograms
   auto num_events_primary = new TH1D(
       "num_events_primary",
-      "Number of Events per Non-Terminal Time Bin",
+      "Number of Events per Primary Time Bin;Num Events",
       1000,
       0,
       max_num_events + 1
       );
   auto num_events_terminal = new TH1D(
       "num_events_terminal",
-      "Number of Events per Terminal Time Bin",
+      "Number of Events per Terminal Time Bin;Num Events",
       1000,
       num_events_primary->GetXaxis()->GetXmin(),
       1000
       );
+
+  auto duration_primary = new TH1D(
+      "duration_primary",
+      "Time Bin Duration per Primary Time Bin;Duration [s]",
+      1000,
+      0,
+      max_duration + 1
+      );
+  auto duration_terminal = new TH1D(
+      "duration_terminal",
+      "Time Bin Duration per Terminal Time Bin;Duration [s]",
+      1000,
+      duration_primary->GetXaxis()->GetXmin(),
+      100
+      );
+
   auto num_events_vs_runnum = new TH2D(
       "num_events_vs_runnum",
-      "Number of Non-Terminal-Time-Bin Events vs. Run Number;Run Number;Num Events",
+      "Number of Primary Events vs. Run Number;Run Number;Num Events",
       runnum_nbins,
       runnum_min,
       runnum_max + 1,
@@ -157,13 +181,45 @@ void timebin_plot(
       );
   auto num_events_vs_charge = new TH2D(
       "num_events_vs_charge",
-      "Number of Non-Terminal-Time-Bin Events vs. Gated FC Charge;Charge;Num Events",
+      "Number of Primary Events vs. Gated FC Charge;Charge [nC];Num Events",
       1000,
       0,
       max_fc,
       num_events_primary->GetNbinsX(),
       num_events_primary->GetXaxis()->GetXmin(),
       num_events_primary->GetXaxis()->GetXmax()
+      );
+
+  auto duration_vs_num_events = new TH2D(
+      "duration_vs_num_events",
+      "Duration of Primary Bins vs. Number of Events;Num Events;Duration [s]",
+      num_events_primary->GetNbinsX(),
+      num_events_primary->GetXaxis()->GetXmin(),
+      num_events_primary->GetXaxis()->GetXmax(),
+      duration_primary->GetNbinsX(),
+      duration_primary->GetXaxis()->GetXmin(),
+      duration_primary->GetXaxis()->GetXmax()
+      );
+
+  auto duration_vs_runnum = new TH2D(
+      "duration_vs_runnum",
+      "Duration of Primary Bins vs. Run Number;Run Number;Duration [s]",
+      runnum_nbins,
+      runnum_min,
+      runnum_max + 1,
+      duration_primary->GetNbinsX(),
+      duration_primary->GetXaxis()->GetXmin(),
+      duration_primary->GetXaxis()->GetXmax()
+      );
+  auto duration_vs_charge = new TH2D(
+      "duration_vs_charge",
+      "Duration of Primary Bins vs. Gated FC Charge;Charge [nC];Duration [s]",
+      1000,
+      0,
+      max_fc,
+      duration_primary->GetNbinsX(),
+      duration_primary->GetXaxis()->GetXmin(),
+      duration_primary->GetXaxis()->GetXmax()
       );
 
   // fill histograms
@@ -174,19 +230,27 @@ void timebin_plot(
     auto num_events = eventNumMax - eventNumMin;
     if(binnum==0) num_events++; // since first bin has no lower bound
 
+    // get the duration
+    auto duration = timestamp_to_sec(timestampMax - timestampMin);
+
     // fill histograms
     if(is_primary_bin(runnum, binnum)) {
       num_events_primary->Fill(num_events);
+      duration_primary->Fill(duration);
+      duration_vs_num_events->Fill(num_events, duration);
       num_events_vs_runnum->Fill(runnum, num_events);
       num_events_vs_charge->Fill(fcStop-fcStart, num_events);
+      duration_vs_runnum->Fill(runnum, duration);
+      duration_vs_charge->Fill(fcStop-fcStart, duration);
     }
     else {
       num_events_terminal->Fill(num_events);
+      duration_terminal->Fill(duration);
     }
   }
 
   // check for underflow and overflow
-  for(auto& hist : {num_events_primary, num_events_terminal}) {
+  for(auto& hist : {num_events_primary, num_events_terminal, duration_primary, duration_terminal}) {
     auto underflow = hist->GetBinContent(0);
     auto overflow  = hist->GetBinContent(hist->GetNbinsX()+1);
     if(underflow>0) std::cerr << "WARNING: histogram '" << hist->GetName() << "' has underflow of " << underflow << std::endl;
@@ -198,22 +262,51 @@ void timebin_plot(
     hist->SetFillColor(kCyan+2);
     hist->SetLineColor(kCyan+2);
   }
+  for(auto& hist : {duration_primary, duration_terminal}) {
+    hist->SetFillColor(kOrange+1);
+    hist->SetLineColor(kOrange+1);
+  }
 
   // draw
-  auto canv0 = new TCanvas("canv0", "canv0", 1600, 600);
-  canv0->Divide(2,1);
-  for(int i=1; i<=2; i++) canv0->GetPad(i)->SetGrid(1,1);
+  auto canv0 = new TCanvas("canv0", "canv0", 2400, 600);
+  canv0->Divide(3,2);
+  for(int i=1; i<=6; i++) {
+    canv0->GetPad(i)->SetGrid(1,1);
+    canv0->GetPad(i)->SetLeftMargin(0.15);
+    canv0->GetPad(i)->SetBottomMargin(0.15);
+    canv0->GetPad(i)->SetRightMargin(0.15);
+  }
   canv0->cd(1);
+  canv0->GetPad(1)->SetLogy();
   num_events_primary->Draw();
   canv0->cd(2);
+  canv0->GetPad(2)->SetLogy();
   num_events_terminal->Draw();
+  canv0->cd(3);
+  canv0->GetPad(3)->SetLogz();
+  duration_vs_num_events->Draw("colz");
+  canv0->cd(4);
+  canv0->GetPad(4)->SetLogy();
+  duration_primary->Draw();
+  canv0->cd(5);
+  canv0->GetPad(5)->SetLogy();
+  duration_terminal->Draw();
 
   auto canv1 = new TCanvas("canv1", "canv1", 800, 600);
-  canv1->SetGrid(1,1);
-  canv1->SetLogz();
+  canv1->Divide(2,2);
+  for(int i=1; i<=4; i++) {
+    canv1->GetPad(i)->SetGrid(1,1);
+    canv1->GetPad(i)->SetLogz();
+    canv1->GetPad(i)->SetLeftMargin(0.15);
+    canv1->GetPad(i)->SetBottomMargin(0.15);
+    canv1->GetPad(i)->SetRightMargin(0.15);
+  }
+  canv1->cd(1);
   num_events_vs_runnum->Draw("colz");
-
-  auto canv2 = new TCanvas("canv2", "canv2", 800, 600);
-  canv1->SetGrid(1,1);
+  canv1->cd(2);
   num_events_vs_charge->Draw("colz");
+  canv1->cd(3);
+  duration_vs_runnum->Draw("colz");
+  canv1->cd(4);
+  duration_vs_charge->Draw("colz");
 }
