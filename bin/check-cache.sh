@@ -82,7 +82,7 @@ for cacheRunDir in ${cacheRunDirList[@]}; do
           <(ls $cacheRunDir) \\
           <(ls $tapeRunDir)
       """
-      echo "bin/jcacheRun.sh $cacheRunDir" >> $jcacheList
+      echo "$TIMELINESRC/bin/jcacheRun.sh $(echo $cacheRunDir | sed 's;^.*/cache/;/cache/;')" >> $jcacheList
     fi
   fi
 done
