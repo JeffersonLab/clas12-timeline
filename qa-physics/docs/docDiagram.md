@@ -53,7 +53,6 @@ flowchart TB
       mkTree --> createEpochs[create or edit<br>epochs/epochs.$dataset.txt<br>see mkTree.sh]:::manual
       monitorElec{{$qa_dir/outmon/monitorElec.hipo}}:::data
       outdatFiles --> qaPlot
-      outdatFiles --> createEpochs
       qaPlot --> monitorElec
 
       qaCut[qaCut.groovy]:::auto
