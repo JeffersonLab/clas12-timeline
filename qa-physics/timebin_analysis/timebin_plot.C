@@ -157,15 +157,15 @@ void timebin_plot(
   auto duration_primary = new TH1D(
       "duration_primary",
       "Time Bin Duration per Primary Time Bin;Duration [s]",
-      1000,
+      max_duration + 1,
       0,
       max_duration + 1
       );
   auto duration_terminal = new TH1D(
       "duration_terminal",
       "Time Bin Duration per Terminal Time Bin;Duration [s]",
-      1000,
-      duration_primary->GetXaxis()->GetXmin(),
+      100,
+      0,
       100
       );
 
@@ -222,9 +222,18 @@ void timebin_plot(
       duration_primary->GetXaxis()->GetXmax()
       );
 
+  auto run_duration = new TH1D(
+      "run_duration",
+      "Duration of each run;Run Number;Duration [min]",
+      runnum_nbins,
+      runnum_min,
+      runnum_max + 1
+      );
+
   // fill histograms
   for(Long64_t e=0; e<tr->GetEntries(); e++) {
     tr->GetEntry(e);
+    if(sector!=1) continue;
 
     // get the number of events
     auto num_events = eventNumMax - eventNumMin;
@@ -247,6 +256,7 @@ void timebin_plot(
       num_events_terminal->Fill(num_events);
       duration_terminal->Fill(duration);
     }
+    run_duration->Fill(runnum, duration / 60.0);
   }
 
   // check for underflow and overflow
@@ -266,9 +276,13 @@ void timebin_plot(
     hist->SetFillColor(kOrange+1);
     hist->SetLineColor(kOrange+1);
   }
+  run_duration->SetFillColor(kBlue);
+  run_duration->SetLineColor(kBlue);
 
   // draw
-  auto canv0 = new TCanvas("canv0", "canv0", 2400, 600);
+  const int canvW = 800;
+  const int canvH = 600;
+  auto canv0 = new TCanvas("canv0", "canv0", 3*canvW, canvH);
   canv0->Divide(3,2);
   for(int i=1; i<=6; i++) {
     canv0->GetPad(i)->SetGrid(1,1);
@@ -292,7 +306,7 @@ void timebin_plot(
   canv0->GetPad(5)->SetLogy();
   duration_terminal->Draw();
 
-  auto canv1 = new TCanvas("canv1", "canv1", 800, 600);
+  auto canv1 = new TCanvas("canv1", "canv1", 2*canvW, canvH);
   canv1->Divide(2,2);
   for(int i=1; i<=4; i++) {
     canv1->GetPad(i)->SetGrid(1,1);
@@ -309,4 +323,11 @@ void timebin_plot(
   duration_vs_runnum->Draw("colz");
   canv1->cd(4);
   duration_vs_charge->Draw("colz");
+
+  auto canv2 = new TCanvas("canv2", "canv2", canvW, canvH);
+  canv2->SetGrid(1,1);
+  canv2->SetLeftMargin(0.15);
+  canv2->SetBottomMargin(0.15);
+  canv2->SetRightMargin(0.15);
+  run_duration->Draw("hist");
 }
