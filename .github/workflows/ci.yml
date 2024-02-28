@@ -79,16 +79,22 @@ jobs:
     - name: check cache
       uses: actions/cache@v4
       with:
-        key: validation_files
+        # key: validation_files
+        # path: validation_files.tar.zst
+        key: validation_files_old
+        path: validation_files.tar.gz
         lookup-only: true
     - name: download
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.zst
+      # run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.zst
+      run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
     - name: update cache
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       uses: actions/cache@v4
       with:
-        key: validation_files
+        # key: validation_files
+        # path: validation_files.tar.zst
+        key: validation_files_old
         path: validation_files.tar.gz
 
   # monitoring
