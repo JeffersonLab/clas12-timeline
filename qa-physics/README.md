@@ -89,9 +89,7 @@ First step is to read DST or Skim files, producing HIPO files and data tables
       * DAQ-ungated FC charge at end of time bin
       * average livetime
     * monitoring HIPO file, `[output_directory]/monitor_${runnum}.hipo`, contains several plots 
-      * there is one plot per 'time bin', defined as a set of consecutive events satisfying:
-        * at least a certain number of events with `RUN::scaler`
-        * at least a certain number of overall events
+      for each time bin
 
 ### Data Organization
 * use the script `datasetOrganize.sh`
