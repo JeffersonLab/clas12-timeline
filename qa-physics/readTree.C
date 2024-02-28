@@ -11,7 +11,7 @@ void readTree(TString dataset="fall18") {
   gStyle->SetOptStat(0);
   TFile * f = new TFile("tree.root","RECREATE");
   TTree * tr = new TTree("tr","tr");
-  TString cols = "i/I:runnum/I:binnum/I:evnumMin/I:evnumMax/I";
+  TString cols = "i/I:runnum/I:binnum/I:evnumMin/L:evnumMax/L:timestampMin/L:timestampMax/L";
   cols += ":sector/I:nElec/F:nElecFT/F";
   cols += ":fcstart/F:fcstop/F:ufcstart/F:ufcstop/F";
   cols += ":livetime/F";
