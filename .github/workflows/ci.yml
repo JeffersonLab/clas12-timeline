@@ -12,8 +12,6 @@ defaults:
 
 env:
   dataset: ci_test
-  validation_single_run: '011329'
-  validation_run_group: B # FIXME: not actually used; see comments mentioning this variable below
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -37,13 +35,13 @@ jobs:
       run: mvn package
     - name: tar # to preserve any permissions
       run: |
-        tar czvf build_detectors.tar.gz detectors/target
-        tar czvf build_monitoring.tar.gz monitoring/target
+        tar cavf build_detectors.tar.zst detectors/target
+        tar cavf build_monitoring.tar.zst monitoring/target
     - uses: actions/upload-artifact@v4
       with:
         name: build_timelines
         retention-days: 1
-        path: build*.tar.gz
+        path: build*.tar.zst
 
   build_coatjava:
     runs-on: ubuntu-latest
@@ -63,26 +61,32 @@ jobs:
     - name: tree
       run: tree
     - name: tar
-      run: tar czvf build_coatjava.tar.gz coatjava
+      run: tar cavf build_coatjava.tar.zst coatjava
     - uses: actions/upload-artifact@v4
       with:
         name: build_coatjava
         retention-days: 1
-        path: build*.tar.gz
+        path: build*.tar.zst
 
   # download test data
   #############################################################################
 
   download_test_data:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        type: [ detectors, physics ]
     steps:
-    - name: download
-      run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
-    - uses: actions/upload-artifact@v4
+    - uses: actions/cache@v4
+      id: cache
       with:
-        name: validation_files
-        retention-days: 1
-        path: validation_files.tar.gz
+        key: validation_files_${{ matrix.type }}
+        path: validation_files_${{ matrix.type }}.tar.zst
+        lookup-only: true
+    - name: download
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files_${{ matrix.type }}.tar.zst
 
   # monitoring
   #############################################################################
@@ -96,9 +100,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        type:
-          - detectors
-          - physics
+        type: [ detectors, physics ]
     steps:
     - name: setup java
       uses: actions/setup-java@v4
@@ -112,15 +114,16 @@ jobs:
     - name: groovy version
       run: groovy --version
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/cache/restore@v4
       with:
-        name: validation_files
+        key: validation_files_${{ matrix.type }}
+        path: validation_files_${{ matrix.type }}.tar.zst
     - uses: actions/download-artifact@v4
       with:
         pattern: build_*
         merge-multiple: true
     - name: untar
-      run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      run: ls *.tar.zst | xargs -I{} tar xavf {}
     - name: tree
       run: tree
     - name: run monitoring
@@ -149,9 +152,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        type:
-          - detectors
-          - physics
+        type: [ detectors, physics ]
     steps:
     - name: setup java
       uses: actions/setup-java@v4
@@ -165,19 +166,23 @@ jobs:
     - name: groovy version
       run: groovy --version
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/cache/restore@v4
       with:
-        name: validation_files
+        key: validation_files_${{ matrix.type }}
+        path: validation_files_${{ matrix.type }}.tar.zst
     - uses: actions/download-artifact@v4
       with:
         pattern: build_*
         merge-multiple: true
     - name: untar
-      run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      run: ls *.tar.zst | xargs -I{} tar xavf {}
     - name: tree
       run: tree
     - name: test monitoring swifjob
-      run: bin/test-swifjob.sh validation_files/${{env.validation_single_run}} runner --focus-${{matrix.type}}
+      run: |
+        single_rundir=$(find validation_files -mindepth 1 -maxdepth 1 -type d | head -n1)
+        echo "single_rundir = $single_rundir"
+        bin/test-swifjob.sh $single_rundir runner --focus-${{ matrix.type }}
     - name: tree runner
       run: tree runner
 
@@ -191,12 +196,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        type:
-          - detectors
-          - physics
         include:
-          - { type: detectors,  args: -n 2 -r B --skip-mya } # FIXME: prefer `-r ${{env.validation_run_group}}`, but that's invalid syntax for matrix arg
-          - { type: physics,    args: '' }
+          - { type: detectors,  args: '-r B -n 4 --skip-mya' }
+          - { type: physics,    args: '-r A' }
     steps:
     - name: setup java
       uses: actions/setup-java@v4
@@ -220,7 +222,7 @@ jobs:
         pattern: build_*
         merge-multiple: true
     - name: untar
-      run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      run: ls *.tar.zst | xargs -I{} tar xavf {}
     - name: tree
       run: tree
     - name: run timelines
@@ -259,7 +261,7 @@ jobs:
         pattern: build_*
         merge-multiple: true
     - name: untar
-      run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      run: ls *.tar.zst | xargs -I{} tar xavf {}
     - name: tree outfiles
       run: |
         rm -r outfiles/${{ env.dataset }}/log
