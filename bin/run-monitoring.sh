@@ -312,26 +312,42 @@ for rdir in ${rdirs[@]}; do
 
       detectors)
 
-        # get the beam energy
-        # FIXME: use a config file or RCDB; this violates DRY with qa-physics/monitorRead.groovy
+        # hard-coded beam energy values, which may be "more correct" than those in RCDB; if a run
+        # is not found here, RCDB will be used instead
+        # FIXME: use a config file; this violates DRY with qa-physics/monitorRead.groovy
         beam_energy=`python -c """
 beamlist = [
-(3861,5673,10.6), (5674, 5870, 7.546), (5871, 6000, 6.535), (6608, 6783, 10.199),
-(11620, 11657, 2.182), (11658, 12283, 10.389), (12389, 12444, 2.182), (12445, 12951, 10.389),
-(15013,15490, 5.98636), (15533,15727, 2.07052), (15728,15784, 4.02962), (15787,15884, 5.98636),
-(16010, 16078, 2.21), (16079, 1e9, 10.55) ]
-
-ret=10.6
+  (3861,  5673,  10.6),
+  (5674,  5870,  7.546),
+  (5871,  6000,  6.535),
+  (6608,  6783,  10.199),
+  (11093, 11283, 10.4096),
+  (11284, 11300, 4.17179),
+  (11323, 11571, 10.3894),
+  (11620, 11657, 2.182),
+  (11658, 12283, 10.389),
+  (12389, 12444, 2.182),
+  (12445, 12951, 10.389),
+  (15013, 15490, 5.98636),
+  (15533, 15727, 2.07052),
+  (15728, 15784, 4.02962),
+  (15787, 15884, 5.98636),
+  (16010, 16078, 2.21),
+  (16079, 19130, 10.55),
+]
 for r0,r1,eb in beamlist:
   if $runnum>=r0 and $runnum<=r1:
-    ret=eb
-    print(ret)
+    print(eb)
       """`
         if [ -z "$beam_energy" ]; then
-          printError "Unknown beam energy for run $runnum"
-          printWarning "Since this script is still undergoing testing, let's assume the beam energy is 10.6 GeV" # FIXME
-          beam_energy=10.6
+          echo "Retrieving beam energy from RCDB..."
+          beam_energy=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-beam-energy.groovy $runnum | tail -n1)
         fi
+        if [ -z "$beam_energy" ]; then
+          printError "Unknown beam energy for run $runnum"
+          exit 100
+        fi
+        echo "Beam energy = $beam_energy"
 
         cat > $jobscript << EOF
 #!/bin/bash

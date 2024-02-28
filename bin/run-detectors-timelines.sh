@@ -176,6 +176,7 @@ detDirs=(
   forward
   ft
   ftof
+  helicity
   htcc
   ltcc
   m2_ctof_ftof

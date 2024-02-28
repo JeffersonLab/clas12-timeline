@@ -4,20 +4,27 @@ Timeline production for CLAS12. Timelines are deployed to [`clas12mon`](https://
 
 ## Setup
 
-To download,
+The software is available from `ifarm` interactive nodes; use the `module` command to load it:
+```bash
+module avail timeline      # check which versions are available
+module load timeline/dev   # load the 'dev' version (likely the most recent version)
+module load timeline/1.0.0 # alternatively, load a specific version, such as 1.0.0
+```
+
+If you want to install locally, download the repository:
 ```bash
 git clone https://github.com/JeffersonLab/clas12-timeline.git
 ```
-
-To build,
+Then build:
 ```bash
 mvn package
 ```
-#### Additional Build Notes:
-- Use `mvn clean` if you want to clean build targets.
-- Use the `-f` option of `mvn` to build individual submodules:
-  1. [`monitoring`](monitoring): generates histograms for detectors
-  1. [`detectors`](detectors): uses detector histograms to generate timelines
+
+> [!TIP]
+> - Use `mvn clean` if you want to clean build targets.
+> - Use the `-f` option of `mvn` to build individual submodules:
+>   1. [`monitoring`](monitoring): generates histograms for detectors
+>   1. [`detectors`](detectors): uses detector histograms to generate timelines
 
 ## Procedure
 
@@ -25,9 +32,10 @@ Two types of timelines are produced:
 1. **Detector timelines**: monitor detector parameters, histograms, and calibration
 1. **Physics timelines**: monitor higher-level quantities to perform Quality Assurance (QA) for physics analysis
 
-NOTE: physics timeline production and QA are typically only valuable on high-statistics datasets, whereas detector timelines need files produced with `mon` schema, which are typically only produced with low statistics; therefore, for a given dataset, typically one set of timelines is produced but not the other.
+Both of these timeline types are produced in the following steps.
 
-Both of these timeline types are produced in the following steps:
+> [!NOTE]
+> Physics timeline production and QA are typically only valuable on high-statistics datasets, whereas detector timelines need files produced with `mon` schema, which are typically only produced with low statistics; therefore, for a given dataset, typically one set of timelines is produced but not the other.
 
 ### Step 1: Data Monitoring
 
@@ -55,11 +63,11 @@ sbatch ./slurm/job.rga_sp19_v5.physics.slurm     # for physics timelines
 - monitor progress with Slurm tools (e.g., `squeue -u $LOGNAME`)
 - monitor output logs in `/farm_out/$LOGNAME/` or use `bin/error-print.sh`
 
-#### Details
-- data monitoring for detector timelines is handled by the [`monitoring/` subdirectory](monitoring);
-  see [its documentation](monitoring/README.md)
-- data monitoring for physics timelines is handled by the [`qa-physics/` subdirectory](qa-physics);
-  see [its documentation](qa-physics/README.md)
+> [!NOTE]
+> - data monitoring for detector timelines is handled by the [`monitoring/` subdirectory](monitoring);
+>   see [its documentation](monitoring/README.md)
+> - data monitoring for physics timelines is handled by the [`qa-physics/` subdirectory](qa-physics);
+>   see [its documentation](qa-physics/README.md)
 
 ### Step 2: Timeline Production and QA
 
@@ -69,6 +77,11 @@ After Step 1 is complete, run the following Step 2 scripts to produce the timeli
 bin/run-detectors-timelines.sh
 bin/run-physics-timelines.sh
 ```
+
+> [!IMPORTANT]
+> If you are processing a large data set on `ifarm`, direct your output files to a location within `/volatile`. Either:
+> - make a symbolic link in your working directory named `outfiles` pointing to a location within `/volatile`
+> - use the scripts' `-o` option to set the output locations
 
 #### Example
 **If** you used `clas12-workflow` for Step 1:
@@ -87,13 +100,13 @@ bin/run-physics-timelines.sh   -d rga_sp19_v5   # for physics timelines
 - the dataset name must match that of Step 1, otherwise you need to specify the path to the input files with `-i`
 
 
-#### Details
-- detector timeline production is handled by the [`detectors/` subdirectory](detectors);
-  see [its documentation](detectors/README.md)
-- QA of detector timelines is handled by the [`qa-detectors/` subdirectory](qa-detectors);
-  see [its documentation](qa-detectors/README.md)
-- physics timeline production and QA are handled by the [`qa-physics/` subdirectory](qa-physics);
-  see [their documentation](qa-physics/README.md)
+> [!NOTE]
+> - detector timeline production is handled by the [`detectors/` subdirectory](detectors);
+>   see [its documentation](detectors/README.md)
+> - QA of detector timelines is handled by the [`qa-detectors/` subdirectory](qa-detectors);
+>   see [its documentation](qa-detectors/README.md)
+> - physics timeline production and QA are handled by the [`qa-physics/` subdirectory](qa-physics);
+>   see [their documentation](qa-physics/README.md)
 
 ### Step 3: Deployment
 
