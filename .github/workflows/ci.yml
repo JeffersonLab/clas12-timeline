@@ -76,8 +76,7 @@ jobs:
   download_test_data:
     runs-on: ubuntu-latest
     steps:
-    - name: check cache
-      uses: actions/cache@v4
+    - uses: actions/cache/restore@v4
       with:
         # key: validation_files
         # path: validation_files.tar.zst
@@ -88,9 +87,8 @@ jobs:
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       # run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.zst
       run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
-    - name: update cache
+    - uses: actions/cache/save@v4
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      uses: actions/cache@v4
       with:
         # key: validation_files
         # path: validation_files.tar.zst
