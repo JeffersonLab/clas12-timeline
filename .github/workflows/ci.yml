@@ -76,24 +76,24 @@ jobs:
   download_test_data:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/cache/restore@v4
+    - uses: actions/cache@v4
       with:
         # key: validation_files
         # path: validation_files.tar.zst
-        key: validation_files_old
+        key: validation_files_old_2
         path: validation_files.tar.gz
         lookup-only: true
     - name: download
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       # run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.zst
       run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
-    - uses: actions/cache/save@v4
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      with:
-        # key: validation_files
-        # path: validation_files.tar.zst
-        key: validation_files_old
-        path: validation_files.tar.gz
+    # - uses: actions/cache/save@v4
+    #   if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+    #   with:
+    #     # key: validation_files
+    #     # path: validation_files.tar.zst
+    #     key: validation_files_old
+    #     path: validation_files.tar.gz
 
   # monitoring
   #############################################################################
