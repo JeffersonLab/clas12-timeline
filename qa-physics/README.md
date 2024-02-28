@@ -50,6 +50,7 @@ It is recommended to use `bash` or `zsh` as your shell; `tcsh` is not supported.
   * if any of these scripts throw errors, they will be redirected and printed at the end
     * if you see any errors for a particular script, you may re-run it individually
       to diagnose the problem (the full command for each script is printed in the output)
+* take a look at the "time bin analysis" plots by running `timebin_analysis/timebin_plot.C`
 * integrity check: check if all available data were analyzed (must be done AFTER
   `../bin/run-physics-timelines.sh`)
   * `getListOfDSTs.sh [dataset]` (takes some time to run)
