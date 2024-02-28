@@ -12,8 +12,8 @@ defaults:
 
 env:
   dataset: ci_test
-  validation_single_run: '011329'
-  validation_run_group: B # FIXME: not actually used; see comments mentioning this variable below
+  validation_single_run: '006666'
+  validation_run_group: A # FIXME: not actually used; see comments mentioning this variable below
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -37,13 +37,13 @@ jobs:
       run: mvn package
     - name: tar # to preserve any permissions
       run: |
-        tar czvf build_detectors.tar.gz detectors/target
-        tar czvf build_monitoring.tar.gz monitoring/target
+        tar cavf build_detectors.tar.zst detectors/target
+        tar cavf build_monitoring.tar.zst monitoring/target
     - uses: actions/upload-artifact@v4
       with:
         name: build_timelines
         retention-days: 1
-        path: build*.tar.gz
+        path: build*.tar.zst
 
   build_coatjava:
     runs-on: ubuntu-latest
@@ -63,12 +63,12 @@ jobs:
     - name: tree
       run: tree
     - name: tar
-      run: tar czvf build_coatjava.tar.gz coatjava
+      run: tar cavf build_coatjava.tar.zst coatjava
     - uses: actions/upload-artifact@v4
       with:
         name: build_coatjava
         retention-days: 1
-        path: build*.tar.gz
+        path: build*.tar.zst
 
   # download test data
   #############################################################################
@@ -76,12 +76,19 @@ jobs:
   download_test_data:
     runs-on: ubuntu-latest
     steps:
-    - name: download
-      run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
-    - uses: actions/upload-artifact@v4
+    - name: check cache
+      uses: actions/cache@v4
       with:
-        name: validation_files
-        retention-days: 1
+        key: validation_files
+        lookup-only: true
+    - name: download
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.zst
+    - name: update cache
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      uses: actions/cache@v4
+      with:
+        key: validation_files
         path: validation_files.tar.gz
 
   # monitoring
@@ -112,15 +119,15 @@ jobs:
     - name: groovy version
       run: groovy --version
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/cache@v4
       with:
-        name: validation_files
+        key: validation_files
     - uses: actions/download-artifact@v4
       with:
         pattern: build_*
         merge-multiple: true
     - name: untar
-      run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      run: ls *.tar.zst | xargs -I{} tar xavf {}
     - name: tree
       run: tree
     - name: run monitoring
@@ -165,15 +172,15 @@ jobs:
     - name: groovy version
       run: groovy --version
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/cache@v4
       with:
-        name: validation_files
+        key: validation_files
     - uses: actions/download-artifact@v4
       with:
         pattern: build_*
         merge-multiple: true
     - name: untar
-      run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      run: ls *.tar.zst | xargs -I{} tar xavf {}
     - name: tree
       run: tree
     - name: test monitoring swifjob
@@ -220,7 +227,7 @@ jobs:
         pattern: build_*
         merge-multiple: true
     - name: untar
-      run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      run: ls *.tar.zst | xargs -I{} tar xavf {}
     - name: tree
       run: tree
     - name: run timelines
@@ -259,7 +266,7 @@ jobs:
         pattern: build_*
         merge-multiple: true
     - name: untar
-      run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      run: ls *.tar.zst | xargs -I{} tar xavf {}
     - name: tree outfiles
       run: |
         rm -r outfiles/${{ env.dataset }}/log
