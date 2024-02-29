@@ -45,7 +45,9 @@ flowchart TB
 
       monitorPlot[monitorPlot.groovy]:::auto
       timelineFiles{{$qa_dir/outmon/$timeline.hipo}}:::timeline
+      qaTree{{$qa_dir/outdat/qaTree.json}}:::data
       outmonFiles --> monitorPlot
+      qaTree --> monitorPlot
       monitorPlot --> timelineFiles
 
       qaPlot[qaPlot.groovy]:::auto
@@ -59,7 +61,6 @@ flowchart TB
       mergeFTandFD[mergeFTandFD.groovy]:::auto
       qaTreeFD{{$qa_dir/outdat/qaTreeFD.json}}:::data
       qaTreeFT{{$qa_dir/outdat/qaTreeFT.json}}:::data
-      qaTree{{$qa_dir/outdat/qaTree.json}}:::data
       monitorElec --> qaCut
       createEpochs --> qaCut
       qaCut --> timelineFiles
