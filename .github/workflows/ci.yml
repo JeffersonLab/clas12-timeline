@@ -86,7 +86,7 @@ jobs:
         lookup-only: true
     - name: download
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files_${{ matrix.type }}.tar.zst
+      run: wget -nv --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files_${{ matrix.type }}.tar.zst
 
   # monitoring
   #############################################################################
