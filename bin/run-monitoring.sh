@@ -9,7 +9,7 @@ source $(dirname $0)/environ.sh
 MAX_NUM_EVENTS=100000000
 # slurm settings
 SLURM_MEMORY=1500
-SLURM_TIME=4:00:00
+SLURM_TIME=10:00:00
 SLURM_LOG=/farm_out/%u/%x-%A_%a
 ########################################################################
 
@@ -21,7 +21,7 @@ for key in findhipo rundir eachdir single series submit check-cache swifjob focu
   modes[$key]=false
 done
 outputDir=""
-modes['findhipo']=true
+modes['rundir']=true
 
 # usage
 sep="================================================================"
@@ -77,11 +77,11 @@ usageVerbose() {
        --findhipo     use \`find\` to find all HIPO files in each
                       [RUN_DIRECTORY]; this is useful if you have a
                       directory tree, e.g., runs grouped by target
-                      **this is the default option**
 
        --rundir       assume each specified [RUN_DIRECTORY] contains
                       subdirectories named as just run numbers; it is not
                       recommended to use wildcards for this option
+                      **this is the default option**
 
        --eachdir      assume each specified [RUN_DIRECTORY] is a single
                       run's directory full of HIPO files
@@ -186,6 +186,7 @@ else
     rdirs=$@
   elif ${modes['findhipo']}; then # N.B.: the default option must be last
     for topdir in ${rdirsArgs[@]}; do
+      echo "finding .hipo files in $topdir ....."
       fileList=$(find -L $topdir -type f -name "*.hipo")
       if [ -z "$fileList" ]; then
         printWarning "run directory '$topdir' has no HIPO files"
@@ -199,6 +200,7 @@ else
   fi
 fi
 [ ${#rdirs[@]} -eq 0 ] && printError "no run directories found" && exit 100
+echo "done finding input run directories"
 
 # set and make output directory
 if ${modes['swifjob']}; then
@@ -283,11 +285,13 @@ for rdir in ${rdirs[@]}; do
   echo "run directory '$rdir' has run number $runnum"
 
   # get list of input files, and append prefix for SWIF
+  echo "..... getting its input files ....."
   inputListFile=$slurmDir/files.$dataset.$runnum.inputs.list
   [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
   realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
 
   # generate job scripts
+  echo "..... generating its job scripts ....."
   for key in ${jobkeys[@]}; do
 
     # preparation: make output subdirectory and backup old one, if it exists

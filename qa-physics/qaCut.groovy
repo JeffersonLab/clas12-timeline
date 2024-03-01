@@ -24,7 +24,8 @@ if(args.length>=4) qaBit = args[3].toInteger()
 // vars and subroutines
 def sectors = 0..<6
 def sec = { int i -> i+1 }
-def runnum, filenum, sector, epoch, evnumMin, evnumMax
+def runnum, binnum, sector, epoch
+def evnumMin, evnumMax
 def gr
 def jPrint = { name,object -> new File(name).write(JsonOutput.toJson(object)) }
 
@@ -49,7 +50,7 @@ def getEpoch = { r,s ->
 }
 
 
-// build map of (runnum,filenum) -> (evnumMin,evnumMax)
+// build map of (runnum,binnum) -> (evnumMin,evnumMax)
 def dataFile = new File("${inDir}/outdat/data_table.dat")
 def tok
 def evnumTree = [:]
@@ -57,13 +58,13 @@ if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
 dataFile.eachLine { line ->
   tok = line.tokenize(' ')
   runnum = tok[0].toInteger()
-  filenum = tok[1].toInteger()
-  evnumMin = tok[2].toInteger()
-  evnumMax = tok[3].toInteger()
+  binnum = tok[1].toInteger()
+  evnumMin = tok[2].toBigInteger()
+  evnumMax = tok[3].toBigInteger()
   if(!evnumTree.containsKey(runnum))
     evnumTree[runnum] = [:]
-  if(!evnumTree[runnum].containsKey(filenum)) {
-    evnumTree[runnum][filenum] = [
+  if(!evnumTree[runnum].containsKey(binnum)) {
+    evnumTree[runnum][binnum] = [
       "evnumMin":evnumMin,
       "evnumMax":evnumMax
     ]
@@ -107,7 +108,7 @@ sectors.each{
 }
 
 
-// loop over 'grA' graphs (of N/F vs. filenum), filling ratioTree leaves
+// loop over 'grA' graphs (of N/F vs. binnum), filling ratioTree leaves
 def (minA,maxA) = [100000,0]
 inList.each { obj ->
   if(obj.contains("/grA_")) {
@@ -216,10 +217,10 @@ def splitGraph = { g ->
 // and put them in the epochPlotTree
 def defineEpochPlot = { name,ytitle,s,e ->
   def g = new GraphErrors("${name}_s${s}_e${e}")
-  if(useFT) g.setTitle(ytitle+" vs. file index -- epoch $e")
-  else      g.setTitle(ytitle+" vs. file index -- Sector $s, epoch $e")
+  if(useFT) g.setTitle(ytitle+" vs. bin index -- epoch $e")
+  else      g.setTitle(ytitle+" vs. bin index -- Sector $s, epoch $e")
   g.setTitleY(ytitle)
-  g.setTitleX("file index")
+  g.setTitleX("bin index")
   return splitGraph(g) // returns list of plots ['good','bad']
 }
 def insertEpochPlot = { map,name,plots ->
@@ -261,7 +262,7 @@ def outHipoSigmaF = new TDirectory()
 def outHipoRhoNF = new TDirectory()
 
 // define qaTree
-def qaTree // [runnum][filenum] -> defects enumeration
+def qaTree // [runnum][binnum] -> defects enumeration
 def slurper
 def jsonFile
 if(qaBit>=0) {
@@ -276,15 +277,15 @@ else qaTree = [:]
 def qaTitle, qaName
 if(qaBit>=0) {
   if(qaBit==100) {
-    qaTitle = ":: Fraction of files with any defect"
+    qaTitle = ":: Fraction of bins with any defect"
     qaName = "Any_Defect"
   }
   else {
-    qaTitle = ":: Fraction of files with " + T.bitDescripts[qaBit]
+    qaTitle = ":: Fraction of bins with " + T.bitDescripts[qaBit]
     qaName = T.bitNames[qaBit]
   }
 } else {
-  qaTitle = ":: AUTOMATIC QA RESULT: Fraction of files with any defect"
+  qaTitle = ":: AUTOMATIC QA RESULT: Fraction of bins with any defect"
   qaName = "Automatic_Result"
 }
 
@@ -335,8 +336,8 @@ def buildLine = { graph,lb,ub,name,val ->
   new F1D(graph.getName()+":"+name,Double.toString(val),lb-3,ub+3)
 }
 def addEpochPlotPoint = { plotOut,plotIn,i,r ->
-  def f = plotIn.getDataX(i) // filenum
-  def n = r + f/5000.0 // "file index"
+  def f = plotIn.getDataX(i) // binnum
+  def n = r + f/5000.0 // "bin index"
   plotOut.addPoint(n,plotIn.getDataY(i),0,0)
 }
 def writeHipo = { hipo,outList -> outList.each{ hipo.addDataSet(it) } }
@@ -369,7 +370,7 @@ def buildHisto = { graph,nbins,binmin,binmax ->
   // set the histogram names and titles
   // assumes the graph name is 'gr._.*' (regex syntax) and names the histogram 'gr.h_.*'
   def histN = graph.getName().replaceAll(/^gr./) { graph.getName().replaceAll(/_.*$/,"h") }
-  def histT = graph.getTitle().replaceAll(/vs\. file number/,"distribution")
+  def histT = graph.getTitle().replaceAll(/vs\. time bin/,"distribution")
 
   // define histogram and set formatting
   def hist = new H1F(histN,histT,nbins,binmin,binmax)
@@ -423,7 +424,7 @@ def reluncN, reluncF
 def NF,NFerrH,NFerrL,LT
 def valN,valF,valU,valA
 def defectList = []
-def badfile
+def badbin
 inList.each { obj ->
   if(obj.contains("/grA_")) {
 
@@ -509,19 +510,19 @@ inList.each { obj ->
       // loop through points in grA and fill good and bad graphs
       grA.getDataSize(0).times { i -> 
 
-        filenum = grA.getDataX(i).toInteger()
+        binnum = grA.getDataX(i).toInteger()
 
         // DETERMINE DEFECT BITS, or load them from modified qaTree.json
-        badfile = false
+        badbin = false
         if(qaBit<0) {
 
-          if(!qaTree[runnum].containsKey(filenum)) {
-            qaTree[runnum][filenum] = [:]
-            qaTree[runnum][filenum]['evnumMin'] = evnumTree[runnum][filenum]['evnumMin']
-            qaTree[runnum][filenum]['evnumMax'] = evnumTree[runnum][filenum]['evnumMax']
-            qaTree[runnum][filenum]['comment'] = ""
-            qaTree[runnum][filenum]['defect'] = 0
-            qaTree[runnum][filenum]['sectorDefects'] = sectors.collectEntries{s->[sec(s),[]]}
+          if(!qaTree[runnum].containsKey(binnum)) {
+            qaTree[runnum][binnum] = [:]
+            qaTree[runnum][binnum]['evnumMin'] = evnumTree[runnum][binnum]['evnumMin']
+            qaTree[runnum][binnum]['evnumMax'] = evnumTree[runnum][binnum]['evnumMax']
+            qaTree[runnum][binnum]['comment'] = ""
+            qaTree[runnum][binnum]['defect'] = 0
+            qaTree[runnum][binnum]['sectorDefects'] = sectors.collectEntries{s->[sec(s),[]]}
           }
 
           // get variables needed for checking for defects
@@ -547,22 +548,22 @@ inList.each { obj ->
           if( LT<0.9 ) defectList.add(T.bit("LowLiveTime"))
 
           // insert in qaTree
-          qaTree[runnum][filenum]['sectorDefects'][useFT ? 1 : sector] = defectList.collect()
-          badfile = defectList.size() > 0
+          qaTree[runnum][binnum]['sectorDefects'][useFT ? 1 : sector] = defectList.collect()
+          badbin = defectList.size() > 0
         }
         else {
           // lookup defectList for this sector
           if(qaBit==100) { // bad if not perfect
-            badfile = qaTree["$runnum"]["$filenum"]['sectorDefects']["$sector"].size() > 0
+            badbin = qaTree["$runnum"]["$binnum"]['sectorDefects']["$sector"].size() > 0
           } else { // bad only if defectList includes qaBit
-            if(qaTree["$runnum"]["$filenum"]['sectorDefects']["$sector"].size()>0) {
-              badfile = qaBit in qaTree["$runnum"]["$filenum"]['sectorDefects']["$sector"]
+            if(qaTree["$runnum"]["$binnum"]['sectorDefects']["$sector"].size()>0) {
+              badbin = qaBit in qaTree["$runnum"]["$binnum"]['sectorDefects']["$sector"]
             }
           }
         }
 
         // send points to "good" or "bad" graphs
-        if(badfile) {
+        if(badbin) {
           copyPoint(grA,grA_bad,i)
           copyPoint(grN,grN_bad,i)
           copyPoint(grF,grF_bad,i)
@@ -641,14 +642,14 @@ inList.each { obj ->
 
 // assign defect masks
 qaTree.each { qaRun, qaRunTree -> 
-  qaRunTree.each { qaFile, qaFileTree ->
+  qaRunTree.each { qaBin, qaBinTree ->
     def defList = []
     def defMask = 0
-    qaFileTree["sectorDefects"].each { qaSec, qaDefList ->
+    qaBinTree["sectorDefects"].each { qaSec, qaDefList ->
       defList += qaDefList.collect{it.toInteger()}
     }
     defList.unique().each { defMask += (0x1<<it) }
-    qaTree[qaRun][qaFile]["defect"] = defMask
+    qaTree[qaRun][qaBin]["defect"] = defMask
   }
 }
 

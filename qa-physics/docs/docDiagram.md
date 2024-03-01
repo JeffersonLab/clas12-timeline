@@ -5,7 +5,7 @@
 flowchart TB
     data{{Data files}}:::data
     timeline{{Timeline<br/>HIPO files}}:::timeline
-    subgraph Wrapper Script
+    subgraph "Wrapper Script"
       auto[Automated step,<br/>by specified Wrapper Script]:::auto
     end
     manual[Manual step,<br/>not automated]:::manual
@@ -42,17 +42,17 @@ flowchart TB
       monitorReadOut --> datasetOrganize
       datasetOrganize --> outmonFiles
       datasetOrganize --> outdatFiles
-      
+
       monitorPlot[monitorPlot.groovy]:::auto
       timelineFiles{{$qa_dir/outmon/$timeline.hipo}}:::timeline
       outmonFiles --> monitorPlot
       monitorPlot --> timelineFiles
 
       qaPlot[qaPlot.groovy]:::auto
-      createEpochs[create or edit<br>epochs/epochs.$dataset.txt<br>see mkTree.sh]:::manual
+      outdatFiles --> mkTree[mkTree.sh<br />readTree.C]:::manual
+      mkTree --> createEpochs[create or edit<br>epochs/epochs.$dataset.txt]:::manual
       monitorElec{{$qa_dir/outmon/monitorElec.hipo}}:::data
       outdatFiles --> qaPlot
-      outdatFiles --> createEpochs
       qaPlot --> monitorElec
 
       qaCut[qaCut.groovy]:::auto
@@ -74,8 +74,8 @@ flowchart TB
       buildCT --> chargeTree
       timelineFiles --> stage0
     end
-    
-    subgraph Manual QA, in QA subdirectory
+
+    subgraph "Manual QA, in QA subdirectory"
       import[import.sh]:::manual
       qaLoc{{qa/ -> qa.$dataset/<br>qa/qaTree.json}}:::data
       parse[parseQAtree.groovy<br>called automatically<br>whenever needed]:::auto
@@ -85,7 +85,7 @@ flowchart TB
       import --> qaLoc
       qaLoc --> parse
       parse --> qaTable
-      
+
       inspect[manual inspection<br>- view qaTable.dat<br>- view online monitor]:::manual
       qaTable --> inspect
       inspect --> edit{edit?}
@@ -99,7 +99,7 @@ flowchart TB
       qaBak --> undo
     end
 
-    subgraph Finalize
+    subgraph "Finalize"
       exeQAtimelines[exeQAtimelines.sh]:::manual
       qaTreeUpdated{{$qa_dir/outdat/qaTree.json}}:::data
       qaTL{{$qa_dir/outmon.qa/$timeline.hipo}}:::timeline

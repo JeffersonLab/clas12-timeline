@@ -1,4 +1,4 @@
-/* create hipo file with plots of N, F, N/F, etc. vs. file number, for each run
+/* create hipo file with plots of N, F, N/F, etc. vs. time bin, for each run
  * - this starts to build the structure of the 'timeline' hipo file
  */
 
@@ -21,7 +21,9 @@ def sectors = 0..<6
 def sec = { int i -> i+1 }
 def tok
 int r=0
-def runnum, filenum, eventNumMin, eventNumMax, sector
+def runnum, binnum, sector
+def eventNumMin, eventNumMax
+def timestampMin, timestampMax
 def nElec, nElecFT
 def fcStart, fcStop
 def ufcStart, ufcStop
@@ -29,16 +31,16 @@ def aveLivetime
 def fcCharge
 def ufcCharge
 def trigRat
-def errPrint = { str -> System.err << "ERROR in run ${runnum}_${filenum}: "+str+"\n" }
+def errPrint = { str -> System.err << "ERROR in run ${runnum}_${binnum}: "+str+"\n" }
 
 // define graphs
 def defineGraph = { name,ytitle ->
   sectors.collect {
     def g = new GraphErrors(name+"_${runnum}_"+sec(it))
-    def gT = ytitle+" vs. file number"+(useFT?"":" -- Sector "+sec(it)) 
+    def gT = ytitle+" vs. time bin"+(useFT?"":" -- Sector "+sec(it))
     g.setTitle(gT)
     g.setTitleY(ytitle)
-    g.setTitleX("file number")
+    g.setTitleX("time bin")
     return g
   }
 }
@@ -71,9 +73,11 @@ dataFile.eachLine { line ->
   tok = line.tokenize(' ')
   r=0
   runnum = tok[r++].toInteger()
-  filenum = tok[r++].toInteger()
-  eventNumMin = tok[r++].toInteger()
-  eventNumMax = tok[r++].toInteger()
+  binnum = tok[r++].toInteger()
+  eventNumMin = tok[r++].toBigInteger()
+  eventNumMax = tok[r++].toBigInteger()
+  timestampMin = tok[r++].toBigInteger()
+  timestampMax = tok[r++].toBigInteger()
   sector = tok[r++].toInteger()
   nElec = tok[r++].toBigDecimal()
   nElecFT = tok[r++].toBigDecimal()
@@ -120,11 +124,11 @@ dataFile.eachLine { line ->
   s = sector-1
   if(s<0||s>5) { errPrint("bad sector number $sector") }
   else {
-    grA[s].addPoint(filenum,trigRat,0,0)
-    grN[s].addPoint(filenum,nElec,0,0)
-    grF[s].addPoint(filenum,fcCharge,0,0)
-    grU[s].addPoint(filenum,ufcCharge,0,0)
-    grT[s].addPoint(filenum,livetime,0,0)
+    grA[s].addPoint(binnum,trigRat,0,0)
+    grN[s].addPoint(binnum,nElec,0,0)
+    grF[s].addPoint(binnum,fcCharge,0,0)
+    grU[s].addPoint(binnum,ufcCharge,0,0)
+    grT[s].addPoint(binnum,livetime,0,0)
   }
 
 } // eo loop through data_table.dat

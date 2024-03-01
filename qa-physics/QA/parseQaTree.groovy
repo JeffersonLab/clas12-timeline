@@ -114,13 +114,13 @@ qaTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
   outfileW << head
  
   runTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
-    file, fileTree ->
-    def defect = fileTree.defect
-    //defStr=[run,file,defect,Integer.toBinaryString(defect)]
-    defStr = [run,file]
+    itBin, binTree ->
+    def defect = binTree.defect
+    //defStr=[run,itBin,defect,Integer.toBinaryString(defect)]
+    defStr = [run,itBin]
     def getSecList = { bitNum ->
       def secList = []
-      fileTree.sectorDefects.each{
+      binTree.sectorDefects.each{
         if(bitNum in it.value) secList+=it.key
       }
       return secList
@@ -131,11 +131,11 @@ qaTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
         if(defect >> i & 0x1) defStr += " ${i}-" + str + getSecList(i)
       }
     } else defStr += " GOLDEN"
-    if(fileTree.comment!=null) {
-      if(fileTree.comment.length()>0) defStr += " :: " + fileTree.comment
+    if(binTree.comment!=null) {
+      if(binTree.comment.length()>0) defStr += " :: " + binTree.comment
     }
     outfileW << defStr.join(' ') << "\n"
-    //outfileW << fileTree.sectorDefects << "\n"
+    //outfileW << binTree.sectorDefects << "\n"
   }
 }
 

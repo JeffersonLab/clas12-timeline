@@ -22,41 +22,41 @@ def meldListOR
 def defectMask
 def comment
 def runQAold
-def fileQAold
+def binQAold
 def deleteComment
 
 // loop through new qaTree runs
 // run number loop
-qaTreeNew.each{ runnum, fileTree ->
+qaTreeNew.each{ runnum, binTree ->
   if(debug) println "RUN=$runnum ---------------"
   qaTreeMelded[runnum] = [:]
 
-  // file number loop
-  fileTree.each{ filenum, fileQAnew ->
-    if(debug) println "\nrun=$runnum file=$filenum"
-    qaTreeMelded[runnum][filenum] = [:]
+  // time bin loop
+  binTree.each{ binnum, binQAnew ->
+    if(debug) println "\nrun=$runnum bin=$binnum"
+    qaTreeMelded[runnum][binnum] = [:]
     
     // get QA info from old qaTree
     runQAold = qaTreeOld[runnum]
-    if(runQAold!=null) fileQAold = qaTreeOld[runnum][filenum]
-    else fileQAold = null
+    if(runQAold!=null) binQAold = qaTreeOld[runnum][binnum]
+    else binQAold = null
 
     // get the comment from the old qaTree file, if it exists; if not
     // grab the comment from the new qaTree file
-    if(fileQAold!=null) comment = T.getLeaf(fileQAold,['comment'])
-    else comment = T.getLeaf(fileQAnew,['comment'])
+    if(binQAold!=null) comment = T.getLeaf(binQAold,['comment'])
+    else comment = T.getLeaf(binQAnew,['comment'])
     if(comment==null) comment=""
-    qaTreeMelded[runnum][filenum]['comment'] = comment
+    qaTreeMelded[runnum][binnum]['comment'] = comment
     deleteComment = false
 
     // copy event number range from new qaTree file
-    qaTreeMelded[runnum][filenum]['evnumMin'] = fileQAnew['evnumMin']
-    qaTreeMelded[runnum][filenum]['evnumMax'] = fileQAnew['evnumMax']
+    qaTreeMelded[runnum][binnum]['evnumMin'] = binQAnew['evnumMin']
+    qaTreeMelded[runnum][binnum]['evnumMax'] = binQAnew['evnumMax']
 
     // loop through sectors and meld their defect bits
     meldListOR = []
-    qaTreeMelded[runnum][filenum]['sectorDefects'] = [:]
-    fileQAnew['sectorDefects'].each{ sector, defectListNew ->
+    qaTreeMelded[runnum][binnum]['sectorDefects'] = [:]
+    binQAnew['sectorDefects'].each{ sector, defectListNew ->
 
       meldList = []
 
@@ -69,8 +69,8 @@ qaTreeNew.each{ runnum, fileTree ->
       }
 
       // meld old defect bits
-      if(fileQAold!=null) {
-        defectListOld = T.getLeaf(fileQAold,['sectorDefects',sector])
+      if(binQAold!=null) {
+        defectListOld = T.getLeaf(binQAold,['sectorDefects',sector])
         defectListOld.each{ defect ->
           
           if(defect==T.bit("SectorLoss")) {
@@ -98,7 +98,7 @@ qaTreeNew.each{ runnum, fileTree ->
 
       // add this sector's meldList to the OR of each sector's meldList,
       // and to the melded tree
-      qaTreeMelded[runnum][filenum]['sectorDefects'][sector] = meldList
+      qaTreeMelded[runnum][binnum]['sectorDefects'][sector] = meldList
       meldListOR += meldList
 
 
@@ -117,10 +117,10 @@ qaTreeNew.each{ runnum, fileTree ->
       println "--> DEFECT: $defectMask = " + T.printBinary(defectMask)
       println "--> comment: $comment"
     }
-    qaTreeMelded[runnum][filenum]['defect'] = defectMask
-    if(deleteComment) qaTreeMelded[runnum][filenum]['comment'] = ""
+    qaTreeMelded[runnum][binnum]['defect'] = defectMask
+    if(deleteComment) qaTreeMelded[runnum][binnum]['comment'] = ""
 
-  } // end filenum loop
+  } // end binnum loop
 } // end runnum loop
 
 
