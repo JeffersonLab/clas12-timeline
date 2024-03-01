@@ -214,7 +214,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   done
 
   # produce timelines, multithreaded
-  jobCnt=1
+  jobs=()
   for timelineObj in $timelineList; do
     logFile=$logDir/$timelineObj
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
@@ -225,13 +225,19 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
       exit
     else
       java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+      jobs+=($!)
     fi
-    if [ $jobCnt -lt $numThreads ]; then
-      let jobCnt++
-    else
-      wait
-      jobCnt=1
-    fi
+    while [ "${#jobs[@]}" -ge $numThreads ]; do
+        sleep 1
+        for i in "${!jobs[@]}"; do
+            set +e
+            ps ${jobs[$i]} >& /dev/null
+            if [ "$?" -ne 0 ]; then
+                unset jobs[$i]
+            fi
+            set -e
+        done
+    done
   done
   wait
 
