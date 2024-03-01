@@ -36,6 +36,7 @@ It is recommended to use `bash` or `zsh` as your shell; `tcsh` is not supported.
       charge, you may have assumed here that the recharge option was ON, when
       actually it was OFF and needs to be ON
 * `../bin/run-monitoring.sh`: runs `monitorRead.groovy` on DSTs using `slurm`
+  * **IMPORTANT**: call this first with the `--check-cache` option to make sure that ALL required DST files are cached; if all files are on `/cache`, you may proceed, removing the `--check-cache` option
   * wait for `slurm` jobs to finish
   * inspect error logs (_e.g._, `../bin/error-print.sh`) to make sure all jobs ran successfully
 * `../bin/run-physics-timelines.sh $dataset`, which does the following:
@@ -49,6 +50,7 @@ It is recommended to use `bash` or `zsh` as your shell; `tcsh` is not supported.
   * if any of these scripts throw errors, they will be redirected and printed at the end
     * if you see any errors for a particular script, you may re-run it individually
       to diagnose the problem (the full command for each script is printed in the output)
+* take a look at the "time bin analysis" plots by running `timebin_analysis/timebin_plot.C`
 * integrity check: check if all available data were analyzed (must be done AFTER
   `../bin/run-physics-timelines.sh`)
   * `getListOfDSTs.sh [dataset]` (takes some time to run)
@@ -74,20 +76,21 @@ First step is to read DST or Skim files, producing HIPO files and data tables
   * Outputs:
     * `[output_directory]/data_table_${run}.dat`, which is a data table with the following columns:
       * run number
-      * 5-file number
+      * time bin number
       * minimum event number
       * maximum event number
+      * minimum timestamp
+      * maximum timestamp
       * sector
       * number of electron triggers in this sector
       * number of electrons in the forward tagger
-      * DAQ-gated FC charge at beginning of 5-file (minimum readout)
-      * DAQ-gated FC charge at end of 5-file (maximum readout)
-      * DAQ-ungated FC charge at beginning of 5-file (minimum readout)
-      * DAQ-ungated FC charge at end of 5-file (maximum readout)
+      * DAQ-gated FC charge at beginning of time bin
+      * DAQ-gated FC charge at end of time bin
+      * DAQ-ungated FC charge at beginning of time bin
+      * DAQ-ungated FC charge at end of time bin
       * average livetime
     * monitoring HIPO file, `[output_directory]/monitor_${runnum}.hipo`, contains several plots 
-      * there is one plot per 'segment' where a segment is a single DST file
-        (5-file) or a set of 10000 events for skim files
+      for each time bin
 
 ### Data Organization
 * use the script `datasetOrganize.sh`
@@ -107,18 +110,18 @@ First step is to read DST or Skim files, producing HIPO files and data tables
         * Units of angle are radians
       * Clicking on a point will draw several plots below the timeline,
         corresponding to that run:
-        * distribution of the average value of X, with one entry per segment
-        * graph of the average value of X versus segment number
+        * distribution of the average value of X, with one entry per time bin
+        * graph of the average value of X versus time bin number
 
 * `qaPlot.groovy` 
   * reads data table and generates `monitorElec.hipo`
     * within this HIPO file, there is one directory for each run, containing several
       plots:
-      * `grA*`: N/F vs. file number (the `A` notation is so it appears first in the
+      * `grA*`: N/F vs. time bin (the `A` notation is so it appears first in the
         online timeline front-end)
-      * `grF*`: F vs. file number
-      * `grN*`: N vs. file number
-      * `grT*`: livetime vs. file number
+      * `grF*`: F vs. time bin
+      * `grN*`: N vs. time bin
+      * `grT*`: livetime vs. time bin
 
 ### Automated QA of Normalized Electron Yield
 This section will run the automated QA of the FC-charge normalized electron yield (N/F); it will ultimately
@@ -143,7 +146,7 @@ generate QA timelines, and a `json` file which is used for the manual followup Q
     * the timeline is just a list of the 6 sectors; clicking on one of them will show
       plots of N/F, N, F, and livetime, for each epoch
       * the horizontal axis of these plots is a file index, defined as the run
-        number plus a small offset (<1) proportional to the file number
+        number plus a small offset (<1) proportional to the time bin
     * the N/F plots include the cut lines: here you can zoom in and see how
       well-defined the cut lines are for each epoch
       * if there are any significant 'jumps' in the N/F value, the cut lines may be

@@ -19,8 +19,8 @@ qaTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
   run, runTree ->
   golden=true
   runTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
-    file, fileTree ->
-    if(fileTree['defect']>0) golden=false
+    itBin, binTree ->
+    if(binTree['defect']>0) golden=false
   }
   if(golden) outfileW << "$run\n"
 }

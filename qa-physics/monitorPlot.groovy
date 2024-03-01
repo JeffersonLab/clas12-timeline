@@ -27,19 +27,19 @@ inDirObj.traverse( type: groovy.io.FileType.FILES, nameFilter: inFilter ) {
 inList.sort()
 inList.each { println it }
 
-// input hipo files contain a set of distributions for each segment
-// this program accumulates these segments' distributions into 'monitor' distributions:
+// input hipo files contain a set of distributions for each time bin
+// this program accumulates these time bins' distributions into 'monitor' distributions:
 // - let 'X' denote a kinematic variable, plotted as one of these distributions
-// - moninotors include: 
-//   - average X vs. segment number
+// - monitors include: 
+//   - average X vs. time bin number
 //   - distribution of average X
-//   - 2D distribution of X vs. segment number
+//   - 2D distribution of X vs. time bin number
 
 // subroutine to transform an object name to a monitor name
 def objToMonName = { name ->
-  // strip segment number (and standard dev)
+  // strip time bin number
   def tokN = name.tokenize('_')
-  name = tokN[0..-3].join('_')
+  name = tokN[0..-2].join('_')
   return name
 }
 
@@ -50,7 +50,7 @@ def objToMonTitle = { title ->
 }
 
 
-// build map of (runnum,filenum) -> (FC charges)
+// build map of (runnum,binnum) -> (FC charges)
 // - this is only used for the relative luminosity attempt
 // - not enough statistics; disabled
 /*
@@ -61,14 +61,14 @@ if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
 dataFile.eachLine { line ->
   tok = line.tokenize(' ')
   fcrun = tok[0].toInteger()
-  fcfile = tok[1].toInteger()
+  fcbin = tok[1].toInteger()
   fcp = tok[11].toBigDecimal()
   fcm = tok[12].toBigDecimal()
   ufcp = tok[13].toBigDecimal()
   ufcm = tok[14].toBigDecimal()
   if(!fcTree.containsKey(fcrun)) fcTree[fcrun] = [:]
-  if(!fcTree[fcrun].containsKey(fcfile)) {
-    fcTree[fcrun][fcfile] = [
+  if(!fcTree[fcrun].containsKey(fcbin)) {
+    fcTree[fcrun][fcbin] = [
       'fcP':fcp,
       'fcM':fcm,
       'ufcP':ufcp,
@@ -91,13 +91,13 @@ def appendLegend = { t ->
   return t
 }
 
-// build monitor 'average X vs. segment number'
+// build monitor 'average X vs. time bin number'
 def buildMonAveGr = { tObj ->
   def grN = objToMonName(tObj.getName())
   def grT = objToMonTitle(tObj.getTitle())
   grN = grN + "_aveGr"
   grT = "average " + grT
-  grT = grT.replaceAll(/$/,' vs. segment number')
+  grT = grT.replaceAll(/$/,' vs. time bin number')
   grT = appendLegend(grT)
   def gr = new GraphErrors(grN)
   gr.setTitle(grT)
@@ -160,7 +160,8 @@ def hel
 def varStr
 def varNB
 def varLB,varUB
-def runnum,segnum
+def runnum
+def timeBinNum
 def obj
 def aveX
 def aveXerr
@@ -181,11 +182,10 @@ inList.each { inFile ->
   objList.each { objN ->
     obj = inTdir.getObject(objN)
 
-    // tokenize object name to get runnum, segment number & deviation
+    // tokenize object name to get runnum, time bin number
     tok = objN.tokenize('/')[-1].tokenize('_')
-    runnum = tok[-3].toInteger()
-    segnum = new BigInteger(tok[-2])
-    segnumDev = new BigInteger(tok[-1])
+    runnum = tok[-2].toInteger()
+    timeBinNum = new BigInteger(tok[-1])
 
     // <sinPhi> monitors
     //------------------------------------
@@ -218,7 +218,7 @@ inList.each { inFile ->
         aveX = obj.getMean()
         aveXerr = obj.getRMS() / Math.sqrt(ent)
         monTree[runnum]['helic']['sinPhi'][part][hel]['aveGr'].addPoint(
-          segnum, aveX, segnumDev, aveXerr )
+          timeBinNum, aveX, 0, aveXerr )
         monTree[runnum]['helic']['sinPhi'][part][hel]['aveDist'].fill(aveX)
         // add rebinned <sinPhi> distribution to asymGrid
         obj.getAxis().getNBins().times { bin ->
@@ -240,7 +240,7 @@ inList.each { inFile ->
         def g = buildMonAveGr(obj)
         def gN = g.getName().replaceAll(/_aveGr$/,'_heldefGr')
         g.setName(gN)
-        g.setTitle('average defined helicity fraction vs. segment number')
+        g.setTitle('average defined helicity fraction vs. time bin number')
         return g
       })
       T.addLeaf(monTree,[runnum,'helic','dist','heldef','heldefDist'],{
@@ -259,7 +259,7 @@ inList.each { inFile ->
         helFrac = numer / denom
         helFracErr = helFrac * Math.sqrt( 1.0/numer + 1.0/denom )
         monTree[runnum]['helic']['dist']['heldef']['heldefGr'].addPoint(
-          segnum, helFrac, segnumDev, helFracErr )
+          timeBinNum, helFrac, 0, helFracErr )
         monTree[runnum]['helic']['dist']['heldef']['heldefDist'].fill(helFrac)
         monTree[runnum]['helic']['dist']['heldef']['heldefNumer'] += numer
         monTree[runnum]['helic']['dist']['heldef']['heldefDenom'] += denom
@@ -276,7 +276,7 @@ inList.each { inFile ->
         def g = buildMonAveGr(obj)
         def gN = g.getName().replaceAll(/_aveGr$/,'_rellumGr')
         g.setName(gN)
-        g.setTitle('average n+/n- vs. segment number')
+        g.setTitle('average n+/n- vs. time bin number')
         return g
       })
       T.addLeaf(monTree,[runnum,'helic','dist','rellum','rellumDist'],{
@@ -291,12 +291,12 @@ inList.each { inFile ->
         helM = obj.getBinContent(0) // helicity = -1
         helP = obj.getBinContent(2) // helicity = +1
         // use charge from FC (disabled)
-        //helP = fcTree[runnum][segnum.toInteger()]['fcP']
-        //helM = fcTree[runnum][segnum.toInteger()]['fcM']
+        //helP = fcTree[runnum][timeBinNum.toInteger()]['fcP']
+        //helM = fcTree[runnum][timeBinNum.toInteger()]['fcM']
         rellum = helM>0 ? helP / helM : 0
         rellumErr = rellum>0 ? rellum * Math.sqrt( 1.0/helP + 1.0/helM ) : 0
         monTree[runnum]['helic']['dist']['rellum']['rellumGr'].addPoint(
-          segnum, rellum, segnumDev, rellumErr )
+          timeBinNum, rellum, 0, rellumErr )
         monTree[runnum]['helic']['dist']['rellum']['rellumDist'].fill(rellum)
         monTree[runnum]['helic']['dist']['rellum']['rellumNumer'] += helP
         monTree[runnum]['helic']['dist']['rellum']['rellumDenom'] += helM
@@ -326,7 +326,7 @@ inList.each { inFile ->
           aveX = obj.getMean()
           aveXerr = obj.getRMS() / Math.sqrt(ent)
           monTree[runnum]['DIS'][varStr]['aveGr'].addPoint(
-            segnum, aveX, segnumDev, aveXerr )
+            timeBinNum, aveX, 0, aveXerr )
           monTree[runnum]['DIS'][varStr]['aveDist'].fill(aveX)
         }
       }
@@ -354,7 +354,7 @@ inList.each { inFile ->
         aveX = obj.getMean()
         aveXerr = obj.getRMS() / Math.sqrt(ent)
         monTree[runnum]['inclusive'][part][varStr]['aveGr'].addPoint(
-          segnum, aveX, segnumDev, aveXerr )
+          timeBinNum, aveX, 0, aveXerr )
         monTree[runnum]['inclusive'][part][varStr]['aveDist'].fill(aveX)
       }
     }

@@ -46,16 +46,16 @@ def qaTree = slurper.parse(jsonFile)
 
 
 // subroutine to recompute defect bitmask
-def recomputeDefMask = { runnum,filenum ->
+def recomputeDefMask = { runnum,binnum ->
   defList = []
   defMask = 0
   (1..6).each{ s -> 
-    qaTree["$runnum"]["$filenum"]["sectorDefects"]["$s"].unique()
+    qaTree["$runnum"]["$binnum"]["sectorDefects"]["$s"].unique()
     defList +=
-      qaTree["$runnum"]["$filenum"]["sectorDefects"]["$s"].collect{it.toInteger()}
+      qaTree["$runnum"]["$binnum"]["sectorDefects"]["$s"].collect{it.toInteger()}
   }
   defList.unique().each { defMask += (0x1<<it) }
-  qaTree["$runnum"]["$filenum"]["defect"] = defMask
+  qaTree["$runnum"]["$binnum"]["defect"] = defMask
 }
 
 
@@ -66,18 +66,18 @@ def recomputeDefMask = { runnum,filenum ->
 
 
 if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
-  def rnum,fnumL,fnumR
+  def rnum,bnumL,bnumR
   def bit
   def secList = []
   if(args.length>5) {
     bit = args[1].toInteger()
     rnum = args[2].toInteger()
-    fnumL = args[3].toInteger()
-    fnumR = args[4].toInteger()
+    bnumL = args[3].toInteger()
+    bnumR = args[4].toInteger()
     if(args[5]=="all") secList = (1..6).collect{it}
     else (5..<args.length).each{ secList<<args[it].toInteger() }
 
-    println("run $rnum files ${fnumL}-"+(fnumR==1 ? "END" : fnumR) + 
+    println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) + 
       " sectors ${secList}: $cmd ${bit}="+T.bitNames[bit])
 
     println("Enter a comment, if you want, otherwise press return")
@@ -87,7 +87,7 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
 
     qaTree["$rnum"].each { k,v ->
       def qaFnum = k.toInteger()
-      if( qaFnum>=fnumL && ( fnumR==1 || qaFnum<=fnumR ) ) {
+      if( qaFnum>=bnumL && ( bnumR==-1 || qaFnum<=bnumR ) ) {
 
         if(cmd=="setBit") {
           secList.each{ 
@@ -116,9 +116,9 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
     def helpStr = usage["$cmd"].tokenize(':')[1]
     System.err.println(
     """
-    SYNTAX: ${cmd} [defectBit] [run] [firstFile] [lastFile] [list_of_sectors]
+    SYNTAX: ${cmd} [defectBit] [run] [firstBin] [lastBin] [list_of_sectors]
       -$helpStr
-      - set [lastFile] to 1 to denote last file of run
+      - set [lastBin] to -1 to denote last time bin of run
       - use \"all\" in place of [list_of_sectors] to apply to all sectors
       - you will be prompted to enter a comment
     """)
@@ -131,16 +131,16 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
 }
 
 else if(cmd=="sectorLoss") {
-  def rnum,fnumL,fnumR
+  def rnum,bnumL,bnumR
   def secList = []
   if(args.length>4) {
     rnum = args[1].toInteger()
-    fnumL = args[2].toInteger()
-    fnumR = args[3].toInteger()
+    bnumL = args[2].toInteger()
+    bnumR = args[3].toInteger()
     if(args[4]=="all") secList = (1..6).collect{it}
     else (4..<args.length).each{ secList<<args[it].toInteger() }
 
-    println("run $rnum files ${fnumL}-"+(fnumR==1 ? "END" : fnumR) + 
+    println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) + 
       " sectors ${secList}: define sector loss")
 
     println("Enter a comment, if you want, otherwise press return")
@@ -149,7 +149,7 @@ else if(cmd=="sectorLoss") {
 
     qaTree["$rnum"].each { k,v ->
       def qaFnum = k.toInteger()
-      if( qaFnum>=fnumL && ( fnumR==1 || qaFnum<=fnumR ) ) {
+      if( qaFnum>=bnumL && ( bnumR==-1 || qaFnum<=bnumR ) ) {
 
         secList.each{ 
           qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] -= T.bit("TotalOutlier")
@@ -169,11 +169,11 @@ else if(cmd=="sectorLoss") {
     def helpStr = usage["$cmd"].tokenize(':')[1]
     System.err.println(
     """
-    SYNTAX: ${cmd} [run] [firstFile] [lastFile] [list_of_sectors]
+    SYNTAX: ${cmd} [run] [firstBin] [lastBin] [list_of_sectors]
       -$helpStr
-      - set [lastFile] to 1 to denote last file of run
+      - set [lastBin] to -1 to denote last time bin of run
       - use \"all\" in place of [list_of_sectors] to apply to all sectors
-      - this will set the SectorLoss bit for specified files and sectors;
+      - this will set the SectorLoss bit for specified time bins and sectors;
         it will unset any other relevant bits
       - you will be prompted to enter a comment
     """)
@@ -182,13 +182,13 @@ else if(cmd=="sectorLoss") {
 }
 
 else if(cmd=="lossFT") {
-  def rnum,fnumL,fnumR
+  def rnum,bnumL,bnumR
   if(args.length>4) {
     rnum = args[1].toInteger()
-    fnumL = args[2].toInteger()
-    fnumR = args[3].toInteger()
+    bnumL = args[2].toInteger()
+    bnumR = args[3].toInteger()
 
-    println("run $rnum files ${fnumL}-"+(fnumR==1 ? "END" : fnumR) + ": define sector loss")
+    println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) + ": define sector loss")
 
     println("Enter a comment, if you want, otherwise press return")
     print("> ")
@@ -196,7 +196,7 @@ else if(cmd=="lossFT") {
 
     qaTree["$rnum"].each { k,v ->
       def qaFnum = k.toInteger()
-      if( qaFnum>=fnumL && ( fnumR==1 || qaFnum<=fnumR ) ) {
+      if( qaFnum>=bnumL && ( bnumR==-1 || qaFnum<=bnumR ) ) {
 
         qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] -= T.bit("TotalOutlierFT")
         qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] -= T.bit("TerminalOutlierFT")
@@ -214,10 +214,10 @@ else if(cmd=="lossFT") {
     def helpStr = usage["$cmd"].tokenize(':')[1]
     println(
     """
-    SYNTAX: ${cmd} [run] [firstFile] [lastFile]
+    SYNTAX: ${cmd} [run] [firstBin] [lastBin]
       -$helpStr
-      - set [lastFile] to 1 to denote last file of run
-      - this will set the LossFT bit for specified files;
+      - set [lastBin] to -1 to denote last time bin of run
+      - this will set the LossFT bit for specified time bins;
         it will unset any other relevant bits
       - you will be prompted to enter a comment
     """)
@@ -226,14 +226,14 @@ else if(cmd=="lossFT") {
 }
 
 else if( cmd=="addComment" || cmd=="setComment") {
-  def rnum,fnumL,fnumR
+  def rnum,bnumL,bnumR
   def secList = []
   if(args.length==4) {
     rnum = args[1].toInteger()
-    fnumL = args[2].toInteger()
-    fnumR = args[3].toInteger()
+    bnumL = args[2].toInteger()
+    bnumR = args[3].toInteger()
 
-    println("run $rnum files ${fnumL}-"+(fnumR==1 ? "END" : fnumR) + ": $cmd")
+    println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) + ": $cmd")
     if(cmd=="addComment") 
       println("Enter the new comment to be appended")
     else if(cmd=="setComment") 
@@ -242,7 +242,7 @@ else if( cmd=="addComment" || cmd=="setComment") {
     def cmt = System.in.newReader().readLine()
     qaTree["$rnum"].each { k,v ->
       def qaFnum = k.toInteger()
-      if( qaFnum>=fnumL && ( fnumR==1 || qaFnum<=fnumR ) ) {
+      if( qaFnum>=bnumL && ( bnumR==-1 || qaFnum<=bnumR ) ) {
         if (cmd=="addComment") {
           if(!qaTree["$rnum"]["$qaFnum"].containsKey("comment")) {
             qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
@@ -261,8 +261,8 @@ else if( cmd=="addComment" || cmd=="setComment") {
   else {
     System.err.println(
     """
-    SYNTAX: ${cmd} [run] [firstFile] [lastFile]
-      - set [lastFile] to 1 to denote last file of run
+    SYNTAX: ${cmd} [run] [firstBin] [lastBin]
+      - set [lastBin] to -1 to denote last time bin of run
       - you will be prompted to enter the comment
     """)
     System.exit(101)
@@ -273,13 +273,13 @@ else if( cmd=="custom") {
   // this cmd is useful if you want to do a specific action, while
   // calling this groovy script from another program;
   // - it is likely you need to modify this block
-  def rnum,fnum
+  def rnum,bnum
 
   // arguments
-  /* // [runnum] [filenum]; operate on single file
+  /* // [runnum] [binnum]; operate on single time bin
   if(args.length==3) {
     rnum = args[1].toInteger()
-    fnum = args[2].toInteger()
+    bnum = args[2].toInteger()
   } else System.exit(101)
   */
   ///* // [runnum]; operate on full run
@@ -288,38 +288,38 @@ else if( cmd=="custom") {
   } else System.exit(101)
   //*/
 
-  qaTree["$rnum"].each { k,v -> fnum = k.toInteger() // loop over files
+  qaTree["$rnum"].each { k,v -> bnum = k.toInteger() // loop over bins
 
     /* // remove outlier bits and add misc bit, to all sectors
     def secList = (1..6).collect{it}
     secList.each{ 
-      qaTree["$rnum"]["$fnum"]["sectorDefects"]["$it"] += T.bit("Misc") // add bit
-      //qaTree["$rnum"]["$fnum"]["sectorDefects"]["$it"] = [T.bit("Misc")] // set bit
-      qaTree["$rnum"]["$fnum"]["sectorDefects"]["$it"] -= T.bit("TotalOutlier") // delete bit
-      qaTree["$rnum"]["$fnum"]["sectorDefects"]["$it"] -= T.bit("TerminalOutlier") // delete bit
-      qaTree["$rnum"]["$fnum"]["sectorDefects"]["$it"] -= T.bit("MarginalOutlier") // delete bit
+      qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] += T.bit("Misc") // add bit
+      //qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] = [T.bit("Misc")] // set bit
+      qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] -= T.bit("TotalOutlier") // delete bit
+      qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] -= T.bit("TerminalOutlier") // delete bit
+      qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] -= T.bit("MarginalOutlier") // delete bit
     }
     def cmt = "setup period; possible beam modulation issues"
     */
 
     ///* // add misc bit to sector 6 only
-    qaTree["$rnum"]["$fnum"]["sectorDefects"]["6"] += T.bit("Misc")
+    qaTree["$rnum"]["$bnum"]["sectorDefects"]["6"] += T.bit("Misc")
     def cmt = "FADC failure in sector 6"
     //*/
 
-    if(!qaTree["$rnum"]["$fnum"].containsKey("comment")) {
-      qaTree["$rnum"]["$fnum"]["comment"] = cmt
+    if(!qaTree["$rnum"]["$bnum"].containsKey("comment")) {
+      qaTree["$rnum"]["$bnum"]["comment"] = cmt
     }
     else {
-      if(qaTree["$rnum"]["$fnum"]["comment"].length()>0)
-        qaTree["$rnum"]["$fnum"]["comment"] += "; "
-      qaTree["$rnum"]["$fnum"]["comment"] += cmt
+      if(qaTree["$rnum"]["$bnum"]["comment"].length()>0)
+        qaTree["$rnum"]["$bnum"]["comment"] += "; "
+      qaTree["$rnum"]["$bnum"]["comment"] += cmt
     }
-    println("modify $rnum $fnum")
+    println("modify $rnum $bnum")
 
-    recomputeDefMask(rnum,fnum)
+    recomputeDefMask(rnum,bnum)
 
-  } // end loop over files
+  } // end loop over bins
 }
 
 
