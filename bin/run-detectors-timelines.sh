@@ -107,9 +107,9 @@ export MAIN
 
 # build list of timelines
 if ${modes['skip-mya']}; then
-  timelineList=$(java $MAIN --timelines | grep -vE '^epics_')
+  timelineList=$(java $MAIN --timelines | grep -vE '^epics_' | sort)
 else
-  timelineList=$(java $MAIN --timelines)
+  timelineList=$(java $MAIN --timelines | sort)
 fi
 
 # list detector timelines, if requested
