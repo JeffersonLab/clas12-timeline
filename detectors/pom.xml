@@ -19,8 +19,9 @@
   <build>
     <plugins>
       <plugin>
+        <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.0</version>
+        <version>3.12.1</version>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
@@ -28,10 +29,17 @@
           <compilerId>groovy-eclipse-compiler</compilerId>
         </configuration>
         <dependencies>
+          <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-eclipse-compiler -->
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-compiler</artifactId>
-            <version>2.7.0-01</version>
+            <version>3.7.0</version>
+          </dependency>
+          <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-eclipse-batch -->
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-batch</artifactId>
+            <version>3.0.8-01</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -39,11 +47,11 @@
   </build>
 
   <dependencies>
-    <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all -->
+    <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-all -->
     <dependency>
-      <groupId>org.codehaus.groovy</groupId>
+      <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>3.0.7</version>
+      <version>4.0.3</version>
       <type>pom</type>
       <exclusions>
         <exclusion>
@@ -52,17 +60,17 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-dateutil -->
+    <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-dateutil -->
     <dependency>
-      <groupId>org.codehaus.groovy</groupId>
+      <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-dateutil</artifactId>
-      <version>3.0.7</version>
+      <version>4.0.3</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.codehaus.gpars/gpars -->
     <dependency>
       <groupId>org.codehaus.gpars</groupId>
       <artifactId>gpars</artifactId>
-      <version>1.1.0</version>
+      <version>1.2.1</version>
     </dependency>
   </dependencies>
 
