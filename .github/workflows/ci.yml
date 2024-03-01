@@ -12,6 +12,11 @@ defaults:
 
 env:
   dataset: ci_test
+  # NOTE: if any of these versions are changed, update the POM files too
+  java_version: 17
+  java_distribution: zulu
+  groovy_version: 4.0.3
+
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -29,8 +34,8 @@ jobs:
     - name: setup java
       uses: actions/setup-java@v4
       with:
-        java-version: 11
-        distribution: zulu
+        java-version: ${{ env.java_version }}
+        distribution: ${{ env.java_distribution }}
     - name: build
       run: mvn package
     - name: tar # to preserve any permissions
@@ -49,8 +54,8 @@ jobs:
     - name: setup java
       uses: actions/setup-java@v4
       with:
-        java-version: 11
-        distribution: zulu
+        java-version: ${{ env.java_version }}
+        distribution: ${{ env.java_distribution }}
     - name: checkout coatjava
       uses: actions/checkout@v4
       with:
@@ -105,12 +110,12 @@ jobs:
     - name: setup java
       uses: actions/setup-java@v4
       with:
-        java-version: 11
-        distribution: zulu
+        java-version: ${{ env.java_version }}
+        distribution: ${{ env.java_distribution }}
     - name: setup groovy
       uses: wtfjoke/setup-groovy@v2
       with:
-        groovy-version: 4.x
+        groovy-version: ${{ env.groovy_version }}
     - name: groovy version
       run: groovy --version
     - uses: actions/checkout@v4
@@ -157,12 +162,12 @@ jobs:
     - name: setup java
       uses: actions/setup-java@v4
       with:
-        java-version: 11
-        distribution: zulu
+        java-version: ${{ env.java_version }}
+        distribution: ${{ env.java_distribution }}
     - name: setup groovy
       uses: wtfjoke/setup-groovy@v2
       with:
-        groovy-version: 4.x
+        groovy-version: ${{ env.groovy_version }}
     - name: groovy version
       run: groovy --version
     - uses: actions/checkout@v4
@@ -203,12 +208,12 @@ jobs:
     - name: setup java
       uses: actions/setup-java@v4
       with:
-        java-version: 11
-        distribution: zulu
+        java-version: ${{ env.java_version }}
+        distribution: ${{ env.java_distribution }}
     - name: setup groovy
       uses: wtfjoke/setup-groovy@v2
       with:
-        groovy-version: 4.x
+        groovy-version: ${{ env.groovy_version }}
     - name: groovy version
       run: groovy --version
     - uses: actions/checkout@v4
@@ -247,7 +252,7 @@ jobs:
     - name: setup groovy
       uses: wtfjoke/setup-groovy@v2
       with:
-        groovy-version: 4.x
+        groovy-version: ${{ env.groovy_version }}
     - name: groovy version
       run: groovy --version
     - uses: actions/checkout@v4
