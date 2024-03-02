@@ -115,8 +115,8 @@ class FTFitter {
 
     int nfits = 0
     def makefit = {func->
-      def dm = hMean - f.getParameter(1)
-      def dr = hRMS - f.getParameter(2)
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
       if ( nfits==0 || dm.abs()>dmean || dr.abs()>dsigma ) {
           hMean = func.getParameter(1)
           hRMS = func.getParameter(2).abs()
