@@ -5,6 +5,7 @@ set -u
 source $(dirname $0)/environ.sh
 
 # default options
+match="^"
 inputDir=""
 dataset=""
 outputDir=""
@@ -48,6 +49,8 @@ usage() {
                         use --list to dump the list of timelines
                         default: run all
 
+    -m [MATCH]          only produce timelines matching [MATCH]
+
     --list              dump the list of timelines and exit
 
     --build             cleanly-rebuild the timeline code, then run
@@ -69,7 +72,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # parse options
-while getopts "d:i:Uo:r:n:t:h-:" opt; do
+while getopts "d:i:Uo:r:n:t:m:h-:" opt; do
   case $opt in
     d) inputCmdOpts+=" -d $OPTARG" ;;
     i) inputCmdOpts+=" -i $OPTARG" ;;
@@ -77,6 +80,7 @@ while getopts "d:i:Uo:r:n:t:h-:" opt; do
     o) outputDir=$OPTARG ;;
     r) rungroup=$(echo $OPTARG | tr '[:upper:]' '[:lower:]') ;;
     n) numThreads=$OPTARG ;;
+    m) match=$OPTARG ;;
     t) singleTimeline=$OPTARG ;;
     h) modes['help']=true ;;
     -)
@@ -107,9 +111,9 @@ export MAIN
 
 # build list of timelines
 if ${modes['skip-mya']}; then
-  timelineList=$(java $MAIN --timelines | grep -vE '^epics_' | sort)
+  timelineList=$(java $MAIN --timelines | grep -vE '^epics_' | sort | grep $match)
 else
-  timelineList=$(java $MAIN --timelines | sort)
+  timelineList=$(java $MAIN --timelines | sort | grep $match)
 fi
 
 # list detector timelines, if requested
