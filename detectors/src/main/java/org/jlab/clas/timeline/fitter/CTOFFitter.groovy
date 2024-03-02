@@ -34,7 +34,7 @@ class CTOFFitter {
             }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
     return f1
@@ -70,7 +70,7 @@ class CTOFFitter {
             }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
     return f1
@@ -108,7 +108,7 @@ class CTOFFitter {
             }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
     return f1
@@ -129,8 +129,8 @@ class CTOFFitter {
     f1.setParameter(1, hMean);
     f1.setParameter(2, 1);
 
-    def dmean=0.0005
-    def dsigma=0.005
+    def dmean=0.001
+    def dsigma=0.01
     int nfits = 0
     def makefit = {func->
             def dm = hMean - func.getParameter(1)
@@ -145,7 +145,7 @@ class CTOFFitter {
             }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
     return f1
@@ -183,7 +183,7 @@ class CTOFFitter {
             }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
     return f1
