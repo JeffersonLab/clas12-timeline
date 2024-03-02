@@ -94,34 +94,42 @@ class FTFitter {
   }
 
   static F1D fthedepfit(H1F h1, int layer) {
-    
+   
+    def dmean=0.05
+    def dsigma=0.1
+
     def f1 = new F1D("fit:"+h1.getName(),"[amp]*landau(x,[mean],[sigma])+[p0]+[p1]*x", 0.5*(layer+1), 10.0);
 
     double hAmp  = h1.getBinContent(h1.getMaximumBin());
     double hMean = h1.getAxis().getBinCenter(h1.getMaximumBin());
-    double hRMS  = h1.getRMS(); //ns
+    double hRMS  = h1.getRMS();
     f1.setRange(f1.getRange().getMin(), hMean*2.0);
     f1.setParameter(0, hAmp);
     if (hAmp>0) f1.setParLimits(0, 0.5*hAmp, 1.5*hAmp);
     f1.setParameter(1, hMean);
-    if (hMean>0) f1.setParLimits(1, 0.8*hMean, 1.2*hMean);//Changed from 5-30
-    f1.setParameter(2, 0.3);//Changed from 2
-    f1.setParLimits(2, 0.1, 1);//Changed from 0.5-10
+    if (hMean>0) f1.setParLimits(1, 0.8*hMean, 1.2*hMean);
+    f1.setParameter(2, 0.3);
+    f1.setParLimits(2, 0.1, 1);
     f1.setParameter(3, 0.2*hAmp);
-    f1.setParameter(4, -0.3);//Changed from -0.2
+    f1.setParameter(4, -0.3);
 
+    int nfits = 0
     def makefit = {func->
-      hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-2.5*hRMS,hMean+2.5*hRMS)
-      DataFitter.fit(func,h1,"Q")
-      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      def dm = hMean - f.getParameter(1)
+      def dr = hRMS - f.getParameter(2)
+      if ( nfits==0 || dm.abs()>dmean || dr.abs()>dsigma ) {
+          hMean = func.getParameter(1)
+          hRMS = func.getParameter(2).abs()
+          func.setRange(hMean-2.5*hRMS,hMean+2.5*hRMS)
+          DataFitter.fit(func,h1,"Q")
+          nfits++
+          return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
-    //makefit(f1)
     return f1
   }
 
