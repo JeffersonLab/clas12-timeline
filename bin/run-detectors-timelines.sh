@@ -211,7 +211,8 @@ function wait_for_jobs() {
             if [ "$1" -eq 0 ]; then
                 if [ "${#job_ids[@]}" -lt $stat ]; then
                     echo ">>> waiting on ${#job_ids[@]} jobs:"
-                    let stat=stat-1
+                    let stat=${#job_ids[@]}
+                    #let stat=stat-1
                     printf '>>>     %s\n' "${job_names[@]}"
                 fi
             fi
