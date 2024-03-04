@@ -36,6 +36,7 @@ class DCFitter {
                  f.setRange(hMean-2.5*hRMS,hMean+2.5*hRMS)
                  DataFitter.fit(f,h1,"Q")
                  nfits++
+        System.out.println(nfits+" "+f.getParameter(1)+" "+f.getParameter(2))
                  return [f.getChiSquare(), (0..<f.getNPars()).collect{f.getParameter(it)}]
             }
 		}
@@ -70,8 +71,7 @@ class DCFitter {
         f1.setParameter(1, f2.getParameter(1));
         f1.setParameter(2, f2.getParameter(2)*0.5);
         f1.setParameter(3, f2.getParameter(0)*0.1);
-        f1.setParameter(4, f2.getParameter(1));
-        f1.setParameter(5, f2.getParameter(2)*2.0);
+        f1.setParameter(4, f2.getParameter(2)*2.0);
         f1.setRange(f2.getParameter(1)-3.0*f2.getParameter(2).abs(),f2.getParameter(1)+3.0*f2.getParameter(2).abs())
 
         DataFitter.fit(f1, h1, "LQ");

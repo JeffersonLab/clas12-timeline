@@ -22,7 +22,7 @@ def processDirectory(dir, run) {
       def h2 = dir.getObject(String.format('/dc/DC_residuals_trkDoca_%d_%d',(sec+1),(sl+1))).projectionY()
       h1.add(h2)
     }
-    def f1 = DCFitter.fit(h1,1,1)
+    def f1 = DCFitter.fit(h1,0.5,0.5)
     funclist.add(f1)
     meanlist.add(f1.getParameter(1))
     sigmalist.add(f1.getParameter(2).abs())

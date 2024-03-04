@@ -18,7 +18,7 @@ def processDirectory(dir, run) {
       h1.setName("sec"+(sec+1)+"sl"+(sl+1))
       h1.setTitle("DC residuals per sector per superlayer (with basic DC4gui cuts)")
       h1.setTitleX("DC residuals per sector per superlayer (with basic DC4gui cuts) (cm)")
-      def f1 = DCFitter.fit(h1,1,1)
+      def f1 = DCFitter.fit(h1,0.5,0.5)
       funclist[sec].add(f1)
       meanlist[sec].add(f1.getParameter(1))
       sigmalist[sec].add(f1.getParameter(2).abs())
