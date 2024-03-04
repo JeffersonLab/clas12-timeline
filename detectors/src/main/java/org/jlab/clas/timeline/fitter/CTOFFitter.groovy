@@ -17,7 +17,7 @@ class CTOFFitter {
     f1.setParameter(1, hMean);
     f1.setParameter(2, hRMS);
 
-    def dmean=0.0005
+    def dmean=0.001
     def dsigma=0.005
 
     int nfits = 0
@@ -54,7 +54,7 @@ class CTOFFitter {
     f1.setParameter(1, hMean);
     f1.setParameter(2, 1);
 
-    def dmean=0.0005
+    def dmean=0.001
     def dsigma=0.005
     int nfits = 0
     def makefit = {func->
@@ -92,20 +92,21 @@ class CTOFFitter {
     f1.setParameter(1, hMean);
     f1.setParameter(2, 1);
 
-    def dmean=0.0005
+    def dmean=0.001
     def dsigma=0.005
     int nfits = 0
     def makefit = {func->
-            def dm = hMean - func.getParameter(1)
-            def dr = hRMS - func.getParameter(2)
-            if ( nfits==0 || dm.abs()>dmean || dr.abs()>dsigma ) {
-      hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-2*hRMS,hMean+2*hRMS)
-      DataFitter.fit(func,h1,"Q")
-      nfits++
-      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
-            }
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || ( (dm.abs()>dmean || dr.abs()>dsigma) && (hMean>h1.getAxis().min() && hMean<h1.getAxis().max() ) ) ) {
+        hMean = func.getParameter(1)
+        hRMS = func.getParameter(2).abs()
+        func.setRange(hMean-2*hRMS,hMean+2*hRMS)
+        DataFitter.fit(func,h1,"Q")
+        nfits++
+        System.out.println(nfits+" "+func.getParameter(1)+" "+func.getParameter(2))
+        return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
     def fits1 = (0..20).findResults{makefit(f1)}
@@ -130,19 +131,20 @@ class CTOFFitter {
     f1.setParameter(2, 1);
 
     def dmean=0.001
-    def dsigma=0.01
+    def dsigma=0.005
     int nfits = 0
     def makefit = {func->
-            def dm = hMean - func.getParameter(1)
-            def dr = hRMS - func.getParameter(2)
-            if ( nfits==0 || dm.abs()>dmean || dr.abs()>dsigma ) {
-      hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-2*hRMS,hMean+2*hRMS)
-      DataFitter.fit(func,h1,"Q")
-      nfits++
-      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
-            }
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || ( (dm.abs()>dmean || dr.abs()>dsigma) && (hMean>h1.getAxis().min() && hMean<h1.getAxis().max() ) ) ) {
+        hMean = func.getParameter(1)
+        hRMS = func.getParameter(2).abs()
+        func.setRange(hMean-2*hRMS,hMean+2*hRMS)
+        DataFitter.fit(func,h1,"Q")
+        nfits++
+        System.out.println(nfits+" "+func.getParameter(1)+" "+func.getParameter(2))
+        return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
     def fits1 = (0..20).findResults{makefit(f1)}

@@ -54,7 +54,7 @@ class DCFitter {
 
         double hAmp  = h1.getBinContent(h1.getMaximumBin());
         double hMean = h1.getAxis().getBinCenter(h1.getMaximumBin());
-        double hRMS  = h1.getRMS(); //ns
+        double hRMS  = h1.getRMS();
         f2.setRange(hMean-1, hMean+1);
         f2.setParameter(0, hAmp);
         f2.setParameter(1, hMean);
@@ -68,21 +68,15 @@ class DCFitter {
         def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])+[amp2]*gaus(x,[mean],[sigma2])", -0.4, 0.4); 
         f1.setParameter(0, f2.getParameter(0));
         f1.setParameter(1, f2.getParameter(1));
-        f1.setParameter(2, f2.getParameter(2)*0.75);
-        f1.setParameter(3, f2.getParameter(0)*0.15);
-        f1.setParameter(4, f2.getParameter(2));
+        f1.setParameter(2, f2.getParameter(2)*0.5);
+        f1.setParameter(3, f2.getParameter(0)*0.1);
+        f1.setParameter(4, f2.getParameter(1));
+        f1.setParameter(5, f2.getParameter(2)*2.0);
         f1.setRange(f2.getParameter(1)-3.0*f2.getParameter(2).abs(),f2.getParameter(1)+3.0*f2.getParameter(2).abs())
 
-       
-        
         DataFitter.fit(f1, h1, "LQ");
-
 		return f1
-
  	}
-
-
-
 
  	static F1D t0fit(H1F h1, int slayer){
 
