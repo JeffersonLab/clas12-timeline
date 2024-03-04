@@ -204,6 +204,30 @@ fi
 # make output directories
 mkdir -p $logDir $finalDirPreQA $finalDir
 
+function wait_for_jobs() {
+    stat=10
+    while [ "${#job_ids[@]}" -gt $1 ]; do
+        for i in "${!job_ids[@]}"; do
+            if [ "$1" -eq 0 ]; then
+                if [ "${#job_ids[@]}" -lt $stat ]; then
+                    echo ">>> waiting on ${#job_ids[@]} jobs:"
+                    let stat=stat-1
+                    printf '>>>     %s\n' "${job_names[@]}"
+                fi
+            fi
+            set +e
+            ps ${job_ids[$i]} >& /dev/null
+            if [ "$?" -ne 0 ]; then
+                echo ">>> ${job_names[$i]} finished."
+                unset job_ids[$i]
+                unset job_names[$i]
+            fi
+            set -e
+        done
+        sleep 1
+    done
+}
+
 ######################################
 # produce detector timelines
 ######################################
@@ -218,7 +242,8 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   done
 
   # produce timelines, multithreaded
-  jobs=()
+  job_ids=()
+  job_names=()
   for timelineObj in $timelineList; do
     logFile=$logDir/$timelineObj
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
@@ -228,22 +253,15 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
       echo "PREMATURE EXIT, since --debug option was used"
       exit
     else
+      #sleep 1 
       java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
-      jobs+=($!)
+      job_ids+=($!)
+      job_names+=($timelineObj)
     fi
-    while [ "${#jobs[@]}" -ge $numThreads ]; do
-        sleep 1
-        for i in "${!jobs[@]}"; do
-            set +e
-            ps ${jobs[$i]} >& /dev/null
-            if [ "$?" -ne 0 ]; then
-                unset jobs[$i]
-            fi
-            set -e
-        done
-    done
+    wait_for_jobs $numThreads
   done
-  wait
+
+  wait_for_jobs 0
 
   # organize output timelines
   echo ">>> organizing output timelines..."
