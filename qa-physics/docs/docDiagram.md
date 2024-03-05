@@ -20,7 +20,7 @@ flowchart TB
     classDef auto fill:#8f8,color:black
     classDef manual fill:#fbb,color:black
     classDef timeline fill:#8af,color:black
-    classDef json fill:#a3a,color:black
+    classDef json fill:#d5d,color:black
 ```
 
 ## Flowchart
@@ -125,5 +125,5 @@ flowchart TB
     classDef auto fill:#8f8,color:black
     classDef manual fill:#fbb,color:black
     classDef timeline fill:#8af,color:black
-    classDef json fill:#a3a,color:black
+    classDef json fill:#d5d,color:black
 ```
