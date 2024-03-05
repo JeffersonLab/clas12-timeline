@@ -22,16 +22,16 @@ class CTOFFitter {
 
     int nfits = 0
     def makefit = {func->
-        def dm = hMean - func.getParameter(1)
-            def dr = hRMS - func.getParameter(2)
-            if ( nfits==0 || dm.abs()>dmean || dr.abs()>dsigma ) {
-      hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-2*hRMS,hMean+2*hRMS)
-      DataFitter.fit(func,h1,"Q")
-      nfits++
-      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
-            }
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || dm.abs()>dmean || dr.abs()>dsigma ) {
+        hMean = func.getParameter(1)
+        hRMS = func.getParameter(2).abs()
+        func.setRange(hMean-2*hRMS,hMean+2*hRMS)
+        DataFitter.fit(func,h1,"Q")
+        nfits++
+        return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
     def fits1 = (0..20).findResults{makefit(f1)}
@@ -58,16 +58,16 @@ class CTOFFitter {
     def dsigma=0.005
     int nfits = 0
     def makefit = {func->
-            def dm = hMean - func.getParameter(1)
-            def dr = hRMS - func.getParameter(2)
-            if ( nfits==0 || dm.abs()>dmean || dr.abs()>dsigma ) {
-      hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-2*hRMS,hMean+2*hRMS)
-      DataFitter.fit(func,h1,"Q")
-      nfits++
-      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
-            }
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || dm.abs()>dmean || dr.abs()>dsigma ) {
+        hMean = func.getParameter(1)
+        hRMS = func.getParameter(2).abs()
+        func.setRange(hMean-2*hRMS,hMean+2*hRMS)
+        DataFitter.fit(func,h1,"Q")
+        nfits++
+        return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
     def fits1 = (0..20).findResults{makefit(f1)}
@@ -173,16 +173,16 @@ class CTOFFitter {
     def dsigma=0.01
     int nfits = 0
     def makefit = {func->
-            def dm = hMean - func.getParameter(1)
-            def dr = hRMS - func.getParameter(2)
-            if ( nfits==0 || dm.abs()>dmean || dr.abs()>dsigma ) {
-      hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean*0.65, hMean*2)
-      DataFitter.fit(func,h1,"Q")
-      nfits++
-      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
-            }
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || dm.abs()>dmean || dr.abs()>dsigma ) {
+        hMean = func.getParameter(1)
+        hRMS = func.getParameter(2).abs()
+        func.setRange(hMean*0.65, hMean*2)
+        DataFitter.fit(func,h1,"Q")
+        nfits++
+        return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
     def fits1 = (0..20).findResults{makefit(f1)}
