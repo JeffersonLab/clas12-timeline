@@ -17,29 +17,58 @@ if(args.length<1) {
   System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR]"
   System.exit(101)
 }
-inDir       = args[0] + "/outmon"
-qaTreeFileN = args[0] + "/outdat/qaTreeFTandFD.json"
+def inDir = args[0]
 
 // get list of input hipo files
-def inDirObj = new File(inDir)
+def inDirObj = new File(inDir+"/outmon")
 def inList = []
 def inFilter = ~/monitor_.*\.hipo/
 inDirObj.traverse( type: groovy.io.FileType.FILES, nameFilter: inFilter ) {
-  if(it.size()>0) inList << inDir+"/"+it.getName()
+  if(it.size()>0) inList << inDir+"/outmon/"+it.getName()
 }
 inList.sort()
 inList.each { println it }
 
 // get qaTree
-def slurper    = new JsonSlurper()
-def qaTreeFile = new File(qaTreeFileN)
-def qaTree     = slurper.parse(qaTreeFile)
+def qaTreeFileN = "${inDir}/outdat/qaTreeFTandFD.json"
+def slurper     = new JsonSlurper()
+def qaTreeFile  = new File(qaTreeFileN)
+def qaTree      = slurper.parse(qaTreeFile)
 
+// subroutine to recompute defect bitmask
+// FIXME: shamefully copied from QA/modifyQaTree.groovy
+def recomputeDefMask = { rnum, bnum ->
+  def defList = []
+  def defMask = 0
+  (1..6).each{ s ->
+    qaTree["$rnum"]["$bnum"]["sectorDefects"]["$s"].unique()
+    defList += qaTree["$rnum"]["$bnum"]["sectorDefects"]["$s"].collect{it.toInteger()}
+  }
+  defList.unique().each { defMask += (0x1<<it) }
+  qaTree["$rnum"]["$bnum"]["defect"] = defMask
+}
+
+// subroutine to add a defect bit
+def addDefectBit = { bitnum, rnum, bnumRange, sectorList ->
+  qaTree["$rnum"].each{ k, v ->
+    def bnum = k.toInteger()
+    if(bnum>=bnumRange[0] && (bnumRange[1]==-1 || bnum<=bnumRange[1])) {
+      sectorList.each{
+        qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] += bit
+      }
+      recomputeDefMask(rnum, bnum)
+    }
+  }
+}
+
+// common arguments to the above qaTree-mutating subroutines
+def allSectors = [1, 2, 3, 4, 5, 6]
+def allBins    = [0, -1]
 
 // input hipo files contain a set of distributions for each time bin
 // this program accumulates these time bins' distributions into 'monitor' distributions:
 // - let 'X' denote a kinematic variable, plotted as one of these distributions
-// - monitors include: 
+// - monitors include:
 //   - average X vs. time bin number
 //   - distribution of average X
 //   - 2D distribution of X vs. time bin number
@@ -63,7 +92,7 @@ def objToMonTitle = { title ->
 // - this is only used for the relative luminosity attempt
 // - not enough statistics; disabled
 /*
-def dataFile = new File("${inDir}/../outdat/data_table.dat")
+def dataFile = new File("${inDir}/outdat/data_table.dat")
 def fcTree = [:]
 def fcrun,fcfile,fcp,fcm,ufcp,ufcm
 if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
@@ -371,7 +400,7 @@ inList.each { inFile ->
 
   } // eo loop over objects in the file (run)
 
-  
+
   // fit asymmetry
   T.exeLeaves(monTree[runnum]['helic']['asym'],{
     def particle = T.leafPath[0]
@@ -478,13 +507,22 @@ T.exeLeaves(monTree,{
     if(T.key=='asymGraph') {
       def valPath = T.leafPath[0..-2] + 'asymValue'
       def errPath = T.leafPath[0..-2] + 'asymError'
-      T.getLeaf(timelineTree,tlPath+'timeline').addPoint(
-        tlRun, T.getLeaf(monTree,valPath),
-        0.0, T.getLeaf(monTree,errPath))
+      def asymVal = T.getLeaf(monTree,valPath)
+      def asymErr = T.getLeaf(monTree,errPath)
+      T.getLeaf(timelineTree,tlPath+'timeline').addPoint(tlRun, asymVal, 0.0, asymErr)
+      // and assign a defect bit for pi+ BSA
+      if(tlPath.contains('pip')) {
+        def asymMargin = asymVal.abs() - asymErr
+        if(asymMargin <= 0) {
+          addDefectBit(T.bit("BSAUnknown"), tlRun, allBins, allSectors)
+        } else if(asymVal < 0) {
+          addDefectBit(T.bit("BSAWrong"), tlRun, allBins, allSectors)
+        }
+      }
     }
   }
 })
-    
+
 
 // subroutines to output timelines and associated plots to a hipo file
 def checkFilter( list, filter, keyName="" ) {
@@ -521,7 +559,7 @@ def hipoWrite = { hipoName, filterList, TLkey ->
     }
   })
 
-  def outHipoN = "${inDir}/${hipoName}.hipo"
+  def outHipoN = "${inDir}/outmon/${hipoName}.hipo"
   File outHipoFile = new File(outHipoN)
   if(outHipoFile.exists()) outHipoFile.delete()
   outHipo.writeFile(outHipoN)
@@ -538,3 +576,8 @@ hipoWrite("pim_kinematics_means",['inclusive','pim'],"timeline")
 hipoWrite("q2_W_x_y_stddevs",['DIS'],"timelineDev")
 hipoWrite("pip_kinematics_stddevs",['inclusive','pip'],"timelineDev")
 hipoWrite("pim_kinematics_stddevs",['inclusive','pim'],"timelineDev")
+
+// sort qaTree and output to json file
+qaTree.each { qaRun, qaRunTree -> qaRunTree.sort{it.key.toInteger()} }
+qaTree.sort()
+new File("${inDir}/outdat/qaTree.json").write(JsonOutput.toJson(qaTree))
