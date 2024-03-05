@@ -43,13 +43,6 @@ flowchart TB
       datasetOrganize --> outmonFiles
       datasetOrganize --> outdatFiles
 
-      monitorPlot[monitorPlot.groovy]:::auto
-      timelineFiles{{$qa_dir/outmon/$timeline.hipo}}:::timeline
-      qaTree{{$qa_dir/outdat/qaTree.json}}:::data
-      outmonFiles --> monitorPlot
-      qaTree --> monitorPlot
-      monitorPlot --> timelineFiles
-
       qaPlot[qaPlot.groovy]:::auto
       outdatFiles --> mkTree[mkTree.sh<br />readTree.C]:::manual
       mkTree --> createEpochs[create or edit<br>epochs/epochs.$dataset.txt]:::manual
@@ -61,12 +54,21 @@ flowchart TB
       mergeFTandFD[mergeFTandFD.groovy]:::auto
       qaTreeFD{{$qa_dir/outdat/qaTreeFD.json}}:::data
       qaTreeFT{{$qa_dir/outdat/qaTreeFT.json}}:::data
+      qaTreeFTandFD{{$qa_dir/outdat/qaTreeFTandFD.json}}:::data
+      timelineFiles{{$qa_dir/outmon/$timeline.hipo}}:::timeline
       monitorElec --> qaCut
       createEpochs --> qaCut
       qaCut --> timelineFiles
       qaCut --> qaTreeFD --> mergeFTandFD
       qaCut --> qaTreeFT --> mergeFTandFD
-      mergeFTandFD --> qaTree
+      mergeFTandFD --> qaTreeFTandFD
+
+      monitorPlot[monitorPlot.groovy]:::auto
+      qaTree{{$qa_dir/outdat/qaTree.json}}:::data
+      outmonFiles --> monitorPlot
+      qaTreeFTandFD --> monitorPlot
+      monitorPlot --> qaTree
+      monitorPlot --> timelineFiles
 
       buildCT[buildChargeTree.groovy]:::auto
       chargeTree{{$qa_dir/outdat/chargeTree.json}}:::data

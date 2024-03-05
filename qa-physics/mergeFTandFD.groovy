@@ -111,4 +111,4 @@ qaTreeFD.each{ runnum, binTree ->
 } // end runnum loop
 
 // output melded qaTree.json
-new File("$inDir/qaTree.json").write(JsonOutput.toJson(qaTreeMelded))
+new File("$inDir/qaTreeFTandFD.json").write(JsonOutput.toJson(qaTreeMelded))

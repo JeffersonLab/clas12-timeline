@@ -7,6 +7,8 @@ import org.jlab.groot.data.H1F
 import org.jlab.groot.fitter.DataFitter
 import org.jlab.groot.math.F1D
 import java.lang.Math.*
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
 import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
@@ -15,7 +17,8 @@ if(args.length<1) {
   System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR]"
   System.exit(101)
 }
-inDir = args[0] + "/outmon"
+inDir       = args[0] + "/outmon"
+qaTreeFileN = args[0] + "/outdat/qaTreeFTandFD.json"
 
 // get list of input hipo files
 def inDirObj = new File(inDir)
@@ -26,6 +29,12 @@ inDirObj.traverse( type: groovy.io.FileType.FILES, nameFilter: inFilter ) {
 }
 inList.sort()
 inList.each { println it }
+
+// get qaTree
+def slurper    = new JsonSlurper()
+def qaTreeFile = new File(qaTreeFileN)
+def qaTree     = slurper.parse(qaTreeFile)
+
 
 // input hipo files contain a set of distributions for each time bin
 // this program accumulates these time bins' distributions into 'monitor' distributions:
