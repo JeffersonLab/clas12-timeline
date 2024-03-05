@@ -9,15 +9,18 @@ flowchart TB
       auto[Automated step,<br/>by specified Wrapper Script]:::auto
     end
     manual[Manual step,<br/>not automated]:::manual
+    json([JSON file]):::json
     data --> auto
     data --> manual
     auto --> timeline
     manual --> timeline
+    auto --> json
 
     classDef data fill:#ff8,color:black
     classDef auto fill:#8f8,color:black
     classDef manual fill:#fbb,color:black
     classDef timeline fill:#8af,color:black
+    classDef json fill:#a3a,color:black
 ```
 
 ## Flowchart
@@ -52,9 +55,9 @@ flowchart TB
 
       qaCut[qaCut.groovy]:::auto
       mergeFTandFD[mergeFTandFD.groovy]:::auto
-      qaTreeFD{{$qa_dir/outdat/qaTreeFD.json}}:::data
-      qaTreeFT{{$qa_dir/outdat/qaTreeFT.json}}:::data
-      qaTreeFTandFD{{$qa_dir/outdat/qaTreeFTandFD.json}}:::data
+      qaTreeFD([$qa_dir/outdat/qaTreeFD.json]):::json
+      qaTreeFT([$qa_dir/outdat/qaTreeFT.json]):::json
+      qaTreeFTandFD([$qa_dir/outdat/qaTreeFTandFD.json]):::json
       timelineFiles{{$qa_dir/outmon/$timeline.hipo}}:::timeline
       monitorElec --> qaCut
       createEpochs --> qaCut
@@ -64,14 +67,14 @@ flowchart TB
       mergeFTandFD --> qaTreeFTandFD
 
       monitorPlot[monitorPlot.groovy]:::auto
-      qaTree{{$qa_dir/outdat/qaTree.json}}:::data
+      qaTree([$qa_dir/outdat/qaTree.json]):::json
       outmonFiles --> monitorPlot
       qaTreeFTandFD --> monitorPlot
       monitorPlot --> qaTree
       monitorPlot --> timelineFiles
 
       buildCT[buildChargeTree.groovy]:::auto
-      chargeTree{{$qa_dir/outdat/chargeTree.json}}:::data
+      chargeTree([$qa_dir/outdat/chargeTree.json]):::json
       stage0[stageTimelines.sh]:::auto
       outdatFiles --> buildCT
       buildCT --> chargeTree
@@ -80,7 +83,7 @@ flowchart TB
 
     subgraph "Manual QA, in QA subdirectory"
       import[import.sh]:::manual
-      qaLoc{{qa/ -> qa.$dataset/<br>qa/qaTree.json}}:::data
+      qaLoc([qa/ -> qa.$dataset/<br>qa/qaTree.json]):::json
       parse[parseQAtree.groovy<br>called automatically<br>whenever needed]:::auto
       qaTable{{qa/qaTable.dat}}:::data
 
@@ -94,7 +97,7 @@ flowchart TB
       inspect --> edit{edit?}
 
       modify[modify.sh]:::manual
-      qaBak{{qa.$dataset/qaTree.json.*.bak}}:::data
+      qaBak([qa.$dataset/qaTree.json.*.bak]):::json
       undo[if needed, revert<br>modification with<br>undo.sh]:::manual
       edit -->|yes|modify
       modify --> qaLoc
@@ -104,7 +107,7 @@ flowchart TB
 
     subgraph "Finalize"
       exeQAtimelines[exeQAtimelines.sh]:::manual
-      qaTreeUpdated{{$qa_dir/outdat/qaTree.json}}:::data
+      qaTreeUpdated([$qa_dir/outdat/qaTree.json]):::json
       qaTL{{$qa_dir/outmon.qa/$timeline.hipo}}:::timeline
       stage1[stageTimelines.sh]:::manual
       qaLoc --> exeQAtimelines
@@ -122,4 +125,5 @@ flowchart TB
     classDef auto fill:#8f8,color:black
     classDef manual fill:#fbb,color:black
     classDef timeline fill:#8af,color:black
+    classDef json fill:#a3a,color:black
 ```
