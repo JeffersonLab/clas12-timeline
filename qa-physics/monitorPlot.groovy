@@ -54,7 +54,7 @@ def addDefectBit = { bitnum, rnum, bnumRange, sectorList ->
     def bnum = k.toInteger()
     if(bnum>=bnumRange[0] && (bnumRange[1]==-1 || bnum<=bnumRange[1])) {
       sectorList.each{
-        qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] += bit
+        qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] += bitnum
       }
       recomputeDefMask(rnum, bnum)
     }
