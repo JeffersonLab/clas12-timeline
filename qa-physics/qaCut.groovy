@@ -521,7 +521,7 @@ inList.each { obj ->
         binnum = grA.getDataX(i).toInteger()
 
         // DETERMINE DEFECT BITS, or load them from modified qaTree.json
-        def badbin = false
+        def badbin = false // TODO: we need multiple different colors, since we have a bunch of new bits
         if(qaBit<0) {
 
           if(!qaTree[runnum].containsKey(binnum)) {
@@ -566,6 +566,7 @@ inList.each { obj ->
             defectList.add(T.bit("ChargeUnknown"))
           }
           else if(Fval < 0 || Fval < inRangeF[0] || Fval > inRangeF[1]) { // FC charge is outlier or negative
+            // FIXME: maybe we don't want to cut Fval on the low end, since this is NOT the defect bit we want for beam trips
             defectList.add(T.bit("ChargeOutlier"))
           }
 
