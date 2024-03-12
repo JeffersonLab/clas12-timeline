@@ -141,7 +141,7 @@ inList.each { obj ->
 
 
 // subroutine for calculating median of a list
-def median = { d ->
+def listMedian = { d ->
   if(d.size()==0) {
     System.err.println "WARNING: attempt to calculate median of an empty list"
     return -10000
@@ -156,18 +156,17 @@ def median = { d ->
 // - note: for the FT electrons, it seems that N/F has a long tail toward
 //   lower values, so cutLo is forced to be lower 
 def cutFactor = 4.0
-def mq,lq,uq,iqr,cutLo,cutHi
 sectors.each { s ->
   sectorIt = sec(s)
   if( !useFT || (useFT && sectorIt==1)) {
     ratioTree[sectorIt].each { epochIt,ratioList ->
 
-      mq = median(ratioList) // middle quartile
-      lq = median(ratioList.findAll{it<mq}) // lower quartile
-      uq = median(ratioList.findAll{it>mq}) // upper quartile
-      iqr = uq - lq // interquartile range
-      cutLo = lq - cutFactor * iqr // lower QA cut boundary
-      cutHi = uq + cutFactor * iqr // upper QA cut boundary
+      def mq = listMedian(ratioList) // middle quartile
+      def lq = listMedian(ratioList.findAll{it<mq}) // lower quartile
+      def uq = listMedian(ratioList.findAll{it>mq}) // upper quartile
+      def iqr = uq - lq // interquartile range
+      def cutLo = lq - cutFactor * iqr // lower QA cut boundary
+      def cutHi = uq + cutFactor * iqr // upper QA cut boundary
 
       cutTree[sectorIt][epochIt]['mq'] = mq
       cutTree[sectorIt][epochIt]['lq'] = lq
@@ -406,25 +405,16 @@ def listVar = { valList, wgtList, mu ->
   return listCovar(valList,valList,wgtList,mu,mu)
 }
 
-  
+
 // subroutine to convert a graph into a list of values
-def listA, listN, listF, listU, listT, listOne, listWgt
 def graph2list = { graph ->
   def lst = []
   graph.getDataSize(0).times { i -> lst.add(graph.getDataY(i)) }
   return lst
 }
-  
+
 // loop over runs, apply the QA cuts, and fill 'good' and 'bad' graphs
-def muN, muF
-def varN, varF 
-def totN, totF, totA, totU, totLT, aveLT
 def totFacc = sectors.collect{0}
-def reluncN, reluncF
-def NF,NFerrH,NFerrL,LT
-def valN,valF,valU,valA
-def defectList = []
-def badbin
 inList.each { obj ->
   if(obj.contains("/grA_")) {
 
@@ -442,53 +432,67 @@ inList.each { obj ->
       grF = inTdir.getObject(obj.replaceAll("grA","grF"))
       grU = inTdir.getObject(obj.replaceAll("grA","grU"))
       grT = inTdir.getObject(obj.replaceAll("grA","grT"))
-      listA = graph2list(grA)
-      listN = graph2list(grN)
-      listF = graph2list(grF)
-      listU = graph2list(grU)
-      listT = graph2list(grT)
-      listOne = []
+      def listA = graph2list(grA)
+      def listN = graph2list(grN)
+      def listF = graph2list(grF)
+      def listU = graph2list(grU)
+      def listT = graph2list(grT)
+      def listOne = []
       listA.size().times{listOne<<1}
 
       // decide whether to enable livetime weighting
-      listWgt = listOne // disable
-      //listWgt = listT // enable
+      def listWgt = listOne // disable
+      // def listWgt = listT // enable
 
       // get totals
-      totN = listN.sum()
-      totF = listF.sum()
-      totU = listU.sum()
-      totA = totF > 0 ? totN / totF : 0 
+      def totN = listN.sum()
+      def totF = listF.sum()
+      def totU = listU.sum()
+      def totA = totF > 0 ? totN / totF : 0 
 
       // compute livetime
-      totLT = totU > 0 ? totF / totU : 0 // from total FC charge
-      aveLT = listT.size()>0 ? listT.sum() / listT.size() : 0 // average livetime for the run
+      def totLT = totU > 0 ? totF / totU : 0 // from total FC charge
+      def aveLT = listT.size()>0 ? listT.sum() / listT.size() : 0 // average livetime for the run
 
       // accumulated charge (units converted nC -> mC)
       // - should be same for all sectors
       totFacc[sector-1] += totF/1e6 // (same for all sectors)
 
-      // get mean, and variance of N and F
-      muN = listMean(listN,listWgt)
-      muF = listMean(listF,listWgt)
-      varN = listVar(listN,listWgt,muN)
-      varF = listVar(listF,listWgt,muF)
+      // get mean, quartiles, and variance of N and F
+      def muN  = listMean(listN,listWgt)
+      def muF  = listMean(listF,listWgt)
+      def varN = listVar(listN,listWgt,muN)
+      def varF = listVar(listF,listWgt,muF)
+      def mqN  = listMedian(listN) // median (middle quartile)
+      def mqF  = listMedian(listF)
+      def lqN  = listMedian(listN.findAll{it<mqN}) // lower quartile
+      def lqF  = listMedian(listF.findAll{it<mqF})
+      def uqN  = listMedian(listN.findAll{it>mqN}) // upper quartile
+      def uqF  = listMedian(listF.findAll{it>mqF})
+
+      // use IQR rule to define ranges where N and F are consistent (cf. cutLo and cutHi, which apply to N/F)
+      def cutFactorN = 1.5
+      def cutFactorF = 1.5
+      def iqrN       = uqN - lqN
+      def iqrF       = uqF - lqF
+      def inRangeN   = [ lqN - cutFactorN * iqrN, uqN + cutFactorN * iqrN ]
+      def inRangeF   = [ lqF - cutFactorF * iqrF, uqF + cutFactorF * iqrF ]
 
       // calculate Pearson correlation coefficient
-      covarNF = listCovar(listN,listF,listWgt,muN,muF)
-      corrNF = covarNF / (varN*varF)
+      def covarNF = listCovar(listN,listF,listWgt,muN,muF)
+      def corrNF = covarNF / (varN*varF)
 
       // calculate uncertainties of N and F relative to the mean
-      reluncN = Math.sqrt(varN) / muN
-      reluncF = Math.sqrt(varF) / muF
+      def reluncN = Math.sqrt(varN) / muN
+      def reluncF = Math.sqrt(varF) / muF
 
       // assign Poisson statistics error bars to graphs of N, F, and N/F
       // - note that N/F error uses Pearson correlation determined from the full run's 
       //   covariance(N,F)
       grA.getDataSize(0).times { i ->
-        valN = grN.getDataY(i)
-        valF = grF.getDataY(i)
-        valU = grU.getDataY(i)
+        def valN = grN.getDataY(i)
+        def valF = grF.getDataY(i)
+        def valU = grU.getDataY(i)
         grN.setError(i,0,Math.sqrt(valN))
         grF.setError(i,0,Math.sqrt(valF))
         grU.setError(i,0,Math.sqrt(valU))
@@ -498,7 +502,7 @@ inList.each { obj ->
           )
         )
       }
-          
+
 
       // split graphs into good and bad
       (grA_good,grA_bad) = splitGraph(grA)
@@ -507,13 +511,17 @@ inList.each { obj ->
       (grU_good,grU_bad) = splitGraph(grU)
       (grT_good,grT_bad) = splitGraph(grT)
 
+      // get the first and last bins' binnums
+      def firstBinnum = grA.getDataX(0).toInteger()
+      def lastBinnum  = grA.getDataX(grA.getDataSize(0)-1).toInteger()
+
       // loop through points in grA and fill good and bad graphs
       grA.getDataSize(0).times { i -> 
 
         binnum = grA.getDataX(i).toInteger()
 
         // DETERMINE DEFECT BITS, or load them from modified qaTree.json
-        badbin = false
+        def badbin = false
         if(qaBit<0) {
 
           if(!qaTree[runnum].containsKey(binnum)) {
@@ -526,16 +534,19 @@ inList.each { obj ->
           }
 
           // get variables needed for checking for defects
-          NF = grA.getDataY(i)
-          NFerrH = NF + grA.getDataEY(i)
-          NFerrL = NF - grA.getDataEY(i)
-          cutLo = cutTree[sector][epoch]['cutLo']
-          cutHi = cutTree[sector][epoch]['cutHi']
-          LT = grT.getDataY(i)
+          def Nval   = grN.getDataY(i)
+          def Fval   = grF.getDataY(i)
+          def NFval  = grA.getDataY(i)
+          def NFerrH = NFval + grA.getDataEY(i)
+          def NFerrL = NFval - grA.getDataEY(i)
+          def cutLo  = cutTree[sector][epoch]['cutLo']
+          def cutHi  = cutTree[sector][epoch]['cutHi']
+          def LTval  = grT.getDataY(i)
 
-          defectList = []
+          def defectList = []
+
           // set outlier bit
-          if( NF<cutLo || NF>cutHi ) {
+          if( NFval<cutLo || NFval>cutHi ) {
             if( NFerrH>cutLo && NFerrL<cutHi ) {
               defectList.add(T.bit("MarginalOutlier${useFT?"FT":""}"))
             } else if( i==0 || i+1==grA.getDataSize(0) ) {
@@ -544,8 +555,19 @@ inList.each { obj ->
               defectList.add(T.bit("TotalOutlier${useFT?"FT":""}"))
             }
           }
-          // set FC bit
-          if( LT<0.9 ) defectList.add(T.bit("LowLiveTime"))
+
+          // set livetime bit
+          if( LTval<0.9 ) {
+            defectList.add(T.bit("LowLiveTime"))
+          }
+
+          // set FC bits
+          if( binnum == firstBinnum || binnum == lastBinnum ) { // FC charge cannot be known for the first or last bin
+            defectList.add(T.bit("ChargeUnknown"))
+          }
+          else if(Fval < 0 || Fval < inRangeF[0] || Fval > inRangeF[1]) { // FC charge is outlier or negative
+            defectList.add(T.bit("ChargeOutlier"))
+          }
 
           // insert in qaTree
           qaTree[runnum][binnum]['sectorDefects'][useFT ? 1 : sector] = defectList.collect()
