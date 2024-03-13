@@ -30,7 +30,7 @@ class Tools {
     TSAUnknown:        "Target Spin Asymmetry is unknown, likely because of low statistics",
     DSAWrong:          "Double Spin Asymmetry is the wrong sign",
     DSAUnknown:        "Double Spin Asymmetry is unknown, likely because of low statistics",
-    ChargeOutlier:     "FC Charge is an outlier or negative; not applied to first or last time bin (see ChargeUnknown)",
+    ChargeOutlier:     "FC Charge is abnormally large or negative; not applied to first or last time bin (see ChargeUnknown)",
     ChargeUnknown:     "FC Charge is unknown; the first and last time bins always have this defect",
   ]
 
