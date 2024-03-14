@@ -339,22 +339,36 @@ def addEpochPlotPoint = { plotOut,plotIn,i,r ->
   def n = r + f/5000.0 // "bin index"
   plotOut.addPoint(n,plotIn.getDataY(i),0,0)
 }
-def writeHipo = { hipo,outList -> outList.each{ hipo.addDataSet(it) } }
-def addGraphsToHipo = { hipoFile ->
+def writeHipo = { hipo,outList ->
+  outList.each{ hipo.addDataSet(it) }
+}
+def prioGraph = { g, prio ->
+  prioStr = prio < 10 ? "0$prio" : "$prio"
+  g.setName("p${prioStr}_${g.getName()}")
+}
+def addGraphsToHipo = { hipoFile, sectorNum ->
   hipoFile.mkdir("/${runnum}")
   hipoFile.cd("/${runnum}")
-  writeHipo(
-    hipoFile,
-    [
-      grA_good,grA_bad,
-      grN_good,grN_bad,
-      grF_good,grF_bad,
-      grU_good,grU_bad,
-      grT_good,grT_bad,
-      histA_good,histA_bad,
-      lineMedian, lineCutLo, lineCutHi
+  // organize graphs for the front-end (they will render in alphabetical order, so prefix them with p#)
+  [grA_good, grA_bad, lineMedian, lineCutLo, lineCutHi].each{prioGraph(it, 2*sectorNum-1)}
+  [grN_good, grN_bad].each{prioGraph(it, 2*sectorNum)}
+  [grF_good, grF_bad].each{prioGraph(it, 2*6+1)}
+  [grU_good, grU_bad].each{prioGraph(it, 2*6+2)}
+  [grT_good, grT_bad].each{prioGraph(it, 2*6+3)}
+  // list of graphs to include on the front-end
+  writeList = [
+    grA_good, grA_bad,
+    grN_good, grN_bad,
+    lineMedian, lineCutLo, lineCutHi
+  ]
+  if(sectorNum == 1) {
+    writeList += [
+      grF_good, grF_bad,
+      grU_good, grU_bad,
+      grT_good, grT_bad,
     ]
-  )
+  }
+  writeHipo(hipoFile, writeList)
 }
 
 
@@ -628,17 +642,17 @@ inList.each { obj ->
         grA,lowerBound,upperBound,"cutHi",cutTree[sector][epoch]['cutHi'])
 
       // write graphs to hipo file
-      addGraphsToHipo(outHipoQA)
-      addGraphsToHipo(outHipoA)
-      addGraphsToHipo(outHipoN)
-      addGraphsToHipo(outHipoU)
-      addGraphsToHipo(outHipoF)
-      addGraphsToHipo(outHipoFA)
-      addGraphsToHipo(outHipoLTT)
-      addGraphsToHipo(outHipoLTA)
-      addGraphsToHipo(outHipoSigmaN)
-      addGraphsToHipo(outHipoSigmaF)
-      addGraphsToHipo(outHipoRhoNF)
+      addGraphsToHipo(outHipoQA, sector)
+      addGraphsToHipo(outHipoA, sector)
+      addGraphsToHipo(outHipoN, sector)
+      addGraphsToHipo(outHipoU, sector)
+      addGraphsToHipo(outHipoF, sector)
+      addGraphsToHipo(outHipoFA, sector)
+      addGraphsToHipo(outHipoLTT, sector)
+      addGraphsToHipo(outHipoLTA, sector)
+      addGraphsToHipo(outHipoSigmaN, sector)
+      addGraphsToHipo(outHipoSigmaF, sector)
+      addGraphsToHipo(outHipoRhoNF, sector)
 
       // fill timeline points
       nGood = grA_good.getDataSize(0)

@@ -34,10 +34,10 @@ def trigRat
 def errPrint = { str -> System.err << "ERROR in run ${runnum}_${binnum}: "+str+"\n" }
 
 // define graphs
-def defineGraph = { name,ytitle ->
+def defineGraph = { name, ytitle, sectorDependent ->
   sectors.collect {
     def g = new GraphErrors(name+"_${runnum}_"+sec(it))
-    def gT = ytitle+" vs. time bin"+(useFT?"":" -- Sector "+sec(it))
+    def gT = ytitle+" vs. time bin" + ((sectorDependent && !useFT) ? " -- Sector ${sec(it)}" : "")
     g.setTitle(gT)
     g.setTitleY(ytitle)
     g.setTitleX("time bin")
@@ -98,11 +98,11 @@ dataFile.eachLine { line ->
   // if the run number changed, write filled graphs, then start new graphs
   if(runnum!=runnumTmp) {
     if(runnumTmp>0) writePlots(runnumTmp)
-    grA = defineGraph("grA","${electronT} Normalized Yield N/F")
-    grN = defineGraph("grN","${electronT} Yield N")
-    grF = defineGraph("grF","Gated Faraday Cup charge F [nC]")
-    grU = defineGraph("grU","Ungated Faraday Cup charge F [nC]")
-    grT = defineGraph("grT","Live Time")
+    grA = defineGraph("grA", "${electronT} Normalized Yield N/F", true)
+    grN = defineGraph("grN", "${electronT} Yield N", true)
+    grF = defineGraph("grF", "Gated Faraday Cup charge F [nC]", false)
+    grU = defineGraph("grU", "Ungated Faraday Cup charge F [nC]", false)
+    grT = defineGraph("grT", "Live Time", false)
     runnumTmp = runnum
   }
 

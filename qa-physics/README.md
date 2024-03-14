@@ -115,8 +115,7 @@ First step is to read DST or Skim files, producing HIPO files and data tables
   * reads data table and generates `monitorElec.hipo`
     * within this HIPO file, there is one directory for each run, containing several
       plots:
-      * `grA*`: N/F vs. time bin (the `A` notation is so it appears first in the
-        online timeline front-end)
+      * `grA*`: N/F vs. time bin
       * `grF*`: F vs. time bin
       * `grN*`: N vs. time bin
       * `grT*`: livetime vs. time bin
