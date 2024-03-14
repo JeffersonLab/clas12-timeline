@@ -98,9 +98,9 @@ export CLASSPATH="$JYPATH${CLASSPATH:+:${CLASSPATH}}"
 
 # get main executable for detector timelines
 # FIXME: remove run group dependence
-MAIN="org.jlab.clas.timeline.run"
+MAIN="org.jlab.clas.timeline.run_detectors"
 if [ "$rungroup" = "b" -o "$rungroup" = "d" ]; then
-  MAIN="org.jlab.clas.timeline.run_rgb"
+  MAIN="org.jlab.clas.timeline.run_detectors_rgb"
 fi
 [[ ! "$rungroup" =~ ^[a-zA-Z] ]] && printError "unknown rungroup '$rungroup'" && exit 100
 export MAIN
