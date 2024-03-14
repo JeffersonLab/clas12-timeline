@@ -565,8 +565,11 @@ inList.each { obj ->
           if( binnum == firstBinnum || binnum == lastBinnum ) { // FC charge cannot be known for the first or last bin
             defectList.add(T.bit("ChargeUnknown"))
           }
-          else if(Fval < 0 || Fval > inRangeF[1]) { // FC charge is abnormally large or negative
-            defectList.add(T.bit("ChargeOutlier"))
+          else if(Fval > inRangeF[1]) {
+            defectList.add(T.bit("ChargeHigh"))
+          }
+          else if(Fval < 0) {
+            defectList.add(T.bit("ChargeNegative"))
           }
 
           // insert in qaTree
