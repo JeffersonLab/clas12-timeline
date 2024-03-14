@@ -33,6 +33,7 @@ class Tools {
     ChargeHigh:        "FC Charge is abnormally high",
     ChargeNegative:    "FC Charge is negative",
     ChargeUnknown:     "FC Charge is unknown; the first and last time bins always have this defect",
+    PossiblyNoBeam:    "Both N and F are low, indicating the beam was possibly off",
   ]
 
   // list of bit names and descriptions

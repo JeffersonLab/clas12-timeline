@@ -485,12 +485,11 @@ inList.each { obj ->
       def uqF  = listMedian(listF.findAll{it>mqF})
 
       // use IQR rule to define ranges where N and F are consistent (cf. cutLo and cutHi, which apply to N/F)
-      def cutFactorN = 1.5
-      def cutFactorF = 1.5
+      // - the lower bound is looser
       def iqrN       = uqN - lqN
       def iqrF       = uqF - lqF
-      def inRangeN   = [ lqN - cutFactorN * iqrN, uqN + cutFactorN * iqrN ]
-      def inRangeF   = [ lqF - cutFactorF * iqrF, uqF + cutFactorF * iqrF ]
+      def inRangeN   = [ lqN - 3.0 * iqrN, uqN + 1.5 * iqrN ]
+      def inRangeF   = [ lqF - 3.0 * iqrF, uqF + 1.5 * iqrF ]
 
       // calculate Pearson correlation coefficient
       def covarNF = listCovar(listN,listF,listWgt,muN,muF)
@@ -584,6 +583,11 @@ inList.each { obj ->
           }
           else if(Fval < 0) {
             defectList.add(T.bit("ChargeNegative"))
+          }
+
+          // set no beam bit
+          if(Nval < inRangeN[0] && Fval < inRangeF[0]) {
+            defectList.add(T.bit("PossiblyNoBeam"))
           }
 
           // insert in qaTree
