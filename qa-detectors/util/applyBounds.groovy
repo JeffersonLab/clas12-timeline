@@ -16,8 +16,7 @@ Tools T = new Tools()
  */
 def cutsFileList = [
   [ /./, "cuts.txt"], // default file
-  [ /rga.*fa18/, "cuts_rga_fa18.txt"], // RGA Fall 2018
-  [ /rgc/, "cuts_rgc_su22.txt"], // RGC
+  // [ /rga.*fa18/, "cuts_rga_fa18.txt"], // RGA Fall 2018 // DEPRECATED, replaced with run_range feature; here in case we need it again
 ]
 /////////////////////////////////////////////////////
 
@@ -80,9 +79,29 @@ cutsFileList.each { re, cutsFile ->
       def ubound   = tok[3].toDouble()
       def units    = tok[4]
       cutPath = [det, timeline]
-      spec = tok.size()>5 ? tok[5] : ''
-      if(spec!='')
-        cutPath.add(spec)
+      spec = ''
+      cutBound = [
+        "runRange": [0,0],
+        "bounds":   [lbound, ubound],
+        "used":     false,
+        "color":    "black",
+      ]
+      if(tok.size()>5) {
+        (5..<tok.size()).each { tokId ->
+          def optName = tok[tokId].tokenize(':')[0]
+          def optVals = tok[tokId].tokenize(':')[1..-1]
+          if(optName=="spec") {
+            spec = optVals[0]
+            cutPath.add(spec)
+          } else if(optName=="run_range") {
+            cutBound.runRange = optVals.collect{it.toInteger()}
+          } else if(optName=="color") {
+            cutBound.color = optVals[0]
+          } else {
+            throw new Exception("unknown custom option '$optName'")
+          }
+        }
+      }
 
       // add cuts to graph
       def addCut = { graphN ->
@@ -95,8 +114,7 @@ cutsFileList.each { re, cutsFile ->
             T.getLeaf(tr, nodePath).clear()
             clearedLeaves.add(nodePath)
           }
-          T.getLeaf(tr, nodePath).add(lbound)
-          T.getLeaf(tr, nodePath).add(ubound)
+          T.getLeaf(tr, nodePath).add(cutBound)
         }
       }
 
@@ -156,7 +174,7 @@ cutsFileList.each { re, cutsFile ->
 
 println "=== TIMELINES ========================="
 println T.pPrint(B)
-println "======================================="
+println "=== CUT LINES ========================="
 println T.pPrint(L)
 println "======================================="
 
@@ -164,8 +182,11 @@ println "======================================="
 // closure for creating lines for the front end graphs
 // - lineTitle* must be set before calling this
 def lineTitle, lineTitleX, lineTitleY
-def buildLine = { v,color ->
-  def graphLine = new GraphErrors(['plotLine','horizontal',v,color].join(':'))
+def buildLine = { v,color,xRange ->
+  lineName = ['plotLine', 'horizontal', v, color]
+  if(xRange!=[0,0]) lineName += xRange
+  println "  DRAW LINE: $lineName"
+  def graphLine = new GraphErrors(lineName.join(':'))
   graphLine.setTitle(lineTitle)
   graphLine.setTitleX(lineTitleX)
   graphLine.setTitleY(lineTitleY)
@@ -187,15 +208,16 @@ T.exeLeaves(B,{
   // setup
   def graphPath = T.leafPath
   def fileN = indir+'/'+graphPath[0,-2].join('/') + ".hipo"
-  def bounds = T.leaf
+  def boundMaps = T.leaf
 
   // read input timeline; do nothing if input timeline file
   // does not exist
   def graphN = graphPath[-1]
-  T.printStatus("open file=\"$fileN\" graph=\"$graphN\"")
+  T.printStatus("check for file=\"$fileN\" graph=\"$graphN\"")
   def inTdir = new TDirectory()
   inTdirFile = new File(fileN)
   if(inTdirFile.exists()) {
+    T.printStatus("file exists; reading")
     inTdir.readFile(fileN)
     gr = inTdir.getObject("/timelines/${graphN}")
 
@@ -213,10 +235,28 @@ T.exeLeaves(B,{
     // loop over runs
     gr.getDataSize(0).times { i ->
 
-      // check QA bounds
+      // read timeline point
       def run = gr.getDataX(i)
       def val = gr.getDataY(i)
-      def inbound = val>=bounds[0] && val<=bounds[1]
+
+      // first, check if any specific run ranges contain this run
+      def boundMap = boundMaps.find{ run>=it.runRange[0] && run<=it.runRange[1] }
+      // otherwise, use the default values (runRange == [0,0])
+      if(boundMap==null) {
+        boundMap = boundMaps.find{ it.runRange==[0,0] }
+      }
+
+      // get the QA bounds
+      def valBounds = []
+      if(boundMap!=null) {
+        valBounds = boundMap.bounds
+        boundMap.used = true
+      } else {
+        throw new Exception("cannot find boundMap for $graphPath")
+      }
+
+      // check QA bounds
+      def inbound = val>=valBounds[0] && val<=valBounds[1]
       if(!inbound) {
         //T.printStatus("OB "+graphPath+" $run $val")
         T.getLeaf(TL,graphPath).addPoint(run,val,0,0)
@@ -224,10 +264,14 @@ T.exeLeaves(B,{
 
     }
   }
+  else {
+    T.printStatus("file does not exist; skipping")
+  }
 })
 
 
 // write output timelines
+T.printStatus("write output timelines")
 TL.each{ det, detTr -> // loop through detector directories
   detTr.each{ hipoFile, graphTr -> // loop through timeline hipo files
 
@@ -265,26 +309,21 @@ TL.each{ det, detTr -> // loop through detector directories
 
     // add cut lines
     outTdir.cd("/timelines")
-    T.getLeaf(L,[det,hipoFile]).eachWithIndex{ num,idx ->
-      println "LINE: $det $hipoFile $num"
-      def lineColor = 'black'
-      if(hipoFile=="ltcc_elec_nphe_sec") {
-        def lineColors = ['red','red','blue','blue']
-        lineColor = lineColors[idx]
+    T.getLeaf(L,[det,hipoFile]).each{ boundMap ->
+      println "CUT: $det $hipoFile $boundMap"
+      if(boundMap.used==true) {
+        boundMap.bounds.each{ num ->
+          outTdir.addDataSet(buildLine(num, boundMap.color, boundMap.runRange))
+        }
+      } else {
+        println "  NOT USED: do not draw line"
       }
-      else if(hipoFile=="fth_MIPS_energy") {
-        def lineColors = ['red','red','blue','blue']
-        lineColor = lineColors[idx]
-      }
-      else if(hipoFile=="fth_MIPS_time_sigma") {
-        def lineColors = ['black','red','blue']
-        lineColor = lineColors[idx]
-      }
-      outTdir.addDataSet(buildLine(num,lineColor))
     }
 
     // create output hipo file
     def outHipoDir = "${outdir}/${det}"
+    def outHipoDirHandle = new File(outHipoDir)
+    if(!outHipoDirHandle.exists()) outHipoDirHandle.mkdirs()
     def outHipoN = "${outHipoDir}/${hipoFile}_QA.hipo"
     File outHipoFile = new File(outHipoN)
     if(outHipoFile.exists()) outHipoFile.delete()
