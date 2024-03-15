@@ -186,17 +186,17 @@ sectors.each { s ->
 
 // vars and subroutines for splitting graphs into "good" and "bad",
 // i.e., "pass QA cuts" and "outside QA cuts", respectively
-def grA,grA_good,grA_bad
-def grN,grN_good,grN_bad
-def grF,grF_good,grF_bad
-def grU,grU_good,grU_bad
-def grT,grT_good,grT_bad
+def grA, grA_good, grA_bad
+def grN, grN_good, grN_bad
+def grF, grF_good, grF_bad
+def grU, grU_good, grU_bad
+def grT, grT_good, grT_bad
 def histA_good, histA_bad
-def grDurationVsBin
-def grNumEventsVsBin
-def nGood,nBad
+def grDuration,  grDuration_good,  grDuration_bad
+def grNumEvents, grNumEvents_good, grNumEvents_bad
+def nGood, nBad
 def nGoodTotal = 0
-def nBadTotal = 0
+def nBadTotal  = 0
 def copyTitles = { g1,g2 ->
   g2.setTitle(g1.getTitle())
   g2.setTitleX(g1.getTitleX())
@@ -355,8 +355,8 @@ def addGraphsToHipo = { runnum, hipoFile, sectorNum ->
   hipoFile.cd("/${runnum}")
   // organize graphs for the front-end (they will render in alphabetical order, so prefix them with p#)
   if(sectorNum==1) {
-    prioGraph(grNumEventsVsBin, 1)
-    prioGraph(grDurationVsBin,  2)
+    [grNumEvents_good, grNumEvents_bad].each{prioGraph(it, 1)}
+    [grDuration_good, grDuration_bad].each{prioGraph(it, 2)}
   }
   [grA_good, grA_bad, lineMedian, lineCutLo, lineCutHi].each{prioGraph(it, 2*sectorNum+1)}
   [grN_good, grN_bad].each{prioGraph(it, 2*sectorNum+2)}
@@ -371,8 +371,8 @@ def addGraphsToHipo = { runnum, hipoFile, sectorNum ->
   ]
   if(sectorNum == 1) {
     writeList += [
-      grNumEventsVsBin,
-      grDurationVsBin,
+      grNumEvents_good, grNumEvents_bad,
+      grDuration_good,  grDuration_bad,
       grF_good, grF_bad,
       grU_good, grU_bad,
       grT_good, grT_bad,
@@ -452,14 +452,14 @@ inList.each { obj ->
 
       // define timebin characterizing graphs
       if(sector==1) {
-        grDurationVsBin = new GraphErrors("grDurationVsBin_${runnum}")
-        grDurationVsBin.setTitle("Duration vs. Time Bin")
-        grDurationVsBin.setTitleX("Time Bin")
-        grDurationVsBin.setTitleY("Duration [s]")
-        grNumEventsVsBin = new GraphErrors("grNumEventsVsBin_${runnum}")
-        grNumEventsVsBin.setTitle("Number of Events vs. Time Bin")
-        grNumEventsVsBin.setTitleX("Time Bin")
-        grNumEventsVsBin.setTitleY("Number of Events")
+        grDuration = new GraphErrors("grDuration_${runnum}")
+        grDuration.setTitle("Duration vs. Time Bin")
+        grDuration.setTitleX("Time Bin")
+        grDuration.setTitleY("Duration [s]")
+        grNumEvents = new GraphErrors("grNumEvents_${runnum}")
+        grNumEvents.setTitle("Number of Events vs. Time Bin")
+        grNumEvents.setTitleX("Time Bin")
+        grNumEvents.setTitleY("Number of Events")
       }
 
       // get all the graphs from `inTdir` and convert to value lists
@@ -544,6 +544,8 @@ inList.each { obj ->
       (grF_good,grF_bad) = splitGraph(grF)
       (grU_good,grU_bad) = splitGraph(grU)
       (grT_good,grT_bad) = splitGraph(grT)
+      (grDuration_good,grDuration_bad)   = splitGraph(grDuration)
+      (grNumEvents_good,grNumEvents_bad) = splitGraph(grNumEvents)
 
       // get the first and last bins' binnums
       def firstBinnum = grA.getDataX(0).toInteger()
@@ -572,13 +574,13 @@ inList.each { obj ->
             qaTree[runnum][binnum]['comment']       = ""
             qaTree[runnum][binnum]['defect']        = 0
             qaTree[runnum][binnum]['sectorDefects'] = sectors.collectEntries{s->[sec(s),[]]}
-            // fill `grDurationVsBin` and `grNumEventsVsBin`
+            // fill `grDuration` and `grNumEvents`
             if(sector == 1) {
               def numEvents = evnumMax - evnumMin
               if(binnum == 0) { numEvents++ } // first bin has no lower bound
               def duration = (timestampMax - timestampMin) * 4e-9 // convert timestamp [4ns] -> [s]
-              grDurationVsBin.addPoint(binnum,  duration,  0, 0)
-              grNumEventsVsBin.addPoint(binnum, numEvents, 0, 0)
+              grDuration.addPoint(binnum,  duration,  0, 0)
+              grNumEvents.addPoint(binnum, numEvents, 0, 0)
             }
           }
 
@@ -652,6 +654,8 @@ inList.each { obj ->
           copyPoint(grF,grF_bad,i)
           copyPoint(grU,grU_bad,i)
           copyPoint(grT,grT_bad,i)
+          copyPoint(grDuration,grDuration_bad,i)
+          copyPoint(grNumEvents,grNumEvents_bad,i)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grA_bad'],grA,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grN_bad'],grN,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grF_bad'],grF,i,runnum)
@@ -663,6 +667,8 @@ inList.each { obj ->
           copyPoint(grF,grF_good,i)
           copyPoint(grU,grU_good,i)
           copyPoint(grT,grT_good,i)
+          copyPoint(grDuration,grDuration_good,i)
+          copyPoint(grNumEvents,grNumEvents_good,i)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grA_good'],grA,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grN_good'],grN,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grF_good'],grF,i,runnum)
