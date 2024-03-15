@@ -587,8 +587,8 @@ inList.each { obj ->
               defectList.add(T.bit("ChargeNegative"))
             }
 
-            // set no beam bit
-            if(Nval < inRangeN[0] && Fval < inRangeF[0]) {
+            // set no-beam bit; don't bother doing this for first or last bins since their charge is unknown
+            if(Nval < inRangeN[0] && Fval < inRangeF[0] && binnum != firstBinnum && binnum != lastBinnum) {
               defectList.add(T.bit("PossiblyNoBeam"))
             }
           }
