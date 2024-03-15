@@ -20,7 +20,6 @@ if(args.length>=2) useFT = true
 def sectors = 0..<6
 def sec = { int i -> i+1 }
 def tok
-int r=0
 def runnum, binnum, sector
 def eventNumMin, eventNumMax
 def timestampMin, timestampMax
@@ -71,21 +70,21 @@ dataFile.eachLine { line ->
 
   // read columns of data_table.dat (in order left-to-right)
   tok = line.tokenize(' ')
-  r=0
-  runnum = tok[r++].toInteger()
-  binnum = tok[r++].toInteger()
-  eventNumMin = tok[r++].toBigInteger()
-  eventNumMax = tok[r++].toBigInteger()
+  int r = 0
+  runnum       = tok[r++].toInteger()
+  binnum       = tok[r++].toInteger()
+  eventNumMin  = tok[r++].toBigInteger()
+  eventNumMax  = tok[r++].toBigInteger()
   timestampMin = tok[r++].toBigInteger()
   timestampMax = tok[r++].toBigInteger()
-  sector = tok[r++].toInteger()
-  nElec = tok[r++].toBigDecimal()
-  nElecFT = tok[r++].toBigDecimal()
-  fcStart = tok[r++].toBigDecimal()
-  fcStop = tok[r++].toBigDecimal()
-  ufcStart = tok[r++].toBigDecimal()
-  ufcStop = tok[r++].toBigDecimal()
-  aveLivetime = tok[r++].toBigDecimal()
+  sector       = tok[r++].toInteger()
+  nElec        = tok[r++].toBigDecimal()
+  nElecFT      = tok[r++].toBigDecimal()
+  fcStart      = tok[r++].toBigDecimal()
+  fcStop       = tok[r++].toBigDecimal()
+  ufcStart     = tok[r++].toBigDecimal()
+  ufcStop      = tok[r++].toBigDecimal()
+  aveLivetime  = tok[r++].toBigDecimal()
 
 
   // if we are using the FT electrons, simply set nElec to nElecFT, since
