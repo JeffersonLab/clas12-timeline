@@ -354,7 +354,7 @@ def addGraphsToHipo = { runnum, hipoFile, sectorNum ->
   hipoFile.mkdir("/${runnum}")
   hipoFile.cd("/${runnum}")
   // organize graphs for the front-end (they will render in alphabetical order, so prefix them with p#)
-  if(sector==1) {
+  if(sectorNum==1) {
     prioGraph(grNumEventsVsBin, 1)
     prioGraph(grDurationVsBin,  2)
   }
