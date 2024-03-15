@@ -485,11 +485,10 @@ inList.each { obj ->
       def uqF  = listMedian(listF.findAll{it>mqF})
 
       // use IQR rule to define ranges where N and F are consistent (cf. cutLo and cutHi, which apply to N/F)
-      // - the lower bound is looser
       def iqrN       = uqN - lqN
       def iqrF       = uqF - lqF
-      def inRangeN   = [ lqN - 3.0 * iqrN, uqN + 1.5 * iqrN ]
-      def inRangeF   = [ lqF - 3.0 * iqrF, uqF + 1.5 * iqrF ]
+      def inRangeN   = [ lqN - 1.5 * iqrN, uqN + 1.5 * iqrN ]
+      def inRangeF   = [ lqF - 1.5 * iqrF, uqF + 1.5 * iqrF ]
 
       // calculate Pearson correlation coefficient
       def covarNF = listCovar(listN,listF,listWgt,muN,muF)
@@ -558,7 +557,7 @@ inList.each { obj ->
 
           def defectList = []
 
-          // set outlier bit
+          // set FD and FT outlier bits
           if( NFval<cutLo || NFval>cutHi ) {
             if( NFerrH>cutLo && NFerrL<cutHi ) {
               defectList.add(T.bit("MarginalOutlier${useFT?"FT":""}"))
@@ -569,25 +568,29 @@ inList.each { obj ->
             }
           }
 
-          // set livetime bit
-          if( LTval<0.9 ) {
-            defectList.add(T.bit("LowLiveTime"))
-          }
+          // set bits which need only the FD (don't do it again for the FT):
+          if(!useFT) {
 
-          // set FC bits
-          if( binnum == firstBinnum || binnum == lastBinnum ) { // FC charge cannot be known for the first or last bin
-            defectList.add(T.bit("ChargeUnknown"))
-          }
-          else if(Fval > inRangeF[1]) {
-            defectList.add(T.bit("ChargeHigh"))
-          }
-          else if(Fval < 0) {
-            defectList.add(T.bit("ChargeNegative"))
-          }
+            // set livetime bit
+            if( LTval<0.9 ) {
+              defectList.add(T.bit("LowLiveTime"))
+            }
 
-          // set no beam bit
-          if(Nval < inRangeN[0] && Fval < inRangeF[0]) {
-            defectList.add(T.bit("PossiblyNoBeam"))
+            // set FC bits
+            if( binnum == firstBinnum || binnum == lastBinnum ) { // FC charge cannot be known for the first or last bin
+              defectList.add(T.bit("ChargeUnknown"))
+            }
+            else if(Fval > inRangeF[1]) {
+              defectList.add(T.bit("ChargeHigh"))
+            }
+            else if(Fval < 0) {
+              defectList.add(T.bit("ChargeNegative"))
+            }
+
+            // set no beam bit
+            if(Nval < inRangeN[0] && Fval < inRangeF[0]) {
+              defectList.add(T.bit("PossiblyNoBeam"))
+            }
           }
 
           // insert in qaTree
