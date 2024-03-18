@@ -15,7 +15,7 @@ env:
   # NOTE: if any of these versions are changed, update the POM files too
   java_version: 17
   java_distribution: zulu
-  groovy_version: 4.0.3
+  groovy_version: 4.x
 
 
 concurrency:
