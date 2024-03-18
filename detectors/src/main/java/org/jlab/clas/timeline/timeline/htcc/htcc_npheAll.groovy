@@ -24,7 +24,7 @@ class htcc_npheAll {
     out.mkdir('/timelines')
     // (0..<6).each{ sec->
     def grtl = new GraphErrors('htcc_npheAll_mean')
-    grtl.setTitle("Mean NPHE Across All Channels per Run")
+    grtl.setTitle("Mean NPHE Combined Across All Channels per Run")
     grtl.setTitleY("Mean NPHE")
     grtl.setTitleX("Run Number")
 
