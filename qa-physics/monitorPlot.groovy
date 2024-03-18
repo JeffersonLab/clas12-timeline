@@ -397,6 +397,12 @@ inList.each { inFile ->
       }
     }
 
+    // charge non-monotonicicity
+    //--------------------------
+    if(objN.contains("/nonMonotonicity_")) {
+      varStr = tok[1]
+      T.addLeaf(monTree,[runnum,'charge',varStr,'valGraph',{obj})
+    }
 
   } // eo loop over objects in the file (run)
 
@@ -438,7 +444,7 @@ inList.each { inFile ->
 // loop through 'aveDist' monitors: for each one, add its mean to the timeline
 def timelineTree = [:]
 T.exeLeaves(monTree,{
-  if(T.key.contains('Dist') || T.key.contains('asymGraph')) {
+  if(T.key.contains('Dist') || T.key.contains('Graph')) {
 
     // get leaf paths
     def tlRun = T.leafPath[0]
@@ -460,6 +466,7 @@ T.exeLeaves(monTree,{
         if(tlPath.contains('pip')) tlT = "inclusive pi+ kinematics"
         if(tlPath.contains('pim')) tlT = "inclusive pi- kinematics"
       }
+      if(tlPath.contains('nonMonotonicity')) tlT = "FC charge non-monotonicity"
       if(T.key.contains('Dist')) tlT = "average ${tlT}"
       tlT = "${tlT} vs. run number"
       def tl = new GraphErrors(tlN)
@@ -469,7 +476,7 @@ T.exeLeaves(monTree,{
 
     // we also want a few timelines to monitor standard deviations
     T.addLeaf(timelineTree,tlPath+'timelineDev',{
-      if(tlPath.contains('DIS') || tlPath.contains('inclusive')) {
+      if(tlPath.contains('DIS') || tlPath.contains('inclusive') || tlPath.contains('nonMonotonicity')) {
         def tlN = (tlPath+'timelineDev').join('_')
         def tlT
         if(tlPath.contains('DIS')) tlT = "DIS kinematics"
@@ -477,6 +484,7 @@ T.exeLeaves(monTree,{
           if(tlPath.contains('pip')) tlT = "inclusive pi+ kinematics"
           if(tlPath.contains('pim')) tlT = "inclusive pi- kinematics"
         }
+        if(tlPath.contains('nonMonotonicity')) tlT = "FC charge non-monotonicity"
         if(T.key.contains('Dist')) tlT = "standard deviation of ${tlT}"
         tlT = "${tlT} vs. run number"
         def tl = new GraphErrors(tlN)
@@ -493,6 +501,19 @@ T.exeLeaves(monTree,{
       T.getLeaf(timelineTree,tlPath+'timeline').addPoint(tlRun,aveX,0.0,aveXerr)
       if(tlPath.contains('DIS') || tlPath.contains('inclusive')) {
         T.getLeaf(timelineTree,tlPath+'timelineDev').addPoint(tlRun,stddevX,0.0,0.0)
+      }
+    }
+    // or if it's a `valGraph`, calculate the avarage and stddev y-axis value and add them to the timelines
+    else if(T.key=='valGraph') {
+      def vals = []
+      T.leaf.getDataSize(0).times{ vals += T.leaf.getDataY(it) }
+      def tot    = vals.size()
+      def ave    = tot>0 ? vals.sum() / tot : 0
+      def devs   = vals.collect{ (it-ave)**2 }
+      def stddev = Math.sqrt( devs.sum() / tot )
+      T.getLeaf(timelineTree,tlPath+'timeline').addPoint(tlRun,ave,0.0,0.0)
+      if(tlPath.contains('DIS') || tlPath.contains('inclusive') || tlPath.contains('nonMonotonicity')) {
+        T.getLeaf(timelineTree,tlPath+'timelineDev').addPoint(tlRun,stddev,0.0,0.0)
       }
     }
     // or if it's a helicity distribution monitor, add the run's overall fractions

@@ -7,6 +7,7 @@ import org.jlab.io.hipo.HipoDataSource
 import org.jlab.clas.physics.Particle
 import org.jlab.groot.data.H1F
 import org.jlab.groot.data.H2F
+import org.jlab.groot.data.GraphErrors
 import org.jlab.groot.data.TDirectory
 import org.jlab.clas.physics.LorentzVector
 import org.jlab.detector.base.DetectorType
@@ -934,6 +935,8 @@ is a bit non-monotonic, looking like
 If the bin boundary is on one of these non-monotonic jumps, the min or max FC charge within a bin
 may be smaller or larger than the FC charge values at the bin boundaries
 */
+def nonMonotonicityGr = new GraphErrors("nonMonotonicity_${runnum}_0") // one graph for all time bins, so just set time bin number to `0`
+nonMonotonicityGr.setTitle("FC charge non-monotonicity vs. time bin")
 timeBins.each{ itBinNum, itBin ->
   if(itBinNum+1 == timeBins.size()) return // can't cross check the last bin
   def (fc_lb,   fc_ub)   = itBin.fcRange
@@ -945,18 +948,14 @@ timeBins.each{ itBinNum, itBin ->
   printDebug "           (min,max) = [${fc_min}, ${fc_max}]"
   printDebug "  ungated: (lb,ub)   = [${ufc_lb}, ${ufc_ub}]"
   printDebug "           (min,max) = [${ufc_min}, ${ufc_max}]"
-  def problems = []
-  def calculate_amount = { lb, ub, val -> Math.abs(val) / (ub-lb) }
-  if(fc_min < fc_lb) { problems << [ "minimum gated", "less", "${fc_min} < ${fc_lb}", calculate_amount(fc_lb, fc_ub, fc_min-fc_lb) ] }
-  if(fc_max > fc_ub) { problems << [ "maximum gated", "more", "${fc_max} > ${fc_ub}", calculate_amount(fc_lb, fc_ub, fc_max-fc_ub) ] }
-  if(ufc_min < ufc_lb) { problems << [ "minimum ungated", "less", "${ufc_min} < ${ufc_lb}", calculate_amount(ufc_lb, ufc_ub, ufc_min-ufc_lb) ] }
-  if(ufc_max > ufc_ub) { problems << [ "maximum ungated", "more", "${ufc_max} > ${ufc_ub}", calculate_amount(ufc_lb, ufc_ub, ufc_max-ufc_ub) ] }
-  problems.each{
-    // TODO: these "off by" amounts should go in a dedicated timeline; until then, pester the user with these errors
-    // System.err.println "WARNING: ${it[0]} FC charge is ${it[1]} than that at bin boundary, for bin number ${itBinNum}  (${it[2]}); off by ${100.0*it[3]}%"
-  }
+  def chargeViaBounds = fc_ub  - fc_lb
+  def chargeViaMinMax = fx_max - fc_min
+  // not clear whether `chargeViaBounds` or `chargeViaMinMax` is the real charge, so we calculate their percent difference w.r.t. their mean:
+  def ave = (chargeViaBounds + chargeViaMinMax) / 2.0
+  def nonMonotonicity = ave==0 ? 0 : Math.abs(chargeViaBounds - chargeViaMinMax) / ave
+  nonMonotonicityGr.addPoint(itBinNum, nonMonotonicity, 0.0, 0.0)
 }
-
+outHipo.addDataSet(nonMonotonicityGr)
 
 // close output text files
 datfileWriter.flush()
