@@ -205,7 +205,7 @@ def aveX
 def aveXerr
 def stddevX
 def ent
-def helP,helM,helDef,helUndef,helFrac,helFracErr,rellum,rellumErr
+def helDef,helUndef,helFrac,helFracErr,rellum,rellumErr
 
 // loop over input hipo files
 inList.each { inFile ->
@@ -303,10 +303,6 @@ inList.each { inFile ->
         monTree[runnum]['helic']['dist']['heldef']['heldefDenom'] += denom
       }
 
-    // cut for rellum from events with FD trigger electrons only
-    //}
-    //if(objN.contains("/helic_distGoodOnly_")) {
-
       // relative luminosity
       T.addLeaf(monTree,[runnum,'helic','dist','rellum','rellumNumer'],{0})
       T.addLeaf(monTree,[runnum,'helic','dist','rellum','rellumDenom'],{0})
@@ -326,8 +322,8 @@ inList.each { inFile ->
       })
       if(obj.integral()>0) {
         // use values from helic_dist
-        helM = obj.getBinContent(0) // helicity = -1
-        helP = obj.getBinContent(2) // helicity = +1
+        def helM = obj.getBinContent(0) // helicity = -1
+        def helP = obj.getBinContent(2) // helicity = +1
         // use charge from FC (disabled)
         //helP = fcTree[runnum][timeBinNum.toInteger()]['fcP']
         //helM = fcTree[runnum][timeBinNum.toInteger()]['fcM']
@@ -339,9 +335,26 @@ inList.each { inFile ->
         monTree[runnum]['helic']['dist']['rellum']['rellumNumer'] += helP
         monTree[runnum]['helic']['dist']['rellum']['rellumDenom'] += helM
       }
-
     }
 
+    // scaler helicity distribution monitor (for beam charge asymmetry)
+    //-----------------------------------------------------------------
+    if(objN.contains("/helic_scaler_chargeWeighted_")) {
+      T.addLeaf(monTree,[runnum,'helic','scaler','chargeWeighted','chargeAsymGr'],{
+        def g = buildMonAveGr(obj)
+        def gN = g.getName().replaceAll(/_aveGr$/,'_chargeAsymGr')
+        g.setName(gN)
+        g.setTitle('beam charge asymmetry vs. time bin number')
+        return g
+      })
+      if(obj.integral()>0) {
+        def helM = obj.getBinContent(0) // helicity = -1
+        def helP = obj.getBinContent(2) // helicity = +1
+        def beamChargeAsym = (helP - helM) / (helP + helM)
+        monTree[runnum]['helic']['scaler']['chargeWeighted']['chargeAsymGr'].addPoint(
+          timeBinNum, beamChargeAsym, 0, 0) // FIXME: need error bar
+      }
+    }
 
     // DIS kinematics monitor
     //---------------------------------
