@@ -563,7 +563,7 @@ timeBins.each{ binNum, timeBin ->
   def partList = [ 'pip', 'pim' ]
   T.buildTree(timeBin.histTree, 'helic',     [['sinPhi'],partList,['hp','hm']],        { new H1F() })
   T.buildTree(timeBin.histTree, 'helic',     [['dist']],                               { new H1F() })
-  T.buildTree(timeBin.histTree, 'helic',     [['scaler','chargeWeighted']],            { new H1F() })
+  T.buildTree(timeBin.histTree, 'helic',     [['scaler'],['chargeWeighted']],          { new H1F() })
   T.buildTree(timeBin.histTree, 'DIS',       [['Q2','W','x','y']],                     { new H1F() })
   T.buildTree(timeBin.histTree, "DIS",       [['Q2VsW']],                              { new H2F() })
   T.buildTree(timeBin.histTree, "inclusive", [partList,['p','pT','z','theta','phiH']], { new H1F() })
