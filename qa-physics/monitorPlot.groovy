@@ -401,7 +401,7 @@ inList.each { inFile ->
     //--------------------------
     if(objN.contains("/nonMonotonicity_")) {
       varStr = tok[1]
-      T.addLeaf(monTree,[runnum,'charge',varStr,'valGraph',{obj})
+      T.addLeaf(monTree,[runnum,'charge',varStr,'valGraph'],{obj})
     }
 
   } // eo loop over objects in the file (run)
