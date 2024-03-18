@@ -949,7 +949,7 @@ timeBins.each{ itBinNum, itBin ->
   printDebug "  ungated: (lb,ub)   = [${ufc_lb}, ${ufc_ub}]"
   printDebug "           (min,max) = [${ufc_min}, ${ufc_max}]"
   def chargeViaBounds = fc_ub  - fc_lb
-  def chargeViaMinMax = fx_max - fc_min
+  def chargeViaMinMax = fc_max - fc_min
   // not clear whether `chargeViaBounds` or `chargeViaMinMax` is the real charge, so we calculate their percent difference w.r.t. their mean:
   def ave = (chargeViaBounds + chargeViaMinMax) / 2.0
   def nonMonotonicity = ave==0 ? 0 : Math.abs(chargeViaBounds - chargeViaMinMax) / ave
