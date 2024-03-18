@@ -750,11 +750,13 @@ inHipoList.each { inHipoFile ->
     }
     thisTimeBin.histTree.helic.dist.fill(helicity)
     // get scaler helicity from `HEL::scaler`, and fill its charge-weighted distribution
-    def scalerHelicity = 0
-    if(hipoEvent.hasBank("HEL::scaler") && helScalerBank.rows()>0) {
-      scalerHelicity = helScalerBank.getInt("helicity",0)
+    if(fc != "init") {
+      def scalerHelicity = 0
+      if(hipoEvent.hasBank("HEL::scaler") && helScalerBank.rows()>0) {
+        scalerHelicity = helScalerBank.getInt("helicity",0)
+      }
+      thisTimeBin.histTree.helic.scaler.chargeWeighted.fill(scalerHelicity,fc)
     }
-    thisTimeBin.histTree.helic.scaler.chargeWeighted.fill(scalerHelicity,fc)
 
     // get electron list, and increment the number of trigger electrons
     // - also finds the DIS electron, and calculates x,Q2,W,y,nu
