@@ -36,7 +36,6 @@ def qaTreeFile  = new File(qaTreeFileN)
 def qaTree      = slurper.parse(qaTreeFile)
 
 // subroutine to recompute defect bitmask
-// FIXME: shamefully copied from QA/modifyQaTree.groovy
 def recomputeDefMask = { rnum, bnum ->
   def defList = []
   def defMask = 0
@@ -340,7 +339,7 @@ inList.each { inFile ->
     // scaler helicity distribution monitor (for beam charge asymmetry)
     //-----------------------------------------------------------------
     if(objN.contains("/helic_scaler_chargeWeighted_")) {
-      T.addLeaf(monTree,[runnum,'helic','scaler','chargeWeighted','chargeAsymGr'],{
+      T.addLeaf(monTree,[runnum,'helic','beamChargeAsym','valGraph'],{
         def g = buildMonAveGr(obj)
         def gN = g.getName().replaceAll(/_aveGr$/,'_chargeAsymGr')
         g.setName(gN)
@@ -348,11 +347,14 @@ inList.each { inFile ->
         return g
       })
       if(obj.integral()>0) {
-        def helM = obj.getBinContent(0) // helicity = -1
-        def helP = obj.getBinContent(2) // helicity = +1
-        def beamChargeAsym = (helP - helM) / (helP + helM)
-        monTree[runnum]['helic']['scaler']['chargeWeighted']['chargeAsymGr'].addPoint(
-          timeBinNum, beamChargeAsym, 0, 0) // FIXME: need error bar
+        def numHelM = obj.getBinContent(0) // helicity = -1
+        def numHelP = obj.getBinContent(2) // helicity = +1
+        if(numHelP+numHelM > 0) {
+          def beamChargeAsym = (numHelP - numHelM) / (numHelP + numHelM)
+          def beamChargeAsymErr = 1 / Math.sqrt( numHelP + numHelM ) // assuming |beamChargeAsym| << 1
+          monTree[runnum]['helic']['beamChargeAsym']['valGraph'].addPoint(
+            timeBinNum, beamChargeAsym, 0, beamChargeAsymErr)
+        }
       }
     }
 
@@ -478,6 +480,10 @@ T.exeLeaves(monTree,{
         if(tlPath.contains('pip')) tlT = "inclusive pi+ kinematics"
         if(tlPath.contains('pim')) tlT = "inclusive pi- kinematics"
       }
+      if(tlPath.contains('beamChargeAsym')) {
+        tlT = "beam charge asymmetry"
+        tlN = "mean_beam-charge-asymmetry"
+      }
       if(tlPath.contains('nonMonotonicity')) {
         tlT = "FC charge non-monotonicity"
         tlN = "mean_non-monotonicity"
@@ -491,13 +497,17 @@ T.exeLeaves(monTree,{
 
     // we also want a few timelines to monitor standard deviations
     T.addLeaf(timelineTree,tlPath+'timelineDev',{
-      if(tlPath.contains('DIS') || tlPath.contains('inclusive') || tlPath.contains('nonMonotonicity')) {
+      if(tlPath.contains('DIS') || tlPath.contains('inclusive') || T.key=='valGraph') {
         def tlN = (tlPath+'timelineDev').join('_')
         def tlT
         if(tlPath.contains('DIS')) tlT = "DIS kinematics"
         if(tlPath.contains('inclusive')) {
           if(tlPath.contains('pip')) tlT = "inclusive pi+ kinematics"
           if(tlPath.contains('pim')) tlT = "inclusive pi- kinematics"
+        }
+        if(tlPath.contains('beamChargeAsym')) {
+          tlT = "beam charge asymmetry"
+          tlN = "stddev_beam-charge-asymmetry"
         }
         if(tlPath.contains('nonMonotonicity')) {
           tlT = "FC charge non-monotonicity"
@@ -530,9 +540,7 @@ T.exeLeaves(monTree,{
       def devs   = vals.collect{ (it-ave)**2 }
       def stddev = tot>0 ? Math.sqrt( devs.sum() / tot ) : tot
       T.getLeaf(timelineTree,tlPath+'timeline').addPoint(tlRun,ave,0.0,0.0)
-      if(tlPath.contains('DIS') || tlPath.contains('inclusive') || tlPath.contains('nonMonotonicity')) {
-        T.getLeaf(timelineTree,tlPath+'timelineDev').addPoint(tlRun,stddev,0.0,0.0)
-      }
+      T.getLeaf(timelineTree,tlPath+'timelineDev').addPoint(tlRun,stddev,0.0,0.0)
     }
     // or if it's a helicity distribution monitor, add the run's overall fractions
     if(T.key=='heldefDist' ||  T.key=='rellumDist') {
@@ -608,6 +616,7 @@ def hipoWrite = { hipoName, filterList, TLkeys ->
 hipoWrite("helicity_sinPhi",['helic','sinPhi'],["timeline"])
 hipoWrite("beam_spin_asymmetry",['helic','asym'],["timeline"])
 hipoWrite("defined_helicity_fraction",['helic','dist','heldef'],["timeline"])
+hipoWrite("beam_charge_asymmetry",['helic','beamChargeAsym'],["timeline","timelineDev"])
 hipoWrite("relative_yield",['helic','dist','rellum'],["timeline"])
 hipoWrite("q2_W_x_y_means",['DIS'],["timeline"])
 hipoWrite("pip_kinematics_means",['inclusive','pip'],["timeline"])

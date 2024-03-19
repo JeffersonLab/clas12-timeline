@@ -21,8 +21,8 @@ def NBINS           = 50     // number of bins in some histograms
 def SECTORS         = 0..<6  // sector range
 def ECAL_ID         = DetectorType.ECAL.getDetectorId() // ECAL detector ID
 // debugging settings
-def VERBOSE = true   // enable extra log messages, for debugging
-def LIMITER = 0      // if nonzero, only analyze this many DST files (for quick testing and debugging)
+def VERBOSE = false  // enable extra log messages, for debugging
+def LIMITER = 2      // if nonzero, only analyze this many DST files (for quick testing and debugging)
 def AUXFILE = false  // enable auxfile production, an event-by-event table (a large text file)
 
 // function to print a debugging message
@@ -77,7 +77,7 @@ else {
 
 // limiter: use this to only analyse a few DST files, for quicker testing
 if(LIMITER>0) {
-  inHipoList = inHipoList[0..LIMITER]
+  inHipoList = inHipoList[0..(LIMITER-1)]
   System.err.println("WARNING WARNING WARNING: LIMITER ENABLED, we will only be analyzing ${LIMITER} DST files, and not all of them; this is for testing only!")
 }
 
@@ -750,12 +750,12 @@ inHipoList.each { inHipoFile ->
     }
     thisTimeBin.histTree.helic.dist.fill(helicity)
     // get scaler helicity from `HEL::scaler`, and fill its charge-weighted distribution
-    if(fc != "init") {
-      def scalerHelicity = 0
-      if(hipoEvent.hasBank("HEL::scaler") && helScalerBank.rows()>0) {
-        scalerHelicity = helScalerBank.getInt("helicity",0)
+    if(hipoEvent.hasBank("HEL::scaler")) {
+      helScalerBank.rows().times{ row -> // HEL::scaler readouts "pile up", so there are multiple bank rows in an event
+        def sc_helicity = helScalerBank.getInt("helicity", row)
+        def sc_fc       = helScalerBank.getFloat("fcupgated", row) // helicity-latched FC charge
+        thisTimeBin.histTree.helic.scaler.chargeWeighted.fill(sc_helicity, sc_fc)
       }
-      thisTimeBin.histTree.helic.scaler.chargeWeighted.fill(scalerHelicity,fc)
     }
 
     // get electron list, and increment the number of trigger electrons
