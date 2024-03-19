@@ -739,7 +739,7 @@ inHipoList.each { inHipoFile ->
     // get helicity and fill helicity distribution
     def helicity = 0 // if undefined, default to 0
     if(hipoEvent.hasBank("REC::Event") && eventBank.rows()>0) {
-      eventBank.getByte('helicity',0)
+      helicity = eventBank.getByte('helicity',0)
     }
     def helStr
     def helDefined
