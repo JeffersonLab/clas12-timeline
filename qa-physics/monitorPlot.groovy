@@ -400,8 +400,7 @@ inList.each { inFile ->
     // charge non-monotonicicity
     //--------------------------
     if(objN.contains("/nonMonotonicity_")) {
-      varStr = tok[1]
-      T.addLeaf(monTree,[runnum,'charge',varStr,'valGraph'],{obj})
+      T.addLeaf(monTree,[runnum,'charge','nonMonotonicity','valGraph'],{obj})
     }
 
   } // eo loop over objects in the file (run)
@@ -466,7 +465,10 @@ T.exeLeaves(monTree,{
         if(tlPath.contains('pip')) tlT = "inclusive pi+ kinematics"
         if(tlPath.contains('pim')) tlT = "inclusive pi- kinematics"
       }
-      if(tlPath.contains('nonMonotonicity')) tlT = "FC charge non-monotonicity"
+      if(tlPath.contains('nonMonotonicity')) {
+        tlT = "FC charge non-monotonicity"
+        tlN = "mean_non-monotonicity"
+      }
       if(T.key.contains('Dist')) tlT = "average ${tlT}"
       tlT = "${tlT} vs. run number"
       def tl = new GraphErrors(tlN)
@@ -484,7 +486,10 @@ T.exeLeaves(monTree,{
           if(tlPath.contains('pip')) tlT = "inclusive pi+ kinematics"
           if(tlPath.contains('pim')) tlT = "inclusive pi- kinematics"
         }
-        if(tlPath.contains('nonMonotonicity')) tlT = "FC charge non-monotonicity"
+        if(tlPath.contains('nonMonotonicity')) {
+          tlT = "FC charge non-monotonicity"
+          tlN = "stddev_non-monotonicicity"
+        }
         if(T.key.contains('Dist')) tlT = "standard deviation of ${tlT}"
         tlT = "${tlT} vs. run number"
         def tl = new GraphErrors(tlN)
@@ -551,7 +556,7 @@ def checkFilter( list, filter, keyName="" ) {
          !keyName.contains("Numer") && !keyName.contains("Denom")
 }
 
-def hipoWrite = { hipoName, filterList, TLkey ->
+def hipoWrite = { hipoName, filterList, TLkeys ->
   def outHipo = new TDirectory()
   monTree.each { run,tree ->
     outHipo.mkdir("/${run}")
@@ -575,7 +580,7 @@ def hipoWrite = { hipoName, filterList, TLkey ->
   outHipo.mkdir("/timelines")
   outHipo.cd("/timelines")
   T.exeLeaves(timelineTree,{
-    if(checkFilter(T.leafPath,filterList) && T.key==TLkey) {
+    if(checkFilter(T.leafPath,filterList) && TLkeys.contains(T.key)) {
       outHipo.addDataSet(T.leaf)
     }
   })
@@ -587,16 +592,17 @@ def hipoWrite = { hipoName, filterList, TLkey ->
 }
 
 // write objects to hipo files
-hipoWrite("helicity_sinPhi",['helic','sinPhi'],"timeline")
-hipoWrite("beam_spin_asymmetry",['helic','asym'],"timeline")
-hipoWrite("defined_helicity_fraction",['helic','dist','heldef'],"timeline")
-hipoWrite("relative_yield",['helic','dist','rellum'],"timeline")
-hipoWrite("q2_W_x_y_means",['DIS'],"timeline")
-hipoWrite("pip_kinematics_means",['inclusive','pip'],"timeline")
-hipoWrite("pim_kinematics_means",['inclusive','pim'],"timeline")
-hipoWrite("q2_W_x_y_stddevs",['DIS'],"timelineDev")
-hipoWrite("pip_kinematics_stddevs",['inclusive','pip'],"timelineDev")
-hipoWrite("pim_kinematics_stddevs",['inclusive','pim'],"timelineDev")
+hipoWrite("helicity_sinPhi",['helic','sinPhi'],["timeline"])
+hipoWrite("beam_spin_asymmetry",['helic','asym'],["timeline"])
+hipoWrite("defined_helicity_fraction",['helic','dist','heldef'],["timeline"])
+hipoWrite("relative_yield",['helic','dist','rellum'],["timeline"])
+hipoWrite("q2_W_x_y_means",['DIS'],["timeline"])
+hipoWrite("pip_kinematics_means",['inclusive','pip'],["timeline"])
+hipoWrite("pim_kinematics_means",['inclusive','pim'],["timeline"])
+hipoWrite("q2_W_x_y_stddevs",['DIS'],["timelineDev"])
+hipoWrite("pip_kinematics_stddevs",['inclusive','pip'],["timelineDev"])
+hipoWrite("pim_kinematics_stddevs",['inclusive','pim'],["timelineDev"])
+hipoWrite("faraday_cup_charge_non-monotonicity",['charge','nonMonotonicity'],["timeline","timelineDev"])
 
 // sort qaTree and output to json file
 qaTree.each { qaRun, qaRunTree -> qaRunTree.sort{it.key.toInteger()} }
