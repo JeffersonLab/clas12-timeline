@@ -515,7 +515,7 @@ T.exeLeaves(monTree,{
       def tot    = vals.size()
       def ave    = tot>0 ? vals.sum() / tot : 0
       def devs   = vals.collect{ (it-ave)**2 }
-      def stddev = Math.sqrt( devs.sum() / tot )
+      def stddev = tot>0 ? Math.sqrt( devs.sum() / tot ) : tot
       T.getLeaf(timelineTree,tlPath+'timeline').addPoint(tlRun,ave,0.0,0.0)
       if(tlPath.contains('DIS') || tlPath.contains('inclusive') || tlPath.contains('nonMonotonicity')) {
         T.getLeaf(timelineTree,tlPath+'timelineDev').addPoint(tlRun,stddev,0.0,0.0)
