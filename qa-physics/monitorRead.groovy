@@ -22,7 +22,7 @@ def SECTORS         = 0..<6  // sector range
 def ECAL_ID         = DetectorType.ECAL.getDetectorId() // ECAL detector ID
 // debugging settings
 def VERBOSE = false  // enable extra log messages, for debugging
-def LIMITER = 2      // if nonzero, only analyze this many DST files (for quick testing and debugging)
+def LIMITER = 0      // if nonzero, only analyze this many DST files (for quick testing and debugging)
 def AUXFILE = false  // enable auxfile production, an event-by-event table (a large text file)
 
 // function to print a debugging message
@@ -752,7 +752,7 @@ inHipoList.each { inHipoFile ->
     // get scaler helicity from `HEL::scaler`, and fill its charge-weighted distribution
     if(hipoEvent.hasBank("HEL::scaler")) {
       helScalerBank.rows().times{ row -> // HEL::scaler readouts "pile up", so there are multiple bank rows in an event
-        def sc_helicity = helScalerBank.getInt("helicity", row)
+        def sc_helicity = helScalerBank.getByte("helicity", row)
         def sc_fc       = helScalerBank.getFloat("fcupgated", row) // helicity-latched FC charge
         thisTimeBin.histTree.helic.scaler.chargeWeighted.fill(sc_helicity, sc_fc)
       }
