@@ -37,22 +37,28 @@ class ECFitter {
     def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -1.0, 1.0);
     double hAmp  = h1.getBinContent(h1.getMaximumBin());
     double hMean = h1.getAxis().getBinCenter(h1.getMaximumBin());
-    double hRMS  = h1.getRMS(); //ns
+    double hRMS  = h1.getRMS();
     f1.setParameter(0, hAmp);
     f1.setParameter(1, hMean);
     f1.setParameter(2, hRMS);
     f1.setRange(hMean-1,hMean+1)
-    DataFitter.fit(f1,h1,"")
 
+    int nfits = 0
     def makefit = {func->
-      hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-2.5*hRMS,hMean+2.5*hRMS)
-      DataFitter.fit(func,h1,"Q")
-      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || dm.abs()>0.001 || dr.abs()>0.002 ) {
+        hMean = func.getParameter(1)
+        hRMS = func.getParameter(2).abs()
+        func.setRange(hMean-2.5*hRMS,hMean+2.5*hRMS)
+        DataFitter.fit(func,h1,"Q")
+        nfits++
+        //System.out.println(nfits+" "+func.getParameter(1)+" "+func.getParameter(2))
+        return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
     //makefit(f1)

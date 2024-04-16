@@ -16,18 +16,24 @@ class FTOFFitter {
     f1.setParameter(1, hMean);
     f1.setParameter(2, hRMS);
 
+    int nfits = 0
     def makefit = {func->
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || dm.abs()>0.0005 || dr.abs()>0.001 ) {
       hMean = func.getParameter(1)
       hRMS = func.getParameter(2).abs()
       func.setRange(hMean-2.0*hRMS,hMean+2.0*hRMS)
       MoreFitter.fit(func,h1,"Q")
+      nfits++
+      //System.out.println(nfits+" "+func.getParameter(1)+" "+func.getParameter(2))
       return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
-    //makefit(f1)
     return f1
   }
 
@@ -44,18 +50,24 @@ class FTOFFitter {
     f1.setParameter(1, hMean);
     f1.setParameter(2, hRMS);
 
+    int nfits = 0
     def makefit = {func->
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || dm.abs()>0.0005 || dr.abs()>0.001 ) {
       hMean = func.getParameter(1)
       hRMS = func.getParameter(2).abs()
       func.setRange(hMean-1.5*hRMS,hMean+1.5*hRMS)
       MoreFitter.fit(func,h1,"Q")
+      nfits++
+      //System.out.println(nfits+" "+func.getParameter(1)+" "+func.getParameter(2))
       return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
-    //makefit(f1)
     return f1
   }
 
@@ -72,18 +84,24 @@ class FTOFFitter {
     f1.setParameter(1, hMean);
     f1.setParameter(2, hRMS);
 
+    int nfits = 0
     def makefit = {func->
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || dm.abs()>0.0005 || dr.abs()>0.001 ) {
       hMean = func.getParameter(1)
       hRMS = func.getParameter(2).abs()
       func.setRange(hMean-1.5*hRMS,hMean+1.5*hRMS)
       MoreFitter.fit(func,h1,"Q")
+      nfits++
+      //System.out.println(nfits+" "+func.getParameter(1)+" "+func.getParameter(2))
       return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
-    //makefit(f1)
     return f1
   }
 
@@ -100,18 +118,24 @@ class FTOFFitter {
     f1.setParameter(1, hMean);
     f1.setParameter(2, hRMS);
 
+    int nfits = 0
     def makefit = {func->
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || dm.abs()>0.0005 || dr.abs()>0.001 ) {
       hMean = func.getParameter(1)
       hRMS = func.getParameter(2).abs()
       func.setRange(hMean-1.5*hRMS,hMean+1.5*hRMS)
       MoreFitter.fit(func,h1,"Q")
+      nfits++
+      //System.out.println(nfits+" "+func.getParameter(1)+" "+func.getParameter(2))
       return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
-    //makefit(f1)
     return f1
   }
 
@@ -120,7 +144,7 @@ class FTOFFitter {
     def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -1.0, 1.0);
     double hAmp  = h1.getBinContent(h1.getMaximumBin());
     double hMean = h1.getAxis().getBinCenter(h1.getMaximumBin());
-    double hRMS  = 1.9//h1.getRMS(); //ns
+    double hRMS  = 1.9
     double rangeMin = (hMean - 1.5*hRMS);
     double rangeMax = (hMean + 1.5*hRMS);
     f1.setRange(rangeMin, rangeMax);
@@ -128,18 +152,23 @@ class FTOFFitter {
     f1.setParameter(1, hMean);
     f1.setParameter(2, hRMS);
 
+    int nfits = 0
     def makefit = {func->
-      hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-1.5*hRMS,hMean+1.5*hRMS)
-      MoreFitter.fit(func,h1,"Q")
-      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || dm.abs()>0.001 || dr.abs()>0.001 ) {
+          hMean = func.getParameter(1)
+          hRMS = func.getParameter(2).abs()
+          func.setRange(hMean-1.5*hRMS,hMean+1.5*hRMS)
+          MoreFitter.fit(func,h1,"Q")
+          nfits++
+          return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
-    //makefit(f1)
     return f1
   }
 
@@ -159,18 +188,24 @@ class FTOFFitter {
     if (hAmp>0) f1.setParLimits(3,0, hAmp);
     f1.setParLimits(4,0,100);
 
+    int nfits = 0
     def makefit = {func->
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || dm.abs()>0.001 || dr.abs()>0.001 ) {
       hMean = func.getParameter(1)
       hRMS = func.getParameter(2).abs()
       func.setRange(7, hMean*2.0);
       DataFitter.fit(func,h1,"Q")
+      nfits++
+      //System.out.println(nfits+" "+func.getParameter(1)+" "+func.getParameter(2))
       return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
+    def fits1 = (0..20).findResults{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
-    //makefit(f1)
     return f1
   }
 }

@@ -5,6 +5,7 @@ set -u
 source $(dirname $0)/environ.sh
 
 # default options
+match="^"
 inputDir=""
 dataset=""
 outputDir=""
@@ -48,6 +49,8 @@ usage() {
                         use --list to dump the list of timelines
                         default: run all
 
+    -m [MATCH]          only produce timelines matching [MATCH]
+
     --list              dump the list of timelines and exit
 
     --build             cleanly-rebuild the timeline code, then run
@@ -69,7 +72,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # parse options
-while getopts "d:i:Uo:r:n:t:h-:" opt; do
+while getopts "d:i:Uo:r:n:t:m:h-:" opt; do
   case $opt in
     d) inputCmdOpts+=" -d $OPTARG" ;;
     i) inputCmdOpts+=" -i $OPTARG" ;;
@@ -77,6 +80,7 @@ while getopts "d:i:Uo:r:n:t:h-:" opt; do
     o) outputDir=$OPTARG ;;
     r) rungroup=$(echo $OPTARG | tr '[:upper:]' '[:lower:]') ;;
     n) numThreads=$OPTARG ;;
+    m) match=$OPTARG ;;
     t) singleTimeline=$OPTARG ;;
     h) modes['help']=true ;;
     -)
@@ -107,9 +111,9 @@ export MAIN
 
 # build list of timelines
 if ${modes['skip-mya']}; then
-  timelineList=$(java $MAIN --timelines | grep -vE '^epics_' | sort)
+  timelineList=$(java $MAIN --timelines | grep -vE '^epics_' | sort | grep $match)
 else
-  timelineList=$(java $MAIN --timelines | sort)
+  timelineList=$(java $MAIN --timelines | sort | grep $match)
 fi
 
 # list detector timelines, if requested
@@ -200,6 +204,31 @@ fi
 # make output directories
 mkdir -p $logDir $finalDirPreQA $finalDir
 
+function wait_for_jobs() {
+    stat=10
+    while [ "${#job_ids[@]}" -gt $1 ]; do
+        for i in "${!job_ids[@]}"; do
+            if [ "$1" -eq 0 ]; then
+                if [ "${#job_ids[@]}" -lt $stat ]; then
+                    echo ">>> waiting on ${#job_ids[@]} jobs:"
+                    let stat=${#job_ids[@]}
+                    #let stat=stat-1
+                    printf '>>>     %s\n' "${job_names[@]}"
+                fi
+            fi
+            set +e
+            ps ${job_ids[$i]} >& /dev/null
+            if [ "$?" -ne 0 ]; then
+                echo ">>> ${job_names[$i]} finished."
+                unset job_ids[$i]
+                unset job_names[$i]
+            fi
+            set -e
+        done
+        sleep 1
+    done
+}
+
 ######################################
 # produce detector timelines
 ######################################
@@ -214,7 +243,8 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   done
 
   # produce timelines, multithreaded
-  jobs=()
+  job_ids=()
+  job_names=()
   for timelineObj in $timelineList; do
     logFile=$logDir/$timelineObj
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
@@ -224,22 +254,15 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
       echo "PREMATURE EXIT, since --debug option was used"
       exit
     else
+      #sleep 1 
       java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
-      jobs+=($!)
+      job_ids+=($!)
+      job_names+=($timelineObj)
     fi
-    while [ "${#jobs[@]}" -ge $numThreads ]; do
-        sleep 1
-        for i in "${!jobs[@]}"; do
-            set +e
-            ps ${jobs[$i]} >& /dev/null
-            if [ "$?" -ne 0 ]; then
-                unset jobs[$i]
-            fi
-            set -e
-        done
-    done
+    wait_for_jobs $numThreads
   done
-  wait
+
+  wait_for_jobs 0
 
   # organize output timelines
   echo ">>> organizing output timelines..."

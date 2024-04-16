@@ -11,13 +11,14 @@ import org.jlab.groot.data.H1F
 import org.jlab.groot.math.F1D
 
 
-class DCFitter{
-	static F1D fit(H1F h1) {
-        def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])+[const]", -0.5, 0.5);
+class DCFitter {
 
+	static F1D fit(H1F h1, def dmean, def dsigma) {
+
+        def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])+[const]", -0.5, 0.5);
         double hAmp  = h1.getBinContent(h1.getMaximumBin());
         double hMean = h1.getAxis().getBinCenter(h1.getMaximumBin());
-        double hRMS  = h1.getRMS(); //ns
+        double hRMS  = h1.getRMS();
         f1.setRange(hMean-1, hMean+1);
         f1.setParameter(0, hAmp);
         f1.setParameter(1, hMean);
@@ -25,21 +26,24 @@ class DCFitter{
         f1.setParameter(2, hRMS);
         f1.setParameter(3,0);
 
-	    DataFitter.fit(f1,h1,"LQ")
-
-
-		def makefit = {func->
-			hMean = func.getParameter(1)
-			hRMS = func.getParameter(2).abs()
-			func.setRange(hMean-2.5*hRMS,hMean+2.5*hRMS)
-			DataFitter.fit(func,h1,"Q")
-			return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+        int nfits = 0
+        def makefit = {f->
+            def dm = hMean - f.getParameter(1)
+            def dr = hRMS - f.getParameter(2)
+            if ( nfits==0 || dm.abs()>dmean || dr.abs()>dsigma ) {
+                 hMean = f.getParameter(1)
+                 hRMS = f.getParameter(2).abs()
+                 f.setRange(hMean-2.5*hRMS,hMean+2.5*hRMS)
+                 DataFitter.fit(f,h1,"Q")
+                 nfits++
+        System.out.println(nfits+" "+f.getParameter(1)+" "+f.getParameter(2))
+                 return [f.getChiSquare(), (0..<f.getNPars()).collect{f.getParameter(it)}]
+            }
 		}
 
-		def fits1 = (0..20).collect{makefit(f1)}
+		def fits1 = (0..20).findResults{makefit(f1)}
 		def bestfit = fits1.sort()[0]
 		f1.setParameters(*bestfit[1])
-		//makefit(f1)
 
 		return f1
 
@@ -51,7 +55,7 @@ class DCFitter{
 
         double hAmp  = h1.getBinContent(h1.getMaximumBin());
         double hMean = h1.getAxis().getBinCenter(h1.getMaximumBin());
-        double hRMS  = h1.getRMS(); //ns
+        double hRMS  = h1.getRMS();
         f2.setRange(hMean-1, hMean+1);
         f2.setParameter(0, hAmp);
         f2.setParameter(1, hMean);
@@ -65,21 +69,14 @@ class DCFitter{
         def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])+[amp2]*gaus(x,[mean],[sigma2])", -0.4, 0.4); 
         f1.setParameter(0, f2.getParameter(0));
         f1.setParameter(1, f2.getParameter(1));
-        f1.setParameter(2, f2.getParameter(2)*0.75);
-        f1.setParameter(3, f2.getParameter(0)*0.15);
-        f1.setParameter(4, f2.getParameter(2));
+        f1.setParameter(2, f2.getParameter(2)*0.5);
+        f1.setParameter(3, f2.getParameter(0)*0.1);
+        f1.setParameter(4, f2.getParameter(2)*2.0);
         f1.setRange(f2.getParameter(1)-3.0*f2.getParameter(2).abs(),f2.getParameter(1)+3.0*f2.getParameter(2).abs())
 
-       
-        
         DataFitter.fit(f1, h1, "LQ");
-
 		return f1
-
  	}
-
-
-
 
  	static F1D t0fit(H1F h1, int slayer){
 

@@ -10,21 +10,27 @@ class RFFitter {
     double hMean = h1.getAxis().getBinCenter(h1.getMaximumBin())
     double xmin = h1.getXaxis().min()
     double xmax = h1.getXaxis().max()
-    double hRMS  = Math.min(h1.getRMS()/2, 0.2)
+    double hRMS = Math.min(h1.getRMS() / 2, 0.2)
 
     f1.setParameter(1, hMean)
     f1.setParameter(2, hRMS)
-    // f1.setParLimits(2, 0, (xmax-xmin)/4)
     f1.setParameter(3, 0)
-    // f1.setParLimits(3, 0, h1.getMax()*0.2)
 
+    def dmean = 0.001
+    def dsigma = 0.002
+    int nfits = 0
     def makefits = {func->
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-2.5*hRMS, hMean+2.5*hRMS)
-      DataFitter.fit(func,h1,"Q")
-      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      def dm = hMean - func.getParameter(1)
+      def dr = hRMS - func.getParameter(2)
+      if ( nfits==0 || dm.abs()>dmean || dr.abs()>dsigma ) {
+        hRMS = func.getParameter(2).abs()
+        func.setRange(hMean-2.5*hRMS, hMean+2.5*hRMS)
+        DataFitter.fit(func,h1,"Q")
+        nfits++
+        return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
     }
-    def fits1 = (0..10).collect{makefits(f1)}
+    def fits1 = (0..10).findResults{makefits(f1)}
 
     def f2 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])+[const]+[slope]*x", -1.0, 1.0)
 
@@ -32,7 +38,8 @@ class RFFitter {
       f2.setParameter(ipar, par)
     }
 
-    def fits2 = (0..10).collect{makefits(f2)}
+    nfits = 0
+    def fits2 = (0..10).findResults{makefits(f2)}
 
     def bestfit = fits2.sort()[0]
     f2.setParameters(*bestfit[1])
