@@ -22,7 +22,7 @@ class HTCCFitter{
 
     f1.setParameter(0, h1.getMax());
     f1.setParameter(1, maxV);
-    f1.setParameter(2, 0.6);
+    f1.setParameter(2, 0.7);
 
     DataFitter.fit(f1, h1, "");
 
