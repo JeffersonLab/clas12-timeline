@@ -123,6 +123,9 @@ qaTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
       binTree.sectorDefects.each{
         if(bitNum in it.value) secList+=it.key
       }
+      if(secList==["1", "2", "3", "4", "5", "6"]) {
+        secList = ["all"]
+      }
       return secList
     }
 

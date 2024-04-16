@@ -32,12 +32,12 @@ Two types of timelines are produced:
 1. **Detector timelines**: monitor detector parameters, histograms, and calibration
 1. **Physics timelines**: monitor higher-level quantities to perform Quality Assurance (QA) for physics analysis
 
-Both of these timeline types are produced in the following steps.
+Both of these timeline types are produced in the following steps (🟢) .
 
 > [!NOTE]
 > Physics timeline production and QA are typically only valuable on high-statistics datasets, whereas detector timelines need files produced with `mon` schema, which are typically only produced with low statistics; therefore, for a given dataset, typically one set of timelines is produced but not the other.
 
-### Step 1: Data Monitoring
+### 🟢 Step 1: Data Monitoring
 
 This step reads input HIPO files (_e.g._, DST or `mon` files) and produces histograms and auxiliary files, which are then consumed by Step 2 to produce the timelines. Since many input files are read, it is recommended to use a computing cluster.
 
@@ -69,7 +69,7 @@ sbatch ./slurm/job.rga_sp19_v5.physics.slurm     # for physics timelines
 > - data monitoring for physics timelines is handled by the [`qa-physics/` subdirectory](qa-physics);
 >   see [its documentation](qa-physics/README.md)
 
-### Step 2: Timeline Production and QA
+### 🟢 Step 2: Timeline Production and QA
 
 After Step 1 is complete, run the following Step 2 scripts to produce the timeline HIPO files and to run the automatic QA procedures. There is one script for each timeline type: run them with no arguments to print the usage guides:
 
@@ -108,7 +108,7 @@ bin/run-physics-timelines.sh   -d rga_sp19_v5   # for physics timelines
 > - physics timeline production and QA are handled by the [`qa-physics/` subdirectory](qa-physics);
 >   see [their documentation](qa-physics/README.md)
 
-### Step 3: Deployment
+### 🟢 Step 3: Deployment
 
 To view the timelines on the web, you must deploy them by copying the timeline HIPO files to a directory with a running web server. Note that you must have write-permission for that directory. To deploy, run (with no arguments, for the usage guide):
 

@@ -24,9 +24,9 @@ class htcc_npheAll {
     out.mkdir('/timelines')
     // (0..<6).each{ sec->
     def grtl = new GraphErrors('htcc_npheAll_mean')
-    grtl.setTitle("Mean Combined HTCC timing")
-    grtl.setTitleY("Mean Combined HTCC timing (ns)")
-    grtl.setTitleX("run number")
+    grtl.setTitle("Mean NPHE Combined Across All Channels per Run")
+    grtl.setTitleY("Mean NPHE")
+    grtl.setTitleX("Run Number")
 
     data.sort{it.key}.each{run,it->
       out.mkdir('/'+it.run)

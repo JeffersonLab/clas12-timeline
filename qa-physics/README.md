@@ -21,8 +21,6 @@ It is recommended to use `bash` or `zsh` as your shell; `tcsh` is not supported.
 
 # Procedure for Automatic QA
 * prepare run-group dependent settings in `monitorRead.groovy` (**WARNING: this step will be deprecated soon**)
-  * guess `helFlip`; you can only know if your guess is correct after timelines
-    have been produced
   * obtain the beam energies from the `RCDB`; CAUTION: sometimes the `RCDB` is 
     wrong, and it is good to ask for the correct beam energy from the run group
   * set `FCmode`, to specify how to calculate the FC charge
@@ -117,8 +115,7 @@ First step is to read DST or Skim files, producing HIPO files and data tables
   * reads data table and generates `monitorElec.hipo`
     * within this HIPO file, there is one directory for each run, containing several
       plots:
-      * `grA*`: N/F vs. time bin (the `A` notation is so it appears first in the
-        online timeline front-end)
+      * `grA*`: N/F vs. time bin
       * `grF*`: F vs. time bin
       * `grN*`: N vs. time bin
       * `grT*`: livetime vs. time bin

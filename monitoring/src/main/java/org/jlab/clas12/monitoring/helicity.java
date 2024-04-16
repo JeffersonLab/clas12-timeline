@@ -14,6 +14,7 @@ import org.jlab.detector.helicity.DecoderBoardUtil;
 public class helicity {
 
     public static final byte DELAY_WINDOWS = 8;
+    private static int nExceptions = 0; 
     
     private class H1Fb extends H1F {
         String bankName;
@@ -46,12 +47,20 @@ public class helicity {
         for (H1Fb h : this.histos) {
             h.fill(event);
         }
-        if (event.hasBank("HEL::decoder") && event.getBank("HEL::decoder").rows()>0) {
-            DataBank bank = event.getBank("HEL::decoder");
-            int h = DecoderBoardUtil.QUARTET.check(bank) ?
-                -1+2*DecoderBoardUtil.QUARTET.getWindowHelicity(bank, DELAY_WINDOWS) :
-                0;
-            this.hboard.fill(h);
+        if (nExceptions < 10) {
+            try {
+                if (event.hasBank("HEL::decoder") && event.getBank("HEL::decoder").rows()>0) {
+                    DataBank bank = event.getBank("HEL::decoder");
+                    int h = DecoderBoardUtil.QUARTET.check(bank) ?
+                        -1+2*DecoderBoardUtil.QUARTET.getWindowHelicity(bank, DELAY_WINDOWS) :
+                        0;
+                    this.hboard.fill(h);
+                }
+            }
+            catch (NoSuchFieldError e) {
+                nExceptions++;
+                System.out.println(e);
+            }
         }
     }
 

@@ -20,7 +20,6 @@ if(args.length>=2) useFT = true
 def sectors = 0..<6
 def sec = { int i -> i+1 }
 def tok
-int r=0
 def runnum, binnum, sector
 def eventNumMin, eventNumMax
 def timestampMin, timestampMax
@@ -34,10 +33,10 @@ def trigRat
 def errPrint = { str -> System.err << "ERROR in run ${runnum}_${binnum}: "+str+"\n" }
 
 // define graphs
-def defineGraph = { name,ytitle ->
+def defineGraph = { name, ytitle, sectorDependent ->
   sectors.collect {
     def g = new GraphErrors(name+"_${runnum}_"+sec(it))
-    def gT = ytitle+" vs. time bin"+(useFT?"":" -- Sector "+sec(it))
+    def gT = ytitle+" vs. time bin" + ((sectorDependent && !useFT) ? " -- Sector ${sec(it)}" : "")
     g.setTitle(gT)
     g.setTitleY(ytitle)
     g.setTitleX("time bin")
@@ -71,21 +70,21 @@ dataFile.eachLine { line ->
 
   // read columns of data_table.dat (in order left-to-right)
   tok = line.tokenize(' ')
-  r=0
-  runnum = tok[r++].toInteger()
-  binnum = tok[r++].toInteger()
-  eventNumMin = tok[r++].toBigInteger()
-  eventNumMax = tok[r++].toBigInteger()
+  int r = 0
+  runnum       = tok[r++].toInteger()
+  binnum       = tok[r++].toInteger()
+  eventNumMin  = tok[r++].toBigInteger()
+  eventNumMax  = tok[r++].toBigInteger()
   timestampMin = tok[r++].toBigInteger()
   timestampMax = tok[r++].toBigInteger()
-  sector = tok[r++].toInteger()
-  nElec = tok[r++].toBigDecimal()
-  nElecFT = tok[r++].toBigDecimal()
-  fcStart = tok[r++].toBigDecimal()
-  fcStop = tok[r++].toBigDecimal()
-  ufcStart = tok[r++].toBigDecimal()
-  ufcStop = tok[r++].toBigDecimal()
-  aveLivetime = tok[r++].toBigDecimal()
+  sector       = tok[r++].toInteger()
+  nElec        = tok[r++].toBigDecimal()
+  nElecFT      = tok[r++].toBigDecimal()
+  fcStart      = tok[r++].toBigDecimal()
+  fcStop       = tok[r++].toBigDecimal()
+  ufcStart     = tok[r++].toBigDecimal()
+  ufcStop      = tok[r++].toBigDecimal()
+  aveLivetime  = tok[r++].toBigDecimal()
 
 
   // if we are using the FT electrons, simply set nElec to nElecFT, since
@@ -98,11 +97,11 @@ dataFile.eachLine { line ->
   // if the run number changed, write filled graphs, then start new graphs
   if(runnum!=runnumTmp) {
     if(runnumTmp>0) writePlots(runnumTmp)
-    grA = defineGraph("grA","${electronT} Normalized Yield N/F")
-    grN = defineGraph("grN","${electronT} Yield N")
-    grF = defineGraph("grF","Gated Faraday Cup charge F [nC]")
-    grU = defineGraph("grU","Ungated Faraday Cup charge F [nC]")
-    grT = defineGraph("grT","Live Time")
+    grA = defineGraph("grA", "${electronT} Normalized Yield N/F", true)
+    grN = defineGraph("grN", "${electronT} Yield N", true)
+    grF = defineGraph("grF", "Gated Faraday Cup charge F [nC]", false)
+    grU = defineGraph("grU", "Ungated Faraday Cup charge F [nC]", false)
+    grT = defineGraph("grT", "Live Time", false)
     runnumTmp = runnum
   }
 

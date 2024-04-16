@@ -21,14 +21,12 @@ if(args.length>=3) useFT = (args[2]=="FT") ? true : false
 if(args.length>=4) qaBit = args[3].toInteger()
 //--------------------------------------------------------------------------
 
-// vars and subroutines
+// sector handlers
 def sectors = 0..<6
 def sec = { int i -> i+1 }
-def runnum, binnum, sector, epoch
-def evnumMin, evnumMax
-def gr
-def jPrint = { name,object -> new File(name).write(JsonOutput.toJson(object)) }
 
+// subroutine to write JSON
+def jPrint = { name,object -> new File(name).write(JsonOutput.toJson(object)) }
 
 // read epochs list file
 def epochFile = new File("epochs/epochs.${dataset}.txt")
@@ -57,16 +55,21 @@ def evnumTree = [:]
 if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
 dataFile.eachLine { line ->
   tok = line.tokenize(' ')
-  runnum = tok[0].toInteger()
-  binnum = tok[1].toInteger()
-  evnumMin = tok[2].toBigInteger()
-  evnumMax = tok[3].toBigInteger()
+  int r = 0
+  def runnum       = tok[r++].toInteger()
+  def binnum       = tok[r++].toInteger()
+  def evnumMin     = tok[r++].toBigInteger()
+  def evnumMax     = tok[r++].toBigInteger()
+  def timestampMin = tok[r++].toBigInteger()
+  def timestampMax = tok[r++].toBigInteger()
   if(!evnumTree.containsKey(runnum))
     evnumTree[runnum] = [:]
   if(!evnumTree[runnum].containsKey(binnum)) {
     evnumTree[runnum][binnum] = [
-      "evnumMin":evnumMin,
-      "evnumMax":evnumMax
+      evnumMin:     evnumMin,
+      evnumMax:     evnumMax,
+      timestampMin: timestampMin,
+      timestampMax: timestampMax,
     ]
   }
 }
@@ -78,8 +81,8 @@ inTdir.readFile("${inDir}/outmon/monitorElec"+(useFT?"FT":"")+".hipo")
 def inList = inTdir.getCompositeObjectList(inTdir)
 
 // define 'ratioTree', a tree with the following structure
-/* 
-  { 
+/*
+  {
     sector1: {
       epoch1: [ list of N/F values ]
       epoch2: [ list of N/F values ]
@@ -101,7 +104,7 @@ def epochPlotTree = [:]
 
 
 // initialize sector branches
-sectors.each{ 
+sectors.each{
   ratioTree.put(sec(it),[:])
   cutTree.put(sec(it),[:])
   epochPlotTree.put(sec(it),[:])
@@ -114,11 +117,11 @@ inList.each { obj ->
   if(obj.contains("/grA_")) {
 
     // get runnum and sector
-    (runnum,sector) = obj.tokenize('_').subList(1,3).collect{ it.toInteger() }
+    def (runnum,sector) = obj.tokenize('_').subList(1,3).collect{ it.toInteger() }
     if(sector<1||sector>6) throw new Exception("bad sector number $sector")
 
     // get epoch num, then initialize epoch branch if needed
-    epoch = getEpoch(runnum,sector)
+    def epoch = getEpoch(runnum,sector)
     if(ratioTree[sector][epoch]==null) {
       ratioTree[sector].put(epoch,[])
       cutTree[sector].put(epoch,[:])
@@ -127,12 +130,12 @@ inList.each { obj ->
 
     // append N/F values to the list associated to this (sector,epoch)
     // also determine minimum and maximum values of N/F
-    gr = inTdir.getObject(obj)
-    gr.getDataSize(0).times { i -> 
+    def gr = inTdir.getObject(obj)
+    gr.getDataSize(0).times { i ->
       def val = gr.getDataY(i)
       minA = val < minA ? val : minA
       maxA = val > maxA ? val : maxA
-      ratioTree[sector][epoch].add(val) 
+      ratioTree[sector][epoch].add(val)
     }
     //ratioTree[sector][epoch].add(runnum) // useful for testing
   }
@@ -141,7 +144,7 @@ inList.each { obj ->
 
 
 // subroutine for calculating median of a list
-def median = { d ->
+def listMedian = { d ->
   if(d.size()==0) {
     System.err.println "WARNING: attempt to calculate median of an empty list"
     return -10000
@@ -154,20 +157,19 @@ def median = { d ->
 
 // establish cut lines using 'cutFactor' x IQR method, and fill cutTree
 // - note: for the FT electrons, it seems that N/F has a long tail toward
-//   lower values, so cutLo is forced to be lower 
+//   lower values, so cutLo is forced to be lower
 def cutFactor = 4.0
-def mq,lq,uq,iqr,cutLo,cutHi
 sectors.each { s ->
   sectorIt = sec(s)
   if( !useFT || (useFT && sectorIt==1)) {
     ratioTree[sectorIt].each { epochIt,ratioList ->
 
-      mq = median(ratioList) // middle quartile
-      lq = median(ratioList.findAll{it<mq}) // lower quartile
-      uq = median(ratioList.findAll{it>mq}) // upper quartile
-      iqr = uq - lq // interquartile range
-      cutLo = lq - cutFactor * iqr // lower QA cut boundary
-      cutHi = uq + cutFactor * iqr // upper QA cut boundary
+      def mq = listMedian(ratioList) // middle quartile
+      def lq = listMedian(ratioList.findAll{it<mq}) // lower quartile
+      def uq = listMedian(ratioList.findAll{it>mq}) // upper quartile
+      def iqr = uq - lq // interquartile range
+      def cutLo = lq - cutFactor * iqr // lower QA cut boundary
+      def cutHi = uq + cutFactor * iqr // upper QA cut boundary
 
       cutTree[sectorIt][epochIt]['mq'] = mq
       cutTree[sectorIt][epochIt]['lq'] = lq
@@ -182,17 +184,19 @@ sectors.each { s ->
 //println T.pPrint(cutTree)
 
 
-// vars and subroutines for splitting graphs into "good" and "bad", 
+// vars and subroutines for splitting graphs into "good" and "bad",
 // i.e., "pass QA cuts" and "outside QA cuts", respectively
-def grA,grA_good,grA_bad
-def grN,grN_good,grN_bad
-def grF,grF_good,grF_bad
-def grU,grU_good,grU_bad
-def grT,grT_good,grT_bad
+def grA, grA_good, grA_bad
+def grN, grN_good, grN_bad
+def grF, grF_good, grF_bad
+def grU, grU_good, grU_bad
+def grT, grT_good, grT_bad
 def histA_good, histA_bad
-def nGood,nBad
+def grDuration,  grDuration_good,  grDuration_bad
+def grNumEvents, grNumEvents_good, grNumEvents_bad
+def nGood, nBad
 def nGoodTotal = 0
-def nBadTotal = 0
+def nBadTotal  = 0
 def copyTitles = { g1,g2 ->
   g2.setTitle(g1.getTitle())
   g2.setTitleX(g1.getTitleX())
@@ -210,17 +214,17 @@ def splitGraph = { g ->
   gB.setMarkerColor(2)
   return [gG,gB]
 }
-  
 
 
-// define 'epoch plots', which are time-ordered concatenations of all the plots, 
+
+// define 'epoch plots', which are time-ordered concatenations of all the plots,
 // and put them in the epochPlotTree
 def defineEpochPlot = { name,ytitle,s,e ->
   def g = new GraphErrors("${name}_s${s}_e${e}")
   if(useFT) g.setTitle(ytitle+" vs. bin index -- epoch $e")
   else      g.setTitle(ytitle+" vs. bin index -- Sector $s, epoch $e")
   g.setTitleY(ytitle)
-  g.setTitleX("bin index")
+  g.setTitleX("Bin Index")
   return splitGraph(g) // returns list of plots ['good','bad']
 }
 def insertEpochPlot = { map,name,plots ->
@@ -245,7 +249,6 @@ sectors.each { s ->
     }
   }
 }
-
 
 // define output hipo files and outliers list
 def outHipoQA = new TDirectory()
@@ -298,7 +301,7 @@ def defineTimeline = { title,ytitle,name ->
       def g = new GraphErrors(gN)
       g.setTitle(title)
       g.setTitleY(ytitle)
-      g.setTitleX("run number")
+      g.setTitleX("Run Number")
       return g
     }
   }.findAll()
@@ -324,7 +327,7 @@ if(useFT) {
 else {
   TLqaEpochs = new GraphErrors("epoch_sectors")
   TLqaEpochs.setTitle("choose a sector")
-  TLqaEpochs.setTitleX("sector")
+  TLqaEpochs.setTitleX("Sector")
   sectors.each{ TLqaEpochs.addPoint(sec(it),1.0,0,0) }
 }
 
@@ -340,22 +343,42 @@ def addEpochPlotPoint = { plotOut,plotIn,i,r ->
   def n = r + f/5000.0 // "bin index"
   plotOut.addPoint(n,plotIn.getDataY(i),0,0)
 }
-def writeHipo = { hipo,outList -> outList.each{ hipo.addDataSet(it) } }
-def addGraphsToHipo = { hipoFile ->
+def writeHipo = { hipo,outList ->
+  outList.each{ hipo.addDataSet(it) }
+}
+def prioGraph = { g, prio ->
+  prioStr = prio < 10 ? "0$prio" : "$prio"
+  g.setName("p${prioStr}_${g.getName()}")
+}
+def addGraphsToHipo = { runnum, hipoFile, sectorNum ->
   hipoFile.mkdir("/${runnum}")
   hipoFile.cd("/${runnum}")
-  writeHipo(
-    hipoFile,
-    [
-      grA_good,grA_bad,
-      grN_good,grN_bad,
-      grF_good,grF_bad,
-      grU_good,grU_bad,
-      grT_good,grT_bad,
-      histA_good,histA_bad,
-      lineMedian, lineCutLo, lineCutHi
+  // organize graphs for the front-end (they will render in alphabetical order, so prefix them with p#)
+  if(sectorNum==1) {
+    [grNumEvents_good, grNumEvents_bad].each{prioGraph(it, 1)}
+    [grDuration_good, grDuration_bad].each{prioGraph(it, 2)}
+  }
+  [grA_good, grA_bad, lineMedian, lineCutLo, lineCutHi].each{prioGraph(it, 2*sectorNum+1)}
+  [grN_good, grN_bad].each{prioGraph(it, 2*sectorNum+2)}
+  [grF_good, grF_bad].each{prioGraph(it, 15)}
+  [grU_good, grU_bad].each{prioGraph(it, 16)}
+  [grT_good, grT_bad].each{prioGraph(it, 17)}
+  // list of graphs to include on the front-end
+  writeList = [
+    grA_good, grA_bad,
+    grN_good, grN_bad,
+    lineMedian, lineCutLo, lineCutHi
+  ]
+  if(sectorNum == 1) {
+    writeList += [
+      grNumEvents_good, grNumEvents_bad,
+      grDuration_good,  grDuration_bad,
+      grF_good, grF_bad,
+      grU_good, grU_bad,
+      grT_good, grT_bad,
     ]
-  )
+  }
+  writeHipo(hipoFile, writeList)
 }
 
 
@@ -406,89 +429,104 @@ def listVar = { valList, wgtList, mu ->
   return listCovar(valList,valList,wgtList,mu,mu)
 }
 
-  
+
 // subroutine to convert a graph into a list of values
-def listA, listN, listF, listU, listT, listOne, listWgt
 def graph2list = { graph ->
   def lst = []
   graph.getDataSize(0).times { i -> lst.add(graph.getDataY(i)) }
   return lst
 }
-  
+
 // loop over runs, apply the QA cuts, and fill 'good' and 'bad' graphs
-def muN, muF
-def varN, varF 
-def totN, totF, totA, totU, totLT, aveLT
 def totFacc = sectors.collect{0}
-def reluncN, reluncF
-def NF,NFerrH,NFerrL,LT
-def valN,valF,valU,valA
-def defectList = []
-def badbin
 inList.each { obj ->
   if(obj.contains("/grA_")) {
 
     // get runnum, sector, epoch
-    (runnum,sector) = obj.tokenize('_').subList(1,3).collect{ it.toInteger() }
-    epoch = getEpoch(runnum,sector)
+    def (runnum,sector) = obj.tokenize('_').subList(1,3).collect{ it.toInteger() }
+    def epoch = getEpoch(runnum,sector)
     if(qaBit<0 && !qaTree.containsKey(runnum)) qaTree[runnum] = [:]
 
     // if using the FT, only loop over sector 1 (no sectors-dependence for FT)
     if( !useFT || (useFT && sector==1)) {
 
-      // get all the graphs and convert to value lists
+      // define timebin characterizing graphs
+      if(sector==1) {
+        grDuration = new GraphErrors("grDuration_${runnum}")
+        grDuration.setTitle("Duration vs. Time Bin")
+        grDuration.setTitleX("Time Bin")
+        grDuration.setTitleY("Duration [s]")
+        grNumEvents = new GraphErrors("grNumEvents_${runnum}")
+        grNumEvents.setTitle("Number of Events vs. Time Bin")
+        grNumEvents.setTitleX("Time Bin")
+        grNumEvents.setTitleY("Number of Events")
+      }
+
+      // get all the graphs from `inTdir` and convert to value lists
       grA = inTdir.getObject(obj)
       grN = inTdir.getObject(obj.replaceAll("grA","grN"))
       grF = inTdir.getObject(obj.replaceAll("grA","grF"))
       grU = inTdir.getObject(obj.replaceAll("grA","grU"))
       grT = inTdir.getObject(obj.replaceAll("grA","grT"))
-      listA = graph2list(grA)
-      listN = graph2list(grN)
-      listF = graph2list(grF)
-      listU = graph2list(grU)
-      listT = graph2list(grT)
-      listOne = []
+      def listA = graph2list(grA)
+      def listN = graph2list(grN)
+      def listF = graph2list(grF)
+      def listU = graph2list(grU)
+      def listT = graph2list(grT)
+      def listOne = []
       listA.size().times{listOne<<1}
 
       // decide whether to enable livetime weighting
-      listWgt = listOne // disable
-      //listWgt = listT // enable
+      def listWgt = listOne // disable
+      // def listWgt = listT // enable
 
       // get totals
-      totN = listN.sum()
-      totF = listF.sum()
-      totU = listU.sum()
-      totA = totF > 0 ? totN / totF : 0 
+      def totN = listN.sum()
+      def totF = listF.sum()
+      def totU = listU.sum()
+      def totA = totF > 0 ? totN / totF : 0
 
       // compute livetime
-      totLT = totU > 0 ? totF / totU : 0 // from total FC charge
-      aveLT = listT.size()>0 ? listT.sum() / listT.size() : 0 // average livetime for the run
+      def totLT = totU > 0 ? totF / totU : 0 // from total FC charge
+      def aveLT = listT.size()>0 ? listT.sum() / listT.size() : 0 // average livetime for the run
 
       // accumulated charge (units converted nC -> mC)
       // - should be same for all sectors
       totFacc[sector-1] += totF/1e6 // (same for all sectors)
 
-      // get mean, and variance of N and F
-      muN = listMean(listN,listWgt)
-      muF = listMean(listF,listWgt)
-      varN = listVar(listN,listWgt,muN)
-      varF = listVar(listF,listWgt,muF)
+      // get mean, quartiles, and variance of N and F
+      def muN  = listMean(listN,listWgt)
+      def muF  = listMean(listF,listWgt)
+      def varN = listVar(listN,listWgt,muN)
+      def varF = listVar(listF,listWgt,muF)
+      def mqN  = listMedian(listN) // median (middle quartile)
+      def mqF  = listMedian(listF)
+      def lqN  = listMedian(listN.findAll{it<mqN}) // lower quartile
+      def lqF  = listMedian(listF.findAll{it<mqF})
+      def uqN  = listMedian(listN.findAll{it>mqN}) // upper quartile
+      def uqF  = listMedian(listF.findAll{it>mqF})
+
+      // use IQR rule to define ranges where N and F are consistent (cf. cutLo and cutHi, which apply to N/F)
+      def iqrN       = uqN - lqN
+      def iqrF       = uqF - lqF
+      def inRangeN   = [ lqN - 1.5 * iqrN, uqN + 1.5 * iqrN ]
+      def inRangeF   = [ lqF - 1.5 * iqrF, uqF + 1.5 * iqrF ]
 
       // calculate Pearson correlation coefficient
-      covarNF = listCovar(listN,listF,listWgt,muN,muF)
-      corrNF = covarNF / (varN*varF)
+      def covarNF = listCovar(listN,listF,listWgt,muN,muF)
+      def corrNF = covarNF / (varN*varF)
 
       // calculate uncertainties of N and F relative to the mean
-      reluncN = Math.sqrt(varN) / muN
-      reluncF = Math.sqrt(varF) / muF
+      def reluncN = Math.sqrt(varN) / muN
+      def reluncF = Math.sqrt(varF) / muF
 
       // assign Poisson statistics error bars to graphs of N, F, and N/F
-      // - note that N/F error uses Pearson correlation determined from the full run's 
+      // - note that N/F error uses Pearson correlation determined from the full run's
       //   covariance(N,F)
       grA.getDataSize(0).times { i ->
-        valN = grN.getDataY(i)
-        valF = grF.getDataY(i)
-        valU = grU.getDataY(i)
+        def valN = grN.getDataY(i)
+        def valF = grF.getDataY(i)
+        def valU = grU.getDataY(i)
         grN.setError(i,0,Math.sqrt(valN))
         grF.setError(i,0,Math.sqrt(valF))
         grU.setError(i,0,Math.sqrt(valU))
@@ -498,7 +536,7 @@ inList.each { obj ->
           )
         )
       }
-          
+
 
       // split graphs into good and bad
       (grA_good,grA_bad) = splitGraph(grA)
@@ -506,36 +544,60 @@ inList.each { obj ->
       (grF_good,grF_bad) = splitGraph(grF)
       (grU_good,grU_bad) = splitGraph(grU)
       (grT_good,grT_bad) = splitGraph(grT)
+      (grDuration_good,grDuration_bad)   = splitGraph(grDuration)
+      (grNumEvents_good,grNumEvents_bad) = splitGraph(grNumEvents)
+
+      // get the first and last bins' binnums
+      def firstBinnum = grA.getDataX(0).toInteger()
+      def lastBinnum  = grA.getDataX(grA.getDataSize(0)-1).toInteger()
 
       // loop through points in grA and fill good and bad graphs
-      grA.getDataSize(0).times { i -> 
+      grA.getDataSize(0).times { i ->
 
-        binnum = grA.getDataX(i).toInteger()
+        def binnum       = grA.getDataX(i).toInteger()
+        def evnumMin     = evnumTree[runnum][binnum]['evnumMin']
+        def evnumMax     = evnumTree[runnum][binnum]['evnumMax']
+        def timestampMin = evnumTree[runnum][binnum]['timestampMin']
+        def timestampMax = evnumTree[runnum][binnum]['timestampMax']
 
         // DETERMINE DEFECT BITS, or load them from modified qaTree.json
-        badbin = false
+        def badbin = false
         if(qaBit<0) {
 
+          // fill `qaTree`
           if(!qaTree[runnum].containsKey(binnum)) {
-            qaTree[runnum][binnum] = [:]
-            qaTree[runnum][binnum]['evnumMin'] = evnumTree[runnum][binnum]['evnumMin']
-            qaTree[runnum][binnum]['evnumMax'] = evnumTree[runnum][binnum]['evnumMax']
-            qaTree[runnum][binnum]['comment'] = ""
-            qaTree[runnum][binnum]['defect'] = 0
+            qaTree[runnum][binnum]                  = [:]
+            qaTree[runnum][binnum]['evnumMin']      = evnumMin
+            qaTree[runnum][binnum]['evnumMax']      = evnumMax
+            qaTree[runnum][binnum]['timestampMin']  = timestampMin
+            qaTree[runnum][binnum]['timestampMax']  = timestampMax
+            qaTree[runnum][binnum]['comment']       = ""
+            qaTree[runnum][binnum]['defect']        = 0
             qaTree[runnum][binnum]['sectorDefects'] = sectors.collectEntries{s->[sec(s),[]]}
+            // fill `grDuration` and `grNumEvents`
+            if(sector == 1) {
+              def numEvents = evnumMax - evnumMin
+              if(binnum == 0) { numEvents++ } // first bin has no lower bound
+              def duration = (timestampMax - timestampMin) * 4e-9 // convert timestamp [4ns] -> [s]
+              grDuration.addPoint(binnum,  duration,  0, 0)
+              grNumEvents.addPoint(binnum, numEvents, 0, 0)
+            }
           }
 
           // get variables needed for checking for defects
-          NF = grA.getDataY(i)
-          NFerrH = NF + grA.getDataEY(i)
-          NFerrL = NF - grA.getDataEY(i)
-          cutLo = cutTree[sector][epoch]['cutLo']
-          cutHi = cutTree[sector][epoch]['cutHi']
-          LT = grT.getDataY(i)
+          def Nval   = grN.getDataY(i)
+          def Fval   = grF.getDataY(i)
+          def NFval  = grA.getDataY(i)
+          def NFerrH = NFval + grA.getDataEY(i)
+          def NFerrL = NFval - grA.getDataEY(i)
+          def cutLo  = cutTree[sector][epoch]['cutLo']
+          def cutHi  = cutTree[sector][epoch]['cutHi']
+          def LTval  = grT.getDataY(i)
 
-          defectList = []
-          // set outlier bit
-          if( NF<cutLo || NF>cutHi ) {
+          def defectList = []
+
+          // set FD and FT outlier bits
+          if( NFval<cutLo || NFval>cutHi ) {
             if( NFerrH>cutLo && NFerrL<cutHi ) {
               defectList.add(T.bit("MarginalOutlier${useFT?"FT":""}"))
             } else if( i==0 || i+1==grA.getDataSize(0) ) {
@@ -544,8 +606,31 @@ inList.each { obj ->
               defectList.add(T.bit("TotalOutlier${useFT?"FT":""}"))
             }
           }
-          // set FC bit
-          if( LT<0.9 ) defectList.add(T.bit("LowLiveTime"))
+
+          // set bits which need only the FD (don't do it again for the FT):
+          if(!useFT) {
+
+            // set livetime bit
+            if( LTval<0.9 ) {
+              defectList.add(T.bit("LowLiveTime"))
+            }
+
+            // set FC bits
+            if( binnum == firstBinnum || binnum == lastBinnum ) { // FC charge cannot be known for the first or last bin
+              defectList.add(T.bit("ChargeUnknown"))
+            }
+            else if(Fval > inRangeF[1]) {
+              defectList.add(T.bit("ChargeHigh"))
+            }
+            else if(Fval < 0) {
+              defectList.add(T.bit("ChargeNegative"))
+            }
+
+            // set no-beam bit; don't bother doing this for first or last bins since their charge is unknown
+            if(Nval < inRangeN[0] && Fval < inRangeF[0] && binnum != firstBinnum && binnum != lastBinnum) {
+              defectList.add(T.bit("PossiblyNoBeam"))
+            }
+          }
 
           // insert in qaTree
           qaTree[runnum][binnum]['sectorDefects'][useFT ? 1 : sector] = defectList.collect()
@@ -569,6 +654,8 @@ inList.each { obj ->
           copyPoint(grF,grF_bad,i)
           copyPoint(grU,grU_bad,i)
           copyPoint(grT,grT_bad,i)
+          copyPoint(grDuration,grDuration_bad,i)
+          copyPoint(grNumEvents,grNumEvents_bad,i)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grA_bad'],grA,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grN_bad'],grN,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grF_bad'],grF,i,runnum)
@@ -580,6 +667,8 @@ inList.each { obj ->
           copyPoint(grF,grF_good,i)
           copyPoint(grU,grU_good,i)
           copyPoint(grT,grT_good,i)
+          copyPoint(grDuration,grDuration_good,i)
+          copyPoint(grNumEvents,grNumEvents_good,i)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grA_good'],grA,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grN_good'],grN,i,runnum)
           addEpochPlotPoint(epochPlotTree[sector][epoch]['grF_good'],grF,i,runnum)
@@ -603,17 +692,17 @@ inList.each { obj ->
         grA,lowerBound,upperBound,"cutHi",cutTree[sector][epoch]['cutHi'])
 
       // write graphs to hipo file
-      addGraphsToHipo(outHipoQA)
-      addGraphsToHipo(outHipoA)
-      addGraphsToHipo(outHipoN)
-      addGraphsToHipo(outHipoU)
-      addGraphsToHipo(outHipoF)
-      addGraphsToHipo(outHipoFA)
-      addGraphsToHipo(outHipoLTT)
-      addGraphsToHipo(outHipoLTA)
-      addGraphsToHipo(outHipoSigmaN)
-      addGraphsToHipo(outHipoSigmaF)
-      addGraphsToHipo(outHipoRhoNF)
+      addGraphsToHipo(runnum, outHipoQA, sector)
+      addGraphsToHipo(runnum, outHipoA, sector)
+      addGraphsToHipo(runnum, outHipoN, sector)
+      addGraphsToHipo(runnum, outHipoU, sector)
+      addGraphsToHipo(runnum, outHipoF, sector)
+      addGraphsToHipo(runnum, outHipoFA, sector)
+      addGraphsToHipo(runnum, outHipoLTT, sector)
+      addGraphsToHipo(runnum, outHipoLTA, sector)
+      addGraphsToHipo(runnum, outHipoSigmaN, sector)
+      addGraphsToHipo(runnum, outHipoSigmaF, sector)
+      addGraphsToHipo(runnum, outHipoRhoNF, sector)
 
       // fill timeline points
       nGood = grA_good.getDataSize(0)
@@ -641,7 +730,7 @@ inList.each { obj ->
 
 
 // assign defect masks
-qaTree.each { qaRun, qaRunTree -> 
+qaTree.each { qaRun, qaRunTree ->
   qaRunTree.each { qaBin, qaBinTree ->
     def defList = []
     def defMask = 0
