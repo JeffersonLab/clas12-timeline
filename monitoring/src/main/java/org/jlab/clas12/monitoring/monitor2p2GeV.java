@@ -229,10 +229,8 @@ public class monitor2p2GeV {
 		if(!userTimeBased)choiceTracking=" using HIT BASED tracking";
 		System.out.println("Eb="+Ebeam+" (EB="+EB+") , run="+runNum+" , "+choiceTracking);
 		try {
-                  System.out.println("ci-debug 0");
 			Thread.sleep(10000);// in ms
 		}catch (Exception e) {
-                  System.out.println("ci-debug 1");
 			System.out.println(e);
 		}
 
@@ -244,24 +242,19 @@ public class monitor2p2GeV {
 		float tofvt1 = 0;
 		float tofvt2 = 300;
 		float rfPeriod = 4.008f;
-                  System.out.println("ci-debug 2");
         ccdb = new ConstantsManager();
-                  System.out.println("ci-debug 3");
         ccdb.init(Arrays.asList(new String[]{"/daq/tt/fthodo", "/calibration/eb/rf/config", "/calibration/eb/rf/offset"}));
-                  System.out.println("ci-debug 4");
-        rfTable = ccdb.getConstants(runNum, "/calibration/eb/rf/config");
-                  System.out.println("ci-debug 5");
+                  System.out.println("ci-debug 0");
+        rfTable = ccdb.getConstants(runNum, "/calibration/eb/rf/config"); // ci-debug: RCDB link failure is in here, but `rfTable` gets filled
+                  System.out.println("ci-debug 1");
         if (rfTable.hasEntry(1, 1, 1)) {
-                  System.out.println("ci-debug 6");
+                  System.out.println("ci-debug 2");
             System.out.println(String.format("RF period from ccdb for run %d: %f", runNum, rfTable.getDoubleValue("clock", 1, 1, 1)));
             rfPeriod = (float) rfTable.getDoubleValue("clock", 1, 1, 1);
-                  System.out.println("ci-debug 7");
         }
         rf_large_integer = 1000;
-                  System.out.println("ci-debug 8");
 
 		rfTableOffset = ccdb.getConstants(runNum,"/calibration/eb/rf/offset");
-                  System.out.println("ci-debug 9");
 		if (rfTableOffset.hasEntry(1, 1, 1)){
 			rfoffset1 = (float)rfTableOffset.getDoubleValue("offset",1,1,1);
 			rfoffset2 = (float)rfTableOffset.getDoubleValue("offset",1,1,2);
@@ -4695,6 +4688,7 @@ public class monitor2p2GeV {
     }
         
     public void write() {
+      System.out.println("ci-debug: call write()");
 
 		TDirectory verify = new TDirectory();
         verify.mkdir("/roads");
@@ -4801,6 +4795,7 @@ public class monitor2p2GeV {
     }
 
     public void ratio_to_trigger(){
+      System.out.println("ci-debug: call ratio_to_trigger()");
         H_trig_sector_elec_rat.divide(H_trig_sector_count);
         H_trig_sector_prot_rat.divide(H_trig_sector_count);
         H_trig_sector_piplus_rat.divide(H_trig_sector_count);
