@@ -4691,107 +4691,211 @@ public class monitor2p2GeV {
       System.out.println("ci-debug: call write()");
 
 		TDirectory verify = new TDirectory();
+System.out.println("ci-debug: write 0");
+
+System.out.println("ci-debug: write 1");
         verify.mkdir("/roads");
+System.out.println("ci-debug: write 2");
         verify.cd("/roads");
+System.out.println("ci-debug: write 3");
         verify.addDataSet(H_positive_theta_mom, H_negative_theta_mom, H_electron_theta_mom);
+System.out.println("ci-debug: write 4");
 
+System.out.println("ci-debug: write 5");
         if (runNum > 0) {
+System.out.println("ci-debug: write 6");
             verify.writeFile(outputDir + "/verify_distributions_" + runNum + ".hipo");
+System.out.println("ci-debug: write 7");
         } else {
+System.out.println("ci-debug: write 8");
             verify.writeFile(outputDir + "/verify_distributions.hipo");
+System.out.println("ci-debug: write 9");
         }
+System.out.println("ci-debug: write 10");
 
+System.out.println("ci-debug: write 11");
         TDirectory dirout = new TDirectory();
+System.out.println("ci-debug: write 12");
         dirout.mkdir("/elec/");
+System.out.println("ci-debug: write 13");
         dirout.cd("/elec/");
+System.out.println("ci-debug: write 14");
         dirout.addDataSet(H_e_phi_mom, H_e_vz_phi, H_e_vz_theta, H_e_vz_p, H_XY_ECal, H_ESampl_ECal, H_e_HTCC_xy, H_e_HTCC_nphe, H_e_HTCC_nphe_txy, H_e_LTCC_xy, H_e_LTCC_nphe, H_e_TOF_xy);
+System.out.println("ci-debug: write 15");
         dirout.addDataSet(H_e_vt1, H_e_vt2, H_e_vz, H_e_TOF_t_path, H_o_TOF, H_o_vt);
+System.out.println("ci-debug: write 16");
         dirout.addDataSet(H_e_vz_S1, H_e_vz_S2, H_e_vz_S3, H_e_vz_S4, H_e_vz_S5, H_e_vz_S6);
+System.out.println("ci-debug: write 17");
         dirout.addDataSet(H_e_xB, H_e_xB_Q2, H_e_W_Q2);
+System.out.println("ci-debug: write 18");
         for (int s = 0; s < 6; s++) {
+System.out.println("ci-debug: write 19");
             dirout.addDataSet(H_e_theta_mom_S[s], H_e_W_S[s], H_e_W_phi_S[s]);
+System.out.println("ci-debug: write 20");
         }
+System.out.println("ci-debug: write 21");
         for (int s = 0; s < 6; s++) {
+System.out.println("ci-debug: write 22");
             dirout.addDataSet(H_trig_theta_mom_S[s]);
+System.out.println("ci-debug: write 23");
 			dirout.addDataSet(H_trig_phi_mom_S[s]);
+System.out.println("ci-debug: write 24");
 			dirout.addDataSet(H_trig_theta_phi_S[s]);
+System.out.println("ci-debug: write 25");
 			dirout.addDataSet(H_trig_vz_mom_S[s]);
+System.out.println("ci-debug: write 26");
 			dirout.addDataSet(H_trig_vy_vz_S[s]);
+System.out.println("ci-debug: write 27");
 			dirout.addDataSet(H_trig_vz_theta_S[s]);
+System.out.println("ci-debug: write 28");
 			dirout.addDataSet(H_trig_ECALsampl_S[s]);
+System.out.println("ci-debug: write 29");
 			dirout.addDataSet(H_trig_PCAL_vt_S[s]);
+System.out.println("ci-debug: write 30");
 			dirout.addDataSet(H_trig_ECIN_vt_S[s]);
+System.out.println("ci-debug: write 31");
 			dirout.addDataSet(H_trig_ECOU_vt_S[s]);
+System.out.println("ci-debug: write 32");
 			dirout.addDataSet(H_trig_PCALECAL_S[s]);
+System.out.println("ci-debug: write 33");
 			dirout.addDataSet(H_trig_HTCCn_theta_S[s]);
+System.out.println("ci-debug: write 34");
 			dirout.addDataSet(H_trig_LTCCn_theta_S[s]);
+System.out.println("ci-debug: write 35");
 		}
+System.out.println("ci-debug: write 36");
 		for(int s=0;s<6;s++)for(int it=0;it<10;it++)dirout.addDataSet(H_trig_phi_theta_S[s][it]);
+System.out.println("ci-debug: write 37");
 		G_FCcur_evn.setName("G_FCcur_evn");
+System.out.println("ci-debug: write 38");
 		G_gatedFCcur_evn.setName("G_gatedFCcur_evn");
+System.out.println("ci-debug: write 39");
 		G_FC_live_ratio.setName("G_FC_live_ratio");
+System.out.println("ci-debug: write 40");
 		G_Clock_evn.setName("G_Clock_evn");
+System.out.println("ci-debug: write 41");
 		G_gatedClock_evn.setName("G_gatedClock_evn");
+System.out.println("ci-debug: write 42");
 		G_Clock_ratio.setName("G_Clock_ratio");
+System.out.println("ci-debug: write 43");
 		dirout.addDataSet(G_FCcur_evn,G_gatedFCcur_evn,G_FC_live_ratio,G_Clock_evn,G_gatedClock_evn,G_Clock_ratio);
+System.out.println("ci-debug: write 44");
 		dirout.mkdir("/tof/");
+System.out.println("ci-debug: write 45");
 		dirout.cd("/tof/");
+System.out.println("ci-debug: write 46");
 		dirout.addDataSet(H_TOF_vt_S1m,H_TOF_vt_S2m,H_TOF_vt_S3m,H_TOF_vt_S4m,H_TOF_vt_S5m,H_TOF_vt_S6m);
+System.out.println("ci-debug: write 47");
 		dirout.addDataSet(H_TOF_vt_S1p,H_TOF_vt_S2p,H_TOF_vt_S3p,H_TOF_vt_S4p,H_TOF_vt_S5p,H_TOF_vt_S6p);
+System.out.println("ci-debug: write 48");
 		dirout.addDataSet(H_pip_vtd, H_pim_vtd);
+System.out.println("ci-debug: write 49");
 		dirout.mkdir("/dc/");
+System.out.println("ci-debug: write 50");
 		dirout.cd("/dc/");
+System.out.println("ci-debug: write 51");
 		dirout.addDataSet(H_dcm_theta_phi,H_dcm_theta_mom,H_dcm_phi_mom,H_dcm_vz_phi,H_dcm_vz_p,H_dcm_vz_theta);
+System.out.println("ci-debug: write 52");
 		dirout.addDataSet(H_dcm_R1th_R1ph,H_dcm_R1the_mom,H_dcm_R1ph_mom,H_dcm_pvz_phi,H_dcm_pvz_p,H_dcm_pvz_theta);
+System.out.println("ci-debug: write 53");
 		dirout.addDataSet(H_dcp_theta_phi,H_dcp_theta_mom,H_dcp_phi_mom,H_dcp_vz_phi,H_dcp_vz_p,H_dcp_vz_theta);
+System.out.println("ci-debug: write 54");
 		dirout.addDataSet(H_dcp_R1th_R1ph,H_dcp_R1the_mom,H_dcp_R1ph_mom,H_dcp_pvz_phi,H_dcp_pvz_p,H_dcp_pvz_theta);
+System.out.println("ci-debug: write 55");
 		dirout.addDataSet(H_negHBTrk_sect,H_negTBTrk_sect,H_posHBTrk_sect,H_posTBTrk_sect,H_dcm_phiK_mom,H_dcp_phiK_mom,H_dcm_pvt_pvz,H_dcp_pvt_pvz);
+System.out.println("ci-debug: write 56");
 		dirout.addDataSet(H_negRECHB_sect , H_posRECHB_sect , H_negREC_sect , H_posREC_sect);
+System.out.println("ci-debug: write 57");
 		for(int s=0;s<6;s++)dirout.addDataSet(H_dcp_vz[s],H_dcp_chi2[s],H_dcm_vz[s],H_dcm_chi2[s],H_dce_chi2[s]);
+System.out.println("ci-debug: write 58");
 		dirout.mkdir("/trig/");
+System.out.println("ci-debug: write 59");
 		dirout.cd("/trig/");
+System.out.println("ci-debug: write 60");
 		dirout.addDataSet(H_trig_sector_count,H_trig_sector_elec,H_trig_sector_elec_rat,H_rand_trig_sector_count,H_Nclust_ev,H_clust1_E,H_clust2_E);
+System.out.println("ci-debug: write 61");
 		dirout.addDataSet(H_trig_sector_prot, H_trig_sector_piplus, H_trig_sector_piminus, H_trig_sector_kplus, H_trig_sector_kminus, H_trig_sector_photon, H_trig_sector_neutron);
+System.out.println("ci-debug: write 62");
         dirout.addDataSet(H_muon_trig_sector_count, H_trig_sector_muon, H_trig_sector_muon_rat, H_trig_sector_muontrack, H_trig_sector_muontrack_rat);
+System.out.println("ci-debug: write 63");
         if (H_trig_sector_deut != null) {
+System.out.println("ci-debug: write 64");
             dirout.addDataSet(H_trig_sector_deut);
+System.out.println("ci-debug: write 65");
         }
+System.out.println("ci-debug: write 66");
         dirout.addDataSet(H_trig_sector_prot_rat, H_trig_sector_piplus_rat, H_trig_sector_piminus_rat, H_trig_sector_kplus_rat, H_trig_sector_kminus_rat, H_trig_sector_photon_rat, H_trig_sector_neutron_rat, H_trig_sector_positive_rat, H_trig_sector_negative_rat, H_trig_sector_neutral_rat);
+System.out.println("ci-debug: write 67");
         if (H_trig_sector_deut_rat != null) {
+System.out.println("ci-debug: write 68");
             dirout.addDataSet(H_trig_sector_deut_rat);
+System.out.println("ci-debug: write 69");
         }
+System.out.println("ci-debug: write 70");
         dirout.addDataSet(H_trig_central_prot_rat, H_trig_central_deut_rat, H_trig_central_piplus_rat, H_trig_central_piminus_rat, H_trig_central_kplus_rat, H_trig_central_kminus_rat);
+System.out.println("ci-debug: write 71");
 
+System.out.println("ci-debug: write 72");
         dirout.addDataSet(H_trig_S1_ETOT_E, H_trig_S2_ETOT_E, H_trig_S3_ETOT_E, H_trig_S4_ETOT_E, H_trig_S5_ETOT_E, H_trig_S6_ETOT_E);
+System.out.println("ci-debug: write 73");
         dirout.addDataSet(H_trig_S1_ECAL_E, H_trig_S2_ECAL_E, H_trig_S3_ECAL_E, H_trig_S4_ECAL_E, H_trig_S5_ECAL_E, H_trig_S6_ECAL_E);
+System.out.println("ci-debug: write 74");
         dirout.addDataSet(H_trig_S1_PCAL_E, H_trig_S2_PCAL_E, H_trig_S3_PCAL_E, H_trig_S4_PCAL_E, H_trig_S5_PCAL_E, H_trig_S6_PCAL_E);
+System.out.println("ci-debug: write 75");
         dirout.addDataSet(H_trig_S1_PCAL_XY, H_trig_S2_PCAL_XY, H_trig_S3_PCAL_XY, H_trig_S4_PCAL_XY, H_trig_S5_PCAL_XY, H_trig_S6_PCAL_XY);
+System.out.println("ci-debug: write 76");
         dirout.addDataSet(H_trig_S1_HTCC_n, H_trig_S2_HTCC_n, H_trig_S3_HTCC_n, H_trig_S4_HTCC_n, H_trig_S5_HTCC_n, H_trig_S6_HTCC_n);
+System.out.println("ci-debug: write 77");
         dirout.addDataSet(H_trig_S1_HTCC_N, H_trig_S2_HTCC_N, H_trig_S3_HTCC_N, H_trig_S4_HTCC_N, H_trig_S5_HTCC_N, H_trig_S6_HTCC_N);
+System.out.println("ci-debug: write 78");
         dirout.addDataSet(H_trig_S1_HTCC_XY, H_trig_S2_HTCC_XY, H_trig_S3_HTCC_XY, H_trig_S4_HTCC_XY, H_trig_S5_HTCC_XY, H_trig_S6_HTCC_XY);
+System.out.println("ci-debug: write 79");
         dirout.mkdir("/gg/");
+System.out.println("ci-debug: write 80");
         dirout.cd("/gg/");
+System.out.println("ci-debug: write 81");
         dirout.addDataSet(H_gg_m, H_gg_open_a, H_g1_tf, H_g1_te, H_g2_tf, H_g2_te);
+System.out.println("ci-debug: write 82");
         dirout.mkdir("/cvt/");
+System.out.println("ci-debug: write 83");
         dirout.cd("/cvt/");
+System.out.println("ci-debug: write 84");
         dirout.addDataSet(H_CVT_chi2, H_CVT_ndf,H_CVT_ft,H_CVT_pt,H_CVT_pf,H_CVT_zf,H_CVT_zp,H_CVT_zt,H_CVT_e_corr_vz);
+System.out.println("ci-debug: write 85");
 		dirout.addDataSet(H_CVT_z, H_CVT_z_pos, H_CVT_z_neg, H_CVT_d0_pos, H_CVT_d0_neg, H_CVT_absd0_pos, H_CVT_absd0_neg, H_CVT_chi2_pos, H_CVT_chi2_neg);
+System.out.println("ci-debug: write 86");
 		dirout.addDataSet(hbstOccupancy,hbmtOccupancy,htrks,hpostrks,hnegtrks,hndf,hchi2norm,hp,hpt,hpathlen,hbstOnTrkLayers,hbmtOnTrkLayers,hpostrks_rat, hnegtrks_rat);
+System.out.println("ci-debug: write 87");
 		dirout.mkdir("/RF/");
+System.out.println("ci-debug: write 88");
 		dirout.cd("/RF/");
+System.out.println("ci-debug: write 89");
         for (int s = 0; s < 6; s++) {
+System.out.println("ci-debug: write 90");
             dirout.addDataSet(H_e_RFtime1_FD_S[s]);
+System.out.println("ci-debug: write 91");
             dirout.addDataSet(H_pip_RFtime1_FD_S[s]);
+System.out.println("ci-debug: write 92");
             dirout.addDataSet(H_pim_RFtime1_FD_S[s]);
+System.out.println("ci-debug: write 93");
             dirout.addDataSet(H_p_RFtime1_FD_S[s]);
+System.out.println("ci-debug: write 94");
         }
+System.out.println("ci-debug: write 95");
         dirout.addDataSet(H_RFtimediff, H_pip_RFtime1_CD, H_pim_RFtime1_CD, H_p_RFtime1_CD, H_RFtimediff_corrected);
+System.out.println("ci-debug: write 96");
 
+System.out.println("ci-debug: write 97");
         if (runNum > 0) {
+System.out.println("ci-debug: write 98");
             dirout.writeFile(outputDir + "/out_monitor_" + runNum + ".hipo");
+System.out.println("ci-debug: write 99");
         } else {
+System.out.println("ci-debug: write 100");
             dirout.writeFile(outputDir + "/out_monitor.hipo");
+System.out.println("ci-debug: write 101");
         }
+System.out.println("ci-debug: write 102");
     }
 
     public void ratio_to_trigger(){
