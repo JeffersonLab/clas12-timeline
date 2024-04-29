@@ -17,11 +17,10 @@ SLURM_LOG=/farm_out/%u/%x-%A_%a
 # default options
 dataset=test_v0
 declare -A modes
-for key in findhipo rundir eachdir single series submit check-cache swifjob focus-detectors focus-physics help; do
+for key in findhipo rundir eachdir flatdir single series submit check-cache swifjob focus-detectors focus-physics help; do
   modes[$key]=false
 done
 outputDir=""
-modes['rundir']=true
 
 # usage
 sep="================================================================"
@@ -60,6 +59,8 @@ usageVerbose() {
                          - A regexp or globbing (wildcards) can be used to
                            specify the list of directories as well, if your shell
                            supports it
+                         - for a directory of files, with one run per file (e.g.,
+                           SKIM files), use the option \`--flatdir\`
 
   $sep
 
@@ -81,10 +82,13 @@ usageVerbose() {
        --rundir       assume each specified [RUN_DIRECTORY] contains
                       subdirectories named as just run numbers; it is not
                       recommended to use wildcards for this option
-                      **this is the default option**
+                      **this is the DEFAULT option**
 
        --eachdir      assume each specified [RUN_DIRECTORY] is a single
                       run's directory full of HIPO files
+
+       --flatdir      assume all files are in one flat directory; use
+                      this option for SKIM files
 
        --check-cache  cross check /cache directories with tape stub directories
                       (/mss) and exit without creating or running any jobs; this is
@@ -161,6 +165,20 @@ if ${modes['help']}; then
   exit 101
 fi
 
+# set the DEFAULT input-finding method
+numTrueInputOpts=0
+for key in findhipo rundir eachdir flatdir; do
+  if ${modes[$key]}; then
+    numTrueInputOpts=$((numTrueInputOpts+1))
+  fi
+done
+if [ $numTrueInputOpts -eq 0 ]; then
+  modes['rundir']=true # set the DEFAULT option
+elif [ $numTrueInputOpts -gt 1 ]; then
+  printError "more than one input-finding option set"
+  exit 100
+fi
+
 # parse input directories
 rdirs=()
 if ${modes['swifjob']}; then
@@ -184,7 +202,9 @@ else
     done
   elif ${modes['eachdir']}; then
     rdirs=$@
-  elif ${modes['findhipo']}; then # N.B.: the default option must be last
+  elif ${modes['flatdir']}; then
+    rdirs=$@
+  elif ${modes['findhipo']}; then
     for topdir in ${rdirsArgs[@]}; do
       echo "finding .hipo files in $topdir ....."
       fileList=$(find -L $topdir -type f -name "*.hipo")
