@@ -33,14 +33,14 @@ def inHipoType = "dst" // options: "dst", "skim"
 def runnum = 0
 if(args.length<2) {
   System.err.println """
-  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO file directory] [output directory] [type(OPTIONAL)] [runnum(OPTIONAL)]
+  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO directory or file] [output directory] [type(OPTIONAL)] [runnum(OPTIONAL)]
          REQUIRED parameters:
-           - [HIPO file directory] should be a directory of HIPO files, either
-             DST file(s) or skim file(s)
+           - [HIPO directory or file] should be a directory of HIPO files
+             or a single hipo file (depends on [type]: use 'dst' for directory
+             or 'skim' for file)
            - [output directory] output directory for the produced files
          OPTIONAL parameters:
            - [type] can be 'dst' or 'skim' (default is '$inHipoType')
-             NOTE: 'skim' file usage may not work
            - [runnum] the run number; if not specified, it will be obtained from RUN::config
 
   """

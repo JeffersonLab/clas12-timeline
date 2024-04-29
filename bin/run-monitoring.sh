@@ -262,6 +262,12 @@ if ${modes['check-cache']}; then
   exit $?
 fi
 
+# if `flatdir` mode, populate `rdirs` with the list of files, since our job loop will be over `rdirs` elements
+if ${modes['flatdir']}; then
+  mainRdir=${rdirs[0]}
+  rdirs=($(ls $mainRdir/*.hipo))
+fi
+
 # initial checks and preparations
 echo $dataset | grep -q "/" && printError "dataset name must not contain '/' " && echo && exit 100
 [ -z "$dataset" ] && printError "dataset name must not be empty" && echo && exit 100
@@ -291,24 +297,34 @@ backupDir=$(pwd -P)/tmp/backup.$dataset.$(date +%s) # use unixtime for uniquenes
 for rdir in ${rdirs[@]}; do
 
   # get the run number, either from `rdir` basename (fast), or from `RUN::config` (slow)
-  [[ ! -e $rdir ]] && printError "the run directory '$rdir' does not exist" && continue
-  runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory basename
-  if [ -z "$runnum" ] || ${modes['swifjob']}; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
-    firstHipo=$(find $rdir -name "*.hipo" | head -n1)
-    [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number or create job" && continue
-    echo "using HIPO file $firstHipo to get run number for run directory '$rdir'"
-    $TIMELINESRC/bin/hipo-check.sh $firstHipo
-    runnum=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+  if ${modes['flatdir']}; then # use (slow) method, in case there are other numbers in the basename; `$rdir` is actually a file
+    [[ ! -e $rdir ]] && printError "the run file '$rdir' does not exist" && continue
+    # $TIMELINESRC/bin/hipo-check.sh $rdir
+    runnum=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-run-number.groovy $rdir | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+  else
+    [[ ! -e $rdir ]] && printError "the run directory '$rdir' does not exist" && continue
+    runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory basename
+    if [ -z "$runnum" ] || ${modes['swifjob']}; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
+      firstHipo=$(find $rdir -name "*.hipo" | head -n1)
+      [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number or create job" && continue
+      echo "using HIPO file $firstHipo to get run number for run directory '$rdir'"
+      $TIMELINESRC/bin/hipo-check.sh $firstHipo
+      runnum=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+    fi
   fi
-  [ -z "$runnum" -o $runnum -eq 0 ] && printError "unknown run number for run directory '$rdir'; ignoring this directory" && continue
+  [ -z "$runnum" -o $runnum -eq 0 ] && printError "unknown run number for '$rdir'; ignoring it!" && continue
   runnum=$((10#$runnum))
-  echo "run directory '$rdir' has run number $runnum"
+  echo "run directory/file '$rdir' has run number $runnum"
 
   # get list of input files, and append prefix for SWIF
   echo "..... getting its input files ....."
   inputListFile=$slurmDir/files.$dataset.$runnum.inputs.list
-  [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
-  realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
+  if ${modes['flatdir']}; then
+    realpath $rdir > $inputListFile
+  else
+    [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
+    realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
+  fi
 
   # generate job scripts
   echo "..... generating its job scripts ....."
@@ -395,6 +411,11 @@ EOF
         ;;
 
       physics)
+        if ${modes['flatdir']}; then
+          monitorReadType=skim
+        else
+          monitorReadType=dst
+        fi
         cat > $jobscript << EOF
 #!/bin/bash
 set -e
@@ -411,7 +432,7 @@ run-groovy \\
   $TIMELINESRC/qa-physics/monitorRead.groovy \\
     $(realpath $rdir) \\
     $outputSubDir \\
-    dst \\
+    $monitorReadType \\
     $runnum
 
 # check output HIPO files
