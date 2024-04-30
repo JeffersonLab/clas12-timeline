@@ -96,7 +96,7 @@ jobs:
         lookup-only: true
     - name: install dependencies
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run:
+      run: |
         sudo apt -y update
         sudo apt -y upgrade
         sudo apt -y install xrootd-client
