@@ -81,17 +81,33 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        type: [ detectors, physics ]
+        include:
+          - { type: detectors, schema: mon }
+          - { type: physics,   schema: dst }
+    env:
+      xrootd_host: xroot://sci-xrootd.jlab.org
+      xrootd_file: /osgpool/hallb/clas12/validation/recon/${{ matrix.schema }}/validation_files.tar.zst
     steps:
     - uses: actions/cache@v4
       id: cache
       with:
         key: validation_files_${{ matrix.type }}
-        path: validation_files_${{ matrix.type }}.tar.zst
+        path: validation_files.tar.zst
         lookup-only: true
+    - name: install dependencies
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run:
+        sudo apt -y update
+        sudo apt -y upgrade
+        sudo apt -y install xrootd-client
     - name: download
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: wget -nv --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files_${{ matrix.type }}.tar.zst
+      run: |
+        xrootd_source=${{ env.xrootd_host }}/${{ env.xrootd_file }}
+        echo "[+] DOWNLOADING FILE: $xrootd_source"
+        xrdcp $xrootd_source ./
+    - run: ls -lh .
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
 
   # monitoring
   #############################################################################
@@ -122,7 +138,7 @@ jobs:
     - uses: actions/cache/restore@v4
       with:
         key: validation_files_${{ matrix.type }}
-        path: validation_files_${{ matrix.type }}.tar.zst
+        path: validation_files.tar.zst
     - uses: actions/download-artifact@v4
       with:
         pattern: build_*
@@ -174,7 +190,7 @@ jobs:
     - uses: actions/cache/restore@v4
       with:
         key: validation_files_${{ matrix.type }}
-        path: validation_files_${{ matrix.type }}.tar.zst
+        path: validation_files.tar.zst
     - uses: actions/download-artifact@v4
       with:
         pattern: build_*
