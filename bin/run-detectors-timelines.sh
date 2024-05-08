@@ -123,8 +123,8 @@ fi
 
 # set input/output directories and dataset name
 dataset=$($inputCmd $inputCmdOpts -D)
-inputDir=$($inputCmd $inputCmdOpts -I)
-[ -z "$outputDir" ] && outputDir=$(pwd -P)/outfiles/$dataset
+inputDir=$(realpath $($inputCmd $inputCmdOpts -I))
+[ -z "$outputDir" ] && outputDir=$(realpath $(pwd -P)/outfiles/$dataset) || outputDir=$(realpath $outputDir)
 
 # set subdirectories
 finalDirPreQA=$outputDir/timeline_web_preQA

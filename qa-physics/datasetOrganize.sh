@@ -27,7 +27,7 @@ hipoList=$(find $inputDir -name "monitor_*.hipo")
 datList=$(find $inputDir -name "data_table_*.dat")
 [ -z "$hipoList" -o -z "$datList" ] && echo "ERROR: no monitoring HIPO and/or DAT files found in $inputDir" >&2 && exit 100
 for file in $hipoList; do
-  ln -sv $file $OUTMON_DIR/
+  ln -sv $file $(realpath $OUTMON_DIR)/
 done
 for file in $datList; do
   cat $file >> $OUTDAT_DIR/data_table.dat.tmp
