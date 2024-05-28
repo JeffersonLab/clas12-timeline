@@ -2,29 +2,27 @@ package org.jlab.clas.timeline.fitter
 import org.jlab.groot.fitter.DataFitter
 import org.jlab.groot.data.H1F
 import org.jlab.groot.math.F1D
+import org.jlab.clas.timeline.util.HistoUtil
 
 
 class CTOFFitter {
   static F1D timefit(H1F h1) {
     def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -5.0, 5.0)
-    double hAmp  = h1.getBinContent(h1.getMaximumBin());
-    double hMean = h1.getAxis().getBinCenter(h1.getMaximumBin())
-    double hRMS  = Math.min(h1.getRMS(), 0.2)
-    double rangeMin = (hMean - 2.5*hRMS);
-    double rangeMax = (hMean + 2.5*hRMS);
+    double hAmp   = h1.getBinContent(h1.getMaximumBin());
+    double hMu    = h1.getAxis().getBinCenter(h1.getMaximumBin())
+    double hSigma = Math.min(HistoUtil.getHistoIQR(h1) / 2.0, 0.2)
+    def rangeFactor = 1.5
+    double rangeMin = (hMu - rangeFactor*hSigma);
+    double rangeMax = (hMu + rangeFactor*hSigma);
     f1.setRange(rangeMin, rangeMax);
     f1.setParameter(0, hAmp);
-    // f1.setParLimits(0, hAmp*0.8, hAmp*1.2);
-    f1.setParameter(1, hMean);
-    // f1.setParLimits(1, 0, 0.5);
-    f1.setParameter(2, hRMS);
-    // f1.setParLimits(2, 0.5*hRMS, 1.5*hRMS);
-
+    f1.setParameter(1, hMu);
+    f1.setParameter(2, hSigma);
 
     def makefit = {func->
-      hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-2*hRMS,hMean+2*hRMS)
+      def fMu = func.getParameter(1)
+      def fSigma = func.getParameter(2).abs()
+      func.setRange(fMu-rangeFactor*fSigma, fMu+rangeFactor*fSigma)
       DataFitter.fit(func,h1,"Q")
       return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
     }

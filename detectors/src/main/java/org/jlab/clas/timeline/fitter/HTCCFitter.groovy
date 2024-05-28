@@ -9,6 +9,7 @@ package org.jlab.clas.timeline.fitter
 import org.jlab.groot.fitter.DataFitter
 import org.jlab.groot.data.H1F
 import org.jlab.groot.math.F1D
+import org.jlab.clas.timeline.util.HistoUtil
 
 
 class HTCCFitter{
@@ -17,26 +18,7 @@ class HTCCFitter{
 
     // compute the IQR of `h1`, which is a better estimate of the initial sigma parameter than
     // the RMS, since it is not (typically) biased by outliers
-    def l1 = []
-    h1.getAxis().getNBins().times { bin ->
-      def counts = h1.getBinContent(bin).toInteger() // FIXME: assumes the histogram is unweighted
-      def value  = h1.getAxis().getBinCenter(bin)
-      counts.times { l1 += value }
-    }
-    def listMedian = { d ->
-      if(d.size()==0) {
-        System.err.println("WARNING: attempt to calculate median of an empty list")
-        return 0
-      }
-      d.sort()
-      def m = d.size().intdiv(2)
-      d.size() % 2 ? d[m] : (d[m-1]+d[m]) / 2
-    }
-    def mq = listMedian(l1)
-    def lq = listMedian(l1.findAll{it<mq})
-    def uq = listMedian(l1.findAll{it>mq})
-    def iqr = uq - lq
-
+    def iqr = HistoUtil.getHistoIQR(h1)
 
     def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", maxV-2, maxV+3);
 
