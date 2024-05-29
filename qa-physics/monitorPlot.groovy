@@ -488,8 +488,6 @@ T.exeLeaves(monTree,{
         else if(T.key=='heldefDist') tlT = "defined helicity fraction"
         else if(T.key=='rellumDist') tlT = "n+/n-"
         else if(tlPath.contains('beamChargeAsym')) tlT = "beam charge asymmetry"
-        else if(T.key=='asymValue') tlT = "beam spin asymmetry: pion sin(phiH) amplitude"
-        else if(T.key=='asymOffsetValue') tlT = "beam spin asymmetry: pion sin(phiH) constant offset"
         else tlT = "unknown"
       }
       if(tlPath.contains('DIS')) tlT = "DIS kinematics"
@@ -502,6 +500,8 @@ T.exeLeaves(monTree,{
         tlN = "mean_non-monotonicity"
       }
       if(T.key.contains('Dist')) tlT = "average ${tlT}"
+      if(tlT == "unknown")
+        return
       tlT = "${tlT} vs. run number"
       def tl = new GraphErrors(tlN)
       tl.setTitle(tlT)
@@ -529,6 +529,20 @@ T.exeLeaves(monTree,{
         return tl
       } else return
     })
+
+    // create spin asymmetry timelines
+    if(T.key=='asymGraph') {
+      ['amplitude','offset'].each{ asymParam ->
+        def tlPathFull = tlPath + [asymParam,'timeline']
+        T.addLeaf(timelineTree,tlPathFull,{
+          def tlN = (tlPathFull).join('_')
+          def tlT = "beam spin asymmetry: pion sin(phiH) ${asymParam} vs. run number"
+          def tl = new GraphErrors(tlN)
+          tl.setTitle(tlT)
+          return tl
+        })
+      }
+    }
 
     // add this run's <X> to the timeline (and stddev to the stddev timelines)
     if(T.key=='aveDist') {
@@ -577,7 +591,7 @@ T.exeLeaves(monTree,{
         def errPath = T.leafPath[0..-2] + 'asymError'
         def asymVal = T.getLeaf(monTree,valPath)
         def asymErr = T.getLeaf(monTree,errPath)
-        T.getLeaf(timelineTree,tlPath+['amp','timeline']).addPoint(tlRun, asymVal, 0.0, asymErr)
+        T.getLeaf(timelineTree,tlPath+['amplitude','timeline']).addPoint(tlRun, asymVal, 0.0, asymErr)
         // and assign a defect bit for pi+ BSA
         if(tlPath.contains('pip')) {
           def asymMargin = asymVal.abs() - asymErr
@@ -644,7 +658,7 @@ def hipoWrite = { hipoName, filterList, TLkeys ->
 
 // write objects to hipo files
 hipoWrite("helicity_sinPhi",['helic','sinPhi'],["timeline"])
-hipoWrite("beam_spin_asymmetry",['helic','asym','amp'],["timeline"])
+hipoWrite("beam_spin_asymmetry",['helic','asym','amplitude'],["timeline"])
 hipoWrite("beam_spin_asymmetry_offset",['helic','asym','offset'],["timeline"])
 hipoWrite("defined_helicity_fraction",['helic','dist','heldef'],["timeline"])
 hipoWrite("beam_charge_asymmetry",['helic','beamChargeAsym'],["timeline"])
