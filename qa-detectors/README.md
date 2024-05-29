@@ -9,8 +9,8 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
   - each line should have the following columns, delimited by spaces:
     - detector name
     - HIPO file name (_i.e._, the timeline name, with spaces changed to underscores)
-    - lower bound of QA cut
-    - upper bound of QA cut
+    - lower bound of QA cut; if there is no lower bound, write `NB`, which means "No Bound"
+    - upper bound of QA cut; if there is no upper bound, write `NB`, which means "No Bound"
     - units
     - (optional) additional specifier(s), _e.g._, specific sectors
   - comments can be added using the symbol `#`, which is useful for commenting out timelines, especially when debugging a particular timeline
