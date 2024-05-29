@@ -76,13 +76,19 @@ cutsFileList.each { re, cutsFile ->
       }
       def det      = tok[0]
       def timeline = tok[1]
-      def lbound   = tok[2].toDouble()
-      def ubound   = tok[3].toDouble()
+      def lbound   = tok[2]
+      def ubound   = tok[3]
       def units    = tok[4]
       cutPath = [det, timeline]
       spec = tok.size()>5 ? tok[5] : ''
       if(spec!='')
         cutPath.add(spec)
+
+      // convert bounds to 'double' type, unless they are a string
+      def lboundCasted
+      def uboundCasted
+      try { lboundCasted = lbound.toDouble(); } catch(Exception ex) { lboundCasted = lbound.toString(); }
+      try { uboundCasted = ubound.toDouble(); } catch(Exception ex) { uboundCasted = ubound.toString(); }
 
       // add cuts to graph
       def addCut = { graphN ->
@@ -95,8 +101,8 @@ cutsFileList.each { re, cutsFile ->
             T.getLeaf(tr, nodePath).clear()
             clearedLeaves.add(nodePath)
           }
-          T.getLeaf(tr, nodePath).add(lbound)
-          T.getLeaf(tr, nodePath).add(ubound)
+          T.getLeaf(tr, nodePath).add(lboundCasted)
+          T.getLeaf(tr, nodePath).add(uboundCasted)
         }
       }
 
