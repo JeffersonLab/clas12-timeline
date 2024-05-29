@@ -646,7 +646,7 @@ inHipoList.each { inHipoFile ->
       continue
     }
     else {
-      System.err.println "WARNING: cannot get event number for event with no RUN::config bank; skipping this event; available banks: ${hipoEvent.getBankList()}"
+      // System.err.println "WARNING: cannot get event number for event with no RUN::config bank; skipping this event; available banks: ${hipoEvent.getBankList()}"
       continue
     }
     if(eventNum==0) {
