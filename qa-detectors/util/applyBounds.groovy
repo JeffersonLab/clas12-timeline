@@ -199,14 +199,14 @@ T.exeLeaves(B,{
   // FIXME: this just checks if `qaBounds` entries are Strings, and not whether they are set to
   // "NB" or not; nonetheless, the documentation says to use "NB"
   def qaBoundsClasses = qaBounds.collect{it.getClass().getSimpleName()}
-  def kNone, kMin, kMax, kRange = (0..3).collect{it}
+  def (kNone, kMin, kMax, kRange) = (0..3).collect{it}
   def qaBoundsType = -1
   if(qaBoundsClasses[0] == "String" && qaBoundsClasses[1] == "String") {
     qaBoundsType = kNone
   } else if(qaBoundsClasses[0] == "String") {
-    qaBoundsType = kMin
-  } else if(qaBoundsClasses[1] == "String") {
     qaBoundsType = kMax
+  } else if(qaBoundsClasses[1] == "String") {
+    qaBoundsType = kMin
   } else {
     qaBoundsType = kRange
   }
