@@ -532,11 +532,11 @@ T.exeLeaves(monTree,{
 
     // create spin asymmetry timelines
     if(T.key=='asymGraph') {
-      ['amplitude','offset'].each{ asymParam ->
-        def tlPathFull = tlPath + [asymParam,'timeline']
+      ['timelineAmplitude','timelineOffset'].each{ timelineKey ->
+        def tlPathFull = tlPath + timelineKey
         T.addLeaf(timelineTree,tlPathFull,{
           def tlN = (tlPathFull).join('_')
-          def tlT = "beam spin asymmetry: pion sin(phiH) ${asymParam} vs. run number"
+          def tlT = "beam spin asymmetry: pion sin(phiH) vs. run number"
           def tl = new GraphErrors(tlN)
           tl.setTitle(tlT)
           return tl
@@ -585,29 +585,23 @@ T.exeLeaves(monTree,{
       }
     }
     // or if it's a beam spin asymmetry, add its results to the timeline
-    else if(T.key=='asymValue' || T.key=='asymOffsetValue') {
-      if(T.key=='asymValue') {
-        def valPath = T.leafPath[0..-2] + 'asymValue'
-        def errPath = T.leafPath[0..-2] + 'asymError'
-        def asymVal = T.getLeaf(monTree,valPath)
-        def asymErr = T.getLeaf(monTree,errPath)
-        T.getLeaf(timelineTree,tlPath+['amplitude','timeline']).addPoint(tlRun, asymVal, 0.0, asymErr)
-        // and assign a defect bit for pi+ BSA
-        if(tlPath.contains('pip')) {
-          def asymMargin = asymVal.abs() - asymErr
-          if(asymMargin <= 0) {
-            addDefectBit(T.bit("BSAUnknown"), tlRun, allBins, allSectors)
-          } else if(asymVal < 0) {
-            addDefectBit(T.bit("BSAWrong"), tlRun, allBins, allSectors)
-          }
+    else if(T.key=='asymGraph') {
+
+      def asymVal       = T.getLeaf(monTree, T.leafPath[0..-2] + 'asymValue')
+      def asymErr       = T.getLeaf(monTree, T.leafPath[0..-2] + 'asymError')
+      def asymOffsetVal = T.getLeaf(monTree, T.leafPath[0..-2] + 'asymOffsetValue')
+      def asymOffsetErr = T.getLeaf(monTree, T.leafPath[0..-2] + 'asymOffsetError')
+      T.getLeaf(timelineTree, tlPath + 'timelineAmplitude').addPoint(tlRun, asymVal,       0.0, asymErr)
+      T.getLeaf(timelineTree, tlPath + 'timelineOffset').addPoint(tlRun,    asymOffsetVal, 0.0, asymOffsetErr)
+
+      // and assign a defect bit for pi+ BSA
+      if(tlPath.contains('pip')) {
+        def asymMargin = asymVal.abs() - asymErr
+        if(asymMargin <= 0) {
+          addDefectBit(T.bit("BSAUnknown"), tlRun, allBins, allSectors)
+        } else if(asymVal < 0) {
+          addDefectBit(T.bit("BSAWrong"), tlRun, allBins, allSectors)
         }
-      }
-      else if(T.key=='asymOffsetValue') {
-        def valPath = T.leafPath[0..-2] + 'asymOffsetValue'
-        def errPath = T.leafPath[0..-2] + 'asymOffsetError'
-        def asymOffsetVal = T.getLeaf(monTree,valPath)
-        def asymOffsetErr = T.getLeaf(monTree,errPath)
-        T.getLeaf(timelineTree,tlPath+['offset','timeline']).addPoint(tlRun, asymOffsetVal, 0.0, asymOffsetErr)
       }
     }
   }
@@ -658,8 +652,7 @@ def hipoWrite = { hipoName, filterList, TLkeys ->
 
 // write objects to hipo files
 hipoWrite("helicity_sinPhi",['helic','sinPhi'],["timeline"])
-hipoWrite("beam_spin_asymmetry",['helic','asym','amplitude'],["timeline"])
-hipoWrite("beam_spin_asymmetry_offset",['helic','asym','offset'],["timeline"])
+hipoWrite("beam_spin_asymmetry",['helic','asym'],["timelineAmplitude","timelineOffset"])
 hipoWrite("defined_helicity_fraction",['helic','dist','heldef'],["timeline"])
 hipoWrite("beam_charge_asymmetry",['helic','beamChargeAsym'],["timeline"])
 hipoWrite("relative_yield",['helic','dist','rellum'],["timeline"])
