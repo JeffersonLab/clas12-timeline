@@ -1,6 +1,7 @@
-# clas12-recipes
+# DST Prescaler
 
-Recipes for CLAS12 chefs.
+Recipes for producing "prescaled" trains from DST files: randomly chooses a fraction of the events to keep,
+so that the QA code has a much smaller dataset to analyze.
 
 First, generate a workflow `json` file:
 ```bash
