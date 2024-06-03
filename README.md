@@ -47,6 +47,9 @@ bin/run-monitoring.sh
 ```
 Running it with no arguments will print the usage guide; use the `--help` option for more detailed guidance.
 
+> [!NOTE]
+> If you are performing physics QA for QADB, consider using [**prescaled trains**](qa-physics/prescaler) (and `run-monitoring.sh` will need the `--flatdir` argument)
+
 #### Example
 If using `clas12-workflow`, see it's documentation; otherwise if using `run-monitoring.sh`:
 ```bash

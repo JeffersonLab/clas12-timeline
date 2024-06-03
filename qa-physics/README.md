@@ -35,6 +35,9 @@ It is recommended to use `bash` or `zsh` as your shell; `tcsh` is not supported.
       actually it was OFF and needs to be ON
 * `../bin/run-monitoring.sh`: runs `monitorRead.groovy` on DSTs using `slurm`
   * **IMPORTANT**: call this first with the `--check-cache` option to make sure that ALL required DST files are cached; if all files are on `/cache`, you may proceed, removing the `--check-cache` option
+  * **IMPORTANT**: if you do **NOT** want to analyze full DSTs, and prefer to analyze trains:
+    * use the option `--flatdir`, since likely all the HIPO files are in a single directory
+    * use the scripts in the [`prescaler/` directory](prescaler) if you want to create a random "prescale" train
   * wait for `slurm` jobs to finish
   * inspect error logs (_e.g._, `../bin/error-print.sh`) to make sure all jobs ran successfully
 * `../bin/run-physics-timelines.sh $dataset`, which does the following:
