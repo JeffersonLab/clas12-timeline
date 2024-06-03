@@ -536,6 +536,10 @@ T.exeLeaves(monTree,{
         def tlPathFull = tlPath + timelineKey
         T.addLeaf(timelineTree,tlPathFull,{
           def tlN = (tlPathFull).join('_')
+            .replace('helic_asym_','')
+            .replace('pim','piMinus')
+            .replace('pip','piPlus')
+            .replace('timeline','asymmetry')
           def tlT = "beam spin asymmetry: pion sin(phiH) vs. run number"
           def tl = new GraphErrors(tlN)
           tl.setTitle(tlT)
@@ -657,11 +661,11 @@ hipoWrite("defined_helicity_fraction",['helic','dist','heldef'],["timeline"])
 hipoWrite("beam_charge_asymmetry",['helic','beamChargeAsym'],["timeline"])
 hipoWrite("relative_yield",['helic','dist','rellum'],["timeline"])
 hipoWrite("q2_W_x_y_means",['DIS'],["timeline"])
-hipoWrite("pip_kinematics_means",['inclusive','pip'],["timeline"])
-hipoWrite("pim_kinematics_means",['inclusive','pim'],["timeline"])
+hipoWrite("piPlus_kinematics_means",['inclusive','pip'],["timeline"])
+hipoWrite("piMinus_kinematics_means",['inclusive','pim'],["timeline"])
 hipoWrite("q2_W_x_y_stddevs",['DIS'],["timelineDev"])
-hipoWrite("pip_kinematics_stddevs",['inclusive','pip'],["timelineDev"])
-hipoWrite("pim_kinematics_stddevs",['inclusive','pim'],["timelineDev"])
+hipoWrite("piPlus_kinematics_stddevs",['inclusive','pip'],["timelineDev"])
+hipoWrite("piMinus_kinematics_stddevs",['inclusive','pim'],["timelineDev"])
 hipoWrite("faraday_cup_charge_non-monotonicity",['charge','nonMonotonicity'],["timeline","timelineDev"])
 
 // sort qaTree and output to json file
