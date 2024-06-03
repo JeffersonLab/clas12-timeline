@@ -299,7 +299,7 @@ for rdir in ${rdirs[@]}; do
   # get the run number, either from `rdir` basename (fast), or from `RUN::config` (slow)
   if ${modes['flatdir']}; then # use (slow) method, in case there are other numbers in the basename; `$rdir` is actually a file
     [[ ! -e $rdir ]] && printError "the run file '$rdir' does not exist" && continue
-    # $TIMELINESRC/bin/hipo-check.sh $rdir
+    $TIMELINESRC/bin/hipo-check.sh $rdir
     runnum=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-run-number.groovy $rdir | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
   else
     [[ ! -e $rdir ]] && printError "the run directory '$rdir' does not exist" && continue
