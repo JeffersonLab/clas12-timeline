@@ -189,7 +189,7 @@ def calculateBeamChargeAsym = { qP, qM ->
   if(qP+qM > 0) {
     return [
       (qP - qM) / (qP + qM),   // asymmetry
-      1 / Math.sqrt( qP + qM ) // error, assuming |beamChargeAsym| << 1
+      0.0 // uncertainty // FIXME: there is not yet a clear method how to calculate the uncertainty
     ]
   }
   return ["unknown","unknown"]
@@ -357,7 +357,7 @@ inList.each { inFile ->
         def g = buildMonAveGr(obj)
         def gN = g.getName().replaceAll(/_aveGr$/,'_chargeAsymGr')
         g.setName(gN)
-        g.setTitle('beam charge asymmetry vs. time bin number')
+        g.setTitle('beam charge asymmetry vs. time bin number [WARNING: asymmetry uncertainty is NOT quantified]')
         return g
       })
       if(obj.integral()>0) {
@@ -502,7 +502,10 @@ T.exeLeaves(monTree,{
       if(T.key.contains('Dist')) tlT = "average ${tlT}"
       if(tlT == "unknown")
         return
-      tlT = "${tlT} vs. run number"
+      tlT += " vs. run number"
+      if(tlPath.contains('helic') && tlPath.contains('beamChargeAsym')) {
+        tlT += " [WARNING: asymmetry uncertainty is NOT quantified]"
+      }
       def tl = new GraphErrors(tlN)
       tl.setTitle(tlT)
       return tl
