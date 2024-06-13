@@ -740,6 +740,7 @@ inHipoList.each { inHipoFile ->
     def helicity = 0 // if undefined, default to 0
     if(hipoEvent.hasBank("REC::Event") && eventBank.rows()>0) {
       helicity = eventBank.getByte('helicity',0)
+      thisTimeBin.histTree.helic.dist.fill(helicity)
     }
     def helStr
     def helDefined
@@ -748,7 +749,6 @@ inHipoList.each { inHipoFile ->
       case -1: helStr='hm'; helDefined=true; break
       default: helDefined = false; helicity = 0; break
     }
-    thisTimeBin.histTree.helic.dist.fill(helicity)
     // get scaler helicity from `HEL::scaler`, and fill its charge-weighted distribution
     if(hipoEvent.hasBank("HEL::scaler")) {
       helScalerBank.rows().times{ row -> // HEL::scaler readouts "pile up", so there are multiple bank rows in an event
