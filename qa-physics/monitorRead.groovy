@@ -16,7 +16,7 @@ import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 // CONSTANTS
-def MIN_NUM_SCALERS = 500    // at least this many scaler readouts per time bin // 2000 is roughly a DST 5-file
+def MIN_NUM_SCALERS = 2000   // at least this many scaler readouts per time bin // 2000 is roughly a DST 5-file
 def NBINS           = 50     // number of bins in some histograms
 def SECTORS         = 0..<6  // sector range
 def ECAL_ID         = DetectorType.ECAL.getDetectorId() // ECAL detector ID
