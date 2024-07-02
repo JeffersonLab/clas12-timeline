@@ -343,7 +343,7 @@ for rdir in ${rdirs[@]}; do
     mkdir -p $outputSubDir
 
     # make job scripts for each $key
-    jobscript=$slurmDir/scripts/$key.$runnum.sh
+    jobscript=$slurmDir/scripts/$key.$dataset.$runnum.sh
     case $key in
 
       detectors)
