@@ -10,9 +10,10 @@ First, generate a workflow `json` file:
 
 Then submit it; _e.g._, if the `json` file is `my_workflow.json`:
 ```bash
-swif2 import -file my_workflow.json    # import the workflow
-swif2 run -workflow my_workflow        # start it
-swif2 list                             # list your workflows
-swif2 status my_workflow               # check the status
-swif-gui                               # monitor it with a GUI
+swif2 import -file my_workflow.json         # import the workflow
+swif2 run -workflow my_workflow             # start it
+swif2 cancel -delete -workflow my_workflow  # delete it (if you need to try again)
+swif2 list                                  # list your workflows
+swif2 status my_workflow                    # check the status
+swif-gui                                    # monitor it with a GUI
 ```

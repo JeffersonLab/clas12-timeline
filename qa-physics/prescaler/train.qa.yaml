@@ -14,6 +14,6 @@ configuration:
   services:
     QA:
       id: 1
-      prescale: 100.0
+      prescale: 20.0 # prescale factor: randomly select `1/prescale` events
 mime-types:
   - binary/data-hipo-frame

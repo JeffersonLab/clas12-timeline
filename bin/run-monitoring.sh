@@ -85,10 +85,10 @@ usageVerbose() {
                       **this is the DEFAULT option**
 
        --eachdir      assume each specified [RUN_DIRECTORY] is a single
-                      run's directory full of HIPO files
+                      run's directory full of HIPO files (e.g., DST files)
 
-       --flatdir      assume all files are in one flat directory; use
-                      this option for SKIM files
+       --flatdir      assume each specified [RUN_DIRECTORY] contains HIPO
+                      files, with one run per file; use this option for SKIM files
 
        --check-cache  cross check /cache directories with tape stub directories
                       (/mss) and exit without creating or running any jobs; this is

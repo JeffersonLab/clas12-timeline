@@ -19,6 +19,12 @@ It is recommended to use `bash` or `zsh` as your shell; `tcsh` is not supported.
    Wrapper scripts in `../bin/` do this automatically, but if you intend to run
    individual scripts here (namely during manual QA), you may need to call this `source` command.
 
+# Notes
+
+For run-group specific notes, including the commands used to perform the QA, see
+
+- [Notes and Procedures](notes)
+
 # Procedure for Automatic QA
 * prepare run-group dependent settings in `monitorRead.groovy` (**WARNING: this step will be deprecated soon**)
   * obtain the beam energies from the `RCDB`; CAUTION: sometimes the `RCDB` is 

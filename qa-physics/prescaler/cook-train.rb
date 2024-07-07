@@ -9,7 +9,9 @@ def make_rgc_path(energy, target)
   "/cache/clas12/rg-c/production/summer22/pass1/#{energy}gev/#{target}/dst/recon"
 end
 DATA_HASH = {
+  # RGA
   'rga_sp19'               => '/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/recon',
+  # RGC
   'rgc_su22_10.5GeV_Align' => make_rgc_path(10.5, 'Align'),
   'rgc_su22_10.5GeV_C'     => make_rgc_path(10.5, 'C'),
   'rgc_su22_10.5GeV_CH2'   => make_rgc_path(10.5, 'CH2'),
@@ -87,9 +89,13 @@ OptionParser.new do |o|
     "Default: #{options.outDir}"
   ) { |a| options.outDir = a }
   o.separator ''
+  o.on('--listDatasets', 'List the datasets and exit') do
+    puts DATA_HASH.keys
+    exit
+  end
   o.on_tail('-h', '--help', 'Show this message') do
     puts o
-    exit 2
+    exit
   end
 end.parse!(ARGV.length>0 ? ARGV : ['--help'])
 print_info { puts "OPTIONS: #{options}" }
