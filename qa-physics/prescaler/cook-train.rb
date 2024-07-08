@@ -131,6 +131,11 @@ workflowArgs = {
   :outDir    => "#{options.outDir}/qa_#{options.dataset}",
 }
 
+# some datasets have a large variation in file sizes; for these, use the `--hattawy` option (which is slow)
+if options.dataset == 'rgc_su22_10.5GeV_ET'
+  workflowArgs[:hattawy] = ''
+end
+
 cmd = ['clas12-workflow'] + workflowArgs.map{ |opt,val| "--#{opt.to_s} #{val}" }
 
 # print clas12-workflow command and exec it
