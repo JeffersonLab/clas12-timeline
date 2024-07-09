@@ -11,5 +11,16 @@ cook-train.rb --listDatasets | grep rgc_su22 | xargs -I{} cook-train.rb --datase
 start-workflow.sh rgc-a-su22*.json  ## check that this is the correct set of JSON files before running
 ```
 
-NOTE: one workflow per target; we'll assume step 1's `--flatdir` option can take in multiple run directories,
-and output everything in a single `outfiles/$dataset` directory
+> [!IMPORTANT]
+> 10.5 GeV ET workflow failed with `SITE_PREP_FAIL`, where the disk usage allocation was a bit too small; for those,
+> for example, add 2 GB:
+> ```bash
+> swif2 modify-jobs rgc-a-su2210.5ET-16089x9 -disk add 2gb -problems SITE_PREP_FAIL
+> ```
+> - this will automatically retry the problematic jobs
+> - you might need more than the added 2 GB for some jobs
+<!--`-->
+
+> [!NOTE]
+> one workflow per target; we'll assume step 1's `--flatdir` option can take in multiple run directories,
+> and output everything in a single `outfiles/$dataset` directory
