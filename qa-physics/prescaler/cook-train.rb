@@ -42,10 +42,11 @@ def print_info
 end
 
 # parse options
-options         = OpenStruct.new
-options.dataset = ''
-options.outDir  = "/volatile/clas12/users/#{ENV['LOGNAME']}"
-options.coatjava = ''
+options              = OpenStruct.new
+options.dataset      = ''
+options.outDir       = "/volatile/clas12/users/#{ENV['LOGNAME']}"
+options.coatjava     = ''
+options.printDataDir = false
 OptionParser.new do |o|
   o.banner = "USAGE: #{$0} [OPTIONS]..."
   o.separator ''
@@ -93,11 +94,29 @@ OptionParser.new do |o|
     puts DATA_HASH.keys
     exit
   end
+  o.separator ''
+  o.on('--printDataDir', 'Just print the source data directory, and exit;', 'requires --dataset') do
+    options.printDataDir = true
+  end
+  o.separator ''
   o.on_tail('-h', '--help', 'Show this message') do
     puts o
     exit
   end
 end.parse!(ARGV.length>0 ? ARGV : ['--help'])
+
+# handle --printDataDir
+if options.printDataDir
+  unless options.dataset == ''
+    puts DATA_HASH[options.dataset]
+  else
+    $stderr.puts "ERROR: need --dataset set when using --printDataDir"
+    exit 1
+  end
+  exit
+end
+
+# check required args
 print_info { puts "OPTIONS: #{options}" }
 [ ['--dataset',options.dataset], ['--coatajava',options.coatjava] ].each do |n,o|
   if o.empty?
