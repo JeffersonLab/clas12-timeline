@@ -19,6 +19,7 @@ start-workflow.sh rgc-a-su22*.json  ## check that this is the correct set of JSO
 > ```
 > - this will automatically retry the problematic jobs
 > - you might need more than the added 2 GB for some jobs
+> - **alternatively**: edit the JSON file by hand, increasing the value of `disk_bytes` nodes by 4 GB
 <!--`-->
 
 > [!NOTE]
