@@ -25,3 +25,23 @@ start-workflow.sh rgc-a-su22*.json  ## check that this is the correct set of JSO
 > [!NOTE]
 > one workflow per target; we'll assume step 1's `--flatdir` option can take in multiple run directories,
 > and output everything in a single `outfiles/$dataset` directory
+
+## Check prescaled trains
+
+> [!IMPORTANT]
+> To be sure the workflows succeeded and we have all the data, run `check-train.rb`.
+
+## Run monitoring
+
+> [!IMPORTANT]
+> Check any run-dependent settings in `qa-physics/monitorRead.groovy`, such as beam energy.
+
+We will now combine the targets' data into a single dataset named `qa_rgc_su22`.
+Assuming your output data are in
+```
+/volatile/clas12/users/$LOGNAME/qa_rgc_su22_*
+```
+and that this wildcard pattern does _not_ include any files you _don't_ want, you may run
+```bash
+bin/run-monitoring.sh -d qa_rgc_su22 --flatdir --focus-physics $(ls -d /volatile/clas12/users/$LOGNAME/qa_rgc_su22_*/train/QA)
+```

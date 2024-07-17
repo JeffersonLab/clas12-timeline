@@ -165,7 +165,7 @@ if ${modes['help']}; then
   exit 101
 fi
 
-# set the DEFAULT input-finding method
+# set the input-finding method; use the DEFAULT one, if not set by user
 numTrueInputOpts=0
 for key in findhipo rundir eachdir flatdir; do
   if ${modes[$key]}; then
@@ -264,8 +264,13 @@ fi
 
 # if `flatdir` mode, populate `rdirs` with the list of files, since our job loop will be over `rdirs` elements
 if ${modes['flatdir']}; then
-  mainRdir=${rdirs[0]}
-  rdirs=($(ls $mainRdir/*.hipo))
+  rdirsIn=("${rdirs[@]}") # make a copy, since it will be overwritten
+  rdirs=()
+  for rdir in ${rdirsIn[@]}; do
+    for hipofile in $(ls $(realpath $rdir)/*.hipo); do
+      rdirs+=($hipofile)
+    done
+  done
 fi
 
 # initial checks and preparations
