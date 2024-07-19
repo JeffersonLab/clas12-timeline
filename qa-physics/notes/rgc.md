@@ -45,3 +45,9 @@ and that this wildcard pattern does _not_ include any files you _don't_ want, yo
 ```bash
 bin/run-monitoring.sh -d qa_rgc_su22 --flatdir --focus-physics $(ls -d /volatile/clas12/users/$LOGNAME/qa_rgc_su22_*/train/QA)
 ```
+
+## Make timelines
+
+```bash
+clas12-timeline-dev/bin/run-physics-timelines.sh -d qa_rgc_su22
+```
