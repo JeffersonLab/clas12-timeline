@@ -48,6 +48,12 @@ bin/run-monitoring.sh -d qa_rgc_su22 --flatdir --focus-physics $(ls -d /volatile
 
 ## Make timelines
 
+Make the timelines:
 ```bash
-clas12-timeline-dev/bin/run-physics-timelines.sh -d qa_rgc_su22
+bin/run-physics-timelines.sh -d qa_rgc_su22
+```
+
+Deploy to your area (for testing, but when ready, deploy to the run group area)
+```bash
+bin/deploy-timelines.sh -d qa_rgc_su22 -t $LOGNAME
 ```
