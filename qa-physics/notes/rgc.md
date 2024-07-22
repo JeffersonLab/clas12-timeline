@@ -23,8 +23,8 @@ start-workflow.sh rgc-a-su22*.json  ## check that this is the correct set of JSO
 <!--`-->
 
 > [!NOTE]
-> one workflow per target; we'll assume step 1's `--flatdir` option can take in multiple run directories,
-> and output everything in a single `outfiles/$dataset` directory
+> This runs one workflow per target; step 1's `--flatdir` option can take in multiple run directories,
+> and output everything in a single `outfiles/$dataset` directory.
 
 ## Check prescaled trains
 
