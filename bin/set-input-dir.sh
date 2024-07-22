@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # helper script for setting the default dataset name and input directory; this is not
 # meant to be used as a standalone script, rather it is called by other scripts
 

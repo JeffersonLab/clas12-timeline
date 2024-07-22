@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 set -u
@@ -391,7 +391,7 @@ for r0,r1,eb in beamlist:
         echo "Beam energy = $beam_energy"
 
         cat > $jobscript << EOF
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 set -u
 set -o pipefail
@@ -422,7 +422,7 @@ EOF
           monitorReadType=dst
         fi
         cat > $jobscript << EOF
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 set -u
 set -o pipefail
@@ -470,7 +470,7 @@ for key in ${jobkeys[@]}; do
   # either generate single/sequential run scripts
   if ${modes['single']} || ${modes['series']} || ${modes['swifjob']}; then
     localScript=$(echo $joblist | sed 's;.list$;.local.sh;')
-    echo "#!/bin/bash" > $localScript
+    echo "#!/usr/bin/env bash" > $localScript
     echo "set -e" >> $localScript
     if ${modes['single']}; then
       head -n1 $joblist >> $localScript

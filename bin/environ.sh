@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # error handling
 printError()   { echo -e "\e[1;31m[ERROR]: $* \e[0m"   >&2; }

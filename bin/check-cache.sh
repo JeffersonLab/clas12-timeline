@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # usage
 if [ $# -lt 1 ]; then
@@ -29,7 +29,7 @@ fi
 # preparation
 mkdir -p tmp
 jcacheList=tmp/jcacheSuggested.sh
-echo "#!/bin/bash" > $jcacheList
+echo "#!/usr/bin/env bash" > $jcacheList
 chmod u+x $jcacheList
 
 # convert cache directory => tape stub directory

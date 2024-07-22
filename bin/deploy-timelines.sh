@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # copy timelines to a target webserver directory
 
 set -e
