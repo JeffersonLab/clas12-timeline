@@ -126,6 +126,7 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
     T.bitDefinitions.size().times {
       System.err.println(sprintf("%5d %20s:   %s", it, T.bitNames[it], T.bitDescripts[it]))
     }
+    System.err.println("\n")
     System.exit(101)
   }
 }
