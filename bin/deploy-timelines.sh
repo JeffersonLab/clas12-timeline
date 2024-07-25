@@ -42,7 +42,7 @@ usage() {
     - use the -c option for a [TARGET_DIRECTORY] not relative to \$TIMELINEDIR
     - you must have write permission to the destination directory
     - recommendations for [TARGET_DIRECTORY]:
-      
+
       \$LOGNAME                  your personal directory for testing
 
       [RUN_GROUP]/pass[PASS]    the Run Group's directory; note the

@@ -53,7 +53,11 @@ Make the timelines:
 bin/run-physics-timelines.sh -d qa_rgc_su22
 ```
 
-Deploy to your area (for testing, but when ready, deploy to the run group area)
+Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):
 ```bash
-bin/deploy-timelines.sh -d qa_rgc_su22 -t $LOGNAME
+# your area, for testing
+bin/deploy-timelines.sh -d qa_rgc_su22 -t $LOGNAME -D
+
+# common area
+bin/deploy-timelines.sh -d qa_rgc_su22 -t rgc/Summer2022/qa-physics -s pass1-prescaled -D
 ```
