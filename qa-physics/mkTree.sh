@@ -5,11 +5,15 @@ if [ $# -eq 2 ]; then
   inDir=$1
   dataset=$2
 else
-  echo "USAGE: $0 [INPUT_DIR] [DATASET]" >&2
+  echo """
+  USAGE: $0 [INPUT_DIR] [DATASET]
+  - [INPUT_DIR] is a dataset's output dir from ../bin/run-physics-timelines.sh
+  - [DATASET] is needed by readTree.C to draw the epoch lines
+  """ >&2
   exit 101
 fi
 
-datfile="$inDir/outdat/data_table.dat"
+datfile="$inDir/timeline_physics_qa/outdat/data_table.dat"
 
 > num.tmp
 n=$(echo "`cat $datfile|wc -l`/6"|bc)
