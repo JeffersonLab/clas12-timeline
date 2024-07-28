@@ -40,7 +40,7 @@ def getEpoch = { r,s ->
   def lb,ub
   def e = -1
   epochFile.eachLine { line,i ->
-    (lb,ub) = line.tokenize(' ').collect{it.toInteger()}
+    (lb,ub) = line.tokenize(' ')[0,1].collect{it.toInteger()}
     if(r>=lb && r<=ub) e=i
   }
   if(e<0) throw new Exception("run $r sector $s has unknown epoch")
@@ -766,7 +766,7 @@ sectors.each { s ->
 
       def elowerBound, eupperBound
       epochFile.eachLine { line,i ->
-        if(i==epochIt) (elowerBound,eupperBound) = line.tokenize(' ').collect{it.toInteger()}
+        if(i==epochIt) (elowerBound,eupperBound) = line.tokenize(' ')[0,1].collect{it.toInteger()}
       }
       elineMedian = buildLine(
         map['grA_good'],elowerBound,eupperBound,"median",cutTree[sectorIt][epochIt]['mq'])

@@ -14,13 +14,7 @@ else
 fi
 
 datfile="$inDir/timeline_physics_qa/outdat/data_table.dat"
+cat "epochs/epochs.$dataset.txt" | sed 's;#.*;;g' > epochs.tmp # strip comments
 
-> num.tmp
-n=$(echo "`cat $datfile|wc -l`/6"|bc)
-for i in `seq 1 $n`; do
-  for j in {1..6}; do echo $i >> num.tmp; done
-done
-paste -d' ' num.tmp $datfile > tree.tmp
-
-root -l readTree.C'("'$dataset'")'
-rm {num,tree}.tmp
+root -l readTree.C'("'$dataset'","'$datfile'","epochs.tmp")'
+rm epochs.tmp
