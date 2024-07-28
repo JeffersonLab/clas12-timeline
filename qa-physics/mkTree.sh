@@ -5,18 +5,16 @@ if [ $# -eq 2 ]; then
   inDir=$1
   dataset=$2
 else
-  echo "USAGE: $0 [INPUT_DIR] [DATASET]" >&2
+  echo """
+  USAGE: $0 [INPUT_DIR] [DATASET]
+  - [INPUT_DIR] is a dataset's output dir from ../bin/run-physics-timelines.sh
+  - [DATASET] is needed by readTree.C to draw the epoch lines
+  """ >&2
   exit 101
 fi
 
-datfile="$inDir/outdat/data_table.dat"
+datfile="$inDir/timeline_physics_qa/outdat/data_table.dat"
+cat "epochs/epochs.$dataset.txt" | sed 's;#.*;;g' > epochs.tmp # strip comments
 
-> num.tmp
-n=$(echo "`cat $datfile|wc -l`/6"|bc)
-for i in `seq 1 $n`; do
-  for j in {1..6}; do echo $i >> num.tmp; done
-done
-paste -d' ' num.tmp $datfile > tree.tmp
-
-root -l readTree.C'("'$dataset'")'
-rm {num,tree}.tmp
+root -l readTree.C'("'$dataset'","'$datfile'","epochs.tmp")'
+rm epochs.tmp

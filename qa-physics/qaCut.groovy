@@ -35,12 +35,15 @@ if(!(epochFile.exists())) {
   epochFile = new File("epochs/epochs.default.txt")
 }
 
+// get the epoch number for a given run `r` and sector `s`
+// - the epoch number ranges from 1 to the number of epochs
+//   (so this number is the line number of the epochs/*.txt file)
 def getEpoch = { r,s ->
   //return 1 // (for testing single-epoch mode)
   def lb,ub
   def e = -1
   epochFile.eachLine { line,i ->
-    (lb,ub) = line.tokenize(' ').collect{it.toInteger()}
+    (lb,ub) = line.tokenize(' ')[0,1].collect{it.toInteger()}
     if(r>=lb && r<=ub) e=i
   }
   if(e<0) throw new Exception("run $r sector $s has unknown epoch")
@@ -164,9 +167,9 @@ sectors.each { s ->
   if( !useFT || (useFT && sectorIt==1)) {
     ratioTree[sectorIt].each { epochIt,ratioList ->
 
-      def mq = listMedian(ratioList, 'ratioList') // middle quartile
-      def lq = listMedian(ratioList.findAll{it<mq}, 'ratioList < median') // lower quartile
-      def uq = listMedian(ratioList.findAll{it>mq}, 'ratioList > median') // upper quartile
+      def mq = listMedian(ratioList, "epoch ${epochIt} ratioList") // middle quartile
+      def lq = listMedian(ratioList.findAll{it<mq}, "epoch ${epochIt} ratioList < median") // lower quartile
+      def uq = listMedian(ratioList.findAll{it>mq}, "epoch ${epochIt} ratioList > median") // upper quartile
       def iqr = uq - lq // interquartile range
       def cutLo = lq - cutFactor * iqr // lower QA cut boundary
       def cutHi = uq + cutFactor * iqr // upper QA cut boundary
@@ -766,7 +769,7 @@ sectors.each { s ->
 
       def elowerBound, eupperBound
       epochFile.eachLine { line,i ->
-        if(i==epochIt) (elowerBound,eupperBound) = line.tokenize(' ').collect{it.toInteger()}
+        if(i==epochIt) (elowerBound,eupperBound) = line.tokenize(' ')[0,1].collect{it.toInteger()}
       }
       elineMedian = buildLine(
         map['grA_good'],elowerBound,eupperBound,"median",cutTree[sectorIt][epochIt]['mq'])
