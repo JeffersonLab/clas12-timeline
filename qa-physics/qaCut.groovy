@@ -35,6 +35,9 @@ if(!(epochFile.exists())) {
   epochFile = new File("epochs/epochs.default.txt")
 }
 
+// get the epoch number for a given run `r` and sector `s`
+// - the epoch number ranges from 1 to the number of epochs
+//   (so this number is the line number of the epochs/*.txt file)
 def getEpoch = { r,s ->
   //return 1 // (for testing single-epoch mode)
   def lb,ub
@@ -164,9 +167,9 @@ sectors.each { s ->
   if( !useFT || (useFT && sectorIt==1)) {
     ratioTree[sectorIt].each { epochIt,ratioList ->
 
-      def mq = listMedian(ratioList, 'ratioList') // middle quartile
-      def lq = listMedian(ratioList.findAll{it<mq}, 'ratioList < median') // lower quartile
-      def uq = listMedian(ratioList.findAll{it>mq}, 'ratioList > median') // upper quartile
+      def mq = listMedian(ratioList, "epoch ${epochIt} ratioList") // middle quartile
+      def lq = listMedian(ratioList.findAll{it<mq}, "epoch ${epochIt} ratioList < median") // lower quartile
+      def uq = listMedian(ratioList.findAll{it>mq}, "epoch ${epochIt} ratioList > median") // upper quartile
       def iqr = uq - lq // interquartile range
       def cutLo = lq - cutFactor * iqr // lower QA cut boundary
       def cutHi = uq + cutFactor * iqr // upper QA cut boundary
