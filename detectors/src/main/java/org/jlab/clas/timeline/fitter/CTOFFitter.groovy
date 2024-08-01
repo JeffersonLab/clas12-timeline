@@ -34,103 +34,61 @@ class CTOFFitter {
     return f1
   }
 
+
   static F1D tdcadcdifffit(H1F h1) {
-    def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -5.0, 5.0)
-    double hAmp  = h1.getBinContent(h1.getMaximumBin());
-    double hMean = h1.getAxis().getBinCenter(h1.getMaximumBin())
-    double hRMS  = h1.getRMS();
-    double factor1 = 3.0
-    double factor2 = 1.57
-    double rangeMin = (hMean - factor1*0.5);
-    double rangeMax = (hMean + factor2*0.5);
-    f1.setRange(rangeMin, rangeMax);
-    f1.setParameter(0, hAmp);
-    // f1.setParLimits(0, hAmp*0.8, hAmp*1.2);
-    f1.setParameter(1, hMean);
-    // f1.setParLimits(1, 0, 0.5);
-    f1.setParameter(2, 1);
-    // f1.setParLimits(2, 0.5*hRMS, 1.5*hRMS);
 
-    def makefit = {func->
-      hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-2*hRMS,hMean+2*hRMS)
-      DataFitter.fit(func,h1,"Q")
-      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+    def fit_peak = { peakbin, prefix ->
+      def f1 = new F1D("${prefix}:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -5.0, 5.0)
+      double hAmp  = h1.getBinContent(peakbin);
+      double hMean = h1.getAxis().getBinCenter(peakbin)
+      double hRMS  = h1.getRMS();
+      double factor1 = 3.0
+      double factor2 = 1.57
+      double rangeMin = (hMean - factor1*0.5);
+      double rangeMax = (hMean + factor2*0.5);
+      f1.setRange(rangeMin, rangeMax);
+      f1.setParameter(0, hAmp);
+      // f1.setParLimits(0, hAmp*0.8, hAmp*1.2);
+      f1.setParameter(1, hMean);
+      // f1.setParLimits(1, 0, 0.5);
+      f1.setParameter(2, 1);
+      // f1.setParLimits(2, 0.5*hRMS, 1.5*hRMS);
+
+      def makefit = {func->
+        hMean = func.getParameter(1)
+        hRMS = func.getParameter(2).abs()
+        func.setRange(hMean-2*hRMS,hMean+2*hRMS)
+        DataFitter.fit(func,h1,"Q")
+        return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
+      }
+
+      def fits1 = (0..20).collect{makefit(f1)}
+      def bestfit = fits1.sort()[0]
+      f1.setParameters(*bestfit[1])
+      //makefit(f1)
+      return f1
     }
 
-    def fits1 = (0..20).collect{makefit(f1)}
-    def bestfit = fits1.sort()[0]
-    f1.setParameters(*bestfit[1])
-    //makefit(f1)
-    return f1
-  }
+    // find the highest peak, and fit it
+    def bins = (0..h1.getAxis().getNBins())
+    def peakbin1 = bins.max{hi.getBinContent(it)}
+    def func1 = fit_peak(peakbin1,'fit1')
 
+    // find the 2nd highest peak by excluding the region around the 1st highest
+    // peak, and searching for the new highest max, then fit it
+    def peak1Start = func1.getParameter(1) - 2*func1.getParameter(2)
+    def peak1End   = func1.getParameter(1) + 2*func1.getParameter(2)
+    def peakbin2 = bins
+      .collect{ [ it, h1.getBinContent(it) ] }
+      .findAll{ h1.getBinCenter(it) < peak1Start || h1.getBinCenter(it) > peak1End }
+      .max{ it[1] }[0]
+    def func2 = fit_peak(peakbin2,'fit2')
 
-  static F1D tdcadcdifffit_right(H1F h1) {
-    def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -5.0, 5.0)
-    def peakbin = (1000..1500).max{h1.getBinContent(it)}
-    double hAmp  = h1.getBinContent(peakbin);
-    double hMean = h1.getAxis().getBinCenter(peakbin)
-    double hRMS  = h1.getRMS();
-    double factor1 = 3.0
-    double factor2 = 1.57
-    double rangeMin = (hMean - factor1*0.5);
-    double rangeMax = (hMean + factor2*0.5);
-    f1.setRange(rangeMin, rangeMax);
-    f1.setParameter(0, hAmp);
-    // f1.setParLimits(0, hAmp*0.8, hAmp*1.2);
-    f1.setParameter(1, hMean);
-    // f1.setParLimits(1, 0, 0.5);
-    f1.setParameter(2, 1);
-    // f1.setParLimits(2, 0.5*hRMS, 1.5*hRMS);
-
-    def makefit = {func->
-      hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-2*hRMS,hMean+2*hRMS)
-      DataFitter.fit(func,h1,"Q")
-      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
-    }
-
-    def fits1 = (0..20).collect{makefit(f1)}
-    def bestfit = fits1.sort()[0]
-    f1.setParameters(*bestfit[1])
-    //makefit(f1)
-    return f1
-  }
-
-  static F1D tdcadcdifffit_left(H1F h1) {
-    def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -5.0, 5.0)
-    def peakbin = (400..900).max{h1.getBinContent(it)}
-    double hAmp  = h1.getBinContent(peakbin);
-    double hMean = h1.getAxis().getBinCenter(peakbin)
-    double hRMS  = h1.getRMS();
-    double factor1 = 3.0
-    double factor2 = 1.57
-    double rangeMin = (hMean - factor1*0.5);
-    double rangeMax = (hMean + factor2*0.5);
-    f1.setRange(rangeMin, rangeMax);
-    f1.setParameter(0, hAmp);
-    // f1.setParLimits(0, hAmp*0.8, hAmp*1.2);
-    f1.setParameter(1, hMean);
-    // f1.setParLimits(1, 0, 0.5);
-    f1.setParameter(2, 1);
-    // f1.setParLimits(2, 0.5*hRMS, 1.5*hRMS);
-
-    def makefit = {func->
-      hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-2*hRMS,hMean+2*hRMS)
-      DataFitter.fit(func,h1,"Q")
-      return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
-    }
-
-    def fits1 = (0..20).collect{makefit(f1)}
-    def bestfit = fits1.sort()[0]
-    f1.setParameters(*bestfit[1])
-    //makefit(f1)
-    return f1
+    // decide which is left and right, rename the functions accordingly, and return them
+    funcs = func1.getParameter(1) < func2.getParameter(2) ? [func1,func2] : [func2,func1]
+    funcs[0].setName(funcs[0].getName().replaceAll(/^fit.:/,'fitLeft:'))
+    funcs[1].setName(funcs[1].getName().replaceAll(/^fit.:/,'fitRight:'))
+    return funcs
   }
 
 
