@@ -85,7 +85,7 @@ class CTOFFitter {
     def func2 = fit_peak(peakbin2,'fit2')
 
     // decide which is left and right, rename the functions accordingly, and return them
-    funcs = func1.getParameter(1) < func2.getParameter(2) ? [func1,func2] : [func2,func1]
+    def funcs = func1.getParameter(1) < func2.getParameter(2) ? [func1,func2] : [func2,func1]
     funcs[0].setName(funcs[0].getName().replaceAll(/^fit.:/,'fitLeft:'))
     funcs[1].setName(funcs[1].getName().replaceAll(/^fit.:/,'fitRight:'))
     return funcs
