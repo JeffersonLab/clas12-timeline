@@ -84,10 +84,21 @@ class CTOFFitter {
       .max{ it[1] }[0]
     def func2 = fit_peak(peakbin2,'fit2')
 
-    // decide which is left and right, rename the functions accordingly, and return them
+    // decide which is left and right
     def funcs = func1.getParameter(1) < func2.getParameter(2) ? [func1,func2] : [func2,func1]
-    funcs[0].setName(funcs[0].getName().replaceAll(/^fit.:/,'fitLeft:'))
-    funcs[1].setName(funcs[1].getName().replaceAll(/^fit.:/,'fitRight:'))
+
+    // create a summed combination (since the front-end seems to prefer this)
+    def combinedFunc = new F1D(
+      "fit:"+h1.getName(),
+      "[ampLeft]*gaus(x,[meanLeft],[sigmaLeft])+[ampRight]*gaus(x,[meanRight],[sigmaRight])",
+      funcs[0].getParameter(1) - 3*funcs[0].getParameter(2),
+      funcs[1].getParameter(1) + 3*funcs[1].getParameter(2))
+    [0,1,2].each{
+      combinedFunc.setParameter(it, funcs[0].getParameter(it))
+      combinedFunc.setParameter(it+3, funcs[1].getParameter(it))
+    }
+    funcs.add(combinedFunc)
+
     return funcs
   }
 

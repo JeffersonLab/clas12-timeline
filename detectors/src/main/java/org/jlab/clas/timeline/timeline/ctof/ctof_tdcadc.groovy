@@ -16,14 +16,13 @@ def processDirectory(dir, run) {
   data[run]  = [
     run:        run,
     h1:         h1,
-    f1Left:     f1s[0],
     meanLeft:   f1s[0].getParameter(1),
     sigmaLeft:  f1s[0].getParameter(2).abs(),
     chi2Left:   f1s[0].getChiSquare(),
-    f1Right:    f1s[1],
     meanRight:  f1s[1].getParameter(1),
     sigmaRight: f1s[1].getParameter(2).abs(),
     chi2Right:  f1s[1].getChiSquare(),
+    f1Combined: f1s[2],
   ]
 }
 
@@ -47,8 +46,7 @@ def close() {
       out.mkdir('/'+it.run)
       out.cd('/'+it.run)
       out.addDataSet(it.h1)
-      out.addDataSet(it.f1Left)
-      out.addDataSet(it.f1Right)
+      out.addDataSet(it.f1Combined)
       grtlLeft.addPoint(it.run, it["${name}Left"], 0, 0)
       grtlRight.addPoint(it.run, it["${name}Right"], 0, 0)
     }
