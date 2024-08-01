@@ -35,7 +35,7 @@ class CTOFFitter {
   }
 
 
-  static F1D tdcadcdifffit(H1F h1) {
+  static def tdcadcdifffit(H1F h1) {
 
     def fit_peak = { peakbin, prefix ->
       def f1 = new F1D("${prefix}:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -5.0, 5.0)
@@ -70,8 +70,8 @@ class CTOFFitter {
     }
 
     // find the highest peak, and fit it
-    def bins = (0..h1.getAxis().getNBins())
-    def peakbin1 = bins.max{hi.getBinContent(it)}
+    def bins = (1..h1.getAxis().getNBins())
+    def peakbin1 = bins.max{h1.getBinContent(it)}
     def func1 = fit_peak(peakbin1,'fit1')
 
     // find the 2nd highest peak by excluding the region around the 1st highest
@@ -80,7 +80,7 @@ class CTOFFitter {
     def peak1End   = func1.getParameter(1) + 2*func1.getParameter(2)
     def peakbin2 = bins
       .collect{ [ it, h1.getBinContent(it) ] }
-      .findAll{ h1.getBinCenter(it) < peak1Start || h1.getBinCenter(it) > peak1End }
+      .findAll{ h1.getAxis().getBinCenter(it[0]) < peak1Start || h1.getAxis().getBinCenter(it[0]) > peak1End }
       .max{ it[1] }[0]
     def func2 = fit_peak(peakbin2,'fit2')
 

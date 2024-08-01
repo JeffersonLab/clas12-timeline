@@ -55,7 +55,8 @@ def close() {
 
     out.mkdir('/timelines')
     out.cd('/timelines')
-    out.addDataSet(grtl)
+    out.addDataSet(grtlLeft)
+    out.addDataSet(grtlRight)
     out.writeFile("ctof_tdcadc_time_${name}.hipo")
   }
 }
