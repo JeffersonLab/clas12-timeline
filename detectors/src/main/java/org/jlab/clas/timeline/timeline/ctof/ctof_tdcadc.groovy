@@ -16,12 +16,12 @@ def processDirectory(dir, run) {
   data[run]  = [
     run:        run,
     h1:         h1,
-    meanLeft:   f1s[0].getParameter(1),
-    sigmaLeft:  f1s[0].getParameter(2).abs(),
-    chi2Left:   f1s[0].getChiSquare(),
-    meanRight:  f1s[1].getParameter(1),
-    sigmaRight: f1s[1].getParameter(2).abs(),
-    chi2Right:  f1s[1].getChiSquare(),
+    meanUpstream:   f1s[0].getParameter(1),
+    sigmaUpstream:  f1s[0].getParameter(2).abs(),
+    chi2Upstream:   f1s[0].getChiSquare(),
+    meanDownstream:  f1s[1].getParameter(1),
+    sigmaDownstream: f1s[1].getParameter(2).abs(),
+    chi2Downstream:  f1s[1].getChiSquare(),
     f1Combined: f1s[2],
   ]
 }
@@ -32,9 +32,9 @@ def close() {
 
 
   ['mean', 'sigma'].each{name->
-    def grtlLeft  = new GraphErrors("left_${name}")
-    def grtlRight = new GraphErrors("right_${name}")
-    [grtlLeft,grtlRight].each{ grtl ->
+    def grtlUpstream  = new GraphErrors("upstream_${name}")
+    def grtlDownstream = new GraphErrors("downstream_${name}")
+    [grtlUpstream,grtlDownstream].each{ grtl ->
       grtl.setTitle("TDC time - FADC time averaged over CTOF counters")
       grtl.setTitleY("TDC time - FADC time averaged over CTOF counters [ns]")
       grtl.setTitleX("run number")
@@ -47,14 +47,14 @@ def close() {
       out.cd('/'+it.run)
       out.addDataSet(it.h1)
       out.addDataSet(it.f1Combined)
-      grtlLeft.addPoint(it.run, it["${name}Left"], 0, 0)
-      grtlRight.addPoint(it.run, it["${name}Right"], 0, 0)
+      grtlUpstream.addPoint(it.run, it["${name}Upstream"], 0, 0)
+      grtlDownstream.addPoint(it.run, it["${name}Downstream"], 0, 0)
     }
 
     out.mkdir('/timelines')
     out.cd('/timelines')
-    out.addDataSet(grtlLeft)
-    out.addDataSet(grtlRight)
+    out.addDataSet(grtlUpstream)
+    out.addDataSet(grtlDownstream)
     out.writeFile("ctof_tdcadc_time_${name}.hipo")
   }
 }
