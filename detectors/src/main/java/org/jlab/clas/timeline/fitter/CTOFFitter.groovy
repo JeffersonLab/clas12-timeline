@@ -84,8 +84,8 @@ class CTOFFitter {
       .max{ it[1] }[0]
     def func2 = fit_peak(peakbin2,'fit2')
 
-    // decide which is upstream and downstream
-    def funcs = func1.getParameter(1) < func2.getParameter(2) ? [func1,func2] : [func2,func1]
+    // decide which fit result is upstream and downstream
+    def funcs = func1.getParameter(1) < func2.getParameter(1) ? [func1,func2] : [func2,func1]
 
     // create a summed combination (since the front-end seems to prefer this)
     def combinedFunc = new F1D(
