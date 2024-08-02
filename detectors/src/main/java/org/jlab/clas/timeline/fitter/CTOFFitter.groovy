@@ -90,7 +90,7 @@ class CTOFFitter {
     // create a summed combination (since the front-end seems to prefer this)
     def combinedFunc = new F1D(
       "fit:"+h1.getName(),
-      "[ampLeft]*gaus(x,[meanLeft],[sigmaLeft])+[ampRight]*gaus(x,[meanRight],[sigmaRight])",
+      "[ampUpstream]*gaus(x,[meanUpstream],[sigmaUpstream])+[ampDownstream]*gaus(x,[meanDownstream],[sigmaDownstream])",
       funcs[0].getParameter(1) - 3*funcs[0].getParameter(2),
       funcs[1].getParameter(1) + 3*funcs[1].getParameter(2))
     [0,1,2].each{
