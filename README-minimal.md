@@ -5,4 +5,4 @@ run-detectors-timelines.sh -d rgx_sp24_v2 -i $outDir/hist/detectors
 run-detectors-timelines.sh -d rgx_sp24_v2
 deploy-timelines.sh -d rgx_sp24_v2 -t rgx/sp24/v2 -D 
 ```
-where $outDir was used to configure a (completed) workflow with qtl model.
+where $outDir was used to configure a (now completed) workflow with qtl model.
