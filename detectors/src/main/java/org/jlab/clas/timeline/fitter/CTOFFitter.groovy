@@ -37,6 +37,10 @@ class CTOFFitter {
 
   static def tdcadcdifffit(H1F h1) {
 
+    // set min/max allowed values
+    def valOrMinAllowed = { val -> [val, h1.getAxis().min()].max() }
+    def valOrMaxAllowed = { val -> [val, h1.getAxis().max()].min() }
+
     def fit_peak = { peakbin, prefix ->
       def f1 = new F1D("${prefix}:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -5.0, 5.0)
       double hAmp  = h1.getBinContent(peakbin);
@@ -44,15 +48,14 @@ class CTOFFitter {
       double hRMS  = h1.getRMS();
       double factor1 = 3.0
       double factor2 = 1.57
-      double rangeMin = (hMean - factor1*0.5);
-      double rangeMax = (hMean + factor2*0.5);
+      double rangeMin = valOrMinAllowed(hMean - factor1*0.5);
+      double rangeMax = valOrMaxAllowed(hMean + factor2*0.5);
       f1.setRange(rangeMin, rangeMax);
       f1.setParameter(0, hAmp);
-      // f1.setParLimits(0, hAmp*0.8, hAmp*1.2);
       f1.setParameter(1, hMean);
-      // f1.setParLimits(1, 0, 0.5);
       f1.setParameter(2, 1);
-      // f1.setParLimits(2, 0.5*hRMS, 1.5*hRMS);
+      f1.setParLimits(1, rangeMin, rangeMax);
+      f1.setParLimits(2, 0, [5*hRMS, h1.getAxis().max()-h1.getAxis().min()].min())
 
       def makefit = {func->
         hMean = func.getParameter(1)
@@ -70,18 +73,18 @@ class CTOFFitter {
     }
 
     // find the highest peak, and fit it
-    def bins = (1..h1.getAxis().getNBins())
+    def bins = (1..h1.getAxis().getNBins()-1)
     def peakbin1 = bins.max{h1.getBinContent(it)}
     def func1 = fit_peak(peakbin1,'fit1')
 
     // find the 2nd highest peak by excluding the region around the 1st highest
     // peak, and searching for the new highest max, then fit it
-    def peak1Start = func1.getParameter(1) - 2*func1.getParameter(2)
-    def peak1End   = func1.getParameter(1) + 2*func1.getParameter(2)
-    def peakbin2 = bins
+    def peak1Start = valOrMinAllowed(func1.getParameter(1) - 2*func1.getParameter(2))
+    def peak1End   = valOrMaxAllowed(func1.getParameter(1) + 2*func1.getParameter(2))
+    def dataWithoutPeak1 = bins
       .collect{ [ it, h1.getBinContent(it) ] }
       .findAll{ h1.getAxis().getBinCenter(it[0]) < peak1Start || h1.getAxis().getBinCenter(it[0]) > peak1End }
-      .max{ it[1] }[0]
+    def peakbin2 = dataWithoutPeak1.size() > 0 ? dataWithoutPeak1.max{it[1]}[0] : peakbin1 // if peak1 fit was bad, just repeat the fit for peak 2 and leave it bad
     def func2 = fit_peak(peakbin2,'fit2')
 
     // decide which fit result is upstream and downstream
