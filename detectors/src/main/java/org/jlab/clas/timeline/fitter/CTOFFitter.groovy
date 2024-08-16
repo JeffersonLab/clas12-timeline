@@ -10,7 +10,7 @@ class CTOFFitter {
     def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", -5.0, 5.0)
     double hAmp   = h1.getBinContent(h1.getMaximumBin());
     double hMu    = h1.getAxis().getBinCenter(h1.getMaximumBin())
-    double hSigma = Math.min(HistoUtil.getHistoIQR(h1) / 2.0, 0.2)
+    double hSigma = h1.getEntries() > 0 ? Math.min(HistoUtil.getHistoIQR(h1)/2.0, 0.2) : 0.2
     def rangeFactor = 1.5
     double rangeMin = (hMu - rangeFactor*hSigma);
     double rangeMax = (hMu + rangeFactor*hSigma);
