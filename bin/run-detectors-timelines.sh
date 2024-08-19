@@ -338,7 +338,7 @@ else
 fi
 
 # grep for suspicious things in error logs
-errPattern="error:|exception:"
+errPattern="error:|exception:|warning"
 echo """To look for any quieter errors, running \`grep -iE '$errPattern'\` on *.err files:
 $sep"""
 grep -iE --color "$errPattern" $logDir/*.err || echo "Good news: grep found no errors, but you still may want to take a look yourself..."
