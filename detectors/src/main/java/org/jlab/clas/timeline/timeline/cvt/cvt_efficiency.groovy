@@ -53,6 +53,12 @@ def close() {
     grtl.addPoint(it.run, it.eff, 0, 0)
   }
 
+  // if there are no points, we need to add at least one bogus point, otherwise the front-end will hang
+  if(grtl.getDataSize(0) == 0) {
+    grtl.addPoint(0, 0, 0, 0)
+    grtl.setTitle("${grtl.getTitle()}: ERROR - efficiency table has not yet been generated for these runs")
+  }
+
   out.mkdir('/timelines')
   out.cd('/timelines')
   grtl.each{ out.addDataSet(it) }
