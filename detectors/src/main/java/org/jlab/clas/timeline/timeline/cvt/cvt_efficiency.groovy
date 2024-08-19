@@ -11,18 +11,18 @@ def processDirectory(dir, run) {
 
   // load the data file
   def data_file_name = "${System.getenv('TIMELINESRC')}/data/cvt/sample.dat"
-  def data_file = File(data_file_name)
+  def data_file = new File(data_file_name)
   if(!(data_file.exists())) {
     throw new Exception("cannot find data file '${data_file_name}'")
   }
 
   // parse the data file
-  found = false
+  def found = false
   data_file.eachLine{ line ->
     if(found) { // if already found, don't keep parsing
       return
     }
-    tokens = line.replaceAll(/#.*/,'').tokenize(' ') // parse line: remove comments and tokenize
+    def tokens = line.replaceAll(/#.*/,'').tokenize(' ') // parse line: remove comments and tokenize
     if(tokens[0] == null || tokens[1] == null) { // skip empty or incomplete lines
       return
     }
