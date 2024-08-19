@@ -32,6 +32,7 @@ def engines = [
     new cvt.cvt_trks_neg_rat(),
     new cvt.cvt_trks_pos(),
     new cvt.cvt_trks_pos_rat(),
+    new cvt.cvt_efficiency(),
     new trigger.rat_Km_num(),
     new trigger.rat_neg_num(),
     new trigger.rat_pos_num(),
