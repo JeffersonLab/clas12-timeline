@@ -18,7 +18,7 @@ class HTCCFitter{
 
     // compute the IQR of `h1`, which is a better estimate of the initial sigma parameter than
     // the RMS, since it is not (typically) biased by outliers
-    def iqr = HistoUtil.getHistoIQR(h1)
+    def iqr = HistoUtil.getHistoIQR(h1, -1.0)
 
     def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", maxV-2, maxV+3);
 
@@ -28,8 +28,13 @@ class HTCCFitter{
 
     f1.setParameter(0, h1.getMax());
     f1.setParameter(1, maxV);
-    f1.setParameter(2, Math.max(iqr / 2.0, 0.1));
-    f1.setParLimits(2, Math.max(iqr / 5.0, 0.05), Math.min(iqr * 5.0, h1.getAxis().getBinCenter(h1.getAxis().getNBins()-1)));
+    if(iqr > 0) {
+      f1.setParameter(2, Math.max(iqr / 2.0, 0.1));
+      f1.setParLimits(2, Math.max(iqr / 5.0, 0.05), Math.min(iqr * 5.0, h1.getAxis().getBinCenter(h1.getAxis().getNBins()-1)));
+    } else {
+      f1.setParameter(2, 0.1);
+      f1.setParLimits(2, 0.05, h1.getAxis().getBinCenter(h1.getAxis().getNBins()-1));
+    }
 
     DataFitter.fit(f1, h1, "");
 

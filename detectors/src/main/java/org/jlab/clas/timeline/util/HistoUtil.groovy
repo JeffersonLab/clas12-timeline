@@ -59,8 +59,12 @@ class HistoUtil {
   }
 
   /// @returns the Interquartile Range (IQR) of a histogram
-  /// @param the histogram; FIXME: only unweighted histograms are supported at the moment
-  static def getHistoIQR(H1F hist) {
+  /// @param hist the histogram; FIXME: only unweighted histograms are supported at the moment
+  /// @param defIfEmpty the default value, if `hist` is empty
+  static def getHistoIQR(H1F hist, defIfEmpty) {
+    if(hist.getEntries() <= 0) {
+      return defIfEmpty
+    }
     def hist_list = []
     hist.getAxis().getNBins().times { bin ->
       def counts = hist.getBinContent(bin).toInteger() // FIXME: assumes the histogram is unweighted
@@ -70,7 +74,7 @@ class HistoUtil {
     def listMedian = { d ->
       if(d.size()==0) {
         System.err.println("WARNING in HistoUtil.getHistoIQR: attempt to calculate median of an empty list")
-        return 0
+        return defIfEmpty
       }
       d.sort()
       def m = d.size().intdiv(2)
