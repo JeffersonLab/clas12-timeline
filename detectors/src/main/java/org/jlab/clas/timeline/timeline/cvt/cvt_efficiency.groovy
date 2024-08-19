@@ -6,14 +6,17 @@ import org.jlab.groot.data.GraphErrors
 class cvt_efficiency {
 
 def data = new ConcurrentHashMap()
+def data_file = null
 
 def processDirectory(dir, run) {
 
   // load the data file
-  def data_file_name = "${System.getenv('TIMELINESRC')}/data/cvt/sample.dat"
-  def data_file = new File(data_file_name)
-  if(!(data_file.exists())) {
-    throw new Exception("cannot find data file '${data_file_name}'")
+  if(data_file == null) {
+    def data_file_name = "${System.getenv('TIMELINESRC')}/data/cvt/sample.dat"
+    data_file = new File(data_file_name)
+    if(!(data_file.exists())) {
+      throw new Exception("cannot find data file '${data_file_name}'")
+    }
   }
 
   // parse the data file
