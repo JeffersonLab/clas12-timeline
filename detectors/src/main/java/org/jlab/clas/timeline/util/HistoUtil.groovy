@@ -62,7 +62,7 @@ class HistoUtil {
   /// @param hist the histogram; FIXME: only unweighted histograms are supported at the moment
   /// @param defIfEmpty the default value, if `hist` is empty
   static def getHistoIQR(H1F hist, defIfEmpty) {
-    if(hist.getEntries() <= 0) {
+    if( !(hist.getEntries() > 0) || !(hist.integral() > 0) ) { // `.getEntries()` can be nonzero for empty histograms, so be sure to check the integral too
       return defIfEmpty
     }
     def hist_list = []
@@ -73,7 +73,8 @@ class HistoUtil {
     }
     def listMedian = { d ->
       if(d.size()==0) {
-        System.err.println("WARNING in HistoUtil.getHistoIQR: attempt to calculate median of an empty list")
+        // this list may end up being empty if there are _few_ entries in the histogram, since this method
+        // is called to get the quartiles; in this case, just return `defIfEmpty`
         return defIfEmpty
       }
       d.sort()
