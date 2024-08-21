@@ -1,5 +1,13 @@
 # Physics QA Timeline Production
-Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/JeffersonLab/clas12-qadb) production
+
+Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/JeffersonLab/clas12-qadb) production.
+The QADB is produced by the physics timeline QA, typically only for a fully
+cooked dataset. The QADB is automatically produced from the physics QA, but it is
+_highly recommended_ to perform a "manual QA" afterward, by looking at the
+automatic QA results, cross checking with the experimental log book, and
+modifying the QADB accordingly.
+
+Physics QA features:
 
 * Tracks the electron trigger count, normalized by the Faraday cup charge
 * Monitors semi-inclusive spin asymmetries
