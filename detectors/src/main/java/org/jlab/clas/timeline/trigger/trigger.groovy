@@ -1,10 +1,10 @@
-package org.jlab.clas.timeline.timeline.helicity
+package org.jlab.clas.timeline.timeline.trigger
 import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.groot.data.H1F
 
-class helicity {
+class trigger {
 
     def data = new ConcurrentHashMap()
 
@@ -33,7 +33,7 @@ class helicity {
             out.cd('/timelines')
             out.addDataSet(gr)
         }
-        out.writeFile('helicity_efficiency.hipo')
+        out.writeFile('trigger.hipo')
     }
 
 }
