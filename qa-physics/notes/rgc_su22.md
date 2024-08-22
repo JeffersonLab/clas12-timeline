@@ -36,30 +36,38 @@ start-workflow.sh rgc-a-su22*.json  ## check that this is the correct set of JSO
 > [!IMPORTANT]
 > Check any run-dependent settings in `qa-physics/monitorRead.groovy`, such as beam energy.
 
-We will now combine the targets' data into a single dataset named `rgc_su22`.
+We will now combine the targets' data into a single dataset named `rgc_su22_prescaled`.
 Assuming your output data are in
 ```
 /volatile/clas12/users/$LOGNAME/qa_rgc_su22_*
 ```
 and that this wildcard pattern does _not_ include any files you _don't_ want, you may run
 ```bash
-bin/run-monitoring.sh -d rgc_su22 --flatdir --focus-physics $(ls -d /volatile/clas12/users/$LOGNAME/qa_rgc_su22_*/train/QA)
+bin/run-monitoring.sh -d rgc_su22_prescaled --flatdir --focus-physics $(ls -d /volatile/clas12/users/$LOGNAME/qa_rgc_su22_*/train/QA)
+```
+Alternatively, for `sidisdvcs` trains (which have better statistics for asymmetries):
+```bash
+bin/run-monitoring.sh --check-cache -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
+bin/run-monitoring.sh -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
 ```
 
 ## Make timelines
 
 Make the timelines:
 ```bash
-bin/run-physics-timelines.sh -d rgc_su22
+bin/run-physics-timelines.sh -d rgc_su22_prescaled
+bin/run-physics-timelines.sh -d rgc_su22_sidisdvcs
 ```
 
 Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):
 ```bash
 # your area, for testing
-bin/deploy-timelines.sh -d rgc_su22 -t $LOGNAME -D
+bin/deploy-timelines.sh -d rgc_su22_prescaled -t $LOGNAME -D
+bin/deploy-timelines.sh -d rgc_su22_sidisdvcs -t $LOGNAME -D
 
 # common area
-bin/deploy-timelines.sh -d rgc_su22 -t rgc/Summer2022/qa-physics -s pass1-prescaled -D
+bin/deploy-timelines.sh -d rgc_su22_prescaled -t rgc/Summer2022/qa-physics -s pass1-prescaled -D
+bin/deploy-timelines.sh -d rgc_su22_sidisdvcs -t rgc/Summer2022/qa-physics -s pass1-sidisdvcs -D
 ```
 
 # List of Runs
