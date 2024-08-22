@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # build root tree
 
 if [ $# -eq 2 ]; then

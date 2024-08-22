@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # compares list of DSTs from `getListOfDSTs.sh` to the
 # list of files in `data_table.dat`, to see if anything
 # is missing; this helps protect against cases where slurm

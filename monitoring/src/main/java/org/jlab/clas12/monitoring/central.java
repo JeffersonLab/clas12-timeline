@@ -122,7 +122,7 @@ public class central {
 		H_CTOF_edep_z.setTitle("CTOF PathLCorrected Edep vs z");
 		H_CTOF_edep_z.setTitleX("z/10 (cm)");
 		H_CTOF_edep_z.setTitleY("E (MeV)");
-		H_CTOF_tdcadc_dt = new H1F("CTOF TDC-ADC Time Difference","CTOF TDC-ADC Time Difference",2250,-10.,80.);
+		H_CTOF_tdcadc_dt = new H1F("CTOF TDC-ADC Time Difference","CTOF TDC-ADC Time Difference",4750,-10.,180.);
 		H_CTOF_tdcadc_dt.setTitle("CTOF TDC_time-ADC_time");
 		H_CTOF_tdcadc_dt.setTitleX("Delta_t (ns)");
 		H_CTOF_tdcadc_dt.setTitleY("counts");

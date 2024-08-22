@@ -16,7 +16,7 @@ import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
 // CONSTANTS
-def MIN_NUM_SCALERS = 500    // at least this many scaler readouts per time bin // 2000 is roughly a DST 5-file
+def MIN_NUM_SCALERS = 2000   // at least this many scaler readouts per time bin // 2000 is roughly a DST 5-file
 def NBINS           = 50     // number of bins in some histograms
 def SECTORS         = 0..<6  // sector range
 def ECAL_ID         = DetectorType.ECAL.getDetectorId() // ECAL detector ID
@@ -33,14 +33,14 @@ def inHipoType = "dst" // options: "dst", "skim"
 def runnum = 0
 if(args.length<2) {
   System.err.println """
-  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO file directory] [output directory] [type(OPTIONAL)] [runnum(OPTIONAL)]
+  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO directory or file] [output directory] [type(OPTIONAL)] [runnum(OPTIONAL)]
          REQUIRED parameters:
-           - [HIPO file directory] should be a directory of HIPO files, either
-             DST file(s) or skim file(s)
+           - [HIPO directory or file] should be a directory of HIPO files
+             or a single hipo file (depends on [type]: use 'dst' for directory
+             or 'skim' for file)
            - [output directory] output directory for the produced files
          OPTIONAL parameters:
            - [type] can be 'dst' or 'skim' (default is '$inHipoType')
-             NOTE: 'skim' file usage may not work
            - [runnum] the run number; if not specified, it will be obtained from RUN::config
 
   """
@@ -104,7 +104,8 @@ else if(runnum>=11093 && runnum<=11300) RG="RGB" // fall 19
 else if(runnum>=11323 && runnum<=11571) RG="RGB" // winter 20
 else if(runnum>=12210 && runnum<=12951) RG="RGF" // spring+summer 20
 else if(runnum>=15019 && runnum<=15884) RG="RGM"
-else if(runnum>=16043 && runnum<=16772) RG="RGC" // summer 22
+else if(runnum>=16042 && runnum<=16786) RG="RGC" // summer 22
+else if(runnum>=16843 && runnum<=17408) RG="RGC" // fall 22
 else System.err.println "WARNING: unknown run group; using default run-group-dependent settings (see monitorRead.groovy)"
 println "rungroup = $RG"
 
@@ -124,8 +125,9 @@ else if(RG=="RGB") {
   else System.err.println "ERROR: unknown beam energy"
 }
 else if(RG=="RGC") {
-  if(runnum>=16010 && runnum<=16078) EBEAM = 2.21
-  else if(runnum>=16079) EBEAM = 10.55
+  if(runnum>=16042 && runnum<=16078) EBEAM = 2.21
+  else if(runnum>=16079 && runnum<=16786) EBEAM = 10.55
+  else if(runnum>=16843 && runnum<=17408) EBEAM = 10.55
   else System.err.println "ERROR: unknown beam energy"
 }
 else if(RG=="RGK") {
@@ -646,7 +648,7 @@ inHipoList.each { inHipoFile ->
       continue
     }
     else {
-      System.err.println "WARNING: cannot get event number for event with no RUN::config bank; skipping this event; available banks: ${hipoEvent.getBankList()}"
+      // System.err.println "WARNING: cannot get event number for event with no RUN::config bank; skipping this event; available banks: ${hipoEvent.getBankList()}"
       continue
     }
     if(eventNum==0) {
@@ -740,6 +742,7 @@ inHipoList.each { inHipoFile ->
     def helicity = 0 // if undefined, default to 0
     if(hipoEvent.hasBank("REC::Event") && eventBank.rows()>0) {
       helicity = eventBank.getByte('helicity',0)
+      thisTimeBin.histTree.helic.dist.fill(helicity)
     }
     def helStr
     def helDefined
@@ -748,7 +751,6 @@ inHipoList.each { inHipoFile ->
       case -1: helStr='hm'; helDefined=true; break
       default: helDefined = false; helicity = 0; break
     }
-    thisTimeBin.histTree.helic.dist.fill(helicity)
     // get scaler helicity from `HEL::scaler`, and fill its charge-weighted distribution
     if(hipoEvent.hasBank("HEL::scaler")) {
       helScalerBank.rows().times{ row -> // HEL::scaler readouts "pile up", so there are multiple bank rows in an event

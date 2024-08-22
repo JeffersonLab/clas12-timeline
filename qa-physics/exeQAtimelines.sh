@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # after finishing analysis in the `QA` subdirectory, this script will call
 # qaCut.groovy on the results
 

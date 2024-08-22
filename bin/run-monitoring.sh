@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 set -u
@@ -17,11 +17,10 @@ SLURM_LOG=/farm_out/%u/%x-%A_%a
 # default options
 dataset=test_v0
 declare -A modes
-for key in findhipo rundir eachdir single series submit check-cache swifjob focus-detectors focus-physics help; do
+for key in findhipo rundir eachdir flatdir single series submit check-cache swifjob focus-detectors focus-physics help; do
   modes[$key]=false
 done
 outputDir=""
-modes['rundir']=true
 
 # usage
 sep="================================================================"
@@ -60,6 +59,8 @@ usageVerbose() {
                          - A regexp or globbing (wildcards) can be used to
                            specify the list of directories as well, if your shell
                            supports it
+                         - for a directory of files, with one run per file (e.g.,
+                           SKIM files), use the option \`--flatdir\`
 
   $sep
 
@@ -81,10 +82,13 @@ usageVerbose() {
        --rundir       assume each specified [RUN_DIRECTORY] contains
                       subdirectories named as just run numbers; it is not
                       recommended to use wildcards for this option
-                      **this is the default option**
+                      **this is the DEFAULT option**
 
        --eachdir      assume each specified [RUN_DIRECTORY] is a single
-                      run's directory full of HIPO files
+                      run's directory full of HIPO files (e.g., DST files)
+
+       --flatdir      assume each specified [RUN_DIRECTORY] contains HIPO
+                      files, with one run per file; use this option for SKIM files
 
        --check-cache  cross check /cache directories with tape stub directories
                       (/mss) and exit without creating or running any jobs; this is
@@ -161,6 +165,20 @@ if ${modes['help']}; then
   exit 101
 fi
 
+# set the input-finding method; use the DEFAULT one, if not set by user
+numTrueInputOpts=0
+for key in findhipo rundir eachdir flatdir; do
+  if ${modes[$key]}; then
+    numTrueInputOpts=$((numTrueInputOpts+1))
+  fi
+done
+if [ $numTrueInputOpts -eq 0 ]; then
+  modes['rundir']=true # set the DEFAULT option
+elif [ $numTrueInputOpts -gt 1 ]; then
+  printError "more than one input-finding option set"
+  exit 100
+fi
+
 # parse input directories
 rdirs=()
 if ${modes['swifjob']}; then
@@ -184,7 +202,9 @@ else
     done
   elif ${modes['eachdir']}; then
     rdirs=$@
-  elif ${modes['findhipo']}; then # N.B.: the default option must be last
+  elif ${modes['flatdir']}; then
+    rdirs=$@
+  elif ${modes['findhipo']}; then
     for topdir in ${rdirsArgs[@]}; do
       echo "finding .hipo files in $topdir ....."
       fileList=$(find -L $topdir -type f -name "*.hipo")
@@ -242,6 +262,17 @@ if ${modes['check-cache']}; then
   exit $?
 fi
 
+# if `flatdir` mode, populate `rdirs` with the list of files, since our job loop will be over `rdirs` elements
+if ${modes['flatdir']}; then
+  rdirsIn=("${rdirs[@]}") # make a copy, since it will be overwritten
+  rdirs=()
+  for rdir in ${rdirsIn[@]}; do
+    for hipofile in $(ls $(realpath $rdir)/*.hipo); do
+      rdirs+=($hipofile)
+    done
+  done
+fi
+
 # initial checks and preparations
 echo $dataset | grep -q "/" && printError "dataset name must not contain '/' " && echo && exit 100
 [ -z "$dataset" ] && printError "dataset name must not be empty" && echo && exit 100
@@ -271,24 +302,33 @@ backupDir=$(pwd -P)/tmp/backup.$dataset.$(date +%s) # use unixtime for uniquenes
 for rdir in ${rdirs[@]}; do
 
   # get the run number, either from `rdir` basename (fast), or from `RUN::config` (slow)
-  [[ ! -e $rdir ]] && printError "the run directory '$rdir' does not exist" && continue
-  runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory basename
+  [[ ! -e $rdir ]] && printError "the run file/directory '$rdir' does not exist" && continue
+  runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory (or file) basename
   if [ -z "$runnum" ] || ${modes['swifjob']}; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
-    firstHipo=$(find $rdir -name "*.hipo" | head -n1)
-    [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number or create job" && continue
-    echo "using HIPO file $firstHipo to get run number for run directory '$rdir'"
-    $TIMELINESRC/bin/hipo-check.sh $firstHipo
-    runnum=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+    if ${modes['flatdir']}; then
+      $TIMELINESRC/bin/hipo-check.sh $rdir
+      runnum=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-run-number.groovy $rdir | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+    else
+      firstHipo=$(find $rdir -name "*.hipo" | head -n1)
+      [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number or create job" && continue
+      echo "using HIPO file $firstHipo to get run number for run directory '$rdir'"
+      $TIMELINESRC/bin/hipo-check.sh $firstHipo
+      runnum=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+    fi
   fi
-  [ -z "$runnum" -o $runnum -eq 0 ] && printError "unknown run number for run directory '$rdir'; ignoring this directory" && continue
+  [ -z "$runnum" -o $runnum -eq 0 ] && printError "unknown run number for '$rdir'; ignoring it!" && continue
   runnum=$((10#$runnum))
-  echo "run directory '$rdir' has run number $runnum"
+  echo "run directory/file '$rdir' has run number $runnum"
 
   # get list of input files, and append prefix for SWIF
   echo "..... getting its input files ....."
   inputListFile=$slurmDir/files.$dataset.$runnum.inputs.list
-  [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
-  realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
+  if ${modes['flatdir']}; then
+    realpath $rdir > $inputListFile
+  else
+    [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
+    realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
+  fi
 
   # generate job scripts
   echo "..... generating its job scripts ....."
@@ -307,7 +347,7 @@ for rdir in ${rdirs[@]}; do
     mkdir -p $outputSubDir
 
     # make job scripts for each $key
-    jobscript=$slurmDir/scripts/$key.$runnum.sh
+    jobscript=$slurmDir/scripts/$key.$dataset.$runnum.sh
     case $key in
 
       detectors)
@@ -350,7 +390,7 @@ for r0,r1,eb in beamlist:
         echo "Beam energy = $beam_energy"
 
         cat > $jobscript << EOF
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 set -u
 set -o pipefail
@@ -375,8 +415,13 @@ EOF
         ;;
 
       physics)
+        if ${modes['flatdir']}; then
+          monitorReadType=skim
+        else
+          monitorReadType=dst
+        fi
         cat > $jobscript << EOF
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 set -u
 set -o pipefail
@@ -391,7 +436,7 @@ run-groovy \\
   $TIMELINESRC/qa-physics/monitorRead.groovy \\
     $(realpath $rdir) \\
     $outputSubDir \\
-    dst \\
+    $monitorReadType \\
     $runnum
 
 # check output HIPO files
@@ -424,7 +469,7 @@ for key in ${jobkeys[@]}; do
   # either generate single/sequential run scripts
   if ${modes['single']} || ${modes['series']} || ${modes['swifjob']}; then
     localScript=$(echo $joblist | sed 's;.list$;.local.sh;')
-    echo "#!/bin/bash" > $localScript
+    echo "#!/usr/bin/env bash" > $localScript
     echo "set -e" >> $localScript
     if ${modes['single']}; then
       head -n1 $joblist >> $localScript

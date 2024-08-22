@@ -57,4 +57,33 @@ class HistoUtil {
     nBinsIn.times{ histOut.fill(histIn.getXaxis().getBinCenter(it), histIn.getBinContent(it)) }
     return histOut
   }
+
+  /// @returns the Interquartile Range (IQR) of a histogram
+  /// @param hist the histogram; FIXME: only unweighted histograms are supported at the moment
+  /// @param defIfEmpty the default value, if `hist` is empty
+  static def getHistoIQR(H1F hist, defIfEmpty) {
+    if( !(hist.getEntries() > 0) || !(hist.integral() > 0) ) { // `.getEntries()` can be nonzero for empty histograms, so be sure to check the integral too
+      return defIfEmpty
+    }
+    def hist_list = []
+    hist.getAxis().getNBins().times { bin ->
+      def counts = hist.getBinContent(bin).toInteger() // FIXME: assumes the histogram is unweighted
+      def value  = hist.getAxis().getBinCenter(bin)
+      counts.times { hist_list += value }
+    }
+    def listMedian = { d ->
+      if(d.size()==0) {
+        // this list may end up being empty if there are _few_ entries in the histogram, since this method
+        // is called to get the quartiles; in this case, just return `defIfEmpty`
+        return defIfEmpty
+      }
+      d.sort()
+      def m = d.size().intdiv(2)
+      d.size() % 2 ? d[m] : (d[m-1]+d[m]) / 2
+    }
+    def mq = listMedian(hist_list)
+    def lq = listMedian(hist_list.findAll{it<mq})
+    def uq = listMedian(hist_list.findAll{it>mq})
+    return uq - lq
+  }
 }

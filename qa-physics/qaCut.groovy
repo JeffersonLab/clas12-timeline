@@ -144,9 +144,9 @@ inList.each { obj ->
 
 
 // subroutine for calculating median of a list
-def listMedian = { d ->
+def listMedian = { d, name ->
   if(d.size()==0) {
-    System.err.println "WARNING: attempt to calculate median of an empty list"
+    System.err.println "WARNING: attempt to calculate median of empty list '${name}'"
     return -10000
   }
   d.sort()
@@ -164,9 +164,9 @@ sectors.each { s ->
   if( !useFT || (useFT && sectorIt==1)) {
     ratioTree[sectorIt].each { epochIt,ratioList ->
 
-      def mq = listMedian(ratioList) // middle quartile
-      def lq = listMedian(ratioList.findAll{it<mq}) // lower quartile
-      def uq = listMedian(ratioList.findAll{it>mq}) // upper quartile
+      def mq = listMedian(ratioList, 'ratioList') // middle quartile
+      def lq = listMedian(ratioList.findAll{it<mq}, 'ratioList < median') // lower quartile
+      def uq = listMedian(ratioList.findAll{it>mq}, 'ratioList > median') // upper quartile
       def iqr = uq - lq // interquartile range
       def cutLo = lq - cutFactor * iqr // lower QA cut boundary
       def cutHi = uq + cutFactor * iqr // upper QA cut boundary
@@ -499,12 +499,24 @@ inList.each { obj ->
       def muF  = listMean(listF,listWgt)
       def varN = listVar(listN,listWgt,muN)
       def varF = listVar(listF,listWgt,muF)
-      def mqN  = listMedian(listN) // median (middle quartile)
-      def mqF  = listMedian(listF)
-      def lqN  = listMedian(listN.findAll{it<mqN}) // lower quartile
-      def lqF  = listMedian(listF.findAll{it<mqF})
-      def uqN  = listMedian(listN.findAll{it>mqN}) // upper quartile
-      def uqF  = listMedian(listF.findAll{it>mqF})
+      def mqF  = listMedian(listF, 'listF') // median (middle quartile)
+      def lqF  = listMedian(listF.findAll{it<mqF}, 'listF < median') // lower quartile
+      def uqF  = listMedian(listF.findAll{it>mqF}, 'listF > median') // upper quartile
+      //// sometimes listN is full of a bunch of zeroes, so the IQR method won't work; in this case,
+      //// set the upper and lower quartiles to zero, so the IQR is also zero, and set bad_IQR_N=true
+      def mqN  = listMedian(listN, 'listN') // median (middle quartile)
+      def listNlq = listN.findAll{it<mqN}
+      def listNuq = listN.findAll{it>mqN}
+      def lqN = 0.0
+      def uqN = 0.0
+      def bad_IQR_N = false
+      if(listNlq.size() > 0 && listNuq.size() > 0) {
+        lqN = listMedian(listNlq, 'listN < median') // lower quartile
+        uqN = listMedian(listNuq, 'listN > median') // upper quartile
+      }
+      else {
+        bad_IQR_N = true
+      }
 
       // use IQR rule to define ranges where N and F are consistent (cf. cutLo and cutHi, which apply to N/F)
       def iqrN       = uqN - lqN
@@ -627,7 +639,7 @@ inList.each { obj ->
             }
 
             // set no-beam bit; don't bother doing this for first or last bins since their charge is unknown
-            if(Nval < inRangeN[0] && Fval < inRangeF[0] && binnum != firstBinnum && binnum != lastBinnum) {
+            if((bad_IQR_N || Nval < inRangeN[0]) && Fval < inRangeF[0] && binnum != firstBinnum && binnum != lastBinnum) {
               defectList.add(T.bit("PossiblyNoBeam"))
             }
           }

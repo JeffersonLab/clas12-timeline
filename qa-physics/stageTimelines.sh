@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # copy timeline hipo files to output timelines area, staging them for deployment
 
 set -e

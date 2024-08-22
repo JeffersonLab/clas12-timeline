@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # jcache a directory of DST files
 
 if [ $# -ne 1 ]; then

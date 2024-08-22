@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # test using a working directory similar to what a SWIF runner will use, for testing --swifjob
 
 set -e

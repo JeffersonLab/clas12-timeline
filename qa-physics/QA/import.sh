@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ -z "$TIMELINESRC" ]; then source `dirname $0`/../../bin/environ.sh; fi
 

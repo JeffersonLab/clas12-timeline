@@ -76,13 +76,19 @@ cutsFileList.each { re, cutsFile ->
       }
       def det      = tok[0]
       def timeline = tok[1]
-      def lbound   = tok[2].toDouble()
-      def ubound   = tok[3].toDouble()
+      def lbound   = tok[2]
+      def ubound   = tok[3]
       def units    = tok[4]
       cutPath = [det, timeline]
       spec = tok.size()>5 ? tok[5] : ''
       if(spec!='')
         cutPath.add(spec)
+
+      // convert bounds to 'double' type, unless they are a string
+      def lboundCasted
+      def uboundCasted
+      try { lboundCasted = lbound.toDouble(); } catch(Exception ex) { lboundCasted = lbound.toString(); }
+      try { uboundCasted = ubound.toDouble(); } catch(Exception ex) { uboundCasted = ubound.toString(); }
 
       // add cuts to graph
       def addCut = { graphN ->
@@ -95,8 +101,8 @@ cutsFileList.each { re, cutsFile ->
             T.getLeaf(tr, nodePath).clear()
             clearedLeaves.add(nodePath)
           }
-          T.getLeaf(tr, nodePath).add(lbound)
-          T.getLeaf(tr, nodePath).add(ubound)
+          T.getLeaf(tr, nodePath).add(lboundCasted)
+          T.getLeaf(tr, nodePath).add(uboundCasted)
         }
       }
 
@@ -187,7 +193,23 @@ T.exeLeaves(B,{
   // setup
   def graphPath = T.leafPath
   def fileN = indir+'/'+graphPath[0,-2].join('/') + ".hipo"
-  def bounds = T.leaf
+  def qaBounds = T.leaf
+
+  // figure out the bound types
+  // FIXME: this just checks if `qaBounds` entries are Strings, and not whether they are set to
+  // "NB" or not; nonetheless, the documentation says to use "NB"
+  def qaBoundsClasses = qaBounds.collect{it.getClass().getSimpleName()}
+  def (kNone, kMin, kMax, kRange) = (0..3).collect{it}
+  def qaBoundsType = -1
+  if(qaBoundsClasses[0] == "String" && qaBoundsClasses[1] == "String") {
+    qaBoundsType = kNone
+  } else if(qaBoundsClasses[0] == "String") {
+    qaBoundsType = kMax
+  } else if(qaBoundsClasses[1] == "String") {
+    qaBoundsType = kMin
+  } else {
+    qaBoundsType = kRange
+  }
 
   // read input timeline; do nothing if input timeline file
   // does not exist
@@ -216,7 +238,13 @@ T.exeLeaves(B,{
       // check QA bounds
       def run = gr.getDataX(i)
       def val = gr.getDataY(i)
-      def inbound = val>=bounds[0] && val<=bounds[1]
+      def inbound = false
+      switch(qaBoundsType) {
+        case kNone:  inbound = true;             break;
+        case kMin:   inbound = val>=qaBounds[0]; break;
+        case kMax:   inbound = val<=qaBounds[1]; break;
+        case kRange: inbound = val>=qaBounds[0] && val<=qaBounds[1]; break
+      }
       if(!inbound) {
         //T.printStatus("OB "+graphPath+" $run $val")
         T.getLeaf(TL,graphPath).addPoint(run,val,0,0)
@@ -266,6 +294,9 @@ TL.each{ det, detTr -> // loop through detector directories
     // add cut lines
     outTdir.cd("/timelines")
     T.getLeaf(L,[det,hipoFile]).eachWithIndex{ num,idx ->
+      if(num.getClass().getSimpleName() == "String") { // skip "NB" (No Bound) values
+        return
+      }
       println "LINE: $det $hipoFile $num"
       def lineColor = 'black'
       if(hipoFile=="ltcc_elec_nphe_sec") {

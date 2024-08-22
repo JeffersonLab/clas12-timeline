@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # dump errors from Slurm logs
 # - pass an argument to dump only UNIQUE errors
 # - filters out log messages that should not be in stderr

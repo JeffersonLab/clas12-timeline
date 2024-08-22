@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # get the list of DST files for specified DST directory
 # - this script may take a while to run
 # - use the output for integrityCheck.sh
