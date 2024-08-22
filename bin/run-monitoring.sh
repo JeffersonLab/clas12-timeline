@@ -302,14 +302,13 @@ backupDir=$(pwd -P)/tmp/backup.$dataset.$(date +%s) # use unixtime for uniquenes
 for rdir in ${rdirs[@]}; do
 
   # get the run number, either from `rdir` basename (fast), or from `RUN::config` (slow)
-  if ${modes['flatdir']}; then # use (slow) method, in case there are other numbers in the basename; `$rdir` is actually a file
-    [[ ! -e $rdir ]] && printError "the run file '$rdir' does not exist" && continue
-    $TIMELINESRC/bin/hipo-check.sh $rdir
-    runnum=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-run-number.groovy $rdir | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
-  else
-    [[ ! -e $rdir ]] && printError "the run directory '$rdir' does not exist" && continue
-    runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory basename
-    if [ -z "$runnum" ] || ${modes['swifjob']}; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
+  [[ ! -e $rdir ]] && printError "the run file/directory '$rdir' does not exist" && continue
+  runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory (or file) basename
+  if [ -z "$runnum" ] || ${modes['swifjob']}; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
+    if ${modes['flatdir']}; then
+      $TIMELINESRC/bin/hipo-check.sh $rdir
+      runnum=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-run-number.groovy $rdir | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+    else
       firstHipo=$(find $rdir -name "*.hipo" | head -n1)
       [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number or create job" && continue
       echo "using HIPO file $firstHipo to get run number for run directory '$rdir'"
