@@ -43,6 +43,7 @@ public class ana_2p2 {
 		dst_mon ana_dst_mon = new dst_mon(runNum,outputDir,EB);
 		BAND ana_band = new BAND(runNum,outputDir,EB,useTB);
 		helicity helicity = new helicity();
+		trigger trigger = new trigger();
 		//deuterontarget ana_deuteron = new deuterontarget(runNum,EB,useTB);
                 List<String> toProcessFileNames = new ArrayList<String>();
                 File file = new File(filelist);
@@ -92,6 +93,7 @@ public class ana_2p2 {
 				ana_rich.processEvent(event);
 				//ana_deuteron.processEvent(event);
                 helicity.processEvent(event);
+                trigger.processEvent(event);
 				filecount++;count++;
 				if(count%10000 == 0){
 					long nowTime = System.currentTimeMillis();
@@ -135,5 +137,6 @@ public class ana_2p2 {
 		ana_rich.write();
 		//ana_deuteron.plot();
 		helicity.write(outputDir, runNum);
+		trigger.write(outputDir, runNum);
         }
 }

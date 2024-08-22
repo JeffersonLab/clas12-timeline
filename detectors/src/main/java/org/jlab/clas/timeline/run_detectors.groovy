@@ -123,7 +123,8 @@ def engines = [
        new rich.rich_nkp_m(), 
        new rich.rich_npro_m(), 
        new rich.rich_npbar_m()],
-  out_HELICITY: [new helicity.helicity()]
+  out_HELICITY: [new helicity.helicity()],
+  out_TRIGGER: [new trigger.trigger()]
 ]
 
 
