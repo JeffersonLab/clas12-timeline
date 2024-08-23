@@ -4,6 +4,10 @@ import org.jlab.groot.data.TDirectory
 import org.jlab.clas.timeline.timeline.*
 
 def engines = [
+  out_BAND: [new band.band_adccor(),
+    new band.band_lasertime(),
+    new band.band_meantimeadc(),
+    new band.band_meantimetdc()],
   out_monitor: [new bmtbst.bmt_Occupancy(),
     new bmtbst.bmt_OnTrkLayers(),
     new bmtbst.bst_Occupancy(),
@@ -70,7 +74,9 @@ def engines = [
     new cnd.cnd_zdiff()],
   out_CTOF: [new ctof.ctof_edep(),
     new ctof.ctof_time(),
-    new ctof.ctof_tdcadc()],
+    new ctof.ctof_tdcadc(),
+    new particle_mass_ctof_and_ftof.ctof_m2_pim(),
+    new particle_mass_ctof_and_ftof.ctof_m2_pip()],
   out_FT: [new ft.ftc_pi0_mass(),
     new ft.ftc_time_charged(),
     new ft.ftc_time_neutral(),
@@ -123,7 +129,14 @@ def engines = [
        new rich.rich_nkp_m(), 
        new rich.rich_npro_m(), 
        new rich.rich_npbar_m()],
-  out_HELICITY: [new helicity.helicity()]
+  out_HELICITY: [new helicity.helicity()],
+  dst_mon: [new particle_mass_ctof_and_ftof.ftof_m2_p1a_pim(),
+    new particle_mass_ctof_and_ftof.ftof_m2_p1a_pip(),
+    new particle_mass_ctof_and_ftof.ftof_m2_p1a_prot(),
+    new particle_mass_ctof_and_ftof.ftof_m2_p1b_pim(),
+    new particle_mass_ctof_and_ftof.ftof_m2_p1b_pip(),
+    new particle_mass_ctof_and_ftof.ftof_m2_p1b_prot()
+  ]
 ]
 
 
