@@ -8,7 +8,6 @@ source $(dirname $0)/environ.sh
 inputDir=""
 dataset=""
 outputDir=""
-rungroup=a
 numThreads=8
 singleTimeline=""
 declare -A modes
@@ -36,10 +35,6 @@ usage() {
 
     -o [OUTPUT_DIR]     output directory
                         default = ./outfiles/[DATASET_NAME]
-
-    -r [RUN_GROUP]      run group, for run-group specific configurations;
-                        default = '$rungroup', which specifies Run Group $(echo $rungroup | tr '[:lower:]' '[:upper:]')
-                        (NOTE: THIS OPTION WILL BE REMOVED SOON)
 
     -n [NUM_THREADS]    number of parallel threads to run
                         default = $numThreads
@@ -75,7 +70,7 @@ while getopts "d:i:Uo:r:n:t:h-:" opt; do
     i) inputCmdOpts+=" -i $OPTARG" ;;
     U) inputCmdOpts+=" -U" ;;
     o) outputDir=$OPTARG ;;
-    r) rungroup=$(echo $OPTARG | tr '[:upper:]' '[:lower:]') ;;
+    r) printError "option '-r' has been deprecated, since it is no longer needed" && exit 100 ;;
     n) numThreads=$OPTARG ;;
     t) singleTimeline=$OPTARG ;;
     h) modes['help']=true ;;
@@ -97,19 +92,13 @@ fi
 export CLASSPATH="$JYPATH${CLASSPATH:+:${CLASSPATH}}"
 
 # get main executable for detector timelines
-# FIXME: remove run group dependence
-MAIN="org.jlab.clas.timeline.run_detectors"
-if [ "$rungroup" = "b" -o "$rungroup" = "d" ]; then
-  MAIN="org.jlab.clas.timeline.run_detectors_rgb"
-fi
-[[ ! "$rungroup" =~ ^[a-zA-Z] ]] && printError "unknown rungroup '$rungroup'" && exit 100
-export MAIN
+run_detectors_script="org.jlab.clas.timeline.run_detectors"
 
 # build list of timelines
 if ${modes['skip-mya']}; then
-  timelineList=$(java $MAIN --timelines | grep -vE '^epics_' | sort)
+  timelineList=$(java $run_detectors_script --timelines | grep -vE '^epics_' | sort)
 else
-  timelineList=$(java $MAIN --timelines | sort)
+  timelineList=$(java $run_detectors_script --timelines | sort)
 fi
 
 # list detector timelines, if requested
@@ -147,7 +136,6 @@ OUTPUT_DIR      = $outputDir
 FINAL_DIR_PREQA = $finalDirPreQA
 FINAL_DIR       = $finalDir
 LOG_DIR         = $logDir
-RUN_GROUP       = $rungroup
 NUM_THREADS     = $numThreads
 OPTIONS = {"""
 for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
@@ -220,11 +208,11 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
     echo ">>> producing timeline '$timelineObj' ..."
     if ${modes['debug']}; then
-      java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir
+      java $TIMELINE_JAVA_OPTS $run_detectors_script $timelineObj $inputDir
       echo "PREMATURE EXIT, since --debug option was used"
       exit
     else
-      java $TIMELINE_JAVA_OPTS $MAIN $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+      java $TIMELINE_JAVA_OPTS $run_detectors_script $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
       jobs+=($!)
     fi
     while [ "${#jobs[@]}" -ge $numThreads ]; do
