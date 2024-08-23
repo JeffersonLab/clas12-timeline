@@ -14,7 +14,7 @@ public class trigger {
     H1F bits;
 
     public trigger() {
-        bits = new H1F("bits",64,0,64);
+        bits = new H1F("bits",65,0,65);
         bits.getDataX(0);
         bits.getEntries();
         bits.getMaximumBin();
@@ -24,6 +24,7 @@ public class trigger {
     public void processEvent(DataEvent event){
         DataBank bank = event.getBank("RUN::trigger");
         if (bank.rows()>0) {
+            bits.fill(64);
             long t = bank.getLong("trigger",0);
             for (int i=0; i<64; ++i)
                 if ( 1 == ((t>>i)&1) )
