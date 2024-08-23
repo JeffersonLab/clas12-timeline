@@ -27,7 +27,6 @@ class trigger {
                 out.mkdir('/'+it.run)
                 out.cd('/'+it.run)
                 out.addDataSet(it[name])
-                gr.addPoint(it.run, 0.0)
                 gr.addPoint(it.run, it[name].getDataX(i) / it[name].getDataX(64));
             }
             out.cd('/timelines')
