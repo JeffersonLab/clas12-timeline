@@ -17,17 +17,15 @@ class trigger {
         TDirectory out = new TDirectory()
         out.mkdir('/timelines')
         for (int i=0; i<64; ++i) {
-            def name = "$i"; 
-            def gr = new GraphErrors(name)
-            gr.setTitle("Trigger Bit $name")
+            def gr = new GraphErrors("bit$i")
+            gr.setTitle("Trigger Bit $i")
             gr.setTitleY("Event Fraction")
             gr.setTitleX("Run Number")
             data.sort{it.key}.each{run,it->
-                it[name].setTitle("Trigger Bit $name")
                 out.mkdir('/'+it.run)
                 out.cd('/'+it.run)
-                out.addDataSet(it[name])
-                gr.addPoint(it.run, it[name].getDataX(i) / it[name].getDataX(64));
+                out.addDataSet(it["Bits"])
+                gr.addPoint(it.run, it["Bits"].getDataX(i) / it["Bits"].getDataX(64));
             }
             out.cd('/timelines')
             out.addDataSet(gr)
