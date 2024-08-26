@@ -22,7 +22,7 @@ public class trigger {
     }
 
     public void processEvent(DataEvent event){
-        DataBank bank = event.getBank("RUN::trigger");
+        DataBank bank = event.getBank("RUN::config");
         if (bank.rows()>0) {
             bits.fill(64);
             long t = bank.getLong("trigger",0);
