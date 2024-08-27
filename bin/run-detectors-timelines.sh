@@ -234,7 +234,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   timelineFiles=$(find -name "*.hipo")
   [ -z "$timelineFiles" ] && printError "no timelines were produced; check error logs in $logDir/" && exit 100
   for timelineFile in $timelineFiles; do
-    det=$(basename $timelineFile | sed 's;_.*;;g')
+    det=$(basename $timelineFile .hipo | sed 's;_.*;;g')
     case $det in
       bmt)    mv $timelineFile bmtbst/  ;;
       bst)    mv $timelineFile bmtbst/  ;;
