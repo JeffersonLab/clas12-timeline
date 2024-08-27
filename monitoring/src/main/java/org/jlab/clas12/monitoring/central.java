@@ -23,7 +23,8 @@ public class central {
         public String outputDir;
 	public int rf_large_integer;
 	public boolean BackToBack;
-	public float STT, RFT, NbinsCTOF, MinCTOF, MaxCTOF, minSTT, maxSTT;
+	public float STT, RFT, MinCTOF, MaxCTOF, minSTT, maxSTT;
+        public int NbinsCTOF;
 	public float[] CTOF_shft;
 	public double rfPeriod, rfoffset1, rfoffset2;
 	public int e_part_ind;
