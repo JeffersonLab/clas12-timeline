@@ -250,7 +250,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
         if [ -d $det ]; then
           mv $timelineFile $det/
         else
-          printError "not sure where to put timeline '$timelineFile' for detector '$det'; please update $0 to fix this"
+          printError "not sure where to put timeline '$timelineFile' for detector '$det'; please update $0 to fix this" && exit 100
         fi
         ;;
     esac
