@@ -18,6 +18,13 @@ Physics QA features:
   be analyzed; this name is for organization purposes, for those who want to
   monitor several different sets of data
 
+# QA Rules
+
+> [!IMPORTANT]
+> The following rules are *strictly* enforced for any dataset:
+> 1. The QA procedure runs on the data as they are and does not fix any of their problems.
+> 2. At least two people independently perform the "manual QA" and the results are cross checked and merged.
+
 # Setup
 
 It is recommended to use `bash` or `zsh` as your shell; `tcsh` is not supported.
