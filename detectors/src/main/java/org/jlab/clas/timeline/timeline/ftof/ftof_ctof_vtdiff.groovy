@@ -11,9 +11,10 @@ def data = new ConcurrentHashMap()
 def processDirectory(dir, run) {
   (1..6).collect{sec->
     def h1 = dir.getObject("/tof/ftof-ctof_vtdiff_S${sec}")
-    def f1 = MoreFitter.fitgaus(h1)
-
-    data.computeIfAbsent(sec, {[]}).add([run:run, h1:h1, f1:f1, mean:f1.getParameter(1), sigma:f1.getParameter(2).abs()])
+    if(h1.integral() > 0.0) {
+      def f1 = MoreFitter.fitgaus(h1)
+      data.computeIfAbsent(sec, {[]}).add([run:run, h1:h1, f1:f1, mean:f1.getParameter(1), sigma:f1.getParameter(2).abs()])
+    }
   }
 }
 

@@ -11,7 +11,7 @@ class CTOFFitter {
     double hAmp   = h1.getBinContent(h1.getMaximumBin());
     double hMu    = h1.getAxis().getBinCenter(h1.getMaximumBin())
     double hSigma = Math.min(HistoUtil.getHistoIQR(h1, 0.4) / 2.0, 0.2)
-    def rangeFactor = 1.5
+    def rangeFactor = 1.5 // NOTE: 5.0 gives us a range closer to the calibration suite (~1.2ns)
     double rangeMin = (hMu - rangeFactor*hSigma);
     double rangeMax = (hMu + rangeFactor*hSigma);
     f1.setRange(rangeMin, rangeMax);

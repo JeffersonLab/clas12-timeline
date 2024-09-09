@@ -23,7 +23,8 @@ public class central {
         public String outputDir;
 	public int rf_large_integer;
 	public boolean BackToBack;
-	public float STT, RFT, MinCTOF,MaxCTOF, minSTT, maxSTT;
+	public float STT, RFT, MinCTOF, MaxCTOF, minSTT, maxSTT;
+        public int NbinsCTOF;
 	public float[] CTOF_shft;
 	public double rfPeriod, rfoffset1, rfoffset2;
 	public int e_part_ind;
@@ -150,11 +151,9 @@ public class central {
 		if(runNum>0&&runNum<3210){
 			minSTT = 540;maxSTT=590;
 		}
-		MinCTOF=320;MaxCTOF=400;
-		if(runNum>0&&runNum<3210){
-			MinCTOF=-5;MaxCTOF=5;
-		}
-		MinCTOF=-5;MaxCTOF=5;
+                NbinsCTOF = 400; // 25 ps per bin
+		MinCTOF   = -5;
+                MaxCTOF   = 5;
 		H_CVT_t_STT = new H2F("H_CVT_t_STT","H_CVT_t_STT",100,0.,maxSTT,100,0.,maxSTT+(MinCTOF+MaxCTOF)/2);
 		H_CVT_t_STT.setTitle("CTOF vertex t vs Pion vertex t, neg. tracks");
 		H_CVT_t_STT.setTitleX("Pion vertex t (ns)");
@@ -165,22 +164,22 @@ public class central {
 				System.out.println(e);
 		}
 		System.out.println("CTOF range "+MinCTOF+" to "+MaxCTOF);
-		H_CVT_t_pad = new H2F("H_CVT_t_pad","H_CVT_t_pad",50,0.5,50.5,250,MinCTOF,MaxCTOF);
+		H_CVT_t_pad = new H2F("H_CVT_t_pad","H_CVT_t_pad",50,0.5,50.5,NbinsCTOF,MinCTOF,MaxCTOF);
 		H_CVT_t_pad.setTitle("CTOF vertex t - Pion vertex t  vs pad, neg. tracks");
 		H_CVT_t_pad.setTitleX("pad");
 		H_CVT_t_pad.setTitleY("CTOF vertex t - Pion vertex t (ns)");
 		H_CVT_t = new H1F[49];
 		for(int p=0;p<49;p++){
-			H_CVT_t[p] = new H1F(String.format("H_CVT_t_p%d",p+1),String.format("H_CVT_t_p%d",p+1),250,MinCTOF,MaxCTOF);
+			H_CVT_t[p] = new H1F(String.format("H_CVT_t_p%d",p+1),String.format("H_CVT_t_p%d",p+1),NbinsCTOF,MinCTOF,MaxCTOF);
 			H_CVT_t[p].setTitle(String.format("pad %d CTOF vertex t - STT, neg. tracks",p+1));
 			H_CVT_t[p].setTitleX("Delta_t (ns)");
 		}
 		H_CVT_t[48].setTitle("all pad, CTOF vertex t - STT, neg. tracks");
-		H_CVT_t_pos = new H1F("H_CVT_t_pos","H_CVT_t_pos",250,MinCTOF,MaxCTOF);
+		H_CVT_t_pos = new H1F("H_CVT_t_pos","H_CVT_t_pos",NbinsCTOF,MinCTOF,MaxCTOF);
 		H_CVT_t_pos.setTitle("All CTOF pads, CTOF vertex t - Pion vertex t, pos. tracks");
 		H_CVT_t_pos.setTitleX("CTOF vertex t - Pion vertex t (ns)");
 
-		H_CVT_t_neg = new H1F("H_CVT_t_neg","H_CVT_t_neg",250,MinCTOF,MaxCTOF);
+		H_CVT_t_neg = new H1F("H_CVT_t_neg","H_CVT_t_neg",NbinsCTOF,MinCTOF,MaxCTOF);
 		H_CVT_t_neg.setTitle("All CTOF pads, CTOF vertex t - Pion vertex t, neg. tracks");
 		H_CVT_t_neg.setTitleX("CTOF vertex t - Pion vertex t (ns)");
 
@@ -190,7 +189,7 @@ public class central {
 		H_CTOF_neg_mass = new H1F("H_CTOF_neg_mass","H_CTOF_neg_mass",100,-0.5,2.0);
 		H_CTOF_neg_mass.setTitle("neg Mass^2");
 		H_CTOF_neg_mass.setTitleX("M^2 (GeV^2)");
-		H_CTOF_vt_pim = new H2F("H_CTOF_vt_pim","H_CTOF_vt_pim",100,-rfPeriod/2,rfPeriod/2,250,-5,5);
+		H_CTOF_vt_pim = new H2F("H_CTOF_vt_pim","H_CTOF_vt_pim",100,-rfPeriod/2,rfPeriod/2,NbinsCTOF,MinCTOF,MaxCTOF);
 		H_CTOF_vt_pim.setTitle("CTOF MIP (pi-) vertex time");
 		H_CTOF_vt_pim.setTitleX("vertex time - RFTime (ns)");
 		H_CTOF_vt_pim.setTitleY("vertex time - STTime (ns)");

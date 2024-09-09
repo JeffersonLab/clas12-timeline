@@ -214,8 +214,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { type: detectors,  args: '-r B -n 4 --skip-mya' }
-          - { type: physics,    args: '-r A' }
+          - { type: detectors,  args: '-n 4 --skip-mya' }
+          - { type: physics,    args: '' }
     steps:
     - name: setup java
       uses: actions/setup-java@v4
