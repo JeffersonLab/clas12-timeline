@@ -524,8 +524,8 @@ inList.each { obj ->
       // use IQR rule to define ranges where N and F are consistent (cf. cutLo and cutHi, which apply to N/F)
       def iqrN       = uqN - lqN
       def iqrF       = uqF - lqF
-      def inRangeN   = [ lqN - cutFactor * iqrN, uqN + cutFactor * iqrN ]
-      def inRangeF   = [ lqF - cutFactor * iqrF, uqF + cutFactor * iqrF ]
+      def inRangeN   = { scale_factor -> [ lqN - scale_factor * iqrN, uqN + scale_factor * iqrN ] }
+      def inRangeF   = { scale_factor -> [ lqF - scale_factor * iqrF, uqF + scale_factor * iqrF ] }
 
       // calculate Pearson correlation coefficient
       def covarNF = listCovar(listN,listF,listWgt,muN,muF)
@@ -634,7 +634,7 @@ inList.each { obj ->
             if( binnum == firstBinnum || binnum == lastBinnum ) { // FC charge cannot be known for the first or last bin
               defectList.add(T.bit("ChargeUnknown"))
             }
-            else if(Fval > inRangeF[1]) {
+            else if(Fval > inRangeF(4)[1]) {
               defectList.add(T.bit("ChargeHigh"))
             }
             else if(Fval < 0) {
@@ -642,7 +642,7 @@ inList.each { obj ->
             }
 
             // set no-beam bit; don't bother doing this for first or last bins since their charge is unknown
-            if((bad_IQR_N || Nval < inRangeN[0]) && Fval < inRangeF[0] && binnum != firstBinnum && binnum != lastBinnum) {
+            if((bad_IQR_N || Nval < inRangeN(1.5)[0]) && Fval < inRangeF(1.5)[0] && binnum != firstBinnum && binnum != lastBinnum) {
               defectList.add(T.bit("PossiblyNoBeam"))
             }
           }
