@@ -524,8 +524,8 @@ inList.each { obj ->
       // use IQR rule to define ranges where N and F are consistent (cf. cutLo and cutHi, which apply to N/F)
       def iqrN       = uqN - lqN
       def iqrF       = uqF - lqF
-      def inRangeN   = [ lqN - 1.5 * iqrN, uqN + 1.5 * iqrN ]
-      def inRangeF   = [ lqF - 1.5 * iqrF, uqF + 1.5 * iqrF ]
+      def inRangeN   = [ lqN - cutFactor * iqrN, uqN + cutFactor * iqrN ]
+      def inRangeF   = [ lqF - cutFactor * iqrF, uqF + cutFactor * iqrF ]
 
       // calculate Pearson correlation coefficient
       def covarNF = listCovar(listN,listF,listWgt,muN,muF)
