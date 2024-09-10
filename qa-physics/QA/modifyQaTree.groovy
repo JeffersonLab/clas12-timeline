@@ -329,4 +329,4 @@ else { System.err.println("ERROR: unknown command!"); System.exit(100) }
 
 // update qaTree.json
 new File("qa/qaTree.json").write(JsonOutput.toJson(qaTree))
-"run-groovy parseQaTree.groovy".execute()
+["run-groovy", "parseQaTree.groovy"].execute().waitFor()
