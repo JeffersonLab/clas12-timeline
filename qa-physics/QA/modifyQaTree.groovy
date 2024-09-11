@@ -21,7 +21,7 @@ println("\n\n")
 // check arguments and print usage
 def cmd
 if(args.length>=1) cmd = args[0]
-else { 
+else {
   System.err.println(
   """
   syntax: modify.sh [command] [arguments]\n
@@ -49,7 +49,7 @@ def qaTree = slurper.parse(jsonFile)
 def recomputeDefMask = { runnum,binnum ->
   defList = []
   defMask = 0
-  (1..6).each{ s -> 
+  (1..6).each{ s ->
     qaTree["$runnum"]["$binnum"]["sectorDefects"]["$s"].unique()
     defList +=
       qaTree["$runnum"]["$binnum"]["sectorDefects"]["$s"].collect{it.toInteger()}
@@ -69,15 +69,15 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
   def rnum,bnumL,bnumR
   def bit
   def secList = []
-  if(args.length>5) {
+  if(args.length>4) {
     bit = args[1].toInteger()
     rnum = args[2].toInteger()
     bnumL = args[3].toInteger()
     bnumR = args[4].toInteger()
-    if(args[5]=="all") secList = (1..6).collect{it}
+    if(args.length<6 || args[5]=="all") secList = (1..6).collect{it}
     else (5..<args.length).each{ secList<<args[it].toInteger() }
 
-    println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) + 
+    println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) +
       " sectors ${secList}: $cmd ${bit}="+T.bitNames[bit])
 
     println("Enter a comment, if you want, otherwise press return")
@@ -90,7 +90,7 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
       if( qaFnum>=bnumL && ( bnumR==-1 || qaFnum<=bnumR ) ) {
 
         if(cmd=="setBit") {
-          secList.each{ 
+          secList.each{
             qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] = [bit]
           }
         }
@@ -116,7 +116,7 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
     def helpStr = usage["$cmd"].tokenize(':')[1]
     System.err.println(
     """
-    SYNTAX: ${cmd} [defectBit] [run] [firstBin] [lastBin] [list_of_sectors]
+    SYNTAX: ${cmd} [defectBit] [run] [firstBin] [lastBin] [list_of_sectors (default=all)]
       -$helpStr
       - set [lastBin] to -1 to denote last time bin of run
       - use \"all\" in place of [list_of_sectors] to apply to all sectors
@@ -134,14 +134,14 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
 else if(cmd=="sectorLoss") {
   def rnum,bnumL,bnumR
   def secList = []
-  if(args.length>4) {
+  if(args.length>3) {
     rnum = args[1].toInteger()
     bnumL = args[2].toInteger()
     bnumR = args[3].toInteger()
-    if(args[4]=="all") secList = (1..6).collect{it}
+    if(args.length<5 || args[4]=="all") secList = (1..6).collect{it}
     else (4..<args.length).each{ secList<<args[it].toInteger() }
 
-    println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) + 
+    println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) +
       " sectors ${secList}: define sector loss")
 
     println("Enter a comment, if you want, otherwise press return")
@@ -152,7 +152,7 @@ else if(cmd=="sectorLoss") {
       def qaFnum = k.toInteger()
       if( qaFnum>=bnumL && ( bnumR==-1 || qaFnum<=bnumR ) ) {
 
-        secList.each{ 
+        secList.each{
           qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] -= T.bit("TotalOutlier")
           qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] -= T.bit("TerminalOutlier")
           qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] -= T.bit("MarginalOutlier")
@@ -170,7 +170,7 @@ else if(cmd=="sectorLoss") {
     def helpStr = usage["$cmd"].tokenize(':')[1]
     System.err.println(
     """
-    SYNTAX: ${cmd} [run] [firstBin] [lastBin] [list_of_sectors]
+    SYNTAX: ${cmd} [run] [firstBin] [lastBin] [list_of_sectors (default=all)]
       -$helpStr
       - set [lastBin] to -1 to denote last time bin of run
       - use \"all\" in place of [list_of_sectors] to apply to all sectors
@@ -235,9 +235,9 @@ else if( cmd=="addComment" || cmd=="setComment") {
     bnumR = args[3].toInteger()
 
     println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) + ": $cmd")
-    if(cmd=="addComment") 
+    if(cmd=="addComment")
       println("Enter the new comment to be appended")
-    else if(cmd=="setComment") 
+    else if(cmd=="setComment")
       println("Enter the new comment, or leave it blank to delete any stored comment")
     print("> ")
     def cmt = System.in.newReader().readLine()
@@ -254,7 +254,7 @@ else if( cmd=="addComment" || cmd=="setComment") {
             qaTree["$rnum"]["$qaFnum"]["comment"] += cmt
           }
         }
-        else if (cmd=="setComment") 
+        else if (cmd=="setComment")
           qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
       }
     }
@@ -293,7 +293,7 @@ else if( cmd=="custom") {
 
     /* // remove outlier bits and add misc bit, to all sectors
     def secList = (1..6).collect{it}
-    secList.each{ 
+    secList.each{
       qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] += T.bit("Misc") // add bit
       //qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] = [T.bit("Misc")] // set bit
       qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] -= T.bit("TotalOutlier") // delete bit
