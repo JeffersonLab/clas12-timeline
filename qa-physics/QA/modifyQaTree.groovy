@@ -192,7 +192,7 @@ else if(cmd=="noBeam") {
     bnumR = args[3].toInteger()
 
     println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) +
-      " sectors ${secList}: set PossiblyNoBeam bit")
+      " sectors ${secList}: add PossiblyNoBeam bit")
 
     println("Enter an additional comment, if you want, otherwise press return")
     print("> ")
