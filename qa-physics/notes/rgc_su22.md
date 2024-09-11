@@ -62,12 +62,12 @@ bin/run-physics-timelines.sh -d rgc_su22_sidisdvcs
 Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):
 ```bash
 # your area, for testing
-bin/deploy-timelines.sh -d rgc_su22_prescaled -t $LOGNAME -D
-bin/deploy-timelines.sh -d rgc_su22_sidisdvcs -t $LOGNAME -D
+bin/deploy-timelines.sh -d rgc_su22_prescaled -t $LOGNAME -m rgc_su22 -D
+bin/deploy-timelines.sh -d rgc_su22_sidisdvcs -t $LOGNAME -m rgc_su22 -D
 
 # common area
-bin/deploy-timelines.sh -d rgc_su22_prescaled -t rgc/Summer2022/qa-physics -s pass1-prescaled -D
-bin/deploy-timelines.sh -d rgc_su22_sidisdvcs -t rgc/Summer2022/qa-physics -s pass1-sidisdvcs -D
+bin/deploy-timelines.sh -d rgc_su22_prescaled -t rgc/Summer2022/qa-physics -s pass1-prescaled -m rgc_su22 -D
+bin/deploy-timelines.sh -d rgc_su22_sidisdvcs -t rgc/Summer2022/qa-physics -s pass1-sidisdvcs -m rgc_su22 -D
 ```
 
 # List of Runs
