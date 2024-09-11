@@ -60,6 +60,10 @@ usage() {
                          where timeline files will be copied
                            default = [DATASET]
 
+  -m [METADATA]          include run-filter controls (for specific datasets)
+                         available choices:
+$(find $TIMELINESRC/data/metadata -name "*.json" -exec basename {} .json \; | sed 's;^;                           ;')
+
   -h                     print this usage guide
   """ >&2
 }
@@ -72,9 +76,10 @@ targetDirArg=""
 dryRun=false
 customTarget=false
 subDir=""
+metadataFile=""
 inputDir=""
 helpMode=false
-while getopts "d:i:Ut:Dcs:h-:" opt; do
+while getopts "d:i:Ut:Dcs:m:h-:" opt; do
   case $opt in
     d) inputCmdOpts+=" -d $OPTARG" ;;
     i) inputCmdOpts+=" -i $OPTARG" ;;
@@ -83,6 +88,7 @@ while getopts "d:i:Ut:Dcs:h-:" opt; do
     D) dryRun=true ;;
     c) customTarget=true ;;
     s) subDir=$OPTARG ;;
+    m) metadataFile=$OPTARG ;;
     h) helpMode=true ;;
     -)
       [ "$OPTARG" != "help" ] && printError "unknown option --$OPTARG"
@@ -102,6 +108,17 @@ inputDir=$($inputCmd $inputCmdOpts -I)
 
 # check required options
 [ -z "$dataset" -o -z "$inputDir" -o -z "$targetDirArg" ] && printError "missing one or more required options" && usage && exit 100
+
+# check if the metadata file exists
+if [ -n "$metadataFile" ]; then
+  metadataFile=$TIMELINESRC/data/metadata/$metadataFile.json
+  if [ -f "$metadataFile" ]; then
+    echo "using metadata file '$metadataFile'"
+  else
+    printError "metadata file '$metadataFile' does not exist (bad argument for option '-m')"
+    exit 100
+  fi
+fi
 
 # specify target directory
 [ -z "$subDir" ] && subDir=$dataset
@@ -140,6 +157,7 @@ mkdir -pv $targetDir
 rm    -rv $targetDir
 mkdir -pv $targetDir
 cp -rv $inputDir/* $targetDir/
+[ -n "$metadataFile" ] && cp -v $metadataFile $targetDir/metadata.json
 run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/index-webpage.groovy $targetDir
 echo "DONE."
 
