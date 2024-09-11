@@ -154,9 +154,9 @@ else if(cmd=="sectorLoss") {
       if( qaFnum>=bnumL && ( bnumR==-1 || qaFnum<=bnumR ) ) {
 
         secList.each{
-          qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] -= T.bit("TotalOutlier")
-          qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] -= T.bit("TerminalOutlier")
-          qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] -= T.bit("MarginalOutlier")
+          // qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] -= T.bit("TotalOutlier")
+          // qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] -= T.bit("TerminalOutlier")
+          // qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] -= T.bit("MarginalOutlier")
           qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] += T.bit("SectorLoss")
         }
 
@@ -252,9 +252,9 @@ else if(cmd=="lossFT") {
       def qaFnum = k.toInteger()
       if( qaFnum>=bnumL && ( bnumR==-1 || qaFnum<=bnumR ) ) {
 
-        qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] -= T.bit("TotalOutlierFT")
-        qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] -= T.bit("TerminalOutlierFT")
-        qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] -= T.bit("MarginalOutlierFT")
+        // qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] -= T.bit("TotalOutlierFT")
+        // qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] -= T.bit("TerminalOutlierFT")
+        // qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] -= T.bit("MarginalOutlierFT")
         qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["1"] += T.bit("LossFT")
 
         recomputeDefMask(rnum,qaFnum)
