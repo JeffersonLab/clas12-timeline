@@ -206,7 +206,16 @@ else if(cmd=="noBeam") {
           qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] += T.bit("PossiblyNoBeam")
         }
         recomputeDefMask(rnum,qaFnum)
-        if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
+        if(cmt.length()>0) {
+          if(!qaTree["$rnum"]["$qaFnum"].containsKey("comment")) {
+            qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
+          }
+          else {
+            if(qaTree["$rnum"]["$qaFnum"]["comment"].length()>0)
+              qaTree["$rnum"]["$qaFnum"]["comment"] += "; "
+            qaTree["$rnum"]["$qaFnum"]["comment"] += cmt
+          }
+        }
       }
     }
 
