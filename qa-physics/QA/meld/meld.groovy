@@ -62,7 +62,8 @@ qaTreeNew.each{ runnum, binTree ->
 
       // meld new defect bits
       defectListNew.each{ defect ->
-        meldList << defect
+        // meldList << defect
+        if(defect==T.bit("PossiblyNoBeam")) meldList << defect
         // if(defect==T.bit("TotalOutlier")) meldList << defect
         // if(defect==T.bit("TerminalOutlier")) meldList << defect
         // if(defect==T.bit("MarginalOutlier")) meldList << defect
@@ -73,6 +74,18 @@ qaTreeNew.each{ runnum, binTree ->
       if(binQAold!=null) {
         defectListOld = T.getLeaf(binQAold,['sectorDefects',sector])
         defectListOld.each{ defect ->
+
+          if(defect==T.bit("PossiblyNoBeam")) {
+            if(defectListNew.findAll{it==T.bit("PossiblyNoBeam")}.size()==1) {
+              meldList << defect
+              if(comment.contains("manually added")) {
+                deleteComment = true
+              }
+            }
+          }
+          else {
+            meldList << defect
+          }
 
           if(defect==T.bit("SectorLoss")) {
             meldList << defect

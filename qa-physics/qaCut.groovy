@@ -579,6 +579,10 @@ inList.each { obj ->
         def badbin = false
         if(qaBit<0) {
 
+          // calculate the number of events in this timebin
+          def numEvents = evnumMax - evnumMin
+          if(binnum == 0) { numEvents++ } // first bin has no lower bound, so need one more
+
           // fill `qaTree`
           if(!qaTree[runnum].containsKey(binnum)) {
             qaTree[runnum][binnum]                  = [:]
@@ -591,8 +595,6 @@ inList.each { obj ->
             qaTree[runnum][binnum]['sectorDefects'] = sectors.collectEntries{s->[sec(s),[]]}
             // fill `grDuration` and `grNumEvents`
             if(sector == 1) {
-              def numEvents = evnumMax - evnumMin
-              if(binnum == 0) { numEvents++ } // first bin has no lower bound
               def duration = (timestampMax - timestampMin) * 4e-9 // convert timestamp [4ns] -> [s]
               grDuration.addPoint(binnum,  duration,  0, 0)
               grNumEvents.addPoint(binnum, numEvents, 0, 0)
@@ -641,8 +643,11 @@ inList.each { obj ->
               defectList.add(T.bit("ChargeNegative"))
             }
 
-            // set no-beam bit; don't bother doing this for first or last bins since their charge is unknown
-            if((bad_IQR_N || Nval < inRangeN(1.5)[0]) && Fval < inRangeF(1.5)[0] && binnum != firstBinnum && binnum != lastBinnum) {
+            // set no-beam bit:
+            // - don't bother doing this for first or last bins since their charge is unknown
+            // - numEvents is low
+            // - both N and F are near zero
+            if(binnum != firstBinnum && binnum != lastBinnum && numEvents < 40000 && Nval < 100 && Fval < 20 /*nC*/) {
               defectList.add(T.bit("PossiblyNoBeam"))
             }
           }
