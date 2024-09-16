@@ -43,6 +43,7 @@ extraList=(
   electron_FT_yield_values
   faraday_cup_stddev
   helicity_sinPhi
+  live_time_average
   relative_yield
 )
 for extraFile in ${extraList[@]}; do
