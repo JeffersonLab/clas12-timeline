@@ -1,0 +1,47 @@
+default: # default settings, applies to all run groups
+  fc_mode: 1
+  add_engines: # list of engines from `run.groovy`
+    - out_monitor
+    - out_CND
+    - out_CTOF
+
+run_groups: # run-group dependent settings
+
+  B: # run group name, likely a single capital letter
+
+    # named data data-taking periods (spYY, suYY, faYY, wiYY), together with run ranges
+    runs:
+      fa18: [100, 200]
+      sp19: [400, 700]
+
+    # the elements of the following nodes follow a convention:
+    # - each element should be either:
+    #   - `period`: refers to a named data-taking period; if `name==all` then it will use all runs in this run group
+    #   - `range`: custom run range
+    #   - `list`: list of specific run numbers (or a single run number)
+    # - `val` is the appropriate value, e.g., beam energy
+    # - given a run number, the first element that has a run range that includes this run number will be chosen;
+    #   thus if you have specific overrides (e.g., a list of special runs), specify it first
+
+    # beam energy, for when it differs from RCDB
+    beam_energy:
+      - period: fa18 # specify by named data-taking period
+        val: 10.6
+      - range: [400, 500] # specific range of runs
+        val: 10.2
+      - range: [501, 700]
+        val: 10.4
+
+    # specify how to get the faraday cup charge
+    faraday_cup_mode:
+      - list: [401, 402, 403] # specific overrides first
+        val: 2
+      - range: [400, 500]
+        val: 1
+      - period: fa18
+        val: 0
+
+    # add additional engines for this run group
+    add_engines:
+      - period: all
+        val: [ out_BAND, dst_mon ]
