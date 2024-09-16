@@ -577,13 +577,20 @@ inList.each { obj ->
 
         // DETERMINE DEFECT BITS, or load them from modified qaTree.json
         def badbin = false
+
+        // calculate the number of events in this timebin
+        def numEvents = evnumMax - evnumMin
+        if(binnum == 0) { numEvents++ } // first bin has no lower bound, so need one more
+
+        // fill `grDuration` and `grNumEvents`
+        if(sector == 1) {
+          def duration = (timestampMax - timestampMin) * 4e-9 // convert timestamp [4ns] -> [s]
+          grDuration.addPoint(binnum,  duration,  0, 0)
+          grNumEvents.addPoint(binnum, numEvents, 0, 0)
+        }
+
+        // fill `qaTree`
         if(qaBit<0) {
-
-          // calculate the number of events in this timebin
-          def numEvents = evnumMax - evnumMin
-          if(binnum == 0) { numEvents++ } // first bin has no lower bound, so need one more
-
-          // fill `qaTree`
           if(!qaTree[runnum].containsKey(binnum)) {
             qaTree[runnum][binnum]                  = [:]
             qaTree[runnum][binnum]['evnumMin']      = evnumMin
@@ -593,12 +600,6 @@ inList.each { obj ->
             qaTree[runnum][binnum]['comment']       = ""
             qaTree[runnum][binnum]['defect']        = 0
             qaTree[runnum][binnum]['sectorDefects'] = sectors.collectEntries{s->[sec(s),[]]}
-            // fill `grDuration` and `grNumEvents`
-            if(sector == 1) {
-              def duration = (timestampMax - timestampMin) * 4e-9 // convert timestamp [4ns] -> [s]
-              grDuration.addPoint(binnum,  duration,  0, 0)
-              grNumEvents.addPoint(binnum, numEvents, 0, 0)
-            }
           }
 
           // get variables needed for checking for defects
@@ -852,8 +853,8 @@ if(qaBit<0) println "\nQA cut overall passing fraction: $PF"
 else {
   def PFfile = new File("${inDir}/outdat/passFractions.dat")
   def PFfileWriter = PFfile.newWriter(qaBit>0?true:false)
-  def PFstr = qaBit==100 ? "Fraction of golden files (no defects): $PF" :
-                           "Fraction of files with "+T.bitDescripts[qaBit]+": $FF"
+  def PFstr = qaBit==100 ? "Fraction of golden bins (no defects): $PF" :
+                           "Fraction of bins with "+T.bitDescripts[qaBit]+": $FF"
   PFfileWriter << PFstr << "\n"
   PFfileWriter.close()
 }
