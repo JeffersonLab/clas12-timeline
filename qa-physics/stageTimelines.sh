@@ -49,16 +49,10 @@ extraList=(
 for hipoFile in $(ls *.hipo); do
   hipoFilePatt=\\b$(basename $hipoFile .hipo)\\b
   if [[ ${extraList[@]} =~ $hipoFilePatt ]]; then
-    cp -v $hipoFile phys_qa_extra/
+    mv -v $hipoFile phys_qa_extra/
   else
-    cp -v $hipoFile phys_qa/
+    mv -v $hipoFile phys_qa/
   fi
 done
-
-# if QADB timelines were produced, copy them too
-if [ -d $inputDir.qa ]; then
-  mkdir_clean qadb
-  cp -v $inputDir.qa/* qadb/
-fi
 
 popd

@@ -75,4 +75,9 @@ echo ""
 cat $tlDir/outdat/passFractions.dat
 
 echo "================ STAGE TIMELINES ================"
-./stageTimelines.sh $tlDir $inDir/timeline_web
+pushd $inDir/timeline_web
+mkdir -p qadb
+rm -r qadb
+mkdir -p qadb
+mv -v $tlDir/outmon.qa/* qadb/
+popd
