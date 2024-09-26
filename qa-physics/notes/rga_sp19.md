@@ -23,9 +23,19 @@ For the prescaled train:
 ```bash
 bin/run-monitoring.sh -d rga_sp19_prescaled --submit --focus-physics PATH_TO_PRESCALED_TRAIN
 ```
-For the SIDIS train:
+
+For the SIDIS train, first make sure all skim files are cached:
 ```bash
 bin/run-monitoring.sh -d rga_sp19_nSidis --check-cache --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
+```
+If they are not:
+```bash
+ls /mss/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis/* | tee jlist.txt
+jcache get $(cat jlist.txt)
+# then wait for them to be cached
+```
+then run monitoring
+```bash
 bin/run-monitoring.sh -d rga_sp19_nSidis --submit --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
 ```
 
