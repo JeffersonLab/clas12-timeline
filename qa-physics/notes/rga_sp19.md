@@ -26,7 +26,7 @@ bin/run-monitoring.sh -d rga_sp19_prescaled --submit --focus-physics PATH_TO_PRE
 
 For the SIDIS train, first make sure all skim files are cached:
 ```bash
-bin/run-monitoring.sh -d rga_sp19_nSidis --check-cache --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
+bin/run-monitoring.sh -d rga_sp19_nSidis --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
 ```
 If they are not:
 ```bash
@@ -36,7 +36,7 @@ jcache get $(cat jlist.txt)
 ```
 then run monitoring
 ```bash
-bin/run-monitoring.sh -d rga_sp19_nSidis --submit --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
+bin/run-monitoring.sh -d rga_sp19_nSidis --submit --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
 ```
 
 ## Make timelines
