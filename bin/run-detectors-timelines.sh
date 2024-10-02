@@ -167,7 +167,7 @@ detDirs=(
   helicity
   htcc
   ltcc
-  m2_ctof_ftof
+  # m2_ctof_ftof
   rf
   rich
   trigger
@@ -243,9 +243,9 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
       fth)    mv $timelineFile ft/      ;;
       rat)    mv $timelineFile trigger/ ;;
       rftime) mv $timelineFile rf/      ;;
-      ctof|ftof)
-        [[ "$timelineFile" =~ _m2_ ]] && mv $timelineFile m2_ctof_ftof/ || mv $timelineFile $det/
-        ;;
+      # ctof|ftof)
+      #   [[ "$timelineFile" =~ _m2_ ]] && mv $timelineFile m2_ctof_ftof/ || mv $timelineFile $det/
+      #   ;;
       *)
         if [ -d $det ]; then
           mv $timelineFile $det/
