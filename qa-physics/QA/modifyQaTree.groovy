@@ -70,11 +70,11 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
   def rnum,bnumL,bnumR
   def bit
   def secList = []
-  if(args.length>4) {
+  if(args.length>2) {
     bit = args[1].toInteger()
     rnum = args[2].toInteger()
-    bnumL = args[3].toInteger()
-    bnumR = args[4].toInteger()
+    bnumL = args.length < 4 ?  0 : args[3].toInteger()
+    bnumR = args.length < 5 ? -1 : args[4].toInteger()
     if(args.length<6 || args[5]=="all") secList = (1..6).collect{it}
     else (5..<args.length).each{ secList<<args[it].toInteger() }
 
@@ -117,7 +117,7 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
     def helpStr = usage["$cmd"].tokenize(':')[1]
     System.err.println(
     """
-    SYNTAX: ${cmd} [defectBit] [run] [firstBin] [lastBin] [list_of_sectors (default=all)]
+    SYNTAX: ${cmd} [defectBit] [run] [firstBin (default=0)] [lastBin (default=-1)] [list_of_sectors (default=all)]
       -$helpStr
       - set [lastBin] to -1 to denote last time bin of run
       - use \"all\" in place of [list_of_sectors] to apply to all sectors
