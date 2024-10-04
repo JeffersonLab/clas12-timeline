@@ -1,4 +1,4 @@
-# Run Group C QA
+# Run Group C, Summer 2022, Pass 1
 
 This is the first QA to use the time bins and the prescaling.
 
