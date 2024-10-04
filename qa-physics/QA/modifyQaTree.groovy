@@ -7,29 +7,30 @@ Tools T = new Tools()
 
 // list of commands and description
 def usage = [:]
-usage["setBit"] = "setBit: overwrites stored defectBit(s) with specified bit"
-usage["addBit"] = "addBit: add specified bit to defectBit(s)"
-usage["delBit"] = "delBit: delete specified bit from defectBit(s)"
-usage["sectorLoss"] = "sectorLoss: specify a sector loss"
-usage["noBeam"] = "noBeam: add 'PossiblyNoBeam' bit"
-usage["setComment"] = "setComment: change or delete the comment"
-usage["addComment"] = "addComment: append a comment"
-usage["custom"] = "custom: do a custom action (see code)"
-usage["lossFT"] = "lossFT: specify a FT loss"
+usage["setbit"]     = "overwrites stored defectBit(s) with specified bit"
+usage["addbit"]     = "add specified bit to defectBit(s)"
+usage["delbit"]     = "delete specified bit from defectBit(s)"
+usage["sectorloss"] = "specify a sector loss"
+usage["lossft"]     = "specify a FT loss"
+usage["nobeam"]     = "add 'PossiblyNoBeam' bit"
+usage["setcomment"] = "change or delete the comment"
+usage["addcomment"] = "append a comment"
+usage["custom"]     = "do a custom action (see code)"
 println("\n\n")
 
 
 // check arguments and print usage
+def exe = "modify.sh"
 def cmd
-if(args.length>=1) cmd = args[0]
+if(args.length>=1) cmd = args[0].toLowerCase()
 else {
   System.err.println(
   """
-  syntax: modify.sh [command] [arguments]\n
+  SYNTAX: ${exe} [command] [arguments]\n
 List of Commands:
   """)
-  usage.each{ System.err.println("- "+it.value) }
-  System.err.println("\ntype any command without arguments for usage for that command\n")
+  usage.each{ key, value -> printf("%20s     %s\n", key, value) }
+  printf("\nType any command without arguments for usage guidance for that command\n\n")
   System.exit(101)
 }
 
@@ -66,7 +67,7 @@ def recomputeDefMask = { runnum,binnum ->
 ///////////////////////
 
 
-if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
+if( cmd=="setbit" || cmd=="addbit" || cmd=="delbit") {
   def rnum,bnumL,bnumR
   def bit
   def secList = []
@@ -90,17 +91,17 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
       def qaFnum = k.toInteger()
       if( qaFnum>=bnumL && ( bnumR==-1 || qaFnum<=bnumR ) ) {
 
-        if(cmd=="setBit") {
+        if(cmd=="setbit") {
           secList.each{
             qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] = [bit]
           }
         }
-        else if(cmd=="addBit") {
+        else if(cmd=="addbit") {
           secList.each{
             qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] += bit
           }
         }
-        else if(cmd=="delBit") {
+        else if(cmd=="delbit") {
           secList.each{
             qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] -= bit
           }
@@ -114,10 +115,10 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
 
   }
   else {
-    def helpStr = usage["$cmd"].tokenize(':')[1]
+    def helpStr = usage["$cmd"]
     System.err.println(
     """
-    SYNTAX: ${cmd} [defectBit] [run] [firstBin (default=0)] [lastBin (default=-1)] [list_of_sectors (default=all)]
+    SYNTAX: ${exe} ${cmd} [defectBit] [run] [firstBin (default=0)] [lastBin (default=-1)] [list_of_sectors (default=all)]
       -$helpStr
       - set [lastBin] to -1 to denote last time bin of run
       - use \"all\" in place of [list_of_sectors] to apply to all sectors
@@ -132,7 +133,7 @@ if( cmd=="setBit" || cmd=="addBit" || cmd=="delBit") {
   }
 }
 
-else if(cmd=="sectorLoss") {
+else if(cmd=="sectorloss") {
   def rnum,bnumL,bnumR
   def secList = []
   if(args.length>3) {
@@ -168,10 +169,10 @@ else if(cmd=="sectorLoss") {
 
   }
   else {
-    def helpStr = usage["$cmd"].tokenize(':')[1]
+    def helpStr = usage["$cmd"]
     System.err.println(
     """
-    SYNTAX: ${cmd} [run] [firstBin] [lastBin] [list_of_sectors (default=all)]
+    SYNTAX: ${exe} ${cmd} [run] [firstBin] [lastBin] [list_of_sectors (default=all)]
       -$helpStr
       - set [lastBin] to -1 to denote last time bin of run
       - use \"all\" in place of [list_of_sectors] to apply to all sectors
@@ -183,7 +184,7 @@ else if(cmd=="sectorLoss") {
   }
 }
 
-else if(cmd=="noBeam") {
+else if(cmd=="nobeam") {
   def rnum,bnumL,bnumR
   def secList = (1..6).collect{it}
   if(args.length>3) {
@@ -221,10 +222,10 @@ else if(cmd=="noBeam") {
 
   }
   else {
-    def helpStr = usage["$cmd"].tokenize(':')[1]
+    def helpStr = usage["$cmd"]
     System.err.println(
     """
-    SYNTAX: ${cmd} [run] [firstBin] [lastBin]
+    SYNTAX: ${exe} ${cmd} [run] [firstBin] [lastBin]
       -$helpStr
       - set [lastBin] to -1 to denote last time bin of run
       - this will set the PossiblyNoBeam bit for specified time bins, and add
@@ -235,7 +236,7 @@ else if(cmd=="noBeam") {
   }
 }
 
-else if(cmd=="lossFT") {
+else if(cmd=="lossft") {
   def rnum,bnumL,bnumR
   if(args.length>4) {
     rnum = args[1].toInteger()
@@ -265,10 +266,10 @@ else if(cmd=="lossFT") {
 
   }
   else {
-    def helpStr = usage["$cmd"].tokenize(':')[1]
+    def helpStr = usage["$cmd"]
     println(
     """
-    SYNTAX: ${cmd} [run] [firstBin] [lastBin]
+    SYNTAX: ${exe} ${cmd} [run] [firstBin] [lastBin]
       -$helpStr
       - set [lastBin] to -1 to denote last time bin of run
       - this will set the LossFT bit for specified time bins;
@@ -279,7 +280,7 @@ else if(cmd=="lossFT") {
   }
 }
 
-else if( cmd=="addComment" || cmd=="setComment") {
+else if( cmd=="addcomment" || cmd=="setcomment") {
   def rnum,bnumL,bnumR
   def secList = []
   if(args.length==4) {
@@ -288,16 +289,16 @@ else if( cmd=="addComment" || cmd=="setComment") {
     bnumR = args[3].toInteger()
 
     println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) + ": $cmd")
-    if(cmd=="addComment")
+    if(cmd=="addcomment")
       println("Enter the new comment to be appended")
-    else if(cmd=="setComment")
+    else if(cmd=="setcomment")
       println("Enter the new comment, or leave it blank to delete any stored comment")
     print("> ")
     def cmt = System.in.newReader().readLine()
     qaTree["$rnum"].each { k,v ->
       def qaFnum = k.toInteger()
       if( qaFnum>=bnumL && ( bnumR==-1 || qaFnum<=bnumR ) ) {
-        if (cmd=="addComment") {
+        if (cmd=="addcomment") {
           if(!qaTree["$rnum"]["$qaFnum"].containsKey("comment")) {
             qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
           }
@@ -307,7 +308,7 @@ else if( cmd=="addComment" || cmd=="setComment") {
             qaTree["$rnum"]["$qaFnum"]["comment"] += cmt
           }
         }
-        else if (cmd=="setComment")
+        else if (cmd=="setcomment")
           qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
       }
     }
@@ -315,7 +316,7 @@ else if( cmd=="addComment" || cmd=="setComment") {
   else {
     System.err.println(
     """
-    SYNTAX: ${cmd} [run] [firstBin] [lastBin]
+    SYNTAX: ${exe} ${cmd} [run] [firstBin] [lastBin]
       - set [lastBin] to -1 to denote last time bin of run
       - you will be prompted to enter the comment
     """)
