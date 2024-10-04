@@ -75,8 +75,9 @@ def engines = [
   out_CTOF: [new ctof.ctof_edep(),
     new ctof.ctof_time(),
     new ctof.ctof_tdcadc(),
-    new particle_mass_ctof_and_ftof.ctof_m2_pim(),
-    new particle_mass_ctof_and_ftof.ctof_m2_pip()],
+    // new particle_mass_ctof_and_ftof.ctof_m2_pim(), // not needed, according to D. Carman
+    // new particle_mass_ctof_and_ftof.ctof_m2_pip(),
+  ],
   out_FT: [new ft.ftc_pi0_mass(),
     new ft.ftc_time_charged(),
     new ft.ftc_time_neutral(),
@@ -101,8 +102,8 @@ def engines = [
     new ftof.ftof_time_p1a(),
     new ftof.ftof_time_p1b(),
     new ftof.ftof_time_p2(),
-    new ftof.ftof_time_noTriggers_p1a(),
-    new ftof.ftof_time_noTriggers_p1b(),
+    // new ftof.ftof_time_noTriggers_p1a(), // not needed, according to D. Carman
+    // new ftof.ftof_time_noTriggers_p1b(),
     new ftof.ftof_tdcadc_p1a(),
     new ftof.ftof_tdcadc_p1b(),
     new ftof.ftof_tdcadc_p2(),
@@ -131,12 +132,12 @@ def engines = [
        new rich.rich_npbar_m()],
   out_HELICITY: [new helicity.helicity()],
   out_TRIGGER: [new trigger.trigger()],
-  dst_mon: [new particle_mass_ctof_and_ftof.ftof_m2_p1a_pim(),
-    new particle_mass_ctof_and_ftof.ftof_m2_p1a_pip(),
-    new particle_mass_ctof_and_ftof.ftof_m2_p1a_prot(),
-    new particle_mass_ctof_and_ftof.ftof_m2_p1b_pim(),
-    new particle_mass_ctof_and_ftof.ftof_m2_p1b_pip(),
-    new particle_mass_ctof_and_ftof.ftof_m2_p1b_prot()],
+  // dst_mon: [new particle_mass_ctof_and_ftof.ftof_m2_p1a_pim(), // not needed, according to D. Carman
+  //   new particle_mass_ctof_and_ftof.ftof_m2_p1a_pip(),
+  //   new particle_mass_ctof_and_ftof.ftof_m2_p1a_prot(),
+  //   new particle_mass_ctof_and_ftof.ftof_m2_p1b_pim(),
+  //   new particle_mass_ctof_and_ftof.ftof_m2_p1b_pip(),
+  //   new particle_mass_ctof_and_ftof.ftof_m2_p1b_prot()],
 ]
 
 

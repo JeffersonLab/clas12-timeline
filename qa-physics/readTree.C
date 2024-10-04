@@ -1,6 +1,6 @@
 // called by mkTree.sh
 //
-void readTree(TString dataset="fall18") {
+void readTree(TString dataset, TString datfile, TString epochsfile) {
 
   /////////////////////////////
   // SETTINGS
@@ -11,11 +11,11 @@ void readTree(TString dataset="fall18") {
   gStyle->SetOptStat(0);
   TFile * f = new TFile("tree.root","RECREATE");
   TTree * tr = new TTree("tr","tr");
-  TString cols = "i/I:runnum/I:binnum/I:evnumMin/L:evnumMax/L:timestampMin/L:timestampMax/L";
+  TString cols = "runnum/I:binnum/I:evnumMin/L:evnumMax/L:timestampMin/L:timestampMax/L";
   cols += ":sector/I:nElec/F:nElecFT/F";
   cols += ":fcstart/F:fcstop/F:ufcstart/F:ufcstop/F";
   cols += ":livetime/F";
-  tr->ReadFile("tree.tmp",cols);
+  tr->ReadFile(datfile,cols);
   Double_t maxLineY = 16000;
 
   // draw epoch lines
@@ -26,7 +26,7 @@ void readTree(TString dataset="fall18") {
   TLine * eLine[2][maxN];
   int n=0;
   TTree * etr = new TTree("etr","etr");
-  etr->ReadFile(TString("epochs/epochs."+dataset+".txt"),"lb/I:ub/I");
+  etr->ReadFile(epochsfile,"lb/I:ub/I");
   Int_t e[2];
   int color[2] = {kGreen+1,kRed};
   etr->SetBranchAddress("lb",&e[0]);
@@ -120,13 +120,13 @@ void readTree(TString dataset="fall18") {
     c[s]->Divide(2,2);
     for(int p=1; p<=4; p++) c[s]->GetPad(p)->SetGrid(0,1);
     c[s]->cd(1);
-      tr->Draw("nElec/(fcstop-fcstart):i",cut,"*");
+      tr->Draw("nElec/(fcstop-fcstart):binnum",cut,"*");
     c[s]->cd(2);
       tr->Draw(rundrawNF,cut,"colz");
       c[s]->GetPad(2)->SetLogz();
       for(int k=0; k<n; k++) for(int j=0; j<2; j++) eLine[j][k]->Draw("same");
     c[s]->cd(3);
-      tr->Draw("fcstop-fcstart:i",cut,"*");
+      tr->Draw("fcstop-fcstart:binnum",cut,"*");
     c[s]->cd(4);
       tr->Draw(rundrawF,cut,"colz");
       c[s]->GetPad(4)->SetLogz();

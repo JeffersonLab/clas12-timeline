@@ -35,7 +35,7 @@ qaTreeNew.each{ runnum, binTree ->
   binTree.each{ binnum, binQAnew ->
     if(debug) println "\nrun=$runnum bin=$binnum"
     qaTreeMelded[runnum][binnum] = [:]
-    
+
     // get QA info from old qaTree
     runQAold = qaTreeOld[runnum]
     if(runQAold!=null) binQAold = qaTreeOld[runnum][binnum]
@@ -62,34 +62,48 @@ qaTreeNew.each{ runnum, binTree ->
 
       // meld new defect bits
       defectListNew.each{ defect ->
-        if(defect==T.bit("TotalOutlier")) meldList << defect
-        if(defect==T.bit("TerminalOutlier")) meldList << defect
-        if(defect==T.bit("MarginalOutlier")) meldList << defect
-        if(defect==T.bit("LowLiveTime")) meldList << defect
+        // meldList << defect
+        if(defect==T.bit("PossiblyNoBeam")) meldList << defect
+        // if(defect==T.bit("TotalOutlier")) meldList << defect
+        // if(defect==T.bit("TerminalOutlier")) meldList << defect
+        // if(defect==T.bit("MarginalOutlier")) meldList << defect
+        // if(defect==T.bit("LowLiveTime")) meldList << defect
       }
 
       // meld old defect bits
       if(binQAold!=null) {
         defectListOld = T.getLeaf(binQAold,['sectorDefects',sector])
         defectListOld.each{ defect ->
-          
+
+          if(defect==T.bit("PossiblyNoBeam")) {
+            if(defectListNew.findAll{it==T.bit("PossiblyNoBeam")}.size()==1) {
+              meldList << defect
+              if(comment.contains("manually added")) {
+                deleteComment = true
+              }
+            }
+          }
+          else {
+            meldList << defect
+          }
+
           if(defect==T.bit("SectorLoss")) {
             meldList << defect
             // remove outlier bits
-            meldList.removeAll(T.bit("TotalOutlier"))
-            meldList.removeAll(T.bit("TerminalOutlier"))
-            meldList.removeAll(T.bit("MarginalOutlier"))
+            // meldList.removeAll(T.bit("TotalOutlier"))
+            // meldList.removeAll(T.bit("TerminalOutlier"))
+            // meldList.removeAll(T.bit("MarginalOutlier"))
           }
           if(defect==T.bit("Misc")) {
             if(comment.contains("please delete this comment")) deleteComment=true
             else {
               meldList << defect
               // remove all other bits
-              meldList.removeAll(T.bit("TotalOutlier"))
-              meldList.removeAll(T.bit("TerminalOutlier"))
-              meldList.removeAll(T.bit("MarginalOutlier"))
-              meldList.removeAll(T.bit("SectorLoss"))
-              meldList.removeAll(T.bit("LowLiveTime"))
+              // meldList.removeAll(T.bit("TotalOutlier"))
+              // meldList.removeAll(T.bit("TerminalOutlier"))
+              // meldList.removeAll(T.bit("MarginalOutlier"))
+              // meldList.removeAll(T.bit("SectorLoss"))
+              // meldList.removeAll(T.bit("LowLiveTime"))
             }
           }
         }
@@ -126,4 +140,4 @@ qaTreeNew.each{ runnum, binTree ->
 
 // output melded qaTree.json
 new File("qaTree.json.melded").write(JsonOutput.toJson(qaTreeMelded))
-['new','old','melded'].each{"./prettyPrint.sh $it".execute()}
+['new','old','melded'].each{"./prettyPrint.sh $it".execute().waitFor()}

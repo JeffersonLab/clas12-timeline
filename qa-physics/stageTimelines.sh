@@ -43,17 +43,16 @@ extraList=(
   electron_FT_yield_values
   faraday_cup_stddev
   helicity_sinPhi
+  live_time_average
   relative_yield
 )
-for extraFile in ${extraList[@]}; do
-  mv -v $extraFile.hipo phys_qa_extra/
+for hipoFile in $(ls *.hipo); do
+  hipoFilePatt=\\b$(basename $hipoFile .hipo)\\b
+  if [[ ${extraList[@]} =~ $hipoFilePatt ]]; then
+    mv -v $hipoFile phys_qa_extra/
+  else
+    mv -v $hipoFile phys_qa/
+  fi
 done
-mv -v *.hipo phys_qa/
-
-# if QADB timelines were produced, copy them too
-if [ -d $inputDir.qa ]; then
-  mkdir_clean qadb
-  cp -v $inputDir.qa/* qadb/
-fi
 
 popd

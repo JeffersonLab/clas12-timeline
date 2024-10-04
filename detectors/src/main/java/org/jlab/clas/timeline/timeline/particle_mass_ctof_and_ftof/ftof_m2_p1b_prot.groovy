@@ -9,6 +9,9 @@ class ftof_m2_p1b_prot {
 def data = new ConcurrentHashMap()
 
 def processDirectory(dir, run) {
+  if(run == 19692) {
+    throw new Exception("the fit for run ${run} may stall; this timeline is supposed to be disabled as of Oct. 2nd 2024, but if you see this message, contact the maintainers")
+  }
   def funclist = []
   def meanlist = []
   def sigmalist = []
