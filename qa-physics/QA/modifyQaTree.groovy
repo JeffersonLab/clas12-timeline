@@ -359,7 +359,7 @@ else if( cmd=="custom") {
 
     ///* // add misc bit to sector 6 only
     qaTree["$rnum"]["$bnum"]["sectorDefects"]["6"] += T.bit("Misc")
-    def cmt = "FADC failure in sector 6"
+    def cmt = "FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262"
     //*/
 
     if(!qaTree["$rnum"]["$bnum"].containsKey("comment")) {
@@ -370,7 +370,7 @@ else if( cmd=="custom") {
         qaTree["$rnum"]["$bnum"]["comment"] += "; "
       qaTree["$rnum"]["$bnum"]["comment"] += cmt
     }
-    println("modify $rnum $bnum")
+    // println("modify $rnum $bnum")
 
     recomputeDefMask(rnum,bnum)
 
