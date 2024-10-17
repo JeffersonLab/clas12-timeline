@@ -173,7 +173,7 @@ detDirs=(
   ltcc
   # m2_ctof_ftof
   rf
-  rich
+  # rich
   trigger
 )
 
