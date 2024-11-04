@@ -94,9 +94,10 @@ System.println "runnum     = $runnum"
 // RUN GROUP DEPENDENT SETTINGS ///////////////////////////////////////////////////////////////////
 
 def RG = "unknown"
-if(runnum>=4763 && runnum<=5001) RG="RGA" // early period
-else if(runnum>=5032 && runnum<=5262) RG="RGA" // inbending1
-else if(runnum>=5300 && runnum<=5666) RG="RGA" // inbending1 + outbending
+if(runnum>=3031 && runnum<=4325) RG="RGA" // spring 18
+else if(runnum>=4763 && runnum<=5001) RG="RGA" // early period
+else if(runnum>=5032 && runnum<=5262) RG="RGA" // fall 18 inbending1
+else if(runnum>=5300 && runnum<=5666) RG="RGA" // fall 18 inbending1 + outbending
 else if(runnum>=5674 && runnum<=6000) RG="RGK" // 6.5+7.5 GeV
 else if(runnum>=6120 && runnum<=6604) RG="RGB" // spring 19
 else if(runnum>=6616 && runnum<=6783) RG="RGA" // spring 19
@@ -113,8 +114,13 @@ println "rungroup = $RG"
 // - hard-coded; could instead get from RCDB, but sometimes it is incorrect
 def EBEAM = 10.6041 // RGA default
 if(RG=="RGA") {
-  if(runnum>=6616 && runnum<=6783) EBEAM = 10.1998 // spring 19
-  else EBEAM = 10.6041
+  if(runnum>=3031 && runnum<=3120) EBEAM = 6.42313 // spring 18
+  else if(runnum>=3129 && runnum<=3818) EBEAM = 10.594 // spring 18
+  else if(runnum>=3819 && runnum<=3861) EBEAM = 6.42313 // spring 18
+  else if(runnum>=3862 && runnum<=4325) EBEAM = 10.594 // spring 18
+  else if(runnum>=5032 && runnum<=5666) EBEAM = 10.6041 // fall 18
+  else if(runnum>=6616 && runnum<=6783) EBEAM = 10.1998 // spring 19
+  else System.err.println "ERROR: unknown beam energy"
 }
 else if(RG=="RGB") {
   if(runnum>=6120 && runnum<=6399) EBEAM = 10.5986 // spring
