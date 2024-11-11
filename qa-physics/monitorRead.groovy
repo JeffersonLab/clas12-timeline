@@ -773,8 +773,8 @@ inHipoList.each { inHipoFile ->
     // CUT: if a DIS electron was found by `findParticles`
     if(disEleFound) {
 
-      // CUT for pions: Q2 and W and y and helicity
-      if( Q2>1 && W>2 && y<0.8 && helDefined) {
+      // CUT for pions: Q2 and W and y
+      if( Q2>1 && W>2 && y<0.8) {
 
         // get pions, calculate their kinematics and fill histograms
         countEvent = false
