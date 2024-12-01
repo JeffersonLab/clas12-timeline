@@ -13,7 +13,7 @@ defaults:
 env:
   dataset: ci_test
   # NOTE: if any of these versions are changed, update the POM files too
-  java_version: 17
+  java_version: 21
   java_distribution: zulu
   groovy_version: 4.x
 
