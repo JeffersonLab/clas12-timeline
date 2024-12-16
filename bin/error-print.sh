@@ -6,6 +6,7 @@
 cmd() {
   grep -HE '.*' /farm_out/$LOGNAME/clas12-timeline--*.err |\
     grep -vE '\[DataSourceDump\] --> opened file with events #' |\
+    grep -vE 'Picked up _JAVA_OPTIONS:' |\
     grep --color -E '^.*\.err:'
 }
 
