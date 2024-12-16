@@ -8,7 +8,7 @@ Tools T = new Tools()
 
 infile="qa/qaTree.json"
 outfile="qa/qaTree.json.table"
-if(args.size()>=1 && args[0].endsWith(".json")) {
+if(args.size()>=1) {
   infile = args[0]
   outfile = "${infile}.table"
   args = args.minus([args[0]]) // remove json file from args since no longer needed

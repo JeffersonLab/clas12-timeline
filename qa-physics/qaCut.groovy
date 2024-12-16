@@ -35,12 +35,15 @@ if(!(epochFile.exists())) {
   epochFile = new File("epochs/epochs.default.txt")
 }
 
+// get the epoch number for a given run `r` and sector `s`
+// - the epoch number ranges from 1 to the number of epochs
+//   (so this number is the line number of the epochs/*.txt file)
 def getEpoch = { r,s ->
   //return 1 // (for testing single-epoch mode)
   def lb,ub
   def e = -1
   epochFile.eachLine { line,i ->
-    (lb,ub) = line.tokenize(' ').collect{it.toInteger()}
+    (lb,ub) = line.tokenize(' ')[0,1].collect{it.toInteger()}
     if(r>=lb && r<=ub) e=i
   }
   if(e<0) throw new Exception("run $r sector $s has unknown epoch")
@@ -164,9 +167,9 @@ sectors.each { s ->
   if( !useFT || (useFT && sectorIt==1)) {
     ratioTree[sectorIt].each { epochIt,ratioList ->
 
-      def mq = listMedian(ratioList, 'ratioList') // middle quartile
-      def lq = listMedian(ratioList.findAll{it<mq}, 'ratioList < median') // lower quartile
-      def uq = listMedian(ratioList.findAll{it>mq}, 'ratioList > median') // upper quartile
+      def mq = listMedian(ratioList, "epoch ${epochIt} ratioList") // middle quartile
+      def lq = listMedian(ratioList.findAll{it<mq}, "epoch ${epochIt} ratioList < median") // lower quartile
+      def uq = listMedian(ratioList.findAll{it>mq}, "epoch ${epochIt} ratioList > median") // upper quartile
       def iqr = uq - lq // interquartile range
       def cutLo = lq - cutFactor * iqr // lower QA cut boundary
       def cutHi = uq + cutFactor * iqr // upper QA cut boundary
@@ -521,8 +524,8 @@ inList.each { obj ->
       // use IQR rule to define ranges where N and F are consistent (cf. cutLo and cutHi, which apply to N/F)
       def iqrN       = uqN - lqN
       def iqrF       = uqF - lqF
-      def inRangeN   = [ lqN - 1.5 * iqrN, uqN + 1.5 * iqrN ]
-      def inRangeF   = [ lqF - 1.5 * iqrF, uqF + 1.5 * iqrF ]
+      def inRangeN   = { scale_factor -> [ lqN - scale_factor * iqrN, uqN + scale_factor * iqrN ] }
+      def inRangeF   = { scale_factor -> [ lqF - scale_factor * iqrF, uqF + scale_factor * iqrF ] }
 
       // calculate Pearson correlation coefficient
       def covarNF = listCovar(listN,listF,listWgt,muN,muF)
@@ -574,9 +577,20 @@ inList.each { obj ->
 
         // DETERMINE DEFECT BITS, or load them from modified qaTree.json
         def badbin = false
-        if(qaBit<0) {
 
-          // fill `qaTree`
+        // calculate the number of events in this timebin
+        def numEvents = evnumMax - evnumMin
+        if(binnum == 0) { numEvents++ } // first bin has no lower bound, so need one more
+
+        // fill `grDuration` and `grNumEvents`
+        if(sector == 1) {
+          def duration = (timestampMax - timestampMin) * 4e-9 // convert timestamp [4ns] -> [s]
+          grDuration.addPoint(binnum,  duration,  0, 0)
+          grNumEvents.addPoint(binnum, numEvents, 0, 0)
+        }
+
+        // fill `qaTree`
+        if(qaBit<0) {
           if(!qaTree[runnum].containsKey(binnum)) {
             qaTree[runnum][binnum]                  = [:]
             qaTree[runnum][binnum]['evnumMin']      = evnumMin
@@ -586,14 +600,6 @@ inList.each { obj ->
             qaTree[runnum][binnum]['comment']       = ""
             qaTree[runnum][binnum]['defect']        = 0
             qaTree[runnum][binnum]['sectorDefects'] = sectors.collectEntries{s->[sec(s),[]]}
-            // fill `grDuration` and `grNumEvents`
-            if(sector == 1) {
-              def numEvents = evnumMax - evnumMin
-              if(binnum == 0) { numEvents++ } // first bin has no lower bound
-              def duration = (timestampMax - timestampMin) * 4e-9 // convert timestamp [4ns] -> [s]
-              grDuration.addPoint(binnum,  duration,  0, 0)
-              grNumEvents.addPoint(binnum, numEvents, 0, 0)
-            }
           }
 
           // get variables needed for checking for defects
@@ -631,15 +637,18 @@ inList.each { obj ->
             if( binnum == firstBinnum || binnum == lastBinnum ) { // FC charge cannot be known for the first or last bin
               defectList.add(T.bit("ChargeUnknown"))
             }
-            else if(Fval > inRangeF[1]) {
+            else if(Fval > inRangeF(4)[1]) {
               defectList.add(T.bit("ChargeHigh"))
             }
             else if(Fval < 0) {
               defectList.add(T.bit("ChargeNegative"))
             }
 
-            // set no-beam bit; don't bother doing this for first or last bins since their charge is unknown
-            if((bad_IQR_N || Nval < inRangeN[0]) && Fval < inRangeF[0] && binnum != firstBinnum && binnum != lastBinnum) {
+            // set no-beam bit:
+            // - don't bother doing this for first or last bins since their charge is unknown
+            // - numEvents is low
+            // - both N and F are near zero
+            if(binnum != firstBinnum && binnum != lastBinnum && numEvents < 40000 && Nval < 100 && Fval < 20 /*nC*/) {
               defectList.add(T.bit("PossiblyNoBeam"))
             }
           }
@@ -766,7 +775,7 @@ sectors.each { s ->
 
       def elowerBound, eupperBound
       epochFile.eachLine { line,i ->
-        if(i==epochIt) (elowerBound,eupperBound) = line.tokenize(' ').collect{it.toInteger()}
+        if(i==epochIt) (elowerBound,eupperBound) = line.tokenize(' ')[0,1].collect{it.toInteger()}
       }
       elineMedian = buildLine(
         map['grA_good'],elowerBound,eupperBound,"median",cutTree[sectorIt][epochIt]['mq'])
@@ -844,8 +853,8 @@ if(qaBit<0) println "\nQA cut overall passing fraction: $PF"
 else {
   def PFfile = new File("${inDir}/outdat/passFractions.dat")
   def PFfileWriter = PFfile.newWriter(qaBit>0?true:false)
-  def PFstr = qaBit==100 ? "Fraction of golden files (no defects): $PF" :
-                           "Fraction of files with "+T.bitDescripts[qaBit]+": $FF"
+  def PFstr = qaBit==100 ? "Fraction of golden bins (no defects): $PF" :
+                           "Fraction of bins with "+T.bitDescripts[qaBit]+": $FF"
   PFfileWriter << PFstr << "\n"
   PFfileWriter.close()
 }
