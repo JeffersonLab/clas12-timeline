@@ -144,10 +144,15 @@ First step is to read DST or Skim files, producing HIPO files and data tables
       * `grN*`: N vs. time bin
       * `grT*`: livetime vs. time bin
 
-### Automated QA of Normalized Electron Yield
+### Automatic QA
 This section will run the automated QA of the FC-charge normalized electron yield (N/F); it will ultimately
 generate QA timelines, and a `json` file which is used for the manual followup QA
 
+* Decide cut definitions
+  * add the file `cutdefs/${dataset}.json`; you may copy one of the existing ones, most likely
+    the default one
+  * after generating the automatic QA, check to make sure the results look reasonable; if they
+    do not, tune the settings in this file (see `qaCut.groovy` to see how the numbers are used)
 * Determine epoch lines
   * At the moment, this step is manual, but could be automated in a future release
   * You need to generate `epochs/epochs.${dataset}.txt`, which is a list epoch boundary lines
