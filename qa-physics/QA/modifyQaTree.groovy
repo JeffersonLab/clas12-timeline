@@ -2,6 +2,7 @@ import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 import java.util.Date
 import org.jlab.clas.timeline.util.Tools
+import org.rcdb.*
 Tools T = new Tools()
 
 
@@ -13,6 +14,7 @@ usage["delbit"]     = "delete specified bit from defectBit(s)"
 usage["sectorloss"] = "specify a sector loss"
 usage["lossft"]     = "specify a FT loss"
 usage["nobeam"]     = "add 'PossiblyNoBeam' bit"
+usage["automisc"]   = "add the Misc bit, with comment from shift expert comment"
 usage["setcomment"] = "change or delete the comment"
 usage["addcomment"] = "append a comment"
 usage["custom"]     = "do a custom action (see code)"
@@ -231,6 +233,70 @@ else if(cmd=="nobeam") {
       - this will set the PossiblyNoBeam bit for specified time bins, and add
         a comment saying this was done
       - you will be prompted to enter an additional comment
+    """)
+    System.exit(101)
+  }
+}
+
+else if(cmd=="automisc") {
+  def rnum,bnumL,bnumR
+  def secList = []
+  if(args.length>1) {
+    rnum = args[1].toInteger()
+    bnumL = args.length < 3 ?  0 : args[2].toInteger()
+    bnumR = args.length < 4 ? -1 : args[3].toInteger()
+    if(args.length<5 || args[4]=="all") secList = (1..6).collect{it}
+    else (4..<args.length).each{ secList<<args[it].toInteger() }
+
+    def db = RCDB.createProvider("mysql://rcdb@clasdb/rcdb")
+    def shift_expert_comment = null
+    try {
+      db.connect()
+      shift_expert_comment = db.getCondition(Long.valueOf(rnum), 'user_comment').toString()
+    }
+    catch(Exception e) {
+      System.err.println("Unable to connect to RCDB provider")
+      System.exit(100)
+    }
+    if(shift_expert_comment == null) {
+      System.err.println("Failed to get shift expert's comment from RCDB")
+      System.exit(100)
+    }
+
+    println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) +
+      " sectors ${secList}: add Misc bit with shift expert's comment")
+    println("\n  Shift Expert's Comment: ${shift_expert_comment}\n")
+    println("Enter a different comment, if you want, otherwise press return to use this one")
+    print("> ")
+    def cmt = System.in.newReader().readLine()
+    if(cmt == "") {
+      cmt = shift_expert_comment
+    }
+
+    qaTree["$rnum"].each { k,v ->
+      def qaFnum = k.toInteger()
+      if( qaFnum>=bnumL && ( bnumR==-1 || qaFnum<=bnumR ) ) {
+        secList.each{
+          qaTree["$rnum"]["$qaFnum"]["sectorDefects"]["$it"] += T.bit("Misc")
+        }
+        recomputeDefMask(rnum,qaFnum)
+        if(cmt.length()>0) {
+          qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
+        }
+      }
+    }
+
+  }
+  else {
+    def helpStr = usage["$cmd"]
+    System.err.println(
+    """
+    SYNTAX: ${exe} ${cmd} [run] [firstBin (default=0)] [lastBin (default=-1)] [list_of_sectors (default=all)]
+      -$helpStr
+      - set [lastBin] to -1 to denote last time bin of run
+      - use \"all\" in place of [list_of_sectors] to apply to all sectors
+      - you will be prompted to enter a different comment, if you do not
+        want to use the shift expert comment
     """)
     System.exit(101)
   }
