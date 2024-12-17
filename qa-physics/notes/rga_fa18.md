@@ -39,6 +39,6 @@ bin/deploy-timelines.sh -d rga_fa18_inbending_nSidis  -t $LOGNAME -D
 bin/deploy-timelines.sh -d rga_fa18_outbending_nSidis -t $LOGNAME -D
 
 # common area
-bin/deploy-timelines.sh -d rga_fa18_inbending_nSidis  -t rga/pass2/fa18_inbending  -D
-bin/deploy-timelines.sh -d rga_fa18_outbending_nSidis -t rga/pass2/fa18_outbending -D
+bin/deploy-timelines.sh -d rga_fa18_inbending_nSidis  -t rga/pass2/fa18/qa -D
+bin/deploy-timelines.sh -d rga_fa18_outbending_nSidis -t rga/pass2/fa18/qa -D
 ```
