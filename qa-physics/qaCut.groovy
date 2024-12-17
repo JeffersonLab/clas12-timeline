@@ -28,6 +28,29 @@ def sec = { int i -> i+1 }
 // subroutine to write JSON
 def jPrint = { name,object -> new File(name).write(JsonOutput.toJson(object)) }
 
+// read cutDefs json file into a tree
+def cutDefsFile = new File("cutdefs/${dataset}.json")
+if(!(cutDefsFile.exists())) {
+  System.err.println "WARNING: using cutdefs/default.json"
+  cutDefsFile = new File("cutdefs/default.json")
+}
+cutDefsSlurper = new JsonSlurper()
+cutDefsTree = cutDefsSlurper.parse(cutDefsFile)
+// return the cutDef for a given tree path
+def cutDef = { path ->
+  def val
+  try { val = T.getLeaf(cutDefsTree, path) }
+  catch(Exception e) {
+    System.err.println("ERROR: missing cut definition in cutdefs file: [${path.join(',')}]")
+    System.exit(100)
+  }
+  if(val == null) {
+    System.err.println("ERROR: missing cut definition in cutdefs file: [${path.join(',')}]")
+    System.exit(100)
+  }
+  val
+}
+
 // read epochs list file
 def epochFile = new File("epochs/epochs.${dataset}.txt")
 if(!(epochFile.exists())) {
@@ -161,7 +184,8 @@ def listMedian = { d, name ->
 // establish cut lines using 'cutFactor' x IQR method, and fill cutTree
 // - note: for the FT electrons, it seems that N/F has a long tail toward
 //   lower values, so cutLo is forced to be lower
-def cutFactor = 4.0
+def cutFactor = cutDef([ useFT ? "OutlierFT" : "OutlierFD", "IQR_cut_factor" ])
+System.out.println "N/F outliers will be determined with ${cutFactor} x IQR method"
 sectors.each { s ->
   sectorIt = sec(s)
   if( !useFT || (useFT && sectorIt==1)) {
@@ -269,12 +293,12 @@ def outHipoRhoNF = new TDirectory()
 
 // define qaTree
 def qaTree // [runnum][binnum] -> defects enumeration
-def slurper
+def qaTreeSlurper
 def jsonFile
 if(qaBit>=0) {
-  slurper = new JsonSlurper()
+  qaTreeSlurper = new JsonSlurper()
   jsonFile = new File("QA/qa.${dataset}/qaTree.json")
-  qaTree = slurper.parse(jsonFile)
+  qaTree = qaTreeSlurper.parse(jsonFile)
 }
 else qaTree = [:]
 
@@ -629,7 +653,7 @@ inList.each { obj ->
           if(!useFT) {
 
             // set livetime bit
-            if( LTval<0.9 ) {
+            if( LTval < cutDef(["LowLiveTime", "min_live_time"]) ) {
               defectList.add(T.bit("LowLiveTime"))
             }
 
@@ -637,7 +661,7 @@ inList.each { obj ->
             if( binnum == firstBinnum || binnum == lastBinnum ) { // FC charge cannot be known for the first or last bin
               defectList.add(T.bit("ChargeUnknown"))
             }
-            else if(Fval > inRangeF(4)[1]) {
+            else if(Fval > inRangeF(cutDef(["ChargeHigh","IQR_cut_factor"]))[1]) {
               defectList.add(T.bit("ChargeHigh"))
             }
             else if(Fval < 0) {
@@ -648,7 +672,11 @@ inList.each { obj ->
             // - don't bother doing this for first or last bins since their charge is unknown
             // - numEvents is low
             // - both N and F are near zero
-            if(binnum != firstBinnum && binnum != lastBinnum && numEvents < 40000 && Nval < 100 && Fval < 20 /*nC*/) {
+            if(binnum != firstBinnum && binnum != lastBinnum &&
+              numEvents < cutDef(["PossiblyNoBeam","max_num_events"]) &&
+              Nval < cutDef(["PossiblyNoBeam","max_num_electrons"]) &&
+              Fval < cutDef(["PossiblyNoBeam","max_FC_charge"]) /*nC*/
+            ) {
               defectList.add(T.bit("PossiblyNoBeam"))
             }
           }
