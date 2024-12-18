@@ -178,8 +178,7 @@ else if(cmd=="sectorloss") {
       -$helpStr
       - set [lastBin] to -1 to denote last time bin of run
       - use \"all\" in place of [list_of_sectors] to apply to all sectors
-      - this will set the SectorLoss bit for specified time bins and sectors;
-        it will unset any other relevant bits
+      - this will add the SectorLoss bit for specified time bins and sectors
       - you will be prompted to enter a comment
     """)
     System.exit(101)
@@ -338,8 +337,7 @@ else if(cmd=="lossft") {
     SYNTAX: ${exe} ${cmd} [run] [firstBin] [lastBin]
       -$helpStr
       - set [lastBin] to -1 to denote last time bin of run
-      - this will set the LossFT bit for specified time bins;
-        it will unset any other relevant bits
+      - this will add the LossFT bit for specified time bins
       - you will be prompted to enter a comment
     """)
     System.exit(101)
