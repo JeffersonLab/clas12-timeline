@@ -14,7 +14,7 @@ usage["delbit"]     = "delete specified bit from defectBit(s)"
 usage["sectorloss"] = "specify a sector loss"
 usage["lossft"]     = "specify a FT loss"
 usage["nobeam"]     = "add 'PossiblyNoBeam' bit"
-usage["automisc"]   = "add the Misc bit, with comment from shift expert comment"
+usage["misc"]       = "add the Misc bit, with default comment from shift expert"
 usage["setcomment"] = "change or delete the comment"
 usage["addcomment"] = "append a comment"
 usage["custom"]     = "do a custom action (see code)"
@@ -237,7 +237,7 @@ else if(cmd=="nobeam") {
   }
 }
 
-else if(cmd=="automisc") {
+else if(cmd=="misc") {
   def rnum,bnumL,bnumR
   def secList = []
   if(args.length>1) {
@@ -303,7 +303,7 @@ else if(cmd=="automisc") {
 
 else if(cmd=="lossft") {
   def rnum,bnumL,bnumR
-  if(args.length>4) {
+  if(args.length>3) {
     rnum = args[1].toInteger()
     bnumL = args[2].toInteger()
     bnumR = args[3].toInteger()
