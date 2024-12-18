@@ -264,7 +264,7 @@ else if(cmd=="misc") {
 
     println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) +
       " sectors ${secList}: add Misc bit with shift expert's comment")
-    println("\n  Shift Expert's Comment: ${shift_expert_comment}\n")
+    println("\n---------------- Shift Expert's Comment ----------------\n${shift_expert_comment}\n--------------------------------------------------------\n")
     println("Enter a different comment, if you want, otherwise press return to use this one")
     print("> ")
     def cmt = System.in.newReader().readLine()
