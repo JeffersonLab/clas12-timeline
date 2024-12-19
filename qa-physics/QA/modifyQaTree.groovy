@@ -421,9 +421,17 @@ else if( cmd=="custom") {
     def cmt = "setup period; possible beam modulation issues"
     */
 
-    ///* // add misc bit to sector 6 only
+    /* // add misc bit to sector 6 only
     qaTree["$rnum"]["$bnum"]["sectorDefects"]["6"] += T.bit("Misc")
     def cmt = "FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262"
+    */
+
+    ///* // low helicity fraction
+    def secList = (1..6).collect{it}
+    secList.each{
+      qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] += T.bit("Misc")
+    }
+    def cmt = "fraction of events with defined helicity is low"
     //*/
 
     if(!qaTree["$rnum"]["$bnum"].containsKey("comment")) {
