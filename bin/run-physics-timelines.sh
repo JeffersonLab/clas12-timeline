@@ -86,11 +86,16 @@ mkdir -p $logDir
 logFile=$logDir/physics.err
 logTmp=$logFile.tmp
 > $logFile
-function exe { 
+function exe {
   echo $sep
   echo "EXECUTE: $*"
   echo $sep
   $* 2> >(tee $logTmp >&2)
+  mv $logTmp{,.bak}
+  cat $logTmp.bak |\
+    { grep -v '^Picked up _JAVA_OPTIONS:' || test $? = 1; } \
+    > $logTmp
+  rm $logTmp.bak
   if [ -s $logTmp ]; then
     echo "stderr from command:  $*" >> $logFile
     cat $logTmp >> $logFile
