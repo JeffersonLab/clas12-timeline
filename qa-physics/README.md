@@ -18,12 +18,10 @@ Physics QA features:
   be analyzed; this name is for organization purposes, for those who want to
   monitor several different sets of data
 
-# QA Rules
+# QA Ground Rules
 
 > [!IMPORTANT]
-> The following rules are *strictly* enforced for any dataset:
-> 1. The QA procedure runs on the data as they are and does not fix any of their problems.
-> 2. At least two people independently perform the "manual QA" and the results are cross checked and merged.
+> See the [QADB Ground rules](https://github.com/JeffersonLab/clas12-qadb), which must be strictly followed for the QA procedure.
 
 # Setup
 
