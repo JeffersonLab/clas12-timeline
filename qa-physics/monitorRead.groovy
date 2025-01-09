@@ -775,6 +775,14 @@ inHipoList.each { inHipoFile ->
       fc = eventBank.getFloat("beamCharge",0)
       setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
     }
+    if(FCmode==3 && eventBank.rows()>0) {
+      // gated charge only from file
+      fc = getDataFromCSV(runnum,"charge_ave")
+      setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
+      // Set ungated charge = gated charge
+      ufc = fc
+      setMinMaxInTimeBin(thisTimeBinNum, "ufcMinMax", ufc)
+    }
 
     // if this event is on a bin boundary, and it has `scalerBank`, update `fcRange` and `ufcRange`
     // FIXME: this will only work for FCmode==1; need to figure out how to handle the others
