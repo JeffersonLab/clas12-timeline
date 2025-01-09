@@ -107,6 +107,7 @@ else if(runnum>=12210 && runnum<=12951) RG="RGF" // spring+summer 20
 else if(runnum>=15019 && runnum<=15884) RG="RGM"
 else if(runnum>=16042 && runnum<=16786) RG="RGC" // summer 22
 else if(runnum>=16843 && runnum<=17408) RG="RGC" // fall 22
+else if(runnum>=18305 && runnum<=19131) RG="RGD" // fall 23
 else System.err.println "WARNING: unknown run group; using default run-group-dependent settings (see monitorRead.groovy)"
 println "rungroup = $RG"
 
@@ -134,6 +135,11 @@ else if(RG=="RGC") {
   if(runnum>=16042 && runnum<=16078) EBEAM = 2.21
   else if(runnum>=16079 && runnum<=16786) EBEAM = 10.55
   else if(runnum>=16843 && runnum<=17408) EBEAM = 10.55
+  else System.err.println "ERROR: unknown beam energy"
+}
+else if(RG=="RGD") {
+  if(runnum>=18305 && runnum<=18439) EBEAM = 10.5473
+  else if(runnum>=18440 && runnum<=19131) EBEAM = 10.5322
   else System.err.println "ERROR: unknown beam energy"
 }
 else if(RG=="RGK") {
