@@ -590,6 +590,13 @@ defineTimeBins = { // in its own closure, so giant data structures are garbage c
   timeBinBounds = timeBinBounds + [10**(Math.log10(timeBinBounds[-1]).toInteger()+2)] // two orders of magnitude above largest known event number
   // pair the elements to define the bin boundaries
   timeBinBounds = timeBinBounds.collate(2)
+  // redefine time bins to merge all bins except the first and last if `FCmode==3`
+  if (FCmode==3 && timeBinBounds.size()>3) {
+    newTimeBinBounds = [timeBinBounds[0]]
+    newTimeBinBounds += [[timeBinBounds[0][1],timeBinBounds[-1][0]]]
+    newTimeBinBounds += [timeBinBounds[-1]]
+    timeBinBounds = newTimeBinBounds
+  }
   // define the time bin objects, initializing additional fields
   timeBinBounds.eachWithIndex{ bounds, binNum ->
     timeBins[binNum] = [
