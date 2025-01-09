@@ -138,8 +138,8 @@ else if(RG=="RGC") {
   else System.err.println "ERROR: unknown beam energy"
 }
 else if(RG=="RGD") {
-  if(runnum>=18305 && runnum<=18439) EBEAM = 10.5473
-  else if(runnum>=18440 && runnum<=19131) EBEAM = 10.5322
+  if(runnum>=18305 && runnum<=18439) EBEAM = 10.5473 // from RCDB
+  else if(runnum>=18440 && runnum<=19131) EBEAM = 10.5322 // from RCDB
   else System.err.println "ERROR: unknown beam energy"
 }
 else if(RG=="RGK") {
