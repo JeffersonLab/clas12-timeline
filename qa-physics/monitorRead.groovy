@@ -245,23 +245,29 @@ if (FCmode==3) {
   }
 }
 
-// Function to open CSV file and find first column with matching run number and return requested column value
-// Column may be accessed by either string name or integer index.
-// Returns 0.0 if column value for that run is not set.
-def getDataFromCSV = { _runnum, _key ->
-  def value = 0.0
-  Paths.get(csvfilepath).withReader { reader ->
-    CSVParser csv = new CSVParser(reader, FORMAT.withHeader())
-    for (record in csv.iterator()) {
-        runnum_from_record = record.get(runnum_colidx).toInteger()
-        if (runnum_from_record==_runnum && record.isSet(_key)) { // Check if run number matches and value is set
-          value = record.get(_key).toFloat() // Get requested value
-          return value
-        }
+// Function to read in all data from CSV for a given column and return a map of run numbers to column values
+def setDataFromCSV = { _key ->
+    def _dataFromCSV = [:]
+    Paths.get(csvfilepath).withReader { reader ->
+       CSVParser csv = new CSVParser(reader, FORMAT.withHeader())
+       for (record in csv.iterator()) {
+            runnum_from_record = record.get(runnum_colidx).toInteger()
+            if (record.isSet(_key)) {
+              _dataFromCSV[runnum_from_record] = record.get(_key)
+           }
+       }
     }
-  }
-  return value
-} // def getDataFromCSV
+    return _dataFromCSV
+}
+
+// Set data from CSV and define a function to get key values for a given run number
+def dataFromCSV = [:]
+if (FCmode==3) {
+  dataFromCSV["fc"] = setDataFromCSV("charge_ave")
+}
+def getDataFromCSV = { _runnum, _key ->
+    return dataFromCSV[_key][_runnum]
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -777,7 +783,7 @@ inHipoList.each { inHipoFile ->
     }
     if(FCmode==3 && eventBank.rows()>0) {
       // gated charge only from file
-      fc = getDataFromCSV(runnum,"charge_ave")
+      fc = getDataFromCSV(runnum,"fc")
       setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
       // Set ungated charge = gated charge
       ufc = fc
