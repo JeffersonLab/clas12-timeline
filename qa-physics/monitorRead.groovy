@@ -13,6 +13,10 @@ import org.jlab.clas.physics.LorentzVector
 import org.jlab.detector.base.DetectorType
 import java.lang.Math.*
 import org.jlab.clas.timeline.util.Tools
+@Grab('org.apache.commons:commons-csv:1.2')
+import org.apache.commons.csv.CSVParser
+import static org.apache.commons.csv.CSVFormat.*
+import java.nio.file.Paths
 Tools T = new Tools()
 
 // CONSTANTS
@@ -175,6 +179,9 @@ else if(RG=="RGM") {
  * - 2: special case
  *   - calculate DAQ-gated FC charge from `REC::Event:beamCharge`
  *   - useful if `RUN::scaler` is unavailable
+ * - 3: DAQ-gated FC charge and ungated FC charge are both incorrect
+ *   - Read DAQ-gated charge from a CSV file in `clas12-timeline/data/fccharge/<RG>.csv`
+ *   - useful if `RUN::scaler` is unavailable
  */
 def FCmode = 1 // default assumes DAQ-gated FC charge can be trusted
 if(RG=="RGM") {
@@ -202,6 +209,50 @@ else if(RG=="RGM") {
   }
 }
 */
+
+// Check if data file exists for `FCMode==3`
+if (FCMode==3) {
+  def datfilepath = '../data/fccharge/'+RG+'.csv' //TODO: Set this path with clas12-timeline home directory environment variable?
+  def datfile = new File(datfilepath)
+  if (!datfile.exists()) {
+    System.err.println "ERROR: With FCMode="+FCMode+". Data file `"+datfilepath+"` does not exist!"
+    System.exit(100)
+  }
+}
+
+// Set org.apache.commons.csv.CSVFormat Format
+def FORMAT = DEFAULT
+
+// Read CSV file column names
+def csv_header
+Paths.get(datfilepath).withReader { reader ->
+    CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
+    csv_header = csv.getHeaderMap()
+}
+
+// Set run number column index assuming it is the first column with "run" in the column header
+def runnum_colidx = -1
+csv_header.each{colname, colidx ->
+  if (colname.contains("run") && runnum_colidx<0) runnum_colidx = colidx
+}
+
+// Function to open data file and find first column with matching run number and return requested column value
+// Column may be accessed by either string name or integer index.
+// Returns 0.0 if column value for that run is not set.
+def getDataFromCSV = { _runnum, _key ->
+  def value = 0.0
+  Paths.get(datfilepath).withReader { reader ->
+    CSVParser csv = new CSVParser(reader, FORMAT.withHeader())
+    for (record in csv.iterator()) {
+        runnum_from_record = record.get(runnum_colidx).toInteger()
+        if (runnum_from_record==_runnum && record.isSet(_key)) { // Check if run number matches and value is set
+          value = record.get(_key).toFloat() // Get requested value
+          return value
+        }
+    }
+  }
+  return value
+} // def getDataFromCSV
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
