@@ -210,13 +210,14 @@ else if(RG=="RGM") {
 }
 */
 
-// Check if data file exists for `FCmode==3`
+// Check if CSV file exists for `FCmode==3`
+def csvfilepath
 if (FCmode==3) {
   def TIMELINESRC = System.getenv("TIMELINESRC")
-  def datfilepath = Paths.get(TIMELINESRC, '/data/fccharge/'+RG+'.csv').toAbsolutePath().toString() //TODO: Set this path with clas12-timeline home directory environment variable?
-  def datfile = new File(datfilepath)
+  csvfilepath = Paths.get(TIMELINESRC, '/data/fccharge/'+RG+'.csv').toAbsolutePath().toString()
+  def datfile = new File(csvfilepath)
   if (!datfile.exists()) {
-    System.err.println "ERROR: With FCmode="+FCmode+". Data file `"+datfilepath+"` does not exist!"
+    System.err.println "ERROR: With FCmode="+FCmode+". CSV file `"+csvfilepath+"` does not exist!"
     System.exit(100)
   }
 }
@@ -226,7 +227,7 @@ def FORMAT = DEFAULT
 
 // Read CSV file column names
 def csv_header
-Paths.get(datfilepath).withReader { reader ->
+Paths.get(csvfilepath).withReader { reader ->
     CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
     csv_header = csv.getHeaderMap()
 }
@@ -237,12 +238,12 @@ csv_header.each{colname, colidx ->
   if (colname.contains("run") && runnum_colidx<0) runnum_colidx = colidx
 }
 
-// Function to open data file and find first column with matching run number and return requested column value
+// Function to open CSV file and find first column with matching run number and return requested column value
 // Column may be accessed by either string name or integer index.
 // Returns 0.0 if column value for that run is not set.
 def getDataFromCSV = { _runnum, _key ->
   def value = 0.0
-  Paths.get(datfilepath).withReader { reader ->
+  Paths.get(csvfilepath).withReader { reader ->
     CSVParser csv = new CSVParser(reader, FORMAT.withHeader())
     for (record in csv.iterator()) {
         runnum_from_record = record.get(runnum_colidx).toInteger()
