@@ -209,33 +209,40 @@ else if(RG=="RGM") {
   }
 }
 */
-
-// Check if CSV file exists for `FCmode==3`
-def csvfilepath
-if (FCmode==3) {
-  def TIMELINESRC = System.getenv("TIMELINESRC")
-  csvfilepath = Paths.get(TIMELINESRC, '/data/fccharge/'+RG+'.csv').toAbsolutePath().toString()
-  def datfile = new File(csvfilepath)
-  if (!datfile.exists()) {
-    System.err.println "ERROR: With FCmode="+FCmode+". CSV file `"+csvfilepath+"` does not exist!"
-    System.exit(100)
+if(RG=="RGD") {
+  if(runnum>=18305 && runnum<=19131) {
+    FCmode = 3
   }
 }
 
-// Set org.apache.commons.csv.CSVFormat Format
-def FORMAT = DEFAULT
+// Set CSV variables for `FCmode==3`
+def csvfilepath   = ""
+def FORMAT        = DEFAULT // Set org.apache.commons.csv.CSVFormat Format
+def csv_header    = ""
+def runnum_colidx = -1
+if (FCmode==3) {
 
-// Read CSV file column names
-def csv_header
-Paths.get(csvfilepath).withReader { reader ->
+  // Check if CSV file exists
+  def TIMELINESRC = System.getenv("TIMELINESRC")
+  csvfilepath = Paths.get(TIMELINESRC, '/data/fccharge/'+RG+'.csv').toAbsolutePath().toString()
+  def csvfile = new File(csvfilepath)
+  if (csvfile.exists()) {
+    System.out.println "INFO: Found CSV file $csvfilepath"
+  } else {
+    System.err.println "ERROR: With FCmode="+FCmode+". CSV file `$csvfilepath` does not exist!"
+    System.exit(100)
+  }
+
+  // Read CSV file column names
+  Paths.get(csvfilepath).withReader { reader ->
     CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
     csv_header = csv.getHeaderMap()
-}
+  }
 
-// Set run number column index assuming it is the first column with "run" in the column header
-def runnum_colidx = -1
-csv_header.each{colname, colidx ->
-  if (colname.contains("run") && runnum_colidx<0) runnum_colidx = colidx
+  // Set run number column index assuming it is the first column with "run" in the column header
+  csv_header.each{colname, colidx ->
+    if (colname.contains("run") && runnum_colidx<0) runnum_colidx = colidx
+  }
 }
 
 // Function to open CSV file and find first column with matching run number and return requested column value
