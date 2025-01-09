@@ -253,7 +253,7 @@ def setDataFromCSV = { _key ->
        for (record in csv.iterator()) {
             runnum_from_record = record.get(runnum_colidx).toInteger()
             if (record.isSet(_key)) {
-              _dataFromCSV[runnum_from_record] = record.get(_key)
+              _dataFromCSV[runnum_from_record] = record.get(_key).toFloat()
            }
        }
     }
