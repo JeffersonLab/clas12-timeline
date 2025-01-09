@@ -968,7 +968,7 @@ timeBins.each{ itBinNum, itBin ->
     if(FCmode==0) {
       fcStart = ufcStart * aveLivetime // workaround method
       fcStop  = ufcStop  * aveLivetime // workaround method
-    } else if(FCmode==1 || FCmode==2) {
+    } else if(FCmode==1 || FCmode==2 || FCMode==3) {
       if(!itBin.fcRange.contains("init")) {
         fcStart = itBin.fcRange[0]
         fcStop  = itBin.fcRange[1]
