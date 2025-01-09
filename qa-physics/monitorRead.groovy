@@ -212,7 +212,8 @@ else if(RG=="RGM") {
 
 // Check if data file exists for `FCMode==3`
 if (FCMode==3) {
-  def datfilepath = '../data/fccharge/'+RG+'.csv' //TODO: Set this path with clas12-timeline home directory environment variable?
+  def TIMELINESRC = System.getenv("TIMELINESRC")
+  def datfilepath = Paths.get(TIMELINESRC, '/data/fccharge/'+RG+'.csv').toAbsolutePath().toString() //TODO: Set this path with clas12-timeline home directory environment variable?
   def datfile = new File(datfilepath)
   if (!datfile.exists()) {
     System.err.println "ERROR: With FCMode="+FCMode+". Data file `"+datfilepath+"` does not exist!"
