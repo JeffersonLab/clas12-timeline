@@ -198,7 +198,7 @@ sectors.each { s ->
       if(cutDef(["RecalculateIQR"], false) != null) {
         cutDef(["RecalculateIQR"]).each { recalcIt ->
           def whichDet = useFT ? "FT" : "FD"
-          if(recalcIt['detector'] == whichDet && recalcIt['epoch'] == epochIt && recalcIt['sector'] == sectorIt) {
+          if(recalcIt['detector'] == whichDet && recalcIt['epoch'] == epochIt && recalcIt['sectors'].contains(sectorIt)) {
             def recalcRange = recalcIt['within_range']
             System.err.println "WARNING: recalculating IQR for epoch ${epochIt} sector ${sectorIt}, as specified in cutdef file"
             ratioListForIQR = ratioList.findAll{ it >= recalcRange[0] && it <= recalcRange[1] }

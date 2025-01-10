@@ -15,6 +15,6 @@ PossiblyNoBeam:
 # the IQR, exluding all the obvious outliers (N/F < 10)
 RecalculateIQR:
   - epoch: 5
-    sector: 4
+    sectors: [ 1, 2, 3, 4, 5, 6 ] # do this for all sectors, for consistency
     detector: FD
     within_range: [ 10, 40 ]
