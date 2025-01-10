@@ -10,3 +10,11 @@ PossiblyNoBeam:
   max_num_events: 200000
   max_num_electrons: 100
   max_FC_charge: 300
+
+# Epoch 5 Sector 4 has too many outliers for the IQR method to work; recalculate
+# the IQR, exluding all the obvious outliers (N/F < 10)
+RecalculateIQR:
+  - epoch: 5
+    sector: 4
+    detector: FD
+    within_range: [ 10, 40 ]
