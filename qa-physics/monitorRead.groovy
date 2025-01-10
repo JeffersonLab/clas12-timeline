@@ -555,12 +555,12 @@ defineTimeBins = { // in its own closure, so giant data structures are garbage c
   inHipoList.each { inHipoFile ->
     printDebug "Open HIPO file $inHipoFile"
     def reader = new HipoDataSource()
-    reader.getReader().setTags(1)
+    if (FCmode!=3) reader.getReader().setTags(1) //NOTE: RUN::scaler bank is not used if `FCmode==3`.
     reader.open(inHipoFile)
     while(reader.hasEvent()) {
       hipoEvent = reader.getNextEvent()
       // printDebug "tag1 event bank list: ${hipoEvent.getBankList()}"
-      if(hipoEvent.hasBank("RUN::scaler") && hipoEvent.getBank("RUN::scaler").rows()>0 &&
+      if(((hipoEvent.hasBank("RUN::scaler") && hipoEvent.getBank("RUN::scaler").rows()>0) || FCmode==3) && //NOTE: Do not require tag 1 events to contain RUN::scaler for `FCmode==3`
          hipoEvent.hasBank("RUN::config") && hipoEvent.getBank("RUN::config").rows()>0)
       {
         tag1events << [
@@ -795,7 +795,7 @@ inHipoList.each { inHipoFile ->
     def onBinBoundary = false
     if(eventNum == thisTimeBin.eventNumMax) {
       onBinBoundary = true
-      if(scalerBank.rows()>0) { // must have scalerBank, so `fc` and `ufc` are set (we'll check if any `(u)fcRange` values are still "init" later)
+      if(scalerBank.rows()>0 || FCmode==3) { // must have scalerBank, so `fc` and `ufc` are set (we'll check if any `(u)fcRange` values are still "init" later) UNLESS `FCmode==3` in which case thse values are set from a CSV file so the scaler bank is not required.
         // events on the boundary are assigned to earlier bin; this FC charge is that bin's max charge
         thisTimeBin.fcRange[1]   = fc
         thisTimeBin.ufcRange[1]  = ufc
