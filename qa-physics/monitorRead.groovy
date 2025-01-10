@@ -781,7 +781,7 @@ inHipoList.each { inHipoFile ->
       fc = eventBank.getFloat("beamCharge",0)
       setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
     }
-    if(FCmode==3 && eventBank.rows()>0) {
+    if(FCmode==3) {
       // gated charge only from file
       fc = getDataFromCSV(runnum,"fc")
       setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
