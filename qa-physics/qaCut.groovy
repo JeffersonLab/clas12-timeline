@@ -2,6 +2,7 @@ import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.groot.data.H1F
 import org.jlab.groot.math.F1D
+import groovy.yaml.YamlSlurper
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 import org.jlab.clas.timeline.util.Tools
@@ -28,13 +29,13 @@ def sec = { int i -> i+1 }
 // subroutine to write JSON
 def jPrint = { name,object -> new File(name).write(JsonOutput.toJson(object)) }
 
-// read cutDefs json file into a tree
-def cutDefsFile = new File("cutdefs/${dataset}.json")
+// read cutDefs yaml file into a tree
+def cutDefsFile = new File("cutdefs/${dataset}.yaml")
 if(!(cutDefsFile.exists())) {
-  System.err.println "WARNING: using cutdefs/default.json"
-  cutDefsFile = new File("cutdefs/default.json")
+  System.err.println "WARNING: using cutdefs/default.yaml"
+  cutDefsFile = new File("cutdefs/default.yaml")
 }
-cutDefsSlurper = new JsonSlurper()
+cutDefsSlurper = new YamlSlurper()
 cutDefsTree = cutDefsSlurper.parse(cutDefsFile)
 // return the cutDef for a given tree path
 def cutDef = { path ->
