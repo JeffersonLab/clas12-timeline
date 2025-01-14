@@ -783,7 +783,7 @@ inHipoList.each { inHipoFile ->
     }
     if(FCmode==3) {
       // gated charge only from file
-      fc = getDataFromCSV(runnum,"fc")
+      fc = (thisTimeBinNum>0 && thisTimeBinNum<timeBins.size()-1) ? getDataFromCSV(runnum,"fc") : 0.0 //NOTE: Only set FC charge for middle bin(s) since first and last bins should be empty and have same upper and lower limits in `FCmode==3`.
       setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
       // Set ungated charge = gated charge
       ufc = fc
