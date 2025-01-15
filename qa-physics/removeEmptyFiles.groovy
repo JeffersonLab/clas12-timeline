@@ -19,7 +19,7 @@ if(args.length<1) {
   System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR]"
   System.exit(101)
 }
-def verbose = true
+def verbose = false
 def inPaths = []
 args.each{ path ->
     def d = new File(path)
