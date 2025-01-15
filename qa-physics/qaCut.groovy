@@ -192,9 +192,11 @@ sectors.each { s ->
   if( !useFT || (useFT && sectorIt==1)) {
     ratioTree[sectorIt].each { epochIt, ratioList ->
 
+      // filter out zero/negative N/F
+      def ratioListForIQR = ratioList.findAll{it>0}
+
       // if the cutDef file says to "recalculate" the IQR, do so; this is used when there are too many outliers
       // for the IQR method to be robust
-      def ratioListForIQR = ratioList
       if(cutDef(["RecalculateIQR"], false) != null) {
         cutDef(["RecalculateIQR"]).each { recalcIt ->
           def whichDet = useFT ? "FT" : "FD"
@@ -212,6 +214,8 @@ sectors.each { s ->
       def iqr = uq - lq // interquartile range
       def cutLo = lq - cutFactor * iqr // lower QA cut boundary
       def cutHi = uq + cutFactor * iqr // upper QA cut boundary
+
+      System.out.println "QA CUTS: epoch ${epochIt} sector ${sectorIt}   $cutLo  $cutHi"
 
       cutTree[sectorIt][epochIt]['mq'] = mq
       cutTree[sectorIt][epochIt]['lq'] = lq
