@@ -157,6 +157,7 @@ mkdir -pv $targetDir
 rm    -rv $targetDir
 mkdir -pv $targetDir
 cp -rv $inputDir/* $targetDir/
+run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/qa-physics/removeEmptyFiles.groovy $targetDir
 [ -n "$metadataFile" ] && cp -v $metadataFile $targetDir/metadata.json
 run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/index-webpage.groovy $targetDir
 echo "DONE."
