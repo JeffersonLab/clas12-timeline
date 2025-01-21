@@ -262,11 +262,13 @@ def setDataFromCSV = { _key ->
 
 // Set data from CSV and define a function to get key values for a given run number
 def dataFromCSV = [:]
+def conversion_factors = [:]
 if (FCmode==3) {
   dataFromCSV["fc"] = setDataFromCSV("charge_ave")
+  conversion_factors["fc"] = 1e6 //NOTE: IMPORTANT: RGD CSV data is listed in mC but this script expects charge values in nC!
 }
 def getDataFromCSV = { _runnum, _key ->
-    return dataFromCSV[_key][_runnum]
+    return dataFromCSV[_key][_runnum] * conversion_factors[_key]
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
