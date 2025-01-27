@@ -361,8 +361,10 @@ for r0,r1,eb in beamlist:
   if $runnum>=r0 and $runnum<=r1:
     print(eb)
     """`
-    if [ -z "$beam_energy_override" ]; then
-      printWarning "overriding RCDB beam energy $beam_energy to be $beam_energy_override, for run $runnum"
+    if [ -n "$beam_energy_override" ]; then
+      if [ -n "$beam_energy" ]; then
+        printWarning "overriding RCDB beam energy $beam_energy to be $beam_energy_override, for run $runnum"
+      fi
       beam_energy=$beam_energy_override
     fi
     if [ -z "$beam_energy" ]; then
