@@ -32,31 +32,31 @@ def AUXFILE = false  // enable auxfile production, an event-by-event table (a la
 def printDebug = { msg -> if(VERBOSE) println "[DEBUG]: $msg" }
 
 // ARGUMENTS
-def inHipoType = "dst" // options: "dst", "skim"
-def runnum = 0
-if(args.length<2) {
+if(args.length<5) {
   System.err.println """
-  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO directory or file] [output directory] [type(OPTIONAL)] [runnum(OPTIONAL)]
+  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO directory or file] [output directory] [type] [runnum] [beam energy]
          REQUIRED parameters:
            - [HIPO directory or file] should be a directory of HIPO files
              or a single hipo file (depends on [type]: use 'dst' for directory
              or 'skim' for file)
            - [output directory] output directory for the produced files
-         OPTIONAL parameters:
-           - [type] can be 'dst' or 'skim' (default is '$inHipoType')
-           - [runnum] the run number; if not specified, it will be obtained from RUN::config
-
+           - [type] can be 'dst' or 'skim'
+           - [runnum] the run number
+           - [beam energy] the beam energy in GeV
   """
   System.exit(101)
 }
-def inHipo = args[0]
-def outDir = args[1]
-if(args.length>=3) inHipoType = args[2]
-if(args.length>=4) runnum     = args[3].toInteger()
+def inHipo     = args[0]
+def outDir     = args[1]
+def inHipoType = args[2]
+def runnum     = args[3].toInteger()
+def beamEnergy = args[4].toDouble()
 System.println """
 inHipo     = $inHipo
 outDir     = $outDir
-inHipoType = $inHipoType"""
+inHipoType = $inHipoType
+runnum     = $runnum
+beamEnergy = $beamEnergy"""
 
 // get hipo file names
 def inHipoList = []
@@ -110,59 +110,10 @@ else if(runnum>=12210 && runnum<=12951) RG="RGF" // spring+summer 20
 else if(runnum>=15019 && runnum<=15884) RG="RGM"
 else if(runnum>=16042 && runnum<=16786) RG="RGC" // summer 22
 else if(runnum>=16843 && runnum<=17408) RG="RGC" // fall 22
+else if(runnum>=17477 && runnum<=17811) RG="RGC" // spring 23
 else if(runnum>=18305 && runnum<=19131) RG="RGD" // fall 23
 else System.err.println "WARNING: unknown run group; using default run-group-dependent settings (see monitorRead.groovy)"
 println "rungroup = $RG"
-
-// beam energy
-// - hard-coded; could instead get from RCDB, but sometimes it is incorrect
-def EBEAM = 10.6041 // RGA default
-if(RG=="RGA") {
-  if(runnum>=3031 && runnum<=3120) EBEAM = 6.42313 // spring 18
-  else if(runnum>=3129 && runnum<=3818) EBEAM = 10.594 // spring 18
-  else if(runnum>=3819 && runnum<=3861) EBEAM = 6.42313 // spring 18
-  else if(runnum>=3862 && runnum<=4325) EBEAM = 10.594 // spring 18
-  else if(runnum>=5032 && runnum<=5666) EBEAM = 10.6041 // fall 18
-  else if(runnum>=6616 && runnum<=6783) EBEAM = 10.1998 // spring 19
-  else System.err.println "ERROR: unknown beam energy"
-}
-else if(RG=="RGB") {
-  if(runnum>=6120 && runnum<=6399) EBEAM = 10.5986 // spring
-  else if(runnum>=6409 && runnum<=6604) EBEAM = 10.1998 // spring
-  else if(runnum>=11093 && runnum<=11283) EBEAM = 10.4096 // fall
-  else if(runnum>=11284 && runnum<=11300) EBEAM = 4.17179 // fall BAND_FT
-  else if(runnum>=11323 && runnum<=11571) EBEAM = 10.3894 // winter (RCDB may still be incorrect)
-  else System.err.println "ERROR: unknown beam energy"
-}
-else if(RG=="RGC") {
-  if(runnum>=16042 && runnum<=16078) EBEAM = 2.21
-  else if(runnum>=16079 && runnum<=16786) EBEAM = 10.55
-  else if(runnum>=16843 && runnum<=17408) EBEAM = 10.55
-  else System.err.println "ERROR: unknown beam energy"
-}
-else if(RG=="RGD") {
-  if(runnum>=18305 && runnum<=18439) EBEAM = 10.5473
-  else if(runnum>=18440 && runnum<=19131) EBEAM = 10.5322
-  else System.err.println "ERROR: unknown beam energy"
-}
-else if(RG=="RGK") {
-  if(runnum>=5674 && runnum<=5870) EBEAM = 7.546
-  else if(runnum>=5875 && runnum<=6000) EBEAM = 6.535
-  else System.err.println "ERROR: unknown beam energy"
-}
-else if(RG=="RGF") {
-  if     (runnum>=12210 && runnum<=12388) EBEAM = 10.389 // RCDB may still be incorrect
-  else if(runnum>=12389 && runnum<=12443) EBEAM =  2.186 // RCDB may still be incorrect
-  else if(runnum>=12444 && runnum<=12951) EBEAM = 10.389 // RCDB may still be incorrect
-  else System.err.println "ERROR: unknown beam energy"
-}
-else if(RG=="RGM") {
-  if     (runnum>=15013 && runnum<=15490) EBEAM = 5.98636
-  else if(runnum>=15533 && runnum<=15727) EBEAM = 2.07052
-  else if(runnum>=15728 && runnum<=15784) EBEAM = 4.02962
-  else if(runnum>=15787 && runnum<=15884) EBEAM = 5.98636
-  else System.err.println "ERROR: unknown beam energy"
-}
 
 /* gated FC charge determination: `FCmode`
  * - 0: DAQ-gated FC charge is incorrect
@@ -213,6 +164,11 @@ if(RG=="RGD") {
     FCmode = 3
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 // Set CSV variables for `FCmode==3`
 def csvfilepath   = ""
@@ -272,10 +228,6 @@ def getDataFromCSV = { _runnum, _key ->
     return dataFromCSV[_key][_runnum]
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 // make outut directories and define output file
 "mkdir -p $outDir".execute()
 def outHipo = new TDirectory()
@@ -329,7 +281,7 @@ def nu
 def x
 def y
 def z
-def vecBeam = new LorentzVector(0, 0, EBEAM, EBEAM)
+def vecBeam = new LorentzVector(0, 0, beamEnergy, beamEnergy)
 def vecTarget = new LorentzVector(0, 0, 0, 0.938)
 def vecEle = new LorentzVector()
 def vecH = new LorentzVector()
@@ -464,7 +416,7 @@ def findParticles = { pid, binNum ->
       // calculate x and y
       nu = vecBeam.e() - vecEle.e()
       x = Q2 / ( 2 * 0.938272 * nu )
-      y = nu / EBEAM
+      y = nu / beamEnergy
 
       // CUT for electron: Q2 cut
       //if(Q2<2.5) return
