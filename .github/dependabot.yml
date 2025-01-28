@@ -4,6 +4,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "org.apache.commons:commons-csv" # FIXME: `monitorRead.groovy` is not yet compatible with later versions of this dependency
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
