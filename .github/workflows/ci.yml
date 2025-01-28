@@ -143,6 +143,8 @@ jobs:
       run: ls *.tar.zst | xargs -I{} tar xavf {}
     - name: tree
       run: tree
+    - name: set RCDB connection # to one that's available to the runner
+      run: echo RCDB_CONNECTION=mysql://rcdb@clasdb.jlab.org/rcdb | tee -a $GITHUB_ENV
     - name: run monitoring
       run: bin/run-monitoring.sh -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
     - name: tree slurm
