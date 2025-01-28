@@ -348,7 +348,7 @@ for rdir in ${rdirs[@]}; do
 
     # get beam energy from RCDB
     echo "Retrieving beam energy from RCDB..."
-    beam_energy=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-beam-energy.groovy $runnum | tail -n1)
+    beam_energy=$($TIMELINESRC/bin/get-beam-energy.sh $runnum | tail -n1)
     # override beam energy, for cases where RCDB is incorrect
     # - currently only needed for RG-F
     beam_energy_override=`python -c """
