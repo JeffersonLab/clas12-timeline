@@ -533,7 +533,7 @@ defineTimeBins = { // in its own closure, so giant data structures are garbage c
   // sort the events by event number
   tag1eventNumList = tag1events.sort(false){it[0]}.collect{it[0]}
   // check that we would get the same result, if we instead sorted by timestamp
-  if(tag1eventNumList != tag1events.sort(false){it[1]}.collect{it[0]}) {
+  if(FCmode!=3 && tag1eventNumList != tag1events.sort(false){it[1]}.collect{it[0]}) {
     System.err.println "ERROR: sorting tag1 events by event number is DIFFERENT than sorting by timestamp"
     System.exit(100)
   }
