@@ -6,6 +6,7 @@
 //-------------------------------------------------------------------------//
 
 import groovy.io.FileType
+import java.nio.file.Paths
 import org.jlab.groot.data.IDataSet
 import org.jlab.groot.data.H1F
 import org.jlab.groot.data.H2F
@@ -15,19 +16,35 @@ import org.jlab.groot.data.Directory
 
 //--------------------------------------------------------------------------
 // ARGUMENTS:
-if(args.length<1) {
-  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR]"
+if(args.length<2) {
+  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [TRASH_DIR] [INPUT_DIR1 INPUTDIR2...] "
   System.exit(101)
 }
 def verbose = false
 def inPaths = []
-args.each{ path ->
-    def d = new File(path)
-    d.eachFileRecurse (FileType.FILES) { file ->
-        if (file.name.endsWith(".hipo")) inPaths << file.path //NOTE: Only consider HIPO files.
+def trashpath = ".trash"
+args.eachWithIndex{ path, idx ->
+    if (idx==0) {
+        trashpath = path
+    }
+    else {
+        def d = new File(path)
+        d.eachFileRecurse (FileType.FILES) { file ->
+            if (file.name.endsWith(".hipo")) inPaths << file.path //NOTE: Only consider HIPO files.
+        }
     }
 }
 //--------------------------------------------------------------------------
+
+// Create trash directory
+def trashdir = new File(trashpath)
+if (!trashdir.exists()) {
+    trashdir.mkdir()
+}
+if (!trashdir.isDirectory()) {
+    System.err.println "ERROR: Trash directory already exists and is not a directory: $trashpath"
+    System.exit(100)
+}
 
 // Initialize path lists
 def emptyPaths = []
@@ -105,9 +122,19 @@ if (verbose) {
     println "DEBUGGING: emptyPaths = $emptyPaths"
 }
 
-// Delete empty files
+// Move empty files to trash directory
 emptyPaths.each { path ->
     def file = new File(path)
-    if (verbose) println "file.delete() -> $path"
+    def newpath = Paths.get(trashpath,file.getName()).toString() //TODO: Add check to see if newpath exists
+    def newfile = new File(newpath)
+    if (verbose) println "mv $path $newpath"
+    file << newfile
     file.delete()
+}
+
+// Print out information about trashed files
+if (emptyPaths.size()>0) {
+    System.err.println "INFO: Trashed the following files"
+    emptyPaths.each{ path -> System.err.println "INFO:\t$path" }
+    System.err.println "INFO: Trashed files may still be found in $trashpath"
 }
