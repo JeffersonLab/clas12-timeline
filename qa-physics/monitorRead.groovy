@@ -13,9 +13,8 @@ import org.jlab.clas.physics.LorentzVector
 import org.jlab.detector.base.DetectorType
 import java.lang.Math.*
 import org.jlab.clas.timeline.util.Tools
-import org.apache.commons.csv.CSVParser
-import static org.apache.commons.csv.CSVFormat.*
 import java.nio.file.Paths
+import groovy.json.JsonSlurper
 Tools T = new Tools()
 
 // CONSTANTS
@@ -179,7 +178,7 @@ else if(RG=="RGM") {
  *   - calculate DAQ-gated FC charge from `REC::Event:beamCharge`
  *   - useful if `RUN::scaler` is unavailable
  * - 3: DAQ-gated FC charge and ungated FC charge are both incorrect
- *   - Read DAQ-gated charge from a CSV file in `clas12-timeline/data/fccharge/<RG>.csv`
+ *   - Read DAQ-gated charge from a JSON file in `clas12-timeline/data/fccharge/<RG>.json`
  *   - useful if `RUN::scaler` is unavailable
  */
 def FCmode = 1 // default assumes DAQ-gated FC charge can be trusted
@@ -214,64 +213,58 @@ if(RG=="RGD") {
   }
 }
 
-// Set CSV variables for `FCmode==3`
-def csvfilepath   = ""
-def FORMAT        = DEFAULT // Set org.apache.commons.csv.CSVFormat Format
-def csv_header    = ""
-def runnum_colidx = -1
+// Set JSON variables for `FCmode==3`
+def jsonfilepath   = ""
+def runnum_colname = ""
+def fcchargeSlurper
+def fcchargeTree
 if (FCmode==3) {
 
-  // Check if CSV file exists
+  // Check if JSON file exists
   def TIMELINESRC = System.getenv("TIMELINESRC")
   if(TIMELINESRC == null) {
     System.err.println "ERROR: \$TIMELINESRC is not set"
     System.exit(100)
   }
-  csvfilepath = Paths.get(TIMELINESRC, '/data/fccharge/'+RG+'.csv').toAbsolutePath().toString()
-  def csvfile = new File(csvfilepath)
-  if (csvfile.exists()) {
-    System.out.println "INFO: Found CSV file $csvfilepath"
+  jsonfilepath = Paths.get(TIMELINESRC, '/data/fccharge/'+RG+'.json').toAbsolutePath().toString()
+  def jsonfile = new File(jsonfilepath)
+  if (jsonfile.exists()) {
+    System.out.println "INFO: Found JSON file $jsonfilepath"
   } else {
-    System.err.println "ERROR: With FCmode="+FCmode+". CSV file `$csvfilepath` does not exist!"
+    System.err.println "ERROR: With FCmode="+FCmode+". JSON file `$jsonfilepath` does not exist!"
     System.exit(100)
   }
 
-  // Read CSV file column names
-  Paths.get(csvfilepath).withReader { reader ->
-    CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
-    csv_header = csv.getHeaderMap()
-  }
+  // Read JSON file data
+  fcchargeSlurper = new JsonSlurper()
+  fcchargeTree = fcchargeSlurper.parse(jsonfile) //NOTE: This must be a map of column headers to data columns.
 
-  // Set run number column index assuming it is the first column with "run" in the column header
-  csv_header.each{colname, colidx ->
-    if (colname.contains("run") && runnum_colidx<0) runnum_colidx = colidx
-  }
-}
-
-// Function to read in all data from CSV for a given column and return a map of run numbers to column values
-def setDataFromCSV = { _key ->
-    def _dataFromCSV = [:]
-    Paths.get(csvfilepath).withReader { reader ->
-       CSVParser csv = new CSVParser(reader, FORMAT.withHeader())
-       for (record in csv.iterator()) {
-            runnum_from_record = record.get(runnum_colidx).toInteger()
-            if (record.isSet(_key)) {
-              _dataFromCSV[runnum_from_record] = record.get(_key).toFloat()
-           }
-       }
+  // Set run number column name assuming it is the first column name containing "run"
+  fcchargeTree.keySet().each{colname ->
+    if (colname.contains("run") && runnum_colname=="") {
+      runnum_colname = colname
     }
-    return _dataFromCSV
+  }
 }
 
-// Set data from CSV and define a function to get key values for a given run number
-def dataFromCSV = [:]
+//Function to read in all data from JSON for a given column and return a map of run numbers to column values
+def setDataFromJSON = { _key ->
+  def newEntry = [:]
+  fcchargeTree[runnum_colname].eachWithIndex{ it, idx ->
+    newEntry[it] = fcchargeTree[_key][idx]
+  }
+  return newEntry
+}
+
+// Set data from JSON and define a function to get key values for a given run number
+def dataFromJSON = [:]
 def conversion_factors = [:]
 if (FCmode==3) {
-  dataFromCSV["fc"] = setDataFromCSV("charge_ave")
-  conversion_factors["fc"] = 1e6 //NOTE: IMPORTANT: RGD CSV data is listed in mC but this script expects charge values in nC!
+  dataFromJSON["fc"] = setDataFromJSON("charge_ave")
+  conversion_factors["fc"] = 1e6 //NOTE: IMPORTANT: RGD JSON data is listed in mC but this script expects charge values in nC!
 }
-def getDataFromCSV = { _runnum, _key ->
-    return dataFromCSV[_key][_runnum] * conversion_factors[_key]
+def getDataFromJSON = { _runnum, _key ->
+    return dataFromJSON[_key][_runnum] * conversion_factors[_key]
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -788,7 +781,7 @@ inHipoList.each { inHipoFile ->
     }
     if(FCmode==3) {
       // gated charge only from file
-      fc = (thisTimeBinNum>0 && thisTimeBinNum<timeBins.size()-1) ? getDataFromCSV(runnum,"fc") : 0.0 //NOTE: Only set FC charge for middle bin(s) since first and last bins should be empty and have same upper and lower limits in `FCmode==3`.
+      fc = (thisTimeBinNum>0 && thisTimeBinNum<timeBins.size()-1) ? getDataFromJSON(runnum,"fc") : 0.0 //NOTE: Only set FC charge for middle bin(s) since first and last bins should be empty and have same upper and lower limits in `FCmode==3`.
       setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
       // Set ungated charge = gated charge
       ufc = fc
@@ -800,7 +793,7 @@ inHipoList.each { inHipoFile ->
     def onBinBoundary = false
     if(eventNum == thisTimeBin.eventNumMax) {
       onBinBoundary = true
-      if(scalerBank.rows()>0 || FCmode==3) { // must have scalerBank, so `fc` and `ufc` are set (we'll check if any `(u)fcRange` values are still "init" later) UNLESS `FCmode==3` in which case thse values are set from a CSV file so the scaler bank is not required.
+      if(scalerBank.rows()>0 || FCmode==3) { // must have scalerBank, so `fc` and `ufc` are set (we'll check if any `(u)fcRange` values are still "init" later) UNLESS `FCmode==3` in which case thse values are set from a JSON file so the scaler bank is not required.
         // events on the boundary are assigned to earlier bin; this FC charge is that bin's max charge
         thisTimeBin.fcRange[1]   = fc
         thisTimeBin.ufcRange[1]  = ufc
