@@ -197,6 +197,8 @@ jobs:
       run: ls *.tar.zst | xargs -I{} tar xavf {}
     - name: tree
       run: tree
+    - name: set RCDB connection # to one that's available to the runner
+      run: echo RCDB_CONNECTION=mysql://rcdb@clasdb.jlab.org/rcdb | tee -a $GITHUB_ENV
     - name: test monitoring swifjob
       run: |
         single_rundir=$(find validation_files -mindepth 1 -maxdepth 1 -type d | head -n1)
