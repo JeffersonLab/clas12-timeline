@@ -93,7 +93,8 @@ function exe {
   $* 2> >(tee $logTmp >&2)
   mv $logTmp{,.bak}
   cat $logTmp.bak |\
-    { grep -v '^Picked up _JAVA_OPTIONS:' || test $? = 1; } \
+    { grep -v '^Picked up _JAVA_OPTIONS:' || test $? = 1; } |\
+    { grep -v 'VariableMetricBuilder: no improvement' || test $? = 1; } \
     > $logTmp
   rm $logTmp.bak
   if [ -s $logTmp ]; then

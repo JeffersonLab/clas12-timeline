@@ -147,7 +147,7 @@ This section will run the automated QA of the FC-charge normalized electron yiel
 generate QA timelines, and a `json` file which is used for the manual followup QA
 
 * Decide cut definitions
-  * add the file `cutdefs/${dataset}.json`; you may copy one of the existing ones, most likely
+  * add the file `cutdefs/${dataset}.yaml`; you may copy one of the existing ones, most likely
     the default one
   * after generating the automatic QA, check to make sure the results look reasonable; if they
     do not, tune the settings in this file (see `qaCut.groovy` to see how the numbers are used)
