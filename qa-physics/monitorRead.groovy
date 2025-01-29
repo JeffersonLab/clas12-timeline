@@ -13,6 +13,9 @@ import org.jlab.clas.physics.LorentzVector
 import org.jlab.detector.base.DetectorType
 import java.lang.Math.*
 import org.jlab.clas.timeline.util.Tools
+import org.apache.commons.csv.CSVParser
+import static org.apache.commons.csv.CSVFormat.*
+import java.nio.file.Paths
 Tools T = new Tools()
 
 // CONSTANTS
@@ -29,31 +32,31 @@ def AUXFILE = false  // enable auxfile production, an event-by-event table (a la
 def printDebug = { msg -> if(VERBOSE) println "[DEBUG]: $msg" }
 
 // ARGUMENTS
-def inHipoType = "dst" // options: "dst", "skim"
-def runnum = 0
-if(args.length<2) {
+if(args.length<5) {
   System.err.println """
-  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO directory or file] [output directory] [type(OPTIONAL)] [runnum(OPTIONAL)]
+  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO directory or file] [output directory] [type] [runnum] [beam energy]
          REQUIRED parameters:
            - [HIPO directory or file] should be a directory of HIPO files
              or a single hipo file (depends on [type]: use 'dst' for directory
              or 'skim' for file)
            - [output directory] output directory for the produced files
-         OPTIONAL parameters:
-           - [type] can be 'dst' or 'skim' (default is '$inHipoType')
-           - [runnum] the run number; if not specified, it will be obtained from RUN::config
-
+           - [type] can be 'dst' or 'skim'
+           - [runnum] the run number
+           - [beam energy] the beam energy in GeV
   """
   System.exit(101)
 }
-def inHipo = args[0]
-def outDir = args[1]
-if(args.length>=3) inHipoType = args[2]
-if(args.length>=4) runnum     = args[3].toInteger()
+def inHipo     = args[0]
+def outDir     = args[1]
+def inHipoType = args[2]
+def runnum     = args[3].toInteger()
+def beamEnergy = args[4].toDouble()
 System.println """
 inHipo     = $inHipo
 outDir     = $outDir
-inHipoType = $inHipoType"""
+inHipoType = $inHipoType
+runnum     = $runnum
+beamEnergy = $beamEnergy"""
 
 // get hipo file names
 def inHipoList = []
@@ -107,53 +110,10 @@ else if(runnum>=12210 && runnum<=12951) RG="RGF" // spring+summer 20
 else if(runnum>=15019 && runnum<=15884) RG="RGM"
 else if(runnum>=16042 && runnum<=16786) RG="RGC" // summer 22
 else if(runnum>=16843 && runnum<=17408) RG="RGC" // fall 22
+else if(runnum>=17477 && runnum<=17811) RG="RGC" // spring 23
+else if(runnum>=18305 && runnum<=19131) RG="RGD" // fall 23
 else System.err.println "WARNING: unknown run group; using default run-group-dependent settings (see monitorRead.groovy)"
 println "rungroup = $RG"
-
-// beam energy
-// - hard-coded; could instead get from RCDB, but sometimes it is incorrect
-def EBEAM = 10.6041 // RGA default
-if(RG=="RGA") {
-  if(runnum>=3031 && runnum<=3120) EBEAM = 6.42313 // spring 18
-  else if(runnum>=3129 && runnum<=3818) EBEAM = 10.594 // spring 18
-  else if(runnum>=3819 && runnum<=3861) EBEAM = 6.42313 // spring 18
-  else if(runnum>=3862 && runnum<=4325) EBEAM = 10.594 // spring 18
-  else if(runnum>=5032 && runnum<=5666) EBEAM = 10.6041 // fall 18
-  else if(runnum>=6616 && runnum<=6783) EBEAM = 10.1998 // spring 19
-  else System.err.println "ERROR: unknown beam energy"
-}
-else if(RG=="RGB") {
-  if(runnum>=6120 && runnum<=6399) EBEAM = 10.5986 // spring
-  else if(runnum>=6409 && runnum<=6604) EBEAM = 10.1998 // spring
-  else if(runnum>=11093 && runnum<=11283) EBEAM = 10.4096 // fall
-  else if(runnum>=11284 && runnum<=11300) EBEAM = 4.17179 // fall BAND_FT
-  else if(runnum>=11323 && runnum<=11571) EBEAM = 10.3894 // winter (RCDB may still be incorrect)
-  else System.err.println "ERROR: unknown beam energy"
-}
-else if(RG=="RGC") {
-  if(runnum>=16042 && runnum<=16078) EBEAM = 2.21
-  else if(runnum>=16079 && runnum<=16786) EBEAM = 10.55
-  else if(runnum>=16843 && runnum<=17408) EBEAM = 10.55
-  else System.err.println "ERROR: unknown beam energy"
-}
-else if(RG=="RGK") {
-  if(runnum>=5674 && runnum<=5870) EBEAM = 7.546
-  else if(runnum>=5875 && runnum<=6000) EBEAM = 6.535
-  else System.err.println "ERROR: unknown beam energy"
-}
-else if(RG=="RGF") {
-  if     (runnum>=12210 && runnum<=12388) EBEAM = 10.389 // RCDB may still be incorrect
-  else if(runnum>=12389 && runnum<=12443) EBEAM =  2.186 // RCDB may still be incorrect
-  else if(runnum>=12444 && runnum<=12951) EBEAM = 10.389 // RCDB may still be incorrect
-  else System.err.println "ERROR: unknown beam energy"
-}
-else if(RG=="RGM") {
-  if     (runnum>=15013 && runnum<=15490) EBEAM = 5.98636
-  else if(runnum>=15533 && runnum<=15727) EBEAM = 2.07052
-  else if(runnum>=15728 && runnum<=15784) EBEAM = 4.02962
-  else if(runnum>=15787 && runnum<=15884) EBEAM = 5.98636
-  else System.err.println "ERROR: unknown beam energy"
-}
 
 /* gated FC charge determination: `FCmode`
  * - 0: DAQ-gated FC charge is incorrect
@@ -168,6 +128,9 @@ else if(RG=="RGM") {
  *     but should have been ON, and `FCmode=0` should be used instead
  * - 2: special case
  *   - calculate DAQ-gated FC charge from `REC::Event:beamCharge`
+ *   - useful if `RUN::scaler` is unavailable
+ * - 3: DAQ-gated FC charge and ungated FC charge are both incorrect
+ *   - Read DAQ-gated charge from a CSV file in `clas12-timeline/data/fccharge/<RG>.csv`
  *   - useful if `RUN::scaler` is unavailable
  */
 def FCmode = 1 // default assumes DAQ-gated FC charge can be trusted
@@ -196,10 +159,74 @@ else if(RG=="RGM") {
   }
 }
 */
+if(RG=="RGD") {
+  if(runnum>=18305 && runnum<=19131) {
+    FCmode = 3
+  }
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Set CSV variables for `FCmode==3`
+def csvfilepath   = ""
+def FORMAT        = DEFAULT // Set org.apache.commons.csv.CSVFormat Format
+def csv_header    = ""
+def runnum_colidx = -1
+if (FCmode==3) {
+
+  // Check if CSV file exists
+  def TIMELINESRC = System.getenv("TIMELINESRC")
+  if(TIMELINESRC == null) {
+    System.err.println "ERROR: \$TIMELINESRC is not set"
+    System.exit(100)
+  }
+  csvfilepath = Paths.get(TIMELINESRC, '/data/fccharge/'+RG+'.csv').toAbsolutePath().toString()
+  def csvfile = new File(csvfilepath)
+  if (csvfile.exists()) {
+    System.out.println "INFO: Found CSV file $csvfilepath"
+  } else {
+    System.err.println "ERROR: With FCmode="+FCmode+". CSV file `$csvfilepath` does not exist!"
+    System.exit(100)
+  }
+
+  // Read CSV file column names
+  Paths.get(csvfilepath).withReader { reader ->
+    CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
+    csv_header = csv.getHeaderMap()
+  }
+
+  // Set run number column index assuming it is the first column with "run" in the column header
+  csv_header.each{colname, colidx ->
+    if (colname.contains("run") && runnum_colidx<0) runnum_colidx = colidx
+  }
+}
+
+// Function to read in all data from CSV for a given column and return a map of run numbers to column values
+def setDataFromCSV = { _key ->
+    def _dataFromCSV = [:]
+    Paths.get(csvfilepath).withReader { reader ->
+       CSVParser csv = new CSVParser(reader, FORMAT.withHeader())
+       for (record in csv.iterator()) {
+            runnum_from_record = record.get(runnum_colidx).toInteger()
+            if (record.isSet(_key)) {
+              _dataFromCSV[runnum_from_record] = record.get(_key).toFloat()
+           }
+       }
+    }
+    return _dataFromCSV
+}
+
+// Set data from CSV and define a function to get key values for a given run number
+def dataFromCSV = [:]
+if (FCmode==3) {
+  dataFromCSV["fc"] = setDataFromCSV("charge_ave")
+}
+def getDataFromCSV = { _runnum, _key ->
+    return dataFromCSV[_key][_runnum]
+}
 
 // make outut directories and define output file
 "mkdir -p $outDir".execute()
@@ -254,7 +281,7 @@ def nu
 def x
 def y
 def z
-def vecBeam = new LorentzVector(0, 0, EBEAM, EBEAM)
+def vecBeam = new LorentzVector(0, 0, beamEnergy, beamEnergy)
 def vecTarget = new LorentzVector(0, 0, 0, 0.938)
 def vecEle = new LorentzVector()
 def vecH = new LorentzVector()
@@ -389,7 +416,7 @@ def findParticles = { pid, binNum ->
       // calculate x and y
       nu = vecBeam.e() - vecEle.e()
       x = Q2 / ( 2 * 0.938272 * nu )
-      y = nu / EBEAM
+      y = nu / beamEnergy
 
       // CUT for electron: Q2 cut
       //if(Q2<2.5) return
@@ -483,12 +510,12 @@ defineTimeBins = { // in its own closure, so giant data structures are garbage c
   inHipoList.each { inHipoFile ->
     printDebug "Open HIPO file $inHipoFile"
     def reader = new HipoDataSource()
-    reader.getReader().setTags(1)
+    if (FCmode!=3) reader.getReader().setTags(1) //NOTE: RUN::scaler bank is not used if `FCmode==3`.
     reader.open(inHipoFile)
     while(reader.hasEvent()) {
       hipoEvent = reader.getNextEvent()
       // printDebug "tag1 event bank list: ${hipoEvent.getBankList()}"
-      if(hipoEvent.hasBank("RUN::scaler") && hipoEvent.getBank("RUN::scaler").rows()>0 &&
+      if(((hipoEvent.hasBank("RUN::scaler") && hipoEvent.getBank("RUN::scaler").rows()>0) || FCmode==3) && //NOTE: Do not require tag 1 events to contain RUN::scaler for `FCmode==3`
          hipoEvent.hasBank("RUN::config") && hipoEvent.getBank("RUN::config").rows()>0)
       {
         tag1events << [
@@ -524,6 +551,13 @@ defineTimeBins = { // in its own closure, so giant data structures are garbage c
   timeBinBounds = timeBinBounds + [10**(Math.log10(timeBinBounds[-1]).toInteger()+2)] // two orders of magnitude above largest known event number
   // pair the elements to define the bin boundaries
   timeBinBounds = timeBinBounds.collate(2)
+  // redefine time bins to merge all bins except the first and last if `FCmode==3`
+  if (FCmode==3 && timeBinBounds.size()>3) {
+    newTimeBinBounds = [timeBinBounds[0]]
+    newTimeBinBounds += [[timeBinBounds[0][1],timeBinBounds[-1][0]]]
+    newTimeBinBounds += [timeBinBounds[-1]]
+    timeBinBounds = newTimeBinBounds
+  }
   // define the time bin objects, initializing additional fields
   timeBinBounds.eachWithIndex{ bounds, binNum ->
     timeBins[binNum] = [
@@ -702,13 +736,21 @@ inHipoList.each { inHipoFile ->
       fc = eventBank.getFloat("beamCharge",0)
       setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
     }
+    if(FCmode==3) {
+      // gated charge only from file
+      fc = getDataFromCSV(runnum,"fc")
+      setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
+      // Set ungated charge = gated charge
+      ufc = fc
+      setMinMaxInTimeBin(thisTimeBinNum, "ufcMinMax", ufc)
+    }
 
     // if this event is on a bin boundary, and it has `scalerBank`, update `fcRange` and `ufcRange`
     // FIXME: this will only work for FCmode==1; need to figure out how to handle the others
     def onBinBoundary = false
     if(eventNum == thisTimeBin.eventNumMax) {
       onBinBoundary = true
-      if(scalerBank.rows()>0) { // must have scalerBank, so `fc` and `ufc` are set (we'll check if any `(u)fcRange` values are still "init" later)
+      if(scalerBank.rows()>0 || FCmode==3) { // must have scalerBank, so `fc` and `ufc` are set (we'll check if any `(u)fcRange` values are still "init" later) UNLESS `FCmode==3` in which case thse values are set from a CSV file so the scaler bank is not required.
         // events on the boundary are assigned to earlier bin; this FC charge is that bin's max charge
         thisTimeBin.fcRange[1]   = fc
         thisTimeBin.ufcRange[1]  = ufc
@@ -887,7 +929,7 @@ timeBins.each{ itBinNum, itBin ->
     if(FCmode==0) {
       fcStart = ufcStart * aveLivetime // workaround method
       fcStop  = ufcStop  * aveLivetime // workaround method
-    } else if(FCmode==1 || FCmode==2) {
+    } else if(FCmode==1 || FCmode==2 || FCmode==3) {
       if(!itBin.fcRange.contains("init")) {
         fcStart = itBin.fcRange[0]
         fcStop  = itBin.fcRange[1]

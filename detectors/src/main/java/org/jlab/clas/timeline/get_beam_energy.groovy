@@ -1,3 +1,5 @@
+package org.jlab.clas.timeline
+
 // get beam energy from RCDB
 import org.rcdb.*
 
