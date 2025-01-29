@@ -1,9 +1,17 @@
 version: 2
+
+registries:
+  clas12maven:
+    type: maven-repository
+    url: https://clasweb.jlab.org/clas12maven
+
 updates:
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
       interval: "weekly"
+    registries:
+      - clas12maven
     ignore:
       - dependency-name: "org.apache.commons:commons-csv" # FIXME: `monitorRead.groovy` is not yet compatible with later versions of this dependency
   - package-ecosystem: "github-actions"
