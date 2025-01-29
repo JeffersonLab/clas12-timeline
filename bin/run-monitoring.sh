@@ -430,6 +430,9 @@ echo "RUN $runnum"
 # set classpath
 export JYPATH=$JYPATH
 
+# additional env vars
+export TIMELINESRC=$TIMELINESRC
+
 # produce histograms
 run-groovy \\
   $TIMELINE_GROOVY_OPTS \\

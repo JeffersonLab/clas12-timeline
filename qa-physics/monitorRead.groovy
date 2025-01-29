@@ -13,7 +13,6 @@ import org.jlab.clas.physics.LorentzVector
 import org.jlab.detector.base.DetectorType
 import java.lang.Math.*
 import org.jlab.clas.timeline.util.Tools
-@Grab('org.apache.commons:commons-csv:1.2')
 import org.apache.commons.csv.CSVParser
 import static org.apache.commons.csv.CSVFormat.*
 import java.nio.file.Paths
@@ -224,6 +223,10 @@ if (FCmode==3) {
 
   // Check if CSV file exists
   def TIMELINESRC = System.getenv("TIMELINESRC")
+  if(TIMELINESRC == null) {
+    System.err.println "ERROR: \$TIMELINESRC is not set"
+    System.exit(100)
+  }
   csvfilepath = Paths.get(TIMELINESRC, '/data/fccharge/'+RG+'.csv').toAbsolutePath().toString()
   def csvfile = new File(csvfilepath)
   if (csvfile.exists()) {
