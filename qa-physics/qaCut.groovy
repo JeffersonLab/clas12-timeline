@@ -161,7 +161,7 @@ inList.each { obj ->
       def val = gr.getDataY(i)
       minA = val < minA ? val : minA
       maxA = val > maxA ? val : maxA
-      if (val>0) ratioTree[sector][epoch].add(val) //NOTE: Only fill tree if N/F>0.
+      ratioTree[sector][epoch].add(val)
     }
     //ratioTree[sector][epoch].add(runnum) // useful for testing
   }
