@@ -346,49 +346,38 @@ for rdir in ${rdirs[@]}; do
     fi
     mkdir -p $outputSubDir
 
+    # get beam energy from RCDB
+    echo "Retrieving beam energy from RCDB..."
+    beam_energy=$($TIMELINESRC/bin/get-beam-energy.sh $runnum | tail -n1)
+    # override beam energy, for cases where RCDB is incorrect
+    # - currently only needed for RG-F
+    beam_energy_override=`python -c """
+beamlist = [
+  (11620, 11657, 2.182),
+  (12389, 12443, 2.182),
+  (12444, 12951, 10.389),
+]
+for r0,r1,eb in beamlist:
+  if $runnum>=r0 and $runnum<=r1:
+    print(eb)
+    """`
+    if [ -n "$beam_energy_override" ]; then
+      if [ -n "$beam_energy" ]; then
+        printWarning "overriding RCDB beam energy $beam_energy to be $beam_energy_override, for run $runnum"
+      fi
+      beam_energy=$beam_energy_override
+    fi
+    if [ -z "$beam_energy" ]; then
+      printError "Unknown beam energy for run $runnum, since RCDB query failed and no overriding beam energy was provided"
+      exit 100
+    fi
+    echo "Beam energy = $beam_energy"
+
     # make job scripts for each $key
     jobscript=$slurmDir/scripts/$key.$dataset.$runnum.sh
     case $key in
 
       detectors)
-
-        # hard-coded beam energy values, which may be "more correct" than those in RCDB; if a run
-        # is not found here, RCDB will be used instead
-        # FIXME: use a config file; this violates DRY with qa-physics/monitorRead.groovy
-        beam_energy=`python -c """
-beamlist = [
-  (3861,  5673,  10.6),
-  (5674,  5870,  7.546),
-  (5871,  6000,  6.535),
-  (6608,  6783,  10.199),
-  (11093, 11283, 10.4096),
-  (11284, 11300, 4.17179),
-  (11323, 11571, 10.3894),
-  (11620, 11657, 2.182),
-  (11658, 12283, 10.389),
-  (12389, 12444, 2.182),
-  (12445, 12951, 10.389),
-  (15013, 15490, 5.98636),
-  (15533, 15727, 2.07052),
-  (15728, 15784, 4.02962),
-  (15787, 15884, 5.98636),
-  (16010, 16078, 2.21),
-  (16079, 19130, 10.55),
-]
-for r0,r1,eb in beamlist:
-  if $runnum>=r0 and $runnum<=r1:
-    print(eb)
-      """`
-        if [ -z "$beam_energy" ]; then
-          echo "Retrieving beam energy from RCDB..."
-          beam_energy=$(run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-beam-energy.groovy $runnum | tail -n1)
-        fi
-        if [ -z "$beam_energy" ]; then
-          printError "Unknown beam energy for run $runnum"
-          exit 100
-        fi
-        echo "Beam energy = $beam_energy"
-
         cat > $jobscript << EOF
 #!/usr/bin/env bash
 set -e
@@ -440,7 +429,8 @@ run-groovy \\
     $(realpath $rdir) \\
     $outputSubDir \\
     $monitorReadType \\
-    $runnum
+    $runnum \\
+    $beam_energy
 
 # check output HIPO files
 $TIMELINESRC/bin/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
