@@ -505,7 +505,7 @@ defineTimeBins = { // in its own closure, so giant data structures are garbage c
   inHipoList.each { inHipoFile ->
     printDebug "Open HIPO file $inHipoFile"
     def reader = new HipoDataSource()
-    if (FCmode!=3) reader.getReader().setTags(1) //NOTE: RUN::scaler bank is not used if `FCmode==3`.
+    reader.getReader().setTags(1) //NOTE: RUN::scaler bank is not used if `FCmode==3`, but still assume tag 1 events are present in file.
     reader.open(inHipoFile)
     while(reader.hasEvent()) {
       hipoEvent = reader.getNextEvent()
