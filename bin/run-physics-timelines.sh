@@ -122,6 +122,8 @@ exe run-groovy $TIMELINE_GROOVY_OPTS mergeFTandFD.groovy $qaDir
 exe run-groovy $TIMELINE_GROOVY_OPTS monitorPlot.groovy $qaDir
 # move timelines to output area
 exe ./stageTimelines.sh $qaDir $finalDir
+# trash empty files
+exe run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/qa-physics/removeEmptyFiles.groovy $TIMELINESRC/.trash $finalDir
 
 popd
 

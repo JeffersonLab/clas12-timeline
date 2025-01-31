@@ -43,31 +43,6 @@
           </dependency>
         </dependencies>
       </plugin>
-      <plugin>
-        <!--
-          make sure some dependencies are installed in the local build directory, so they are
-          picked up in the `run-groovy` classpath; use configuration parameter `includeArtifactIds`
-          to copy ONLY the ones we actually need to be copied
-        -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.8.1</version>
-        <executions>
-          <execution>
-            <id>copy-dependencies</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <includeArtifactIds>commons-csv</includeArtifactIds> <!-- need only these deps copied -->
-              <outputDirectory>${project.build.directory}</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
@@ -90,12 +65,6 @@
       <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-dateutil</artifactId>
       <version>4.0.25</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-csv -->
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-csv</artifactId>
-      <version>1.2</version> <!-- FIXME: `monitorRead.groovy` is not yet compatible with later versions of this dependency -->
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.codehaus.gpars/gpars -->
     <dependency>
