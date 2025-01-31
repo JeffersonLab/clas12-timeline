@@ -749,6 +749,10 @@ inHipoList.each { inHipoFile ->
         // events on the boundary are assigned to earlier bin; this FC charge is that bin's max charge
         thisTimeBin.fcRange[1]   = fc
         thisTimeBin.ufcRange[1]  = ufc
+        if (thisTimeBinNum==1 && FCmode==3) { //NOTE: Set middle bin (of 3) minimums for `FCmode==3`
+          thisTimeBin.fcRange[0]   = 0.0
+          thisTimeBin.ufcRange[0]  = 0.0
+        }
         thisTimeBin.timestampMax = timestamp
         // this FC charge is also the next bin's min charge
         def nextTimeBin = timeBins[thisTimeBinNum+1]
