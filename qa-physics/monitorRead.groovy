@@ -752,6 +752,8 @@ inHipoList.each { inHipoFile ->
         if (thisTimeBinNum==1 && FCmode==3) { //NOTE: Set middle bin (of 3) minimums for `FCmode==3`
           thisTimeBin.fcRange[0]   = 0.0
           thisTimeBin.ufcRange[0]  = 0.0
+          thisTimeBin.timestampMin = 0
+          timeBins[0].timestampMax = 0
         }
         thisTimeBin.timestampMax = timestamp
         // this FC charge is also the next bin's min charge
