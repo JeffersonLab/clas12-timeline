@@ -7,6 +7,8 @@
 
 import groovy.io.FileType
 import java.nio.file.Paths
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import org.jlab.groot.data.IDataSet
 import org.jlab.groot.data.H1F
 import org.jlab.groot.data.H2F
@@ -126,10 +128,8 @@ if (verbose) {
 emptyPaths.each { path ->
     def file = new File(path)
     def newpath = Paths.get(trashpath,file.getName()).toString() //TODO: Add check to see if newpath exists
-    def newfile = new File(newpath)
     if (verbose) println "mv $path $newpath"
-    file << newfile
-    file.delete()
+    Files.move(Paths.get(path), Paths.get(newpath), StandardCopyOption.REPLACE_EXISTING)
 }
 
 // Print out information about trashed files
