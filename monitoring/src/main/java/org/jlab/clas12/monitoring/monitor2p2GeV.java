@@ -45,7 +45,7 @@ public class monitor2p2GeV {
      */
     boolean testTriggerSector(int sector) {
         // FIXME:  move to CCDB
-        if (runNum > 18300 && runNum < 19131) {
+        if (runNum > 18300 && runNum <= 19131) {
             // RG-D:   used three different primary electron triggers (0/7/14):
             return testTriggerSector(TriggerWord, sector, 0x4081);
         }
