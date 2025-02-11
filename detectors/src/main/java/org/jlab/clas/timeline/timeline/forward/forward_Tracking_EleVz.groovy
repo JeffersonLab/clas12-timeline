@@ -19,7 +19,12 @@ def processDirectory(dir, run) {
     h1.setTitle("VZ of electrons")
     h1.setTitleX("VZ of electrons (cm)")
 
-    def f1 = ForwardFitter.fit(h1)
+    def f1
+    if(run >= 18305 && run <= 19131) {
+      f1 = ForwardFitter.fitBimodal(h1)
+    } else {
+      f1 = ForwardFitter.fit(h1)
+    }
 
     funclist.add(f1)
     meanlist.add(f1.getParameter(1))
