@@ -801,7 +801,8 @@ inHipoList.each { inHipoFile ->
       default: helDefined = false; helicity = 0; break
     }
     // get scaler helicity from `HEL::scaler`, and fill its charge-weighted distribution
-    if(hipoEvent.hasBank("HEL::scaler")) {
+    // NOTE: do not do this if FCmode==3 (since FC charge is wrong)
+    if(hipoEvent.hasBank("HEL::scaler") && FCmode!=3) {
       helScalerBank.rows().times{ row -> // HEL::scaler readouts "pile up", so there are multiple bank rows in an event
         def sc_helicity = helScalerBank.getByte("helicity", row)
         def sc_fc       = helScalerBank.getFloat("fcupgated", row) // helicity-latched FC charge
