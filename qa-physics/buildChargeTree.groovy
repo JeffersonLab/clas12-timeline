@@ -62,6 +62,7 @@ dataFile.eachLine { line ->
   // Use runPrevious and binPrevious to avoid repeating the extraction of the histogram bin contents
   if(runnum!=runPrevious){
     runPrevious = runnum
+    binPrevious = -1
     monFile = new File("${monDir}/monitor_${runnum}.hipo")
     println "Opening $monFile"
     if(!(monFile.exists())) throw new Exception("monitor<run>.hipo not found")
@@ -94,7 +95,7 @@ dataFile.eachLine { line ->
         'livetime':livetime
       ]}
     )
-    helState.eachWithIndex { it, i -> T.addLeaf(chargeTree,[runnum,binnum,'helicity',it],{helicity[i]})}
+    helState.eachWithIndex { it, i -> T.addLeaf(chargeTree,[runnum,binnum,'fcChargeHelicity',it],{helicity[i]})}
     helicity.clear()  // reset the helicity list
   }
   T.addLeaf(chargeTree,[runnum,binnum,'nElec',sector],{nElec})
