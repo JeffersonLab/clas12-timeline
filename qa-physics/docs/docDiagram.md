@@ -46,6 +46,11 @@ flowchart TB
       datasetOrganize --> outmonFiles
       datasetOrganize --> outdatFiles
 
+      buildCT[buildChargeTree.groovy]:::auto
+      chargeTree([$qa_dir/outdat/chargeTree.json]):::json
+      outmonFiles --> buildCT
+      outdatFiles --> buildCT
+
       qaPlot[qaPlot.groovy]:::auto
       outdatFiles --> mkTree[mkTree.sh<br />readTree.C]:::manual
       mkTree --> createEpochs[create or edit<br>epochs/epochs.$dataset.txt]:::manual
@@ -73,13 +78,9 @@ flowchart TB
       monitorPlot --> qaTree
       monitorPlot --> timelineFiles
 
-      buildCT[buildChargeTree.groovy]:::auto
-      chargeTree([$qa_dir/outdat/chargeTree.json]):::json
       stage0[stageTimelines.sh]:::auto
-      outdatFiles --> buildCT
       buildCT --> chargeTree
       timelineFiles --> stage0
-      outmonFiles --> buildCT
     end
 
     subgraph "Manual QA, in QA subdirectory"
