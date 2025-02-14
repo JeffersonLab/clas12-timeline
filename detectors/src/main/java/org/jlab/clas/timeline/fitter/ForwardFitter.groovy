@@ -32,7 +32,6 @@ static F1D fitBimodal(H1F h1) {
 		double hRMS1 = f1.getParameter(2).abs()
 		double hMean2 = f1.getParameter(3)
 		double hRMS2 = f1.getParameter(4).abs()
-		println "1/ hMean1: $hMean1, hRMS1: $hRMS1, hMean2: $hMean2, hRMS1: $hRMS2, $f1"
 
 		def makefit = {func->
 			hMean1 = func.getParameter(1)
