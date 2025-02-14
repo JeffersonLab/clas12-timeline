@@ -19,8 +19,8 @@ public class HTCC {
     public int runNumber;
     public String outputDir;
     int ring, sector, hs;
-    List<H1F> hiNphePMTOneHit = new ArrayList();
-    List<H1F> hiTimePMTOneHit = new ArrayList();
+    List<H1F> hiNphePMTOneHit = new ArrayList<H1F>();
+    List<H1F> hiTimePMTOneHit = new ArrayList<H1F>();
     H1F timeAll;
     H1F npheAll;
     static int nBinsTime = 300;
@@ -123,7 +123,7 @@ public class HTCC {
     }
 
     public void plot() {
-        List<F1D> timeIndPMT = new ArrayList();
+        List<F1D> timeIndPMT = new ArrayList<F1D>();
         for (int t = 0; t < 48; t++) {
             timeIndPMT.add(new F1D("timeIndPMT" + t, "[amp]*gaus(x,[mean],[sigma])", lowTime, highTime));
             timeIndPMT.get(t).setParameter(0, 500);
