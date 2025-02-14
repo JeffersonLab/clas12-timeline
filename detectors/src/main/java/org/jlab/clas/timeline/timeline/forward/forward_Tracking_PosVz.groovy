@@ -20,11 +20,15 @@ def processDirectory(dir, run) {
 
     def f1
     if(run >= 18305 && run <= 19131) {
-      f1 = ForwardFitter.fitBimodal(h1)
+      if ((run == 18580) || (18305 <= run && run <= 18336) ||  (18396 <= run && run <= 18399) || (18406 <= run && run <= 18439) || (18644 <= run && run <= 18656) || (18764 <= run && run <= 18790) || (18851 <= run && run <= 18873) || (18977 <= run && run <= 19060)) {
+        f1 = ForwardFitter.fit(h1)
+      }
+      else {
+        f1 = ForwardFitter.fitBimodal(h1)
+      }
     } else {
       f1 = ForwardFitter.fit(h1)
     }
-
     funclist.add(f1)
     meanlist.add(f1.getParameter(1))
     sigmalist.add(f1.getParameter(2).abs())
