@@ -4,6 +4,9 @@
 printError()   { echo -e "\e[1;31m[ERROR]: $* \e[0m"   >&2; }
 printWarning() { echo -e "\e[1;35m[WARNING]: $* \e[0m" >&2; }
 
+# enable/disable verbose logger
+log_config=logging # set to 'logging' for quiet, or to 'debug' for verbose
+
 # get the working directory
 [ -z "${BASH_SOURCE[0]}" ] && thisEnv=$0 || thisEnv=${BASH_SOURCE[0]}
 export TIMELINESRC=$(realpath $(dirname $thisEnv)/..)
@@ -38,7 +41,7 @@ groovy_classpath=(
 # java and groovy options
 timeline_java_opts=(
   -DCLAS12DIR=$COATJAVA/
-  -Djava.util.logging.config.file=$COATJAVA/etc/logging/debug.properties
+  -Djava.util.logging.config.file=$COATJAVA/etc/logging/$log_config.properties
   -Xmx1024m
   -XX:+UseSerialGC
 )
@@ -47,7 +50,7 @@ timeline_groovy_opts=(
 )
 
 # run java with more resources, to mitigate large memory residence for long run periods
-timeline_java_opts_highmem=$(echo ${timeline_java_opts[*]} | sed 's;Xmx.*m;Xmx2048m;')
+timeline_java_opts_highmem=$(echo ${timeline_java_opts[*]} | sed 's;Xmx1024m;Xmx2048m;')
 
 # exports
 export CLASSPATH="$(echo "${java_classpath[*]}" | sed 's; ;:;g')${CLASSPATH:+:${CLASSPATH}}"
@@ -55,3 +58,12 @@ export JYPATH="$(echo "${groovy_classpath[*]}" | sed 's; ;:;g')${JYPATH:+:${JYPA
 export TIMELINE_JAVA_OPTS="${timeline_java_opts[*]}"
 export TIMELINE_GROOVY_OPTS="${timeline_groovy_opts[*]}"
 export TIMELINE_JAVA_OPTS_HIGHMEM=$timeline_java_opts_highmem
+
+# cleanup vars
+unset thisEnv
+unset log_config
+unset java_classpath
+unset groovy_classpath
+unset timeline_java_opts
+unset timeline_groovy_opts
+unset timeline_java_opts_highmem

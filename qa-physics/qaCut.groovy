@@ -2,6 +2,7 @@ import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.groot.data.H1F
 import org.jlab.groot.math.F1D
+import groovy.yaml.YamlSlurper
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 import org.jlab.clas.timeline.util.Tools
@@ -28,23 +29,23 @@ def sec = { int i -> i+1 }
 // subroutine to write JSON
 def jPrint = { name,object -> new File(name).write(JsonOutput.toJson(object)) }
 
-// read cutDefs json file into a tree
-def cutDefsFile = new File("cutdefs/${dataset}.json")
+// read cutDefs yaml file into a tree
+def cutDefsFile = new File("cutdefs/${dataset}.yaml")
 if(!(cutDefsFile.exists())) {
-  System.err.println "WARNING: using cutdefs/default.json"
-  cutDefsFile = new File("cutdefs/default.json")
+  System.err.println "WARNING: using cutdefs/default.yaml"
+  cutDefsFile = new File("cutdefs/default.yaml")
 }
-cutDefsSlurper = new JsonSlurper()
+cutDefsSlurper = new YamlSlurper()
 cutDefsTree = cutDefsSlurper.parse(cutDefsFile)
 // return the cutDef for a given tree path
-def cutDef = { path ->
+def cutDef = { path, required=true ->
   def val
   try { val = T.getLeaf(cutDefsTree, path) }
   catch(Exception e) {
     System.err.println("ERROR: missing cut definition in cutdefs file: [${path.join(',')}]")
     System.exit(100)
   }
-  if(val == null) {
+  if(val == null && required) {
     System.err.println("ERROR: missing cut definition in cutdefs file: [${path.join(',')}]")
     System.exit(100)
   }
@@ -189,14 +190,32 @@ System.out.println "N/F outliers will be determined with ${cutFactor} x IQR meth
 sectors.each { s ->
   sectorIt = sec(s)
   if( !useFT || (useFT && sectorIt==1)) {
-    ratioTree[sectorIt].each { epochIt,ratioList ->
+    ratioTree[sectorIt].each { epochIt, ratioList ->
 
-      def mq = listMedian(ratioList, "epoch ${epochIt} ratioList") // middle quartile
-      def lq = listMedian(ratioList.findAll{it<mq}, "epoch ${epochIt} ratioList < median") // lower quartile
-      def uq = listMedian(ratioList.findAll{it>mq}, "epoch ${epochIt} ratioList > median") // upper quartile
+      // filter out zero/negative N/F
+      def ratioListForIQR = ratioList.findAll{it>0}
+
+      // if the cutDef file says to "recalculate" the IQR, do so; this is used when there are too many outliers
+      // for the IQR method to be robust
+      if(cutDef(["RecalculateIQR"], false) != null) {
+        cutDef(["RecalculateIQR"]).each { recalcIt ->
+          def whichDet = useFT ? "FT" : "FD"
+          if(recalcIt['detector'] == whichDet && recalcIt['epoch'] == epochIt && recalcIt['sectors'].contains(sectorIt)) {
+            def recalcRange = recalcIt['within_range']
+            System.err.println "WARNING: recalculating IQR for epoch ${epochIt} sector ${sectorIt}, as specified in cutdef file"
+            ratioListForIQR = ratioList.findAll{ it >= recalcRange[0] && it <= recalcRange[1] }
+          }
+        }
+      }
+
+      def mq = listMedian(ratioListForIQR, "epoch ${epochIt} ratioListForIQR") // middle quartile
+      def lq = listMedian(ratioListForIQR.findAll{it<mq}, "epoch ${epochIt} ratioListForIQR < median") // lower quartile
+      def uq = listMedian(ratioListForIQR.findAll{it>mq}, "epoch ${epochIt} ratioListForIQR > median") // upper quartile
       def iqr = uq - lq // interquartile range
       def cutLo = lq - cutFactor * iqr // lower QA cut boundary
       def cutHi = uq + cutFactor * iqr // upper QA cut boundary
+
+      System.out.println "QA CUTS: epoch ${epochIt} sector ${sectorIt}   $cutLo  $cutHi"
 
       cutTree[sectorIt][epochIt]['mq'] = mq
       cutTree[sectorIt][epochIt]['lq'] = lq

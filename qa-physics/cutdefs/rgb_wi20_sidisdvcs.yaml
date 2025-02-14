@@ -1,0 +1,19 @@
+OutlierFD:
+  IQR_cut_factor: 4.0
+OutlierFT:
+  IQR_cut_factor: 4.0
+LowLiveTime:
+  min_live_time: 0.9
+ChargeHigh:
+  IQR_cut_factor: 4.0
+PossiblyNoBeam:
+  max_num_events: 200000
+  max_num_electrons: 100
+  max_FC_charge: 300
+
+# Epoch 1 varies quite a bit
+RecalculateIQR:
+  - epoch: 1
+    sectors: [ 1, 2, 3, 4, 5, 6 ]
+    detector: FD
+    within_range: [ 2, 10 ]

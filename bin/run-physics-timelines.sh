@@ -93,7 +93,8 @@ function exe {
   $* 2> >(tee $logTmp >&2)
   mv $logTmp{,.bak}
   cat $logTmp.bak |\
-    { grep -v '^Picked up _JAVA_OPTIONS:' || test $? = 1; } \
+    { grep -v '^Picked up _JAVA_OPTIONS:' || test $? = 1; } |\
+    { grep -v 'VariableMetricBuilder: no improvement' || test $? = 1; } \
     > $logTmp
   rm $logTmp.bak
   if [ -s $logTmp ]; then
@@ -122,6 +123,8 @@ exe run-groovy $TIMELINE_GROOVY_OPTS mergeFTandFD.groovy $qaDir
 exe run-groovy $TIMELINE_GROOVY_OPTS monitorPlot.groovy $qaDir
 # move timelines to output area
 exe ./stageTimelines.sh $qaDir $finalDir
+# trash empty files
+exe run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/qa-physics/removeEmptyFiles.groovy $outputDir/trash $finalDir
 
 popd
 
