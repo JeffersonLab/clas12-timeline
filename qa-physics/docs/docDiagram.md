@@ -79,6 +79,7 @@ flowchart TB
       outdatFiles --> buildCT
       buildCT --> chargeTree
       timelineFiles --> stage0
+      outmonFiles --> buildCT
     end
 
     subgraph "Manual QA, in QA subdirectory"
