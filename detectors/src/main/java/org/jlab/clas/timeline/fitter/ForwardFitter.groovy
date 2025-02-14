@@ -40,7 +40,6 @@ static F1D fitBimodal(H1F h1) {
 			hRMS2 = func.getParameter(5).abs()
 			func.setRange(-9, 0)
 			MoreFitter.fit(func,h1,"Q")
-			println "hMean1: $hMean1, hRMS1: $hRMS1, hMean2: $hMean2, hRMS1: $hRMS2, $f1"
 
 			return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
 		}
