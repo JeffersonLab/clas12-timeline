@@ -85,7 +85,7 @@ dataFile.eachLine { line ->
 
   // fill tree
   if(sector==1) {
-    println "add $runnum $binnum"
+    // println "add $runnum $binnum"
     T.addLeaf(chargeTree,[runnum,binnum],
       {[
         'fcChargeMin':fcStart,
