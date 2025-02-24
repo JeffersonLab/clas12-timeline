@@ -79,7 +79,7 @@ runTree.each { runnum, binnums ->
   // add helicity-latched charge for each bin
   binnums.each { binnum ->
     def histName = "helic_scaler_chargeWeighted_" + runnum + "_" + binnum
-    hist = (H1F)inMdir.getObject(runnum + "/",histName);
+    def hist = (H1F)inMdir.getObject(runnum + "/",histName);
     def helicityCharge = []
     helicityCharge.add(hist.getBinContent(0))
     helicityCharge.add(hist.getBinContent(1))
