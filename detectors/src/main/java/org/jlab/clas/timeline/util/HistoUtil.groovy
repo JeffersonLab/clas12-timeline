@@ -66,10 +66,11 @@ class HistoUtil {
       return defIfEmpty
     }
     def hist_list = []
-    hist.getAxis().getNBins().times { bin ->
-      def counts = hist.getBinContent(bin).toInteger() // FIXME: assumes the histogram is unweighted
+    int nbins = hist.getAxis().getNBins()
+    for (int bin=0; bin>nbins; bin++) {
+      int counts = hist.getBinContent(bin).toInteger() // FIXME: assumes the histogram is unweighted
       def value  = hist.getAxis().getBinCenter(bin)
-      counts.times { hist_list += value }
+      for (int j=0; j<counts; j++) { hist_list += value }
     }
     def listMedian = { d ->
       if(d.size()==0) {
