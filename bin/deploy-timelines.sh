@@ -64,6 +64,9 @@ usage() {
                          available choices:
 $(find $TIMELINESRC/data/metadata -name "*.json" -exec basename {} .json \; | sed 's;^;                           ;')
 
+  -n [NOTE]              add a note that will be shown on the clas12mon webpage
+                         (i.e., the README file); surround your note in quotes
+
   -h                     print this usage guide
   """ >&2
 }
@@ -77,9 +80,10 @@ dryRun=false
 customTarget=false
 subDir=""
 metadataFile=""
+readmeNote=""
 inputDir=""
 helpMode=false
-while getopts "d:i:Ut:Dcs:m:h-:" opt; do
+while getopts "d:i:Ut:Dcs:m:n:h-:" opt; do
   case $opt in
     d) inputCmdOpts+=" -d $OPTARG" ;;
     i) inputCmdOpts+=" -i $OPTARG" ;;
@@ -89,6 +93,7 @@ while getopts "d:i:Ut:Dcs:m:h-:" opt; do
     c) customTarget=true ;;
     s) subDir=$OPTARG ;;
     m) metadataFile=$OPTARG ;;
+    n) readmeNote=$OPTARG ;;
     h) helpMode=true ;;
     -)
       [ "$OPTARG" != "help" ] && printError "unknown option --$OPTARG"
@@ -120,6 +125,9 @@ if [ -n "$metadataFile" ]; then
   fi
 fi
 
+# print the README note, if set
+[ -n "$readmeNote" ] && echo "using the note: '$readmeNote'"
+
 # specify target directory
 [ -z "$subDir" ] && subDir=$dataset
 if ${customTarget}; then
@@ -136,6 +144,8 @@ DEPLOYMENT PLAN: copy [SOURCE]/* [DESTINATION]/*
   [SOURCE]:      $inputDir
 
   [DESTINATION]: $targetDir
+
+  [NOTE]:        '$readmeNote'
 
   WARNING: [DESTINATION] will be REMOVED before deploying!
 -----------------------------------------------------------
@@ -158,6 +168,7 @@ rm    -rv $targetDir
 mkdir -pv $targetDir
 cp -rv $inputDir/* $targetDir/
 [ -n "$metadataFile" ] && cp -v $metadataFile $targetDir/metadata.json
+[ -n "$readmeNote" ] && echo "$readmeNote" > $targetDir/README
 run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/index-webpage.groovy $targetDir
 echo "DONE."
 

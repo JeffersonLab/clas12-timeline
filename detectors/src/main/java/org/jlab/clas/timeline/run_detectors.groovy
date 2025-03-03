@@ -35,7 +35,6 @@ def engines = [
     new cvt.cvt_d0_mean_pos(),
     new cvt.cvt_d0_sigma_pos(),
     new cvt.cvt_d0_max_pos(),
-    new cvt.cvt_efficiency(),
     new trigger.rat_Km_num(),
     new trigger.rat_neg_num(),
     new trigger.rat_pos_num(),
