@@ -67,7 +67,7 @@ class HistoUtil {
     }
     def hist_list = []
     int nbins = hist.getAxis().getNBins()
-    for (int bin=0; bin>nbins; bin++) {
+    for (int bin=0; bin<nbins; bin++) {
       int counts = hist.getBinContent(bin).toInteger() // FIXME: assumes the histogram is unweighted
       def value  = hist.getAxis().getBinCenter(bin)
       for (int j=0; j<counts; j++) { hist_list += value }
