@@ -69,7 +69,7 @@ class HistoUtil {
     def cum_counts_list = []
     int sum = 0
     int nbins = hist.getAxis().getNBins()
-    for (int bin=0; bin<nbins; bin++) {
+    nbins.times { bin ->
       int counts = hist.getBinContent(bin).toInteger() // FIXME: assumes the histogram is unweighted
       def value  = hist.getAxis().getBinCenter(bin)
       bins_list += value
