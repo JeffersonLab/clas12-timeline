@@ -63,6 +63,7 @@ usage() {
 
     --run-slurm         run timelines on SLURM instead of running multi-threaded locally
     --organize-only     only organize timelines assuming they have already been run with --run-slurm
+                        if not used, all files from output directories will be removed
 
     *** EXECUTION CONTROL OPTIONS: choose only one, or the default will generate a
          Slurm job description and print out the suggested \`sbatch\` command
@@ -202,13 +203,13 @@ detDirs=(
   trigger
 )
 
-# cleanup output directories
-if ${modes['focus-all']} || ${modes['focus-timelines']}; then
+# cleanup output directories IF you are not just organizing files after running on SLURM
+if (${modes['focus-all']} || ${modes['focus-timelines']}) && ! ${modes['organize-only']}; then
   if [ -d $finalDirPreQA ]; then
     rm -rv $finalDirPreQA
   fi
 fi
-if [ -d $logDir ]; then
+if [ -d $logDir ] && ! ${modes['organize-only']}; then
   for fail in $(find $logDir -name "*.fail"); do
     rm $fail
   done
