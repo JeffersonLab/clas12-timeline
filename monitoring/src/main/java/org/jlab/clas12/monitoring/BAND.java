@@ -230,59 +230,6 @@ public class BAND{
     System.out.println(String.format("saved "+outputDir+"/BAND.png"));
 
   }
-  public static void main(String[] args) {
-    System.setProperty("java.awt.headless", "true");
-    GStyle.setPalette("kRainBow");
-    int count = 0;
-    int runNum = 0;
-    boolean useTB = true;
-    String filelist = "list_of_files.txt";
-    if(args.length>0)runNum=Integer.parseInt(args[0]);
-    if(args.length>1)filelist = args[1];
-    int maxevents = 20000000;
-    if(args.length>2)maxevents=Integer.parseInt(args[2]);
-    float Eb =6.42f;//10.6f;
-    if(args.length>3)Eb=Float.parseFloat(args[3]);
-    if(args.length>4)if(Integer.parseInt(args[4])==0)useTB=false;
-    String outputDir = runNum > 0 ? "plots"+runNum : "plots";
-    BAND ana = new BAND(runNum,outputDir,Eb,useTB);
-    List<String> toProcessFileNames = new ArrayList<String>();
-    File file = new File(filelist);
-    Scanner read;
-    try {
-      read = new Scanner(file);
-      do {
-        String filename = read.next();
-        toProcessFileNames.add(filename);
-
-      }while (read.hasNext());
-      read.close();
-    }catch(IOException e){
-      e.printStackTrace();
-      System.exit(100);
-    }
-    int progresscount=0;int filetot = toProcessFileNames.size();
-    for (String runstrg : toProcessFileNames) if( count<maxevents ){
-      progresscount++;
-      System.out.println(String.format(">>>>>>>>>>>>>>>> %s",runstrg));
-      File varTmpDir = new File(runstrg);
-      if(!varTmpDir.exists()){System.out.println("FILE DOES NOT EXIST");continue;}
-      System.out.println("READING NOW "+runstrg);
-      HipoDataSource reader = new HipoDataSource();
-      reader.open(runstrg);
-      int filecount = 0;
-      while(reader.hasEvent()&& count<maxevents ) {
-        DataEvent event = reader.getNextEvent();
-        ana.processEvent(event);
-        filecount++;count++;
-        if(count%10000 == 0) System.out.println(count/1000 + "k events (this is BAND analysis on "+runstrg+") ; progress : "+progresscount+"/"+filetot);
-      }
-      reader.close();
-    }
-    System.out.println("Total : " + count + " events");
-    ana.plot();
-    ana.write();
-  }
 
   public void write() {
     TDirectory dirout = new TDirectory();

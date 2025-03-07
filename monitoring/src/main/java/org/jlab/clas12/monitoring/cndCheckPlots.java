@@ -946,59 +946,5 @@ public class cndCheckPlots {
         else         dirout.writeFile(outputDir+"/out_CND.hipo");
       }
 
-
-      ////////////////////////////////////////////////
-      public static void main(String[] args) {
-        System.setProperty("java.awt.headless", "true");
-        int count = 0;
-        int runNum = 0;
-        boolean useTB=true;
-        String filelist = "list_of_files.txt";
-        if(args.length>0)runNum=Integer.parseInt(args[0]);
-        if(args.length>1)filelist = args[1];
-        if(args.length>2)if(Integer.parseInt(args[2])==0)useTB=false;
-        String outputDir = runNum > 0 ? "plots"+runNum : "plots";
-        cndCheckPlots ana = new cndCheckPlots(runNum,outputDir,useTB);
-        List<String> toProcessFileNames = new ArrayList<String>();
-        File file = new File(filelist);
-        Scanner read;
-        try {
-          read = new Scanner(file);
-          do {
-            String filename = read.next();
-            toProcessFileNames.add(filename);
-
-          } while (read.hasNext());
-          read.close();
-        }catch(IOException e){
-          e.printStackTrace();
-          System.exit(100);
-        }
-        int maxevents = 50000000;
-        if(args.length>2)maxevents=Integer.parseInt(args[2]);
-        int progresscount=0;int filetot = toProcessFileNames.size();
-        for (String runstrg : toProcessFileNames) if(count<maxevents){
-          progresscount++;
-          System.out.println(String.format(">>>>>>>>>>>>>>>> FT %s",runstrg));
-          File varTmpDir = new File(runstrg);
-          if(!varTmpDir.exists()){System.out.println("FILE DOES NOT EXIST");continue;}
-          System.out.println("READING NOW "+runstrg);
-          HipoDataSource reader = new HipoDataSource();
-          reader.open(runstrg);
-          int filecount = 0;
-          while(reader.hasEvent() && count<maxevents) {
-            DataEvent event = reader.getNextEvent();
-            ana.processEvent(event);
-            filecount++;count++;
-            if(count%10000 == 0) System.out.println(count/1000 + "k events (this is CND on "+runstrg+") progress : " + progresscount+"/"+filetot);
-          }
-          reader.close();
-        }
-
-        System.out.println("Total : " + count + " events");
-        ana.fit();
-        ana.plot();
-        ana.write();
-      }
     }
 
