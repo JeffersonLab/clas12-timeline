@@ -3,13 +3,11 @@ package org.jlab.clas12.monitoring;
 import java.util.*;
 import org.jlab.clas.pdg.PhysicsConstants;
 
-import org.jlab.groot.math.*;
 import org.jlab.groot.data.H1F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.data.TDirectory;
-import org.jlab.groot.fitter.DataFitter;
 
 public class HTCC {
 
@@ -117,70 +115,6 @@ public class HTCC {
       nhits = 1;
     }
     return nhits;
-  }
-
-  public void plot() {
-    List<F1D> timeIndPMT = new ArrayList<F1D>();
-    for (int t = 0; t < 48; t++) {
-      timeIndPMT.add(new F1D("timeIndPMT" + t, "[amp]*gaus(x,[mean],[sigma])", lowTime, highTime));
-      timeIndPMT.get(t).setParameter(0, 500);
-      timeIndPMT.get(t).setParameter(1, -0.0);
-      timeIndPMT.get(t).setParameter(2, 0.7);
-      timeIndPMT.get(t).setLineColor(2);
-      timeIndPMT.get(t).setLineWidth(2);
-      timeIndPMT.get(t).setOptStat(1101);
-    }
-
-    EmbeddedCanvas oneHitHTCCOnly = new EmbeddedCanvas();
-    oneHitHTCCOnly.setSize(2400, 600);
-    oneHitHTCCOnly.divide(12, 4);
-
-    oneHitHTCCOnly.setAxisTitleSize(14);
-    oneHitHTCCOnly.setAxisFontSize(14);
-    oneHitHTCCOnly.setTitleSize(14);
-    for (int t = 0; t < 48; t++) {
-      oneHitHTCCOnly.cd(t);
-      oneHitHTCCOnly.draw(hiNphePMTOneHit.get(t));
-    }
-    this.save(oneHitHTCCOnly, "HTCC_nphe");
-
-    for (int t = 0; t < 48; t++) {
-      oneHitHTCCOnly.cd(t);
-      oneHitHTCCOnly.draw(hiTimePMTOneHit.get(t));
-      timeIndPMT.get(t).setParameter(0, hiTimePMTOneHit.get(t).getMax());
-      double maxV = hiTimePMTOneHit.get(t).getMaximumBin();
-      maxV = lowTime + (maxV + 0.5) * (highTime - lowTime) / nBinsTime;
-      timeIndPMT.get(t).setParameter(1, maxV);
-      timeIndPMT.get(t).setParameter(2, 0.6);
-      timeIndPMT.get(t).setRange(maxV - 1, maxV + 1.3);
-      oneHitHTCCOnly.draw(hiTimePMTOneHit.get(t));
-      oneHitHTCCOnly.getPad(t).getAxisX().setRange(maxV - 10, maxV + 10);
-      DataFitter.fit(timeIndPMT.get(t), hiTimePMTOneHit.get(t), "Q");
-      oneHitHTCCOnly.draw(timeIndPMT.get(t), "same");
-    }
-    this.save(oneHitHTCCOnly, "HTCC_timing");
-
-    EmbeddedCanvas allC = new EmbeddedCanvas();
-    allC.setSize(1200, 600);
-    allC.divide(2,1);
-    allC.cd(0);
-    allC.draw(npheAll);
-    allC.setSize(600, 600);
-    allC.cd(1);
-    allC.draw(timeAll);
-
-    F1D timeAllFit = new F1D("timeAllFit", "[amp]*gaus(x,[mean],[sigma])", -1, 1);
-    timeAllFit.setRange(-1, 1);
-    timeAllFit.setParameter(0, 20000);
-    timeAllFit.setParameter(1, 0);
-    timeAllFit.setParameter(2, 1);
-    timeAllFit.setLineColor(2);
-    timeAllFit.setLineWidth(2);
-    timeAllFit.setOptStat("1100");
-    DataFitter.fit(timeAllFit, timeAll, "Q");
-    allC.draw(timeAllFit, "same");
-
-    this.save(allC, "HTCC_e");
   }
 
   public void save(EmbeddedCanvas canvas, String name) {

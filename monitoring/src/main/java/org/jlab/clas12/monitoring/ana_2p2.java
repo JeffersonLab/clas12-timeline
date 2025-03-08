@@ -109,32 +109,20 @@ public class ana_2p2 {
     }
     System.out.println("Total : " + count + " events");
     ana_mon.ratio_to_trigger();
-    //ana_mon.plot();
     ana_mon.write();
-    //ana_cen.plot();
     ana_cen.write();
     ana_tof.analyze();
-    //ana_tof.plot();
     ana_tof.write();
-    //ana_occ.plot();
-    //ana_htc.plot();
     ana_htc.write();
-    //ana_ltc.plot();
     ana_ltc.write();
     ana_cnd.fit();
-    //ana_cnd.plot();
     ana_cnd.write();
     ana_ft.analyze();
-    //ana_ft.plot();
     ana_ft.write();
-    //ana_dst_mon.plot();
     ana_dst_mon.write();
-    //ana_band.plot();
     ana_band.write();
-    //ana_rich.plot();
     ana_rich.postProcess();
     ana_rich.write();
-    //ana_deuteron.plot();
     helicity.write(outputDir, runNum);
     trigger.write(outputDir, runNum);
   }

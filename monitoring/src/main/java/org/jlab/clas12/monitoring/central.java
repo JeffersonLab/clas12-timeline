@@ -7,7 +7,6 @@ import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.clas.physics.Vector3;
 import org.jlab.detector.base.DetectorType;
@@ -384,47 +383,6 @@ public class central {
     if(partBank!=null) e_part_ind = makeElectron(partBank);
     if(event.hasBank("CVTRec::Tracks") && event.hasBank("CTOF::hits") && partBank!=null && trackBank!=null) FillCVTCTOF(event.getBank("CVTRec::Tracks"),event.getBank("CTOF::hits"), partBank, trackBank);
     if(toftdc!=null && tofadc!=null) fillCTOFadctdcHist(tofadc,toftdc);
-  }
-
-
-  public void plot() {
-    EmbeddedCanvas can_central  = new EmbeddedCanvas();
-    can_central.setSize(5000,3000);
-    can_central.divide(5,4);
-    can_central.setAxisTitleSize(30);
-    can_central.setAxisFontSize(30);
-    can_central.setTitleSize(30);
-    can_central.cd(0);can_central.draw(H_CTOF_pos);
-    can_central.cd(1);can_central.draw(H_CVT_CTOF_phi);
-    can_central.cd(2);can_central.draw(H_CVT_CTOF_z);
-    can_central.cd(3);can_central.draw(H_CTOF_path_mom);
-    can_central.cd(4);can_central.draw(H_CTOF_edep_phi);
-    can_central.cd(5);can_central.draw(H_CTOF_edep_z);
-    can_central.cd(6);can_central.draw(H_CTOF_edep_pad_pos);
-    can_central.cd(7);can_central.draw(H_CTOF_edep_pad_neg);
-    can_central.cd(8);can_central.draw(H_CTOF_edep_neg[48]);
-    can_central.cd(9);can_central.draw(H_vz_DC_CVT);
-    can_central.cd(10);can_central.draw(H_phi_DC_CVT);
-    can_central.cd(11);can_central.draw(H_CVT_t_STT);
-    can_central.cd(12);can_central.draw(H_CVT_t_pad);
-
-    can_central.cd(13);can_central.draw(H_CVT_t_pos);
-    can_central.cd(14);can_central.draw(H_CVT_t_neg);
-    can_central.cd(15);can_central.draw(H_CTOF_tdcadc_dt);
-
-    can_central.save(String.format(outputDir+"/central.png"));
-    System.out.println(String.format("saved "+outputDir+"/central.png"));
-
-    for(int p=0;p<10;p++)System.out.print(String.format("%1.2ff , ",H_CVT_t[p].getMean()));
-    System.out.print("\n");
-    for(int p=10;p<20;p++)System.out.print(String.format("%1.2ff , ",H_CVT_t[p].getMean()));
-    System.out.print("\n");
-    for(int p=20;p<30;p++)System.out.print(String.format("%1.2ff , ",H_CVT_t[p].getMean()));
-    System.out.print("\n");
-    for(int p=30;p<40;p++)System.out.print(String.format("%1.2ff , ",H_CVT_t[p].getMean()));
-    System.out.print("\n");
-    for(int p=40;p<49;p++)System.out.print(String.format("%1.2ff , ",H_CVT_t[p].getMean()));
-    System.out.print("\n");
   }
 
   public void write(){

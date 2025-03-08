@@ -4,7 +4,6 @@ import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.clas.physics.Vector3;
 import org.jlab.clas.physics.LorentzVector;
@@ -857,78 +856,6 @@ public class deuterontarget {
         }
       }
     }
-  }
-
-
-  public void plot() {
-
-
-    EmbeddedCanvas can_2pis = new EmbeddedCanvas();
-    can_2pis.setSize(2800,1400);
-    can_2pis.divide(4,3);
-    can_2pis.setAxisTitleSize(24);
-    can_2pis.setAxisFontSize(24);
-    can_2pis.setTitleSize(24);
-    can_2pis.cd(0);can_2pis.draw(H_rho_Q2_xB);
-    can_2pis.cd(1);can_2pis.draw(H_rho_Q2_W);
-    can_2pis.cd(2);can_2pis.draw(H_rho_pip_beta);
-    can_2pis.cd(3);can_2pis.draw(H_rho_pim_beta);
-    can_2pis.cd(4);can_2pis.draw(H_rho_prot);
-    can_2pis.cd(5);can_2pis.draw(H_rho_IM);
-    can_2pis.cd(6);can_2pis.draw(H_rho_MM);
-    can_2pis.cd(7);can_2pis.draw(H_rho_MMD);
-    can_2pis.cd(8);can_2pis.draw(H_rho_deut);
-    can_2pis.cd(9);can_2pis.draw(H_rho_MMMM);
-    can_2pis.save(String.format(outputDir+"/two_pions.png"));
-    System.out.println(String.format("save "+outputDir+"/two_pions.png"));
-
-    EmbeddedCanvas can_e_pin = new EmbeddedCanvas();
-    can_e_pin.setSize(3500,3000);
-    can_e_pin.divide(7,6);
-    can_e_pin.setAxisTitleSize(24);
-    can_e_pin.setAxisFontSize(24);
-    can_e_pin.setTitleSize(24);
-    can_e_pin.cd(0);can_e_pin.draw(H_epin_e_theta_phi);
-    can_e_pin.cd(1);can_e_pin.draw(H_epin_e_theta_mom);
-    can_e_pin.cd(2);can_e_pin.draw(H_epin_e_phi_mom);
-    can_e_pin.cd(3);can_e_pin.draw(H_epin_xB_Q2);
-    can_e_pin.cd(4);can_e_pin.draw(H_epin_e_W_Q2);
-    can_e_pin.cd(5);can_e_pin.draw(H_epin_e_t_phi);
-    can_e_pin.cd(6);can_e_pin.draw(H_pin_Dphi);
-
-    can_e_pin.cd(7);can_e_pin.draw(H_pin_theta_phi);
-    can_e_pin.cd(8);can_e_pin.draw(H_pin_theta_mom);
-    can_e_pin.cd(9);can_e_pin.draw(H_pin_phi_mom);
-    can_e_pin.cd(10);can_e_pin.draw(H_pin_vz_phi);
-    can_e_pin.cd(11);can_e_pin.draw(H_pin_vz_theta);
-    can_e_pin.cd(12);can_e_pin.draw(H_pin_vz_mom);
-    can_e_pin.cd(13);can_e_pin.draw(H_pin_vz_ve_diff_theta);
-
-    can_e_pin.cd(14);can_e_pin.draw(H_pin_vtd_mom);
-    can_e_pin.cd(15);can_e_pin.draw(H_pin_vtd_theta);
-    can_e_pin.cd(16);can_e_pin.draw(H_pin_vtd_phi);
-    can_e_pin.cd(17);can_e_pin.draw(H_pin_vz_ve);
-    can_e_pin.cd(18);can_e_pin.draw(H_pin_vz_ve_diff);
-    can_e_pin.cd(19);can_e_pin.draw(H_pin_vz_ve_diff_mom);
-    can_e_pin.cd(20);can_e_pin.draw(H_pin_vz_ve_diff_phi);
-
-    can_e_pin.cd(21);can_e_pin.draw(H_pin_beta_p);
-    can_e_pin.cd(22);can_e_pin.draw(H_pin_beta2_p);
-    can_e_pin.cd(23);can_e_pin.draw(H_MM_epin);
-    can_e_pin.cd(24);can_e_pin.draw(H_MM_epin_zoom);
-    can_e_pin.cd(25);can_e_pin.draw(H_MM_epin_phi);
-    can_e_pin.cd(26);can_e_pin.draw(H_pin_e_vt);
-    can_e_pin.cd(27);can_e_pin.draw(H_pin_vz_ve_diff_Dphi);
-
-    for(int i=0;i<6;i++){
-      can_e_pin.cd(28+i);can_e_pin.draw(H_MM_epin_Spin[i]);
-    }
-    for(int i=0;i<6;i++){
-      can_e_pin.cd(35+i);can_e_pin.draw(H_MM_epin_Se[i]);
-    }
-
-    can_e_pin.save(String.format(outputDir+"/e_pin.png"));
-    System.out.println(String.format("save "+outputDir+"/e_pin.png"));
   }
 
   public void write() {

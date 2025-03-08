@@ -4,7 +4,6 @@ import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.groot.graphics.EmbeddedCanvas;
 
 public class occupancies {
   public int runNum;
@@ -340,69 +339,5 @@ public class occupancies {
       if(event.hasBank("BMT::adc"))MakeBMT_hits(event.getBank("BMT::adc"));
       if(event.hasBank("BSTRec::Crosses"))MakeBST_crosses(event.getBank("BSTRec::Crosses"));
       if(event.hasBank("BMTRec::Crosses"))MakeBMT_crosses(event.getBank("BMTRec::Crosses"));
-    }
-    public void plot(){
-      EmbeddedCanvas can_BST = new EmbeddedCanvas();
-      can_BST.setSize(1500,1000);
-      can_BST.divide(3,3);
-      can_BST.setAxisTitleSize(24);
-      can_BST.setAxisFontSize(24);
-      can_BST.setTitleSize(24);
-      can_BST.cd(0);can_BST.draw(H_BST_occ_reg1_l1);
-      can_BST.cd(1);can_BST.draw(H_BST_occ_reg2_l1);
-      can_BST.cd(2);can_BST.draw(H_BST_occ_reg3_l1);
-      can_BST.cd(3);can_BST.draw(H_BST_occ_reg1_l2);
-      can_BST.cd(4);can_BST.draw(H_BST_occ_reg2_l2);
-      can_BST.cd(5);can_BST.draw(H_BST_occ_reg3_l2);
-      can_BST.cd(6);can_BST.draw(H_BST_multi);
-      can_BST.save(String.format(outputDir+"/bst_occ.png"));
-      System.out.println(String.format("save "+outputDir+"/bst_occ.png"));
-
-      EmbeddedCanvas can_BMT = new EmbeddedCanvas();
-      can_BMT.setSize(1500,3000);
-      can_BMT.divide(3,7);
-      can_BMT.setAxisTitleSize(24);
-      can_BMT.setAxisFontSize(24);
-      can_BMT.setTitleSize(24);
-      for(int l=0;l<6;l++){
-        for(int s=0;s<3;s++){
-          can_BMT.cd( 3*(5-l) + (2-s) );
-          can_BMT.draw(H_BMT_occ_LS[l][s]);
-        }
-      }
-      can_BMT.cd(18);can_BMT.draw(H_BMT_multi);
-
-      can_BMT.save(String.format(outputDir+"/bmt_occ.png"));
-      System.out.println(String.format("save "+outputDir+"/bmt_occ.png"));
-
-      EmbeddedCanvas can_crosses = new EmbeddedCanvas();
-      can_crosses.setSize(1500,3500);
-      can_crosses.divide(3,7);
-      can_crosses.setAxisTitleSize(24);
-      can_crosses.setAxisFontSize(24);
-      can_crosses.setTitleSize(24);
-      can_crosses.cd(0);can_crosses.draw(H_BMT_R3_phi_z);
-      can_crosses.cd(1);can_crosses.draw(H_BMT_R2_phi_z);
-      can_crosses.cd(2);can_crosses.draw(H_BMT_R1_phi_z);
-      can_crosses.cd(3);can_crosses.draw(H_BST_R3_phi_z);
-      can_crosses.cd(4);can_crosses.draw(H_BST_R2_phi_z);
-      can_crosses.cd(5);can_crosses.draw(H_BST_R1_phi_z);
-      can_crosses.cd(6);can_crosses.draw(H_BST_R1_phi);
-      can_crosses.cd(7);can_crosses.draw(H_BST_R2_phi);
-      can_crosses.cd(8);can_crosses.draw(H_BST_R3_phi);
-      can_crosses.cd(9);can_crosses.draw(H_BMT_R1_phi);
-      can_crosses.cd(10);can_crosses.draw(H_BMT_R2_phi);
-      can_crosses.cd(11);can_crosses.draw(H_BMT_R3_phi);
-      can_crosses.cd(12);can_crosses.draw(H_BST_R1_theta);
-      can_crosses.cd(13);can_crosses.draw(H_BST_R2_theta);
-      can_crosses.cd(14);can_crosses.draw(H_BST_R3_theta);
-      can_crosses.cd(15);can_crosses.draw(H_BMT_R1_theta);
-      can_crosses.cd(16);can_crosses.draw(H_BMT_R2_theta);
-      can_crosses.cd(17);can_crosses.draw(H_BMT_R3_theta);
-      can_crosses.cd(18);can_crosses.draw(H_occ_e_th_ph);
-      can_crosses.cd(19);can_crosses.draw(H_occ_e_th_p);
-      can_crosses.cd(20);can_crosses.draw(H_occ_e_ph_p);
-      can_crosses.save(String.format(outputDir+"/barrel_crosses.png"));
-      System.out.println(String.format("save "+outputDir+"/barrel_crosses.png"));
     }
   }

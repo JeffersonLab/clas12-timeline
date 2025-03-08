@@ -6,7 +6,6 @@ import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
@@ -431,49 +430,6 @@ public class LTCC{
         if (sector == 3 || sector == 5) H_Particle_PiMinus_Mom.fill(mom);
       }
     }
-  }
-
-
-
-  public void plot() {
-    EmbeddedCanvas can_e_LTCC  = new EmbeddedCanvas();
-    can_e_LTCC.setSize(3500,4000);
-    can_e_LTCC.divide(4,7);
-    can_e_LTCC.setAxisTitleSize(18);
-    can_e_LTCC.setAxisFontSize(18);
-    can_e_LTCC.setTitleSize(18);
-    int counter = 0;
-    for(int s=0;s<6;s++){
-      if (s != 0 && s != 3) {
-        can_e_LTCC.cd(counter);can_e_LTCC.draw(H_pion_nphePMT[s]);
-        can_e_LTCC.cd(counter+4);can_e_LTCC.draw(H_e_nphePMT[s]);
-        can_e_LTCC.cd(counter+8);can_e_LTCC.draw(H_LTCC_PMTocc[s]);
-        counter++;
-      }
-    }
-    can_e_LTCC.cd(12);can_e_LTCC.draw(H_pi_nphe0_LTCC_XY);
-    can_e_LTCC.cd(13);can_e_LTCC.draw(H_pi_nphe2_LTCC_XY);
-    can_e_LTCC.cd(14);can_e_LTCC.draw(H_e_nphe0_LTCC_XY);
-    can_e_LTCC.cd(15);can_e_LTCC.draw(H_e_nphe2_LTCC_XY);
-
-    can_e_LTCC.cd(16);can_e_LTCC.draw(H_Particle_PiPlus_Phi);H_Particle_PiPlus_Phi_LTCC.setLineColor(2);can_e_LTCC.draw(H_Particle_PiPlus_Phi_LTCC,"same");
-    //H_Particle_PiPlus_Phi_LTCC.divide(H_Particle_PiPlus_Phi);
-    can_e_LTCC.cd(17);can_e_LTCC.draw(H_Particle_PiPlus_Phi_LTCC);
-    can_e_LTCC.cd(18);can_e_LTCC.draw(H_Particle_PiMinus_Phi);H_Particle_PiMinus_Phi_LTCC.setLineColor(2);can_e_LTCC.draw(H_Particle_PiMinus_Phi_LTCC,"same");
-    //H_Particle_PiMinus_Phi_LTCC.divide(H_Particle_PiMinus_Phi);
-    can_e_LTCC.cd(19);can_e_LTCC.draw(H_Particle_PiMinus_Phi_LTCC);
-    can_e_LTCC.cd(20);can_e_LTCC.draw(H_Particle_PiPlus_Mom);H_Particle_PiPlus_Mom_LTCC.setLineColor(2);can_e_LTCC.draw(H_Particle_PiPlus_Mom_LTCC,"same");
-    //H_Particle_PiPlus_Mom_LTCC.divide(H_Particle_PiPlus_Mom);
-    can_e_LTCC.cd(21);can_e_LTCC.draw(H_Particle_PiPlus_Mom_LTCC);
-    can_e_LTCC.cd(22);can_e_LTCC.draw(H_Particle_PiMinus_Mom);H_Particle_PiMinus_Mom_LTCC.setLineColor(2);can_e_LTCC.draw(H_Particle_PiMinus_Mom_LTCC,"same");
-    //H_Particle_PiMinus_Mom_LTCC.divide(H_Particle_PiMinus_Mom);
-    can_e_LTCC.cd(23);can_e_LTCC.draw(H_Particle_PiMinus_Mom_LTCC);
-    can_e_LTCC.cd(24);can_e_LTCC.draw(H_Particle_PiPlus_nphe_LTCC);
-    can_e_LTCC.cd(25);can_e_LTCC.draw(H_Particle_PiMinus_nphe_LTCC);
-
-    can_e_LTCC.save(String.format(outputDir+"/LTCC.png"));
-    System.out.println(String.format("saved "+outputDir+"/LTCC.png"));
-
   }
 
   public void write() {

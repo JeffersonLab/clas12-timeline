@@ -5,7 +5,6 @@ import java.util.*;
 import org.jlab.groot.data.H1F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
@@ -173,31 +172,6 @@ public class BAND{
         fill_Histograms_Hits(bandlaser,1); //Fill only histograms for BAND laser hits
       }
     }
-  }
-
-  public void plot() {
-    EmbeddedCanvas can_BAND  = new EmbeddedCanvas();
-    can_BAND.setSize(2500,2000);
-    can_BAND.divide(2,2);
-    can_BAND.setAxisTitleSize(24);
-    can_BAND.setAxisFontSize(30);
-    can_BAND.setTitleSize(24);
-
-    H_BAND_adcCor[0].setLineColor(2);
-    H_BAND_meantimeadc[0].setLineColor(2);
-    H_BAND_meantimetdc[0].setLineColor(2);
-    H_BAND_lasertimeadc[0].setLineColor(2);
-    H_BAND_adcCor[1].setLineColor(4);
-    H_BAND_meantimeadc[1].setLineColor(4);
-    H_BAND_meantimetdc[1].setLineColor(4);
-    H_BAND_lasertimeadc[1].setLineColor(4);
-    can_BAND.cd(0);can_BAND.draw(H_BAND_adcCor[0]);can_BAND.draw(H_BAND_adcCor[1],"same");
-    can_BAND.cd(1);can_BAND.draw(H_BAND_meantimeadc[0]);can_BAND.draw(H_BAND_meantimeadc[1],"same");
-    can_BAND.cd(2);can_BAND.draw(H_BAND_meantimetdc[0]);can_BAND.draw(H_BAND_meantimetdc[1],"same");
-    can_BAND.cd(3);can_BAND.draw(H_BAND_lasertimeadc[0]);can_BAND.draw(H_BAND_lasertimeadc[1],"same");
-    can_BAND.save(String.format(outputDir+"/BAND.png"));
-    System.out.println(String.format("saved "+outputDir+"/BAND.png"));
-
   }
 
   public void write() {
