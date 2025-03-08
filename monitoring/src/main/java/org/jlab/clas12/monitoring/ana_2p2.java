@@ -31,20 +31,22 @@ public class ana_2p2 {
     if(args.length>5)if(Integer.parseInt(args[5])==0)useTB=false;
     System.out.println("will process run number "+runNum+" from list "+filelist+" looking for up to "+maxevents+" events, beam energy setting "+EB);
 
-    monitor2p2GeV ana_mon = new monitor2p2GeV(runNum,outputDir,EB,useTB);
-    tof_monitor ana_tof = new tof_monitor(runNum,outputDir,useTB);
-    central ana_cen = new central(runNum,outputDir,useTB);
-    occupancies ana_occ = new occupancies(runNum,outputDir);
-    HTCC ana_htc = new HTCC(runNum,outputDir);
-    LTCC ana_ltc = new LTCC(runNum,outputDir,EB,useTB);
-    RICH ana_rich = new RICH(runNum,outputDir,EB,useTB);
-    cndCheckPlots ana_cnd = new cndCheckPlots(runNum,outputDir,useTB);
-    FT ana_ft = new FT(runNum,outputDir,useTB);
-    dst_mon ana_dst_mon = new dst_mon(runNum,outputDir,EB);
-    BAND ana_band = new BAND(runNum,outputDir,EB,useTB);
-    helicity helicity = new helicity();
-    trigger trigger = new trigger();
-    //deuterontarget ana_deuteron = new deuterontarget(runNum,EB,useTB);
+    //// instantiate monitors
+    monitor2p2GeV  ana_mon      = new monitor2p2GeV(runNum,outputDir,EB,useTB);
+    tof_monitor    ana_tof      = new tof_monitor(runNum,outputDir,useTB);
+    central        ana_cen      = new central(runNum,outputDir,useTB);
+    // occupancies    ana_occ      = new occupancies(runNum,outputDir); // disabled, since no `write` method
+    HTCC           ana_htc      = new HTCC(runNum,outputDir);
+    LTCC           ana_ltc      = new LTCC(runNum,outputDir,EB,useTB);
+    RICH           ana_rich     = new RICH(runNum,outputDir,EB,useTB);
+    cndCheckPlots  ana_cnd      = new cndCheckPlots(runNum,outputDir,useTB);
+    FT             ana_ft       = new FT(runNum,outputDir,useTB);
+    dst_mon        ana_dst_mon  = new dst_mon(runNum,outputDir,EB);
+    BAND           ana_band     = new BAND(runNum,outputDir,EB,useTB);
+    helicity       helicity     = new helicity();
+    trigger        trigger      = new trigger();
+    // deuterontarget ana_deuteron = new deuterontarget(runNum,EB,useTB);
+
     List<String> toProcessFileNames = new ArrayList<String>();
     File file = new File(filelist);
     Scanner read;
@@ -79,10 +81,12 @@ public class ana_2p2 {
       reader.open(runstrg);
       while(reader.hasEvent()&& count<maxevents ) {
         DataEvent event = reader.getNextEvent();
+
+        //// call each monitor's `processEvent`
         ana_mon.processEvent(event);
         ana_cen.processEvent(event);
         ana_tof.processEvent(event);
-        ana_occ.processEvent(event);
+        // ana_occ.processEvent(event);
         ana_htc.processEvent(event);
         ana_ltc.processEvent(event);
         ana_cnd.processEvent(event);
@@ -90,9 +94,10 @@ public class ana_2p2 {
         ana_dst_mon.processEvent(event);
         ana_band.processEvent(event);
         ana_rich.processEvent(event);
-        //ana_deuteron.processEvent(event);
+        // ana_deuteron.processEvent(event);
         helicity.processEvent(event);
         trigger.processEvent(event);
+
         count++;
         if(count%10000 == 0){
           long nowTime = System.currentTimeMillis();
@@ -108,22 +113,20 @@ public class ana_2p2 {
       reader.close();
     }
     System.out.println("Total : " + count + " events");
-    ana_mon.ratio_to_trigger();
+
+    //// call each monitor's `write`
     ana_mon.write();
     ana_cen.write();
-    ana_tof.analyze();
     ana_tof.write();
     ana_htc.write();
     ana_ltc.write();
-    ana_cnd.fit();
     ana_cnd.write();
-    ana_ft.analyze();
     ana_ft.write();
     ana_dst_mon.write();
     ana_band.write();
-    ana_rich.postProcess();
     ana_rich.write();
     helicity.write(outputDir, runNum);
     trigger.write(outputDir, runNum);
+
   }
 }

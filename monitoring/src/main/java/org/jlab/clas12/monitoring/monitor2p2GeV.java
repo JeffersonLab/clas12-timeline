@@ -3810,6 +3810,8 @@ public class monitor2p2GeV {
 
   public void write() {
 
+    ratio_to_trigger();
+
     TDirectory verify = new TDirectory();
     verify.mkdir("/roads");
     verify.cd("/roads");

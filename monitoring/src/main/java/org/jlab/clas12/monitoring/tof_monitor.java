@@ -932,6 +932,7 @@ public class tof_monitor {
         }
 
         public void write() {
+          analyze();
           TDirectory dirout = new TDirectory();
           dirout.mkdir("/tof/");
           dirout.cd("/tof/");

@@ -702,6 +702,7 @@ public class cndCheckPlots {
 
       }
       public void write(){
+        fit();
         TDirectory dirout = new TDirectory();
         dirout.mkdir("/cnd/");
         dirout.cd("/cnd/");

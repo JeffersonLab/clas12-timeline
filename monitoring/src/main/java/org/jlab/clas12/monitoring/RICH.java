@@ -543,6 +543,7 @@ public class RICH{
     }
 
     public void write() {
+      postProcess();
       TDirectory dirout = new TDirectory();
       dirout.mkdir("/RICH/");
       dirout.cd("/RICH/");

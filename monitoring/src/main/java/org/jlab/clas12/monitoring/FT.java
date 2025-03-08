@@ -502,6 +502,7 @@ public class FT {
   }
 
   public void write() {
+    analyze();
     TDirectory dirout = new TDirectory();
     dirout.mkdir("/ft/");
     dirout.cd("/ft/");
