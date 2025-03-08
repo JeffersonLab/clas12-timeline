@@ -16,29 +16,4 @@
 
   <packaging>jar</packaging>
 
-  <build>
-
-    <extensions>
-      <!-- https://mvnrepository.com/artifact/org.apache.maven.wagon/wagon-ssh-external -->
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-ssh-external</artifactId>
-        <version>3.5.3</version>
-      </extension>
-    </extensions>
-
-    <plugins>
-      <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.14.0</version>
-        <configuration>
-          <release>21</release>
-        </configuration>
-      </plugin>
-    </plugins>
-
-  </build>
-
 </project>

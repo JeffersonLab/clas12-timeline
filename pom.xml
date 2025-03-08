@@ -20,6 +20,21 @@
     <release>21</release>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>clas12maven</id>
+      <url>https://clasweb.jlab.org/clas12maven</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <!-- for latest `groovy-eclipse-*` plugins -->
+    <pluginRepository>
+      <id>groovy-plugins-release</id>
+      <url>https://groovy.jfrog.io/artifactory/plugins-release</url>
+    </pluginRepository>
+  </pluginRepositories>
+
   <dependencies>
     <dependency>
       <groupId>org.jlab.coat</groupId>
@@ -27,13 +42,60 @@
       <version>10.0.8-SNAPSHOT</version>
       <type>jar</type>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-all -->
+    <dependency>
+      <groupId>org.apache.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
+      <version>4.0.26</version>
+      <type>pom</type>
+      <exclusions>
+        <exclusion>
+          <artifactId>tools</artifactId>
+          <groupId>com.sun</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-dateutil -->
+    <dependency>
+      <groupId>org.apache.groovy</groupId>
+      <artifactId>groovy-dateutil</artifactId>
+      <version>4.0.26</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.codehaus.gpars/gpars -->
+    <dependency>
+      <groupId>org.codehaus.gpars</groupId>
+      <artifactId>gpars</artifactId>
+      <version>1.2.1</version>
+    </dependency>
   </dependencies>
 
-  <repositories>
-    <repository>
-      <id>clas12maven</id>
-      <url>https://clasweb.jlab.org/clas12maven</url>
-    </repository>
-  </repositories>
+  <build>
+    <plugins>
+      <plugin>
+        <!-- https://github.com/groovy/groovy-eclipse/wiki/Groovy-Eclipse-Maven-plugin -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.14.0</version>
+        <configuration>
+          <release>21</release>
+          <compilerId>groovy-eclipse-compiler</compilerId>
+        </configuration>
+        <dependencies>
+          <!-- https://groovy.jfrog.io/ui/native/plugins-release/org/codehaus/groovy/groovy-eclipse-compiler/ -->
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-compiler</artifactId>
+            <version>3.9.0</version>
+          </dependency>
+          <!-- https://groovy.jfrog.io/ui/native/plugins-release/org/codehaus/groovy/groovy-eclipse-batch/ -->
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-batch</artifactId>
+            <version>4.0.26-01</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
