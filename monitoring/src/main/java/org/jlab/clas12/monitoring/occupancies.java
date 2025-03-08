@@ -1,22 +1,10 @@
 package org.jlab.clas12.monitoring;
-import java.io.*;
-import java.util.*;
 
-import org.jlab.groot.math.*;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.math.F1D;
-import org.jlab.groot.fitter.DataFitter;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.hipo.HipoDataSource;
-import org.jlab.groot.fitter.ParallelSliceFitter;
 import org.jlab.groot.graphics.EmbeddedCanvas;
-import org.jlab.groot.data.GraphErrors;
-import org.jlab.groot.data.TDirectory;
-import org.jlab.clas.physics.Vector3;
-import org.jlab.clas.physics.LorentzVector;
-import org.jlab.groot.base.GStyle;
 
 public class occupancies {
   public int runNum;
@@ -261,16 +249,16 @@ public class occupancies {
         float  x = bank.getFloat("x",k);
         float  y = bank.getFloat("y",k);
         float  z = bank.getFloat("z",k);
-        float ux = bank.getFloat("ux",k);
-        float uy = bank.getFloat("uy",k);
-        float uz = bank.getFloat("uz",k);
+        // float ux = bank.getFloat("ux",k);
+        // float uy = bank.getFloat("uy",k);
+        // float uz = bank.getFloat("uz",k);
         //System.out.println("s="+s+" , r="+r+" , x="+x+" , y="+y+" , z="+z+" , ux="+ux+" , uy="+uy+" , uz="+uz);
         float DelPhi = (float)Math.toDegrees(Math.atan2(y,x)) - elec_ph;
         DelPhi += 180f;
         while(DelPhi>180f)DelPhi-=360f;
         while(DelPhi<-180f)DelPhi+=360f;
         H_BST_sect_rec_occ.fill(s,r);
-        if(true || Math.abs(DelPhi)<180){
+        if(true /*Math.abs(DelPhi)<180*/){
           if(r==1)H_BST_R1_phi_z.fill(z,Math.toDegrees(Math.atan2(y,x)));
           if(r==2)H_BST_R2_phi_z.fill(z,Math.toDegrees(Math.atan2(y,x)));
           if(r==3)H_BST_R3_phi_z.fill(z,Math.toDegrees(Math.atan2(y,x)));
@@ -293,9 +281,9 @@ public class occupancies {
         float  x = bank.getFloat("x",k);
         float  y = bank.getFloat("y",k);
         float  z = bank.getFloat("z",k);
-        float ux = bank.getFloat("ux",k);
-        float uy = bank.getFloat("uy",k);
-        float uz = bank.getFloat("uz",k);
+        // float ux = bank.getFloat("ux",k);
+        // float uy = bank.getFloat("uy",k);
+        // float uz = bank.getFloat("uz",k);
         float DelPhi = (float)Math.toDegrees(Math.atan2(y,x)) - elec_ph;
         DelPhi += 180f;
         while(DelPhi>180f)DelPhi-=360f;
@@ -327,7 +315,6 @@ public class occupancies {
     public void MakeElectron(DataBank bank){
       for(int k = 0; k < bank.rows() && found_elec==0; k++){
         int pid = bank.getInt("pid", k);
-        byte q = bank.getByte("charge", k);
         if( pid == 11 ){
           float px = bank.getFloat("px", k);
           float py = bank.getFloat("py", k);

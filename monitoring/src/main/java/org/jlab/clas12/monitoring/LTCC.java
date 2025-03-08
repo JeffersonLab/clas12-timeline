@@ -1,25 +1,14 @@
 package org.jlab.clas12.monitoring;
 
-import java.io.*;
 import java.util.*;
 
-import org.jlab.groot.math.*;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.math.F1D;
-import org.jlab.groot.fitter.DataFitter;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.hipo.HipoDataSource;
-import org.jlab.groot.fitter.ParallelSliceFitter;
 import org.jlab.groot.graphics.EmbeddedCanvas;
-import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.TDirectory;
-import org.jlab.clas.physics.Vector3;
-import org.jlab.clas.physics.LorentzVector;
-import org.jlab.groot.base.GStyle;
 import org.jlab.utils.groups.IndexedTable;
-import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class LTCC{
@@ -195,12 +184,9 @@ public class LTCC{
   }
 
   public void fill_pion_PMT_Histos(DataEvent event, DataBank bank, DataBank bankrecdet, DataBank bankadc, int id) {
-    int det =0;
     int sector = 0;
     int [] sect;
     float nphe = 0;
-    int phi = -100;
-    int theta = -100;
     int pid = -100;
     int [] countpion;
     int [] counttracks;
@@ -259,12 +245,9 @@ public class LTCC{
   }
 
   public void fill_electron_PMT_Histos(DataEvent event, DataBank bank, DataBank bankrecdet, DataBank bankadc, int id) {
-    int det =0;
     int sector = 0;
     int [] sect;
     float nphe = 0;
-    int phi = -100;
-    int theta = -100;
     int pid = -100;
     int [] countelectron;
     int [] counttracks;
@@ -333,32 +316,21 @@ public class LTCC{
           if(event.getBank("RUN::rf").getInt("id",r)==1)RFtime=event.getBank("RUN::rf").getFloat("time",r) + rfoffset1;
         }    
       }
-      DataBank partBank = null, trackBank = null, trackDetBank = null, ecalBank = null, cherenkovBank = null, scintillBank = null;
-      DataBank trajBank = null, ltccadcBank = null, ltccClusters = null;
+      DataBank partBank = null, cherenkovBank = null;
+      DataBank trajBank = null, ltccadcBank = null;
       if(userTimeBased){
         if(event.hasBank("REC::Particle"))partBank = event.getBank("REC::Particle");
-        if(event.hasBank("REC::Track"))trackBank = event.getBank("REC::Track");
-        if(event.hasBank("TimeBasedTrkg::TBTracks"))trackDetBank = event.getBank("TimeBasedTrkg::TBTracks");
-        if(event.hasBank("REC::Calorimeter")) ecalBank = event.getBank("REC::Calorimeter");
         if(event.hasBank("REC::Cherenkov"))cherenkovBank = event.getBank("REC::Cherenkov");
-        if(event.hasBank("REC::Scintillator"))scintillBank = event.getBank("REC::Scintillator");
         if(event.hasBank("REC::Traj"))trajBank = event.getBank("REC::Traj");
         if(event.hasBank("LTCC::adc"))ltccadcBank = event.getBank("LTCC::adc");
-        if(event.hasBank("LTCC::clusters"))ltccClusters = event.getBank("LTCC::clusters");
       }
       if(!userTimeBased){
         if(event.hasBank("RECHB::Particle"))partBank = event.getBank("RECHB::Particle");
-        if(event.hasBank("RECHB::Track"))trackBank = event.getBank("RECHB::Track");
-        if(event.hasBank("HitBasedTrkg::HBTracks"))trackDetBank = event.getBank("HitBasedTrkg::HBTracks");
-        if(event.hasBank("RECHB::Calorimeter")) ecalBank = event.getBank("RECHB::Calorimeter");
         if(event.hasBank("RECHB::Cherenkov"))cherenkovBank = event.getBank("RECHB::Cherenkov");
-        if(event.hasBank("RECHB::Scintillator"))scintillBank = event.getBank("RECHB::Scintillator");
         if(event.hasBank("RECHB::Traj"))trajBank = event.getBank("RECHB::Traj");
         if(event.hasBank("LTCC::adc"))ltccadcBank = event.getBank("LTCC::adc");
-        if(event.hasBank("LTCC::clusters"))ltccClusters = event.getBank("LTCC::clusters");
       }
 
-      //if (ltccClusters!=null)System.out.println("LTCC Clusters Bank exists");
       if(partBank!=null && cherenkovBank!=null && ltccadcBank!=null){
         fill_pion_PMT_Histos(event,partBank,cherenkovBank,ltccadcBank,211);
         fill_pion_PMT_Histos(event,partBank,cherenkovBank,ltccadcBank,-211);
@@ -378,11 +350,9 @@ public class LTCC{
     for(int i=0;i<part.rows();i++) {
       float nphe = 0;
       int pid = -100;
-      int charge = -100;
       int status = part.getShort("status", i);
       if (status<0) status = -status;
       pid = part.getInt("pid", i);
-      charge = part.getByte("charge", i);
       if ((status>=2000 && status<4000) && isLTCCmatch(ltcc,i) != -1 && (pid == 11 || pid == -11 || pid == 211 || pid == -211)) {
         nphe = ltcc.getFloat("nphe",isLTCCmatch(ltcc,i));
         //System.out.println("Nphe = "+nphe+" Traj nrows = "+trajBank.rows());
@@ -391,7 +361,6 @@ public class LTCC{
             if(trajBank.getInt("detector",r) == 16) {
               float e_LTCC_tX = trajBank.getFloat("x",r);
               float e_LTCC_tY = trajBank.getFloat("y",r);
-              float e_LTCC_tZ = trajBank.getFloat("z",r);
               if ((pid == 211 || pid == -211) && nphe > 0) H_pi_nphe0_LTCC_XY.fill(e_LTCC_tX,e_LTCC_tY);
               if ((pid == 211 || pid == -211) && nphe > 2) H_pi_nphe2_LTCC_XY.fill(e_LTCC_tX,e_LTCC_tY);
               if ((pid == 11 || pid == -11) && nphe > 0) H_e_nphe0_LTCC_XY.fill(e_LTCC_tX,e_LTCC_tY);

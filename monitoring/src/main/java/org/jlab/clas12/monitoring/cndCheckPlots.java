@@ -1,24 +1,16 @@
 package org.jlab.clas12.monitoring;
-import java.io.*;
 import java.util.*;
 
-import org.jlab.groot.math.*;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.math.F1D;
 import org.jlab.groot.fitter.DataFitter;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.hipo.HipoDataSource;
-import org.jlab.groot.fitter.ParallelSliceFitter;
 import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.TDirectory;
-import org.jlab.clas.physics.Vector3;
-import org.jlab.clas.physics.LorentzVector;
-import org.jlab.groot.base.GStyle;
 import org.jlab.utils.groups.IndexedTable;
-import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class cndCheckPlots {
@@ -384,7 +376,6 @@ public class cndCheckPlots {
       Tracks[i]=0;
     }
     float vertexTrigger=PARTbank.getFloat("vz",0);
-    int pidTrigger=PARTbank.getInt("pid",0);
 
 
     for(int iCND=0;iCND<CNDbank.rows();iCND++){
@@ -414,10 +405,9 @@ public class cndCheckPlots {
 
       if(layer>0 && layer<4 && trkID==-1 ){//&& STT>-999){
         float z0 = CVTbank.getFloat("z0", trkID) / 10.0f;
-        boolean cluster=false;
-        boolean sidehit=false;	
+        // boolean sidehit=false;	
 
-        int newHit = InClusters[iCND];	
+        // int newHit = InClusters[iCND];	
         if(InClusters[iCND]==0){
           InClusters[iCND]=1;
         } else {
@@ -429,10 +419,10 @@ public class cndCheckPlots {
               sector==CNDbank.getInt("sector",jCND)){
             InClusters[jCND]=1;
               }
-          if(jCND!=iCND &&
-              ((sector-1)==CNDbank.getInt("sector",jCND) || (sector+1)==CNDbank.getInt("sector",jCND))){
-            sidehit=true;
-              }
+          // if(jCND!=iCND &&
+          //     ((sector-1)==CNDbank.getInt("sector",jCND) || (sector+1)==CNDbank.getInt("sector",jCND))){
+          //   sidehit=true;
+          //     }
 
         }				
         if(/*newHit==0 && !sidehit && sector!=3 && sector!=11 &&sector!=19*/true){
@@ -453,18 +443,18 @@ public class cndCheckPlots {
         float mom = CVTbank.getFloat("p",trkID);
         float vertex = CVTbank.getFloat("z0",trkID);
         int charge = CVTbank.getInt("q",trkID);
-        float beta = mom/(float)Math.sqrt(mom*mom+0.93827f*0.93827f);
+        // float beta = mom/(float)Math.sqrt(mom*mom+0.93827f*0.93827f);
         float betaP = mom/(float)Math.sqrt(mom*mom+0.139f*0.139f);
-        float phase = 4.f*((TimeJitter+1.f)%6.f);
+        // float phase = 4.f*((TimeJitter+1.f)%6.f);
 
 
         float vertexCorrCentral=vertex/29.92f;
         float vertexCorrForward=vertexTrigger/29.92f;
 
-        float vt = time - STT - (path/29.92f/beta);//-(vertex/29.92f);
+        // float vt = time - STT - (path/29.92f/beta);//-(vertex/29.92f);
         float vtP = time - (STT-vertexCorrForward+vertexCorrCentral) - (path/29.92f/betaP);//-(vertex/29.92f);//- vertex/29.92f;
-        float rfp = (float)rfPeriod;
-        float vtPRF = ((time - RF - path/29.92f/betaP)+1000*rfp+(0.5f*rfp))%rfp - 0.5f*rfp;
+        // float rfp = (float)rfPeriod;
+        // float vtPRF = ((time - RF - path/29.92f/betaP)+1000*rfp+(0.5f*rfp))%rfp - 0.5f*rfp;
         float pathTH = CNDbank.getFloat("tlength",iCND);
 
 
@@ -475,7 +465,7 @@ public class cndCheckPlots {
         float timeCVT =(float)(path/29.92f/mom)*(float)Math.sqrt(0.938*0.938f+mom*mom);
         //System.out.println("time "+time+"STT "+STT+" time-STT "+timeC+" betaN "+betaN+"layer "+layer);
         float cvtPhi = (float)Math.toDegrees(Math.atan2(ty,tx));
-        float rf = ((RF - (vt + STT))+2000f+1f)%2f -1f;
+        // float rf = ((RF - (vt + STT))+2000f+1f)%2f -1f;
 
 
         float mass2=mom*mom*(float)((1.f/(betaCND*betaCND))-1.f);
@@ -494,7 +484,7 @@ public class cndCheckPlots {
 
         if(layer==1 && sector==1 && comp==2){H_CND_res[1].fill(vtP);}
         if(layer==1 && sector==4 && comp==1){H_CND_res[2].fill(vtP);}
-        boolean in=false;
+        //boolean in=false;
         //for(int jCND=(iCND+1);jCND<CNDbank.rows();jCND++){
         //	in=(sector==CNDbank.getInt("sector",jCND) && layer==(CNDbank.getInt("layer",jCND)-1));
         //	if(in)System.out.println("problem");
@@ -626,13 +616,13 @@ public class cndCheckPlots {
 
 
               double maxz = H_CND_align[(comp*3)+layer+(sector*6)].getBinContent(H_CND_align[(comp*3)+layer+(sector*6)].getMaximumBin());
-              double maxzp = H_CND_align[(comp*3)+layer+(sector*6)].getMaximumBin();
+              // double maxzp = H_CND_align[(comp*3)+layer+(sector*6)].getMaximumBin();
 
               double maxE = H_CND_alignE[(comp*3)+layer+(sector*6)].getBinContent(H_CND_alignE[(comp*3)+layer+(sector*6)].getMaximumBin());
 
               double maxt = H_CND_alignt[(comp*3)+layer+(sector*6)].getBinContent(H_CND_alignt[(comp*3)+layer+(sector*6)].getMaximumBin());
-              double maxtp = H_CND_alignt[(comp*3)+layer+(sector*6)].getMaximumBin();
-              double tped = H_CND_alignt[(comp*3)+layer+(sector*6)].getBinContent(1);
+              // double maxtp = H_CND_alignt[(comp*3)+layer+(sector*6)].getMaximumBin();
+              // double tped = H_CND_alignt[(comp*3)+layer+(sector*6)].getBinContent(1);
               //System.out.println(maxtp);
 
               fitz[(comp*3)+layer+(sector*6)].setRange(-5,5);

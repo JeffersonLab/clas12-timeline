@@ -1,5 +1,4 @@
 package org.jlab.clas12.monitoring;
-import java.io.*;
 import java.util.*;
 
 import org.jlab.groot.data.H1F;
@@ -7,13 +6,11 @@ import org.jlab.groot.data.H2F;
 import org.jlab.groot.math.F1D;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.hipo.HipoDataSource;
 import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.clas.physics.Vector3;
 import org.jlab.clas.physics.LorentzVector;
-import org.jlab.groot.base.GStyle;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
@@ -69,7 +66,7 @@ public class monitor2p2GeV {
   public float RFtime1, RFtime2, startTime, BCG;
   public long TriggerWord;
   public float STT;
-  public int trig_part_ind, trig_sect, trig_track_ind, trig_HTCC_ring;
+  public int trig_part_ind, trig_sect, trig_track_ind;
   public int trig_muon_sect;
   public float trig_HTCC_theta;
   public int e_part_ind, e_sect, e_track_ind, hasLTCC, ngammas, pip_part_ind, pip_track_ind, pip_sect, pim_part_ind, pim_track_ind, pim_sect, foundCVT, CVTcharge;
@@ -241,7 +238,7 @@ public class monitor2p2GeV {
 
     float tofvt1 = 0;
     float tofvt2 = 300;
-    float rfPeriod = 4.008f;
+    rfPeriod = 4.008f;
     ccdb = new ConstantsManager();
     ccdb.init(Arrays.asList(new String[]{"/daq/tt/fthodo", "/calibration/eb/rf/config", "/calibration/eb/rf/offset"}));
     rfTable = ccdb.getConstants(runNum, "/calibration/eb/rf/config");
@@ -1902,7 +1899,6 @@ public class monitor2p2GeV {
     }
     if(foundelec && nnegatives==1 && npositives==1 && mybeta>0){
       for(int k = 0; k < bank.rows(); k++){
-        int pid = bank.getInt("pid", k);
         byte q = bank.getByte("charge", k);
         float px = bank.getFloat("px", k);
         float py = bank.getFloat("py", k);
@@ -2062,7 +2058,6 @@ public class monitor2p2GeV {
       e_theta = (float)Math.toDegrees(Math.acos(pz/e_mom));
       e_vz = bank.getFloat("vz", k);
       if( pid == 11 && inDC ){
-        float e_ecal_E=0;
         if(userTimeBased && event.hasBank("REC::Calorimeter")){
           DataBank ECALbank = event.getBank("REC::Calorimeter");
           for(int l = 0; l < ECALbank.rows(); l++) {
@@ -2071,7 +2066,6 @@ public class monitor2p2GeV {
                 trig_sect=ECALbank.getByte("sector",l);
               }
             }
-            e_ecal_E += ECALbank.getFloat("energy",l);
           }
         }
         if(!userTimeBased && event.hasBank("RECHB::Calorimeter")){
@@ -2081,24 +2075,6 @@ public class monitor2p2GeV {
               if(ECALbank.getInt("layer",l)==1) {
                 trig_sect=ECALbank.getByte("sector",l);
               }
-            }
-            e_ecal_E += ECALbank.getFloat("energy",l);
-          }
-        }
-        float HTCCnphe = 0;
-        if(userTimeBased && event.hasBank("REC::Cherenkov")){
-          DataBank HTCCbank = event.getBank("REC::Cherenkov");
-          for(int l = 0; l < HTCCbank.rows(); l++){
-            if(HTCCbank.getShort("pindex",l)==k && HTCCbank.getInt("detector",l)==15){
-              HTCCnphe = HTCCbank.getFloat("nphe",l);
-            }
-          }
-        }
-        if(!userTimeBased && event.hasBank("RECHB::Cherenkov")){
-          DataBank HTCCbank = event.getBank("RECHB::Cherenkov");
-          for(int l = 0; l < HTCCbank.rows(); l++){
-            if(HTCCbank.getShort("pindex",l)==k && HTCCbank.getInt("detector",l)==15){
-              HTCCnphe = HTCCbank.getFloat("nphe",l);
             }
           }
         }
@@ -3116,13 +3092,14 @@ public class monitor2p2GeV {
       if(Math.abs(htccphi + 120)<29)sect=5;
       if(Math.abs(htccphi +  60)<29)sect=6;
       trig_HTCC_theta = (float)Math.toDegrees(Math.atan2(Math.sqrt(x*x+y*y),bank.getFloat("z", k)));
-      if(sect>0 && testTriggerSector(sect) && NhitsSect[sect-1]==1){
-        if(trig_HTCC_theta<10)trig_HTCC_ring=1;
-        else if(trig_HTCC_theta>15 && trig_HTCC_theta<17)trig_HTCC_ring=2;
-        else if(trig_HTCC_theta>20 && trig_HTCC_theta<25)trig_HTCC_ring=3;
-        else if(trig_HTCC_theta>25 && trig_HTCC_theta<30)trig_HTCC_ring=4;
-      }
-      if(true || trig_HTCC_ring==4){
+      // int trig_HTCC_ring;
+      // if(sect>0 && testTriggerSector(sect) && NhitsSect[sect-1]==1){
+      //   if(trig_HTCC_theta<10)trig_HTCC_ring=1;
+      //   else if(trig_HTCC_theta>15 && trig_HTCC_theta<17)trig_HTCC_ring=2;
+      //   else if(trig_HTCC_theta>20 && trig_HTCC_theta<25)trig_HTCC_ring=3;
+      //   else if(trig_HTCC_theta>25 && trig_HTCC_theta<30)trig_HTCC_ring=4;
+      // }
+      if(true /*trig_HTCC_ring==4*/){
         if(sect==1 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S1_HTCC_n.fill(nphe);H_trig_S1_HTCC_N.fill(NPHE);H_trig_S1_HTCC_XY.fill(x,y);}
         else if(sect==2 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S2_HTCC_n.fill(nphe);H_trig_S2_HTCC_N.fill(NPHE);H_trig_S2_HTCC_XY.fill(x,y);}
         else if(sect==3 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S3_HTCC_n.fill(nphe);H_trig_S3_HTCC_N.fill(NPHE);H_trig_S3_HTCC_XY.fill(x,y);}
@@ -3455,7 +3432,6 @@ public class monitor2p2GeV {
     if(event.hasBank("RAW::scaler"))readScalers(event.getBank("RAW::scaler"));
     if(eventBank != null)fillEvent(eventBank);
 
-    trig_HTCC_ring=0;
     if(partBank!=null)trig_part_ind = makeTrigElectron(partBank,event);
     if(event.hasBank("HTCC::rec"))fillTrigHTCC(event.getBank("HTCC::rec"),event);
     if(event.hasBank("ECAL::clusters"))fillTrigECAL(event.getBank("ECAL::clusters"));

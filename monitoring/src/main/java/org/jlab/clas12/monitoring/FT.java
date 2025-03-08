@@ -1,6 +1,5 @@
 package org.jlab.clas12.monitoring;
 
-import java.io.*;
 import java.util.*;
 import org.jlab.clas.pdg.PhysicsConstants;
 
@@ -10,10 +9,8 @@ import org.jlab.groot.math.F1D;
 import org.jlab.groot.fitter.DataFitter;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.hipo.HipoDataSource;
 import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.data.TDirectory;
-import org.jlab.groot.base.GStyle;
 import org.jlab.clas.physics.Particle;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.CalibrationConstants;
@@ -241,7 +238,6 @@ public class FT {
       int hodoL = HodoHits.getByte("layer", i);
       int component = HodoHits.getShort("component", i);
       int tile = -1;
-      int chan = InverseTranslationTable.getIntValue("chan", hodoS, hodoL, component);
       int slot = InverseTranslationTable.getIntValue("slot", hodoS, hodoL, component);
       int board = slot - 3; //mezzanine board number = slot-3
       if (slot > 12) {
@@ -384,7 +380,7 @@ public class FT {
           partPi0.copy(partGamma1);
           partPi0.combine(partGamma2, +1);
           double invmass = Math.sqrt(partPi0.mass2());
-          double x = (partGamma1.p() - partGamma2.p()) / (partGamma1.p() + partGamma2.p());
+          // double x = (partGamma1.p() - partGamma2.p()) / (partGamma1.p() + partGamma2.p());
           double angle = Math.toDegrees(Math.acos(partGamma1.cosTheta(partGamma2)));
           if (angle > 2.0) {
             hpi0sum.fill(invmass * 1000);
@@ -398,16 +394,12 @@ public class FT {
 
   public void processEvent(DataEvent event) {
 
-    DataBank recRun = null;
     DataBank recBankEB = null;
     DataBank recEvenEB = null;
     DataBank ftParticles = null;
     DataBank ftCalClusters = null;
     DataBank ftHodoClusters = null;
     DataBank ftHodoHits = null;
-    if (event.hasBank("RUN::config")) {
-      recRun = event.getBank("RUN::config");
-    }
     if (event.hasBank("REC::Particle")) {
       recBankEB = event.getBank("REC::Particle");
     }
@@ -483,7 +475,6 @@ public class FT {
   private void initLandauFitPar(H1F hcharge, F1D fcharge) {
     double hAmp = hcharge.getBinContent(hcharge.getMaximumBin());
     double hMean = hcharge.getAxis().getBinCenter(hcharge.getMaximumBin());
-    double hRMS = hcharge.getRMS(); //ns
     fcharge.setRange(fcharge.getRange().getMin(), hMean * 2.0);
     fcharge.setParameter(0, hAmp);
     if(hAmp!=0) fcharge.setParLimits(0, 0.5 * hAmp, 1.5 * hAmp);

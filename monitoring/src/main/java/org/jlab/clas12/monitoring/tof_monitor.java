@@ -1,28 +1,17 @@
 package org.jlab.clas12.monitoring;
 
-import java.io.*;
 import java.util.*;
 import org.jlab.clas.pdg.PhysicsConstants;
 
-import javax.xml.parsers.DocumentBuilder;
-
-import org.jlab.groot.math.*;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.math.F1D;
 import org.jlab.groot.fitter.DataFitter;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.hipo.HipoDataSource;
-import org.jlab.groot.fitter.ParallelSliceFitter;
 import org.jlab.groot.graphics.EmbeddedCanvas;
-import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.TDirectory;
-import org.jlab.clas.physics.Vector3;
-import org.jlab.clas.physics.LorentzVector;
-import org.jlab.groot.base.GStyle;
 import org.jlab.utils.groups.IndexedTable;
-import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class tof_monitor {
@@ -388,7 +377,6 @@ public class tof_monitor {
       int sl = DCB.getInt("superlayer",r)-1;
       float trkDoca = DCB.getFloat("trkDoca",r);
       float timeResidual = DCB.getFloat("timeResidual",r);
-      float dDoca = DCB.getFloat("dDoca",r);
       float time = DCB.getFloat("time",r);
       int jitter = DCB.getInt("jitter",r);
       double betacutvalue = 0.9;
@@ -503,7 +491,6 @@ public class tof_monitor {
       // 8 Jan 2021, another set of histograms added - does not contain the trigger track (k=0). These histos are used to track 4-ns offsets. In the timeline, only the centroid of the distribution should be included. The calibration monitoring histos are changed to contain the trigger track.
       // 18 Jan 2022, energy/path is now taken from REC::ScintExtras, FTOF::Hits is not used anymore
       for(int k=0;k<part.rows();k++) {
-        byte charge = part.getByte("charge",k);
         int pid = part.getInt("pid",k);
         float px = part.getFloat("px",k);
         float py = part.getFloat("py",k);
@@ -531,21 +518,21 @@ public class tof_monitor {
               float pathlength = sc.getFloat("path",j);
               float timediff = -10.f;
               float flighttime = -10.0f;
-              float vcor = -10.0f;
+              // float vcor = -10.0f;
               // electron's case
               if (pid == 11) {
                 flighttime = pathlength/29.98f;
-                vcor = vz/29.98f;
+                // vcor = vz/29.98f;
               }
               // pi+, pi- case
               else if (pid == 211 || pid == -211) {
                 flighttime = pathlength/(float)(29.98f * mom/Math.sqrt(mom*mom+0.13957f*0.13957f));
-                vcor = vz/(float)(29.98f * mom/Math.sqrt(mom*mom+0.13957f*0.13957f));
+                // vcor = vz/(float)(29.98f * mom/Math.sqrt(mom*mom+0.13957f*0.13957f));
               }
               //proton case
               else if (pid == 2212) {
                 flighttime = pathlength/(float)(29.98f * mom/Math.sqrt(mom*mom+0.93827f*0.93827f));
-                vcor = vz/(float)(29.98f * mom/Math.sqrt(mom*mom+0.93827f*0.93827f));
+                // vcor = vz/(float)(29.98f * mom/Math.sqrt(mom*mom+0.93827f*0.93827f));
               }
               //otherwise skip
               else continue;
@@ -625,43 +612,34 @@ public class tof_monitor {
       ArrayList<Double> CTOF_vtime = new ArrayList<Double>();
 
       int sector = 0;
-      int index_ftof = 0;
-      int index_ctof = 0;
       for(int k=0;k<part.rows();k++) {
-        byte charge = part.getByte("charge",k);
         int pid = part.getInt("pid",k);
-        double px = part.getFloat("px",k);
-        double py = part.getFloat("py",k);
-        double pz = part.getFloat("pz",k);
-        double vz = part.getFloat("vz",k);
-        double vt = part.getFloat("vt",k);
-        double mom = Math.sqrt(px*px+py*py+pz*pz);
-        double theta = Math.toDegrees(Math.acos(pz/mom));
-
-        double reducedchi2 = 10000.f;
-        double energy = -100.f;
-
-        double track_redchi2 = 1000.f;
+        // double px = part.getFloat("px",k);
+        // double py = part.getFloat("py",k);
+        // double pz = part.getFloat("pz",k);
+        // double mom = Math.sqrt(px*px+py*py+pz*pz);
+        // double theta = Math.toDegrees(Math.acos(pz/mom));
+        // double track_redchi2 = 1000.f;
 
         int status = part.getShort("status", k);
         if (status<0) status = -status;
         boolean inDC = (status>=2000 && status<4000);
         boolean inCVT = (status>=4000 && status < 8000);
 
-        for (int j=0;j<trk.rows();j++) {
-          if (trk.getShort("pindex",j)==k) {
-            reducedchi2 = trk.getFloat("chi2",j)/trk.getShort("NDF",j);
-          }
-        }
+        // double reducedchi2 = 10000.f;
+        // for (int j=0;j<trk.rows();j++) {
+        //   if (trk.getShort("pindex",j)==k) {
+        //     reducedchi2 = trk.getFloat("chi2",j)/trk.getShort("NDF",j);
+        //   }
+        // }
 
         for (int j=0;j<sc.rows();j++) {
           if (sc.getShort("pindex",j)==k) {
             if (sc.getByte("detector",j)==12) {
-              int pad = sc.getInt("component", j);
               sector = sc.getInt("sector",j);
               double time = sc.getFloat("time", j);
               double pathlength = sc.getFloat("path",j);
-              energy = sc.getFloat("energy",j);
+              // double energy = sc.getFloat("energy",j);
               double flighttime = -10.0f;
               //System.out.println(String.format(" Sector FTOF: "+sector+" inDC: "+inDC+" PID: "+pid+" Momentum "+mom+" theta: "+theta+" Reduced chi2: "+reducedchi2+"\n"));
               //if (pid == 11 && inDC && mom > 0.4 && mom < 10. && energy > 0.5 && reducedchi2 < 75 && theta <= 11.) {
@@ -677,13 +655,14 @@ public class tof_monitor {
               double t = -100.0f;
               double p = -100.0f;
               double mom_cvt = -100.0f;
-              double energy_ctof = sc.getFloat("energy",j);
-              int pad_ctof = sc.getInt("component", j);
-              int sector_ctof = sc.getInt("sector",j);
-              int paddle_ctof = -100;
-              int sec_ctof = -100;
-              double e = -100.0f;
-              double beta, beta_ctof;
+              // double energy_ctof = sc.getFloat("energy",j);
+              // int pad_ctof = sc.getInt("component", j);
+              // int sector_ctof = sc.getInt("sector",j);
+              // int paddle_ctof = -100;
+              // int sec_ctof = -100;
+              // double e = -100.0f;
+              // double beta;
+              double beta_ctof;
               double ctof_vtime = -100.0;
               for (int iCTOF=0;iCTOF<ctof.rows();iCTOF++){
                 int trackid = ctof.getInt("trkID",iCTOF);
@@ -696,10 +675,10 @@ public class tof_monitor {
                 }
                 if (iCTOF == sc.getShort("index",j)) {
                   if(!Float.isNaN(ctof.getFloat("energy",iCTOF)) && trackid>-1 && cvttrk.getInt("q", iCVT) < 0.){
-                    e = ctof.getFloat("energy", iCTOF);
-                    paddle_ctof = ctof.getInt("component",iCTOF);
-                    track_redchi2 = cvttrk.getFloat("chi2", iCVT)/cvttrk.getShort("ndf", iCVT);
-                    sec_ctof = ctof.getInt("sector",iCTOF);
+                    // e = ctof.getFloat("energy", iCTOF);
+                    // paddle_ctof = ctof.getInt("component",iCTOF);
+                    // track_redchi2 = cvttrk.getFloat("chi2", iCVT)/cvttrk.getShort("ndf", iCVT);
+                    // sec_ctof = ctof.getInt("sector",iCTOF);
                     t = ctof.getFloat("time",iCTOF);
                     p = ctof.getFloat("pathLength",iCTOF);
                     mom_cvt = cvttrk.getFloat("p",iCVT);
@@ -708,15 +687,15 @@ public class tof_monitor {
                   }
                 }
               }
-              double pathlength_ctof = sc.getFloat("path",j);
-              double time_ctof = sc.getFloat("time",j);
-              double flighttime_ctof = -10.0f;
-              double timediff_ctof = -10.f;
+              // double pathlength_ctof = sc.getFloat("path",j);
+              // double time_ctof = sc.getFloat("time",j);
+              // double flighttime_ctof = -10.0f;
+              // double timediff_ctof = -10.f;
               //if (pid == -211 && inCVT && mom>0.4 && mom < 3.0 && track_redchi2 < 30. && e > 0.5 && paddle_ctof >= 13 && paddle_ctof <= 24) {
               if (pid == -211 && inCVT && ctof_vtime!=-100.) {
-                beta = mom/Math.sqrt(Math.pow(mom,2)+Math.pow(PhysicsConstants.massPionCharged(),2));
-                flighttime_ctof = pathlength_ctof/beta/PhysicsConstants.speedOfLight();
-                timediff_ctof = (time_ctof - flighttime_ctof);
+                // beta = mom/Math.sqrt(Math.pow(mom,2)+Math.pow(PhysicsConstants.massPionCharged(),2));
+                // flighttime_ctof = pathlength_ctof/beta/PhysicsConstants.speedOfLight();
+                // timediff_ctof = (time_ctof - flighttime_ctof);
                 CTOF_vtime.add(ctof_vtime);
                 N_pim_CD++;
                 //System.out.println(String.format("Part momentum: "+mom+" CVT momentum: "+mom_cvt+" Scintillator time: "+time_ctof+" CTOF time: "+t+" Scntillator pathlength: "+pathlength_ctof+" CTOF pathlength: "+p+" VertTDiff_SCBank: "+timediff_ctof+" VertTDiff_CTOFBank: "+CTOF_vtime+"\n"));
@@ -800,7 +779,7 @@ public class tof_monitor {
             float thisChi2 = 999;
             float thisMom = 0;
             boolean foundTrk1 = false;int iTrk1=-1;
-            boolean foundTrk2 = false;int iTrk2=-1;
+            boolean foundTrk2 = false;/*int iTrk2=-1;*/
             if(tofB.getInt("layer", h1)==1&&tofB.getFloat("energy", h1)>1.0)for(int t=0;t<DCB.rows() && !foundTrk1;t++){
               if(DCB.getInt("id",t) == tofB.getInt("trackid",h1) ){
                 thisChi2 = DCB.getFloat("chi2",t);
@@ -822,7 +801,7 @@ public class tof_monitor {
                     thisMom += DCB.getFloat("p0_y",t)*DCB.getFloat("p0_y",t);
                     thisMom += DCB.getFloat("p0_z",t)*DCB.getFloat("p0_z",t);
                     thisMom = (float)Math.sqrt(thisMom);
-                    if(thisChi2 < 5000 && thisMom > 0.8 && Math.abs(DCB.getFloat("Vtx0_z",t))<15 ){foundTrk2 = true;iTrk2=t;}
+                    if(thisChi2 < 5000 && thisMom > 0.8 && Math.abs(DCB.getFloat("Vtx0_z",t))<15 ){foundTrk2 = true;/*iTrk2=t;*/}
                   }
                 }
               if(foundTrk2){
@@ -850,10 +829,6 @@ public class tof_monitor {
           int found_electron = 0;
           for(int k = 0; k < bank.rows(); k++){
             int pid = bank.getInt("pid", k);
-            byte q = bank.getByte("charge", k);
-            float px = bank.getFloat("px", k);
-            float py = bank.getFloat("py", k);
-            float pz = bank.getFloat("pz", k);
             int status = bank.getShort("status", k);
             if (status<0) status = -status;
             boolean inDC = (status>=2000 && status<4000);
@@ -869,7 +844,7 @@ public class tof_monitor {
         public void processEvent(DataEvent event) {
           hasRF = false;
           e_part_ind = -1;
-          DataBank trackDetBank = null, hitBank = null, partBank = null, tofhits = null, scintillator = null, scintextras = null;
+          DataBank trackDetBank = null, hitBank = null, partBank = null, scintillator = null, scintextras = null;
           DataBank ctofhits = null, cvttrack = null, tofadc = null, toftdc = null, track = null, configbank = null;
           if(userTimeBased){
             if(event.hasBank("TimeBasedTrkg::TBTracks"))trackDetBank = event.getBank("TimeBasedTrkg::TBTracks");
@@ -887,7 +862,6 @@ public class tof_monitor {
           }
 
           if(event.hasBank("REC::ScintExtras")) scintextras = event.getBank("REC::ScintExtras");
-          if(event.hasBank("FTOF::hits")) tofhits = event.getBank("FTOF::hits");
           if(event.hasBank("FTOF::adc")) tofadc = event.getBank("FTOF::adc");
           if(event.hasBank("FTOF::tdc")) toftdc = event.getBank("FTOF::tdc");
           if(event.hasBank("CTOF::hits")) ctofhits = event.getBank("CTOF::hits");

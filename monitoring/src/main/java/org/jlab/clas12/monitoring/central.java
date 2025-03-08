@@ -1,6 +1,5 @@
 package org.jlab.clas12.monitoring;
 
-import java.io.*;
 import java.util.*;
 import org.jlab.clas.pdg.PhysicsConstants;
 
@@ -8,12 +7,10 @@ import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.hipo.HipoDataSource;
 import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.clas.physics.Vector3;
 import org.jlab.detector.base.DetectorType;
-import org.jlab.groot.base.GStyle;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
@@ -259,14 +256,12 @@ public class central {
 
       if(energy>0.5){
         double mom  = CVTbank.getFloat("p",iCVT);
-        double momt = CVTbank.getFloat("pt", iCVT);
         double cx   = CVTbank.getFloat("c_x",iCVT);
         double cy   = CVTbank.getFloat("c_y",iCVT);
         double cz   = CVTbank.getFloat("c_z",iCVT);
         double cphi = Math.toDegrees(Math.atan2(cy, cx));
         int    charge = CVTbank.getInt("q",iCVT);
         double chi2   = CVTbank.getFloat("chi2", iCVT)/CVTbank.getShort("ndf", iCVT);
-        double tandip = CVTbank.getFloat("tandip", iCVT);
         double phi0   = Math.toDegrees(CVTbank.getFloat("phi0", iCVT));
         double z0     = CVTbank.getFloat("z0", iCVT);
         double beta   = mom/Math.sqrt(mom*mom+Math.pow(PhysicsConstants.massPionCharged(),2));
@@ -350,10 +345,6 @@ public class central {
     int found_electron = 0;
     for(int k = 0; k < bank.rows(); k++){
       int pid = bank.getInt("pid", k);
-      byte q = bank.getByte("charge", k);
-      float px = bank.getFloat("px", k);
-      float py = bank.getFloat("py", k);
-      float pz = bank.getFloat("pz", k);
       int status = bank.getShort("status", k);
       if (status<0) status = -status;
       boolean inDC = (status>=2000 && status<4000);
@@ -369,18 +360,16 @@ public class central {
   public void processEvent(DataEvent event) {
     BackToBack = false;
     e_part_ind=-1;
-    DataBank eventBank = null, trackDetBank = null, partBank = null, trackBank = null;
+    DataBank eventBank = null, partBank = null, trackBank = null;
     DataBank tofadc = null, toftdc = null;
     if(userTimeBased){
       if(event.hasBank("REC::Event"))eventBank = event.getBank("REC::Event");
-      if(event.hasBank("TimeBasedTrkg::TBTracks"))trackDetBank = event.getBank("TimeBasedTrkg::TBTracks");
       if(event.hasBank("REC::Particle"))partBank = event.getBank("REC::Particle");
       if(event.hasBank("REC::Track"))trackBank = event.getBank("REC::Track");
     }
     if(!userTimeBased){
       if(event.hasBank("RECHB::Event"))eventBank = event.getBank("RECHB::Event");
       if(event.hasBank("RECHB::Particle"))partBank = event.getBank("RECHB::Particle");
-      if(event.hasBank("HitBasedTrkg::HBTracks"))trackDetBank = event.getBank("HitBasedTrkg::HBTracks");
       if(event.hasBank("RECHB::Track"))trackBank = event.getBank("RECHB::Track");
     }
 
@@ -393,7 +382,6 @@ public class central {
     if(event.hasBank("CTOF::adc")) tofadc = event.getBank("CTOF::adc");
     if(event.hasBank("CTOF::tdc")) toftdc = event.getBank("CTOF::tdc");
     if(partBank!=null) e_part_ind = makeElectron(partBank);
-    //		if(trackDetBank != null && event.hasBank("CVTRec::Tracks"))FillTracks(trackDetBank,event.getBank("CVTRec::Tracks"));
     if(event.hasBank("CVTRec::Tracks") && event.hasBank("CTOF::hits") && partBank!=null && trackBank!=null) FillCVTCTOF(event.getBank("CVTRec::Tracks"),event.getBank("CTOF::hits"), partBank, trackBank);
     if(toftdc!=null && tofadc!=null) fillCTOFadctdcHist(tofadc,toftdc);
   }

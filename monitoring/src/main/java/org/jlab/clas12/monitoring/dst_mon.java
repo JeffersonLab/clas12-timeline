@@ -1,26 +1,16 @@
 package org.jlab.clas12.monitoring;
 
-import java.io.*;
 import java.util.*;
-import java.text.SimpleDateFormat;
 
-import org.jlab.groot.math.*;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.math.F1D;
-import org.jlab.groot.fitter.DataFitter;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.hipo.HipoDataSource;
-import org.jlab.groot.fitter.ParallelSliceFitter;
 import org.jlab.groot.graphics.EmbeddedCanvas;
-import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.clas.physics.Vector3;
 import org.jlab.clas.physics.LorentzVector;
-import org.jlab.groot.base.GStyle;
 import org.jlab.utils.groups.IndexedTable;
-import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class dst_mon {
@@ -983,7 +973,6 @@ public class dst_mon {
   public int makeElectron(DataBank bank){
     for(int k = 0; k < bank.rows(); k++){
       int pid = bank.getInt("pid", k); 
-      byte q = bank.getByte("charge", k); 
       float px = bank.getFloat("px", k); 
       float py = bank.getFloat("py", k); 
       float pz = bank.getFloat("pz", k); 

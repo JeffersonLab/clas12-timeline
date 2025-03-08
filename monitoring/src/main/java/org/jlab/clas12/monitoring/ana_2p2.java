@@ -77,7 +77,6 @@ public class ana_2p2 {
       System.out.println("READING NOW "+runstrg);
       HipoDataSource reader = new HipoDataSource();
       reader.open(runstrg);
-      int filecount = 0;
       while(reader.hasEvent()&& count<maxevents ) {
         DataEvent event = reader.getNextEvent();
         ana_mon.processEvent(event);
@@ -94,7 +93,7 @@ public class ana_2p2 {
         //ana_deuteron.processEvent(event);
         helicity.processEvent(event);
         trigger.processEvent(event);
-        filecount++;count++;
+        count++;
         if(count%10000 == 0){
           long nowTime = System.currentTimeMillis();
           long elapsedTime = nowTime - previousTime;

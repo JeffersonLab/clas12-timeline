@@ -1,25 +1,13 @@
 package org.jlab.clas12.monitoring;
 
-import java.io.*;
 import java.util.*;
 
-import org.jlab.groot.math.*;
 import org.jlab.groot.data.H1F;
-import org.jlab.groot.data.H2F;
-import org.jlab.groot.math.F1D;
-import org.jlab.groot.fitter.DataFitter;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.hipo.HipoDataSource;
-import org.jlab.groot.fitter.ParallelSliceFitter;
 import org.jlab.groot.graphics.EmbeddedCanvas;
-import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.TDirectory;
-import org.jlab.clas.physics.Vector3;
-import org.jlab.clas.physics.LorentzVector;
-import org.jlab.groot.base.GStyle;
 import org.jlab.utils.groups.IndexedTable;
-import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
 public class BAND{
@@ -162,19 +150,9 @@ public class BAND{
           if(event.getBank("RUN::rf").getInt("id",r)==1)RFtime=event.getBank("RUN::rf").getFloat("time",r) + rfoffset1;
         }
       }
-      DataBank partBank = null, trackBank = null, trackDetBank = null, ecalBank = null, cherenkovBank = null, scintillBank = null;
-      DataBank trajBank = null, ltccadcBank = null, ltccClusters = null, bandhits = null, bandlaser = null;
+      DataBank bandhits = null, bandlaser = null;
       if(userTimeBased){
-        if(event.hasBank("REC::Particle")) partBank = event.getBank("REC::Particle");
         if(event.hasBank("REC::Event")) starttime = event.getBank("REC::Event").getFloat("startTime",0);
-        if(event.hasBank("REC::Track"))trackBank = event.getBank("REC::Track");
-        if(event.hasBank("TimeBasedTrkg::TBTracks"))trackDetBank = event.getBank("TimeBasedTrkg::TBTracks");
-        if(event.hasBank("REC::Calorimeter")) ecalBank = event.getBank("REC::Calorimeter");
-        if(event.hasBank("REC::Cherenkov"))cherenkovBank = event.getBank("REC::Cherenkov");
-        if(event.hasBank("REC::Scintillator"))scintillBank = event.getBank("REC::Scintillator");
-        if(event.hasBank("REC::Traj"))trajBank = event.getBank("REC::Traj");
-        if(event.hasBank("LTCC::adc"))ltccadcBank = event.getBank("LTCC::adc");
-        if(event.hasBank("LTCC::clusters"))ltccClusters = event.getBank("LTCC::clusters");
         if(event.hasBank("BAND::hits")) {
           bandhits = event.getBank("BAND::hits");
         }
@@ -184,15 +162,6 @@ public class BAND{
 
       }
       if(!userTimeBased){
-        if(event.hasBank("RECHB::Particle"))partBank = event.getBank("RECHB::Particle");
-        if(event.hasBank("RECHB::Track"))trackBank = event.getBank("RECHB::Track");
-        if(event.hasBank("HitBasedTrkg::HBTracks"))trackDetBank = event.getBank("HitBasedTrkg::HBTracks");
-        if(event.hasBank("RECHB::Calorimeter")) ecalBank = event.getBank("RECHB::Calorimeter");
-        if(event.hasBank("RECHB::Cherenkov"))cherenkovBank = event.getBank("RECHB::Cherenkov");
-        if(event.hasBank("RECHB::Scintillator"))scintillBank = event.getBank("RECHB::Scintillator");
-        if(event.hasBank("RECHB::Traj"))trajBank = event.getBank("RECHB::Traj");
-        if(event.hasBank("LTCC::adc"))ltccadcBank = event.getBank("LTCC::adc");
-        if(event.hasBank("LTCC::clusters"))ltccClusters = event.getBank("LTCC::clusters");
         if(event.hasBank("BAND::hits")) bandhits = event.getBank("BAND::hits");
         if(event.hasBank("BAND::laser")) bandlaser = event.getBank("BAND::laser");
       }

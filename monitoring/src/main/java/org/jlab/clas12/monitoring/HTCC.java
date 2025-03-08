@@ -1,6 +1,5 @@
 package org.jlab.clas12.monitoring;
 
-import java.io.*;
 import java.util.*;
 import org.jlab.clas.pdg.PhysicsConstants;
 
@@ -8,10 +7,8 @@ import org.jlab.groot.math.*;
 import org.jlab.groot.data.H1F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.hipo.HipoDataSource;
 import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.data.TDirectory;
-import org.jlab.groot.base.GStyle;
 import org.jlab.groot.fitter.DataFitter;
 
 public class HTCC {
@@ -192,7 +189,6 @@ public class HTCC {
   }
 
   public int isSingle(double theta, double phi) {
-    int single = 0;
     int isSigleTheta = 0;
     int isSiglePhi = 0;
     double resPhi = (phi + 166.0) % 30;
@@ -207,11 +203,6 @@ public class HTCC {
 
   public void processEvent(DataEvent event) {
     double startTime = 0;
-    double htccTime = 0;
-    int sector = 0;
-    int layer = 0;
-    int segment = 0;
-    double deltaTime = 0;
     int halfSector = 0;
     int ring = 0;
     int pmt = 0;

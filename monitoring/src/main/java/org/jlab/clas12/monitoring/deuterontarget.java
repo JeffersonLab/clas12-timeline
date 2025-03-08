@@ -1,22 +1,13 @@
 package org.jlab.clas12.monitoring;
-import java.io.*;
-import java.util.*;
 
-import org.jlab.groot.math.*;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.math.F1D;
-import org.jlab.groot.fitter.DataFitter;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.hipo.HipoDataSource;
-import org.jlab.groot.fitter.ParallelSliceFitter;
 import org.jlab.groot.graphics.EmbeddedCanvas;
-import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.clas.physics.Vector3;
 import org.jlab.clas.physics.LorentzVector;
-import org.jlab.groot.base.GStyle;
 
 public class deuterontarget {
   boolean userTimeBased;
@@ -366,7 +357,7 @@ public class deuterontarget {
     float[] hadro_3v = new float[3];
 
     float proton_azimuth;
-    float lept_norm, hadr_norm, scalar_product, cross_product;
+    float lept_norm, hadr_norm, scalar_product;
     phi =0;
     beam_4v[0] = beam_energy; beam_4v[1] = 0; beam_4v[2] = 0; beam_4v[3] = beam_energy;
 
@@ -374,7 +365,6 @@ public class deuterontarget {
     lept_norm = 0;
     hadr_norm = 0;
     scalar_product = 0;
-    cross_product = 0;
 
     for(int i=0;i<4;i++)q_4v[i]=beam_4v[i]-elec_4v[i];
 
@@ -508,7 +498,6 @@ public class deuterontarget {
     int npositives = 0;
     int nnegatives = 0;
     float mybetap = 0;
-    float mybetan = 0;
     for(int k = 0; k < bank.rows(); k++){
       int pid = bank.getInt("pid", k);
       byte q = bank.getByte("charge", k);
@@ -519,7 +508,6 @@ public class deuterontarget {
       if(inDC && pid==11)foundelec=true;
       if(inDC && q<0&&thisbeta>0)nnegatives++;
       if(inDC && npositives==0&&q>0&&thisbeta>0)mybetap=thisbeta;
-      if(inDC && pid!=11&&nnegatives<2&&q<0&&thisbeta>0)mybetan=thisbeta;
       if(inDC && q>0&&thisbeta>0)npositives++;
     }
 
@@ -612,7 +600,6 @@ public class deuterontarget {
   public int makeElectron(DataBank bank){
     for(int k = 0; k < bank.rows(); k++){
       int pid = bank.getInt("pid", k);
-      byte q = bank.getByte("charge", k);
       float px = bank.getFloat("px", k);
       float py = bank.getFloat("py", k);
       float pz = bank.getFloat("pz", k);
@@ -637,7 +624,6 @@ public class deuterontarget {
   public int makeTrigElectron(DataBank bank, DataEvent event){
     for(int k = 0; k < bank.rows(); k++){
       int pid = bank.getInt("pid", k);
-      byte q = bank.getByte("charge", k);
       float px = bank.getFloat("px", k);
       float py = bank.getFloat("py", k);
       float pz = bank.getFloat("pz", k);
@@ -685,7 +671,7 @@ public class deuterontarget {
           }
         }
         if( HTCCnphe>1 && e_ecal_E/e_mom > 0.18){}
-        if( true || (HTCCnphe>1 && e_ecal_E/e_mom > 0.15) ){
+        if( true /* HTCCnphe>1 && e_ecal_E/e_mom > 0.15 */ ){
           e_phi = (float)Math.toDegrees(Math.atan2(py,px));
           e_vx = bank.getFloat("vx", k);
           e_vy = bank.getFloat("vy", k);
@@ -715,51 +701,39 @@ public class deuterontarget {
       DataBank bank = event.getBank("RUN::config");
       TriggerWord = bank.getLong("trigger",0);
       //startTime   = bank.getFloat("startTime",0);
-      String TriggerString = Long.toBinaryString(TriggerWord);
+      // String TriggerString = Long.toBinaryString(TriggerWord);
       int length=0;
       for (int i = 31; i >= 0; i--) {trigger_bits[i] = (TriggerWord & (1 << i)) != 0;if(length==0 && trigger_bits[i])length=i+1;}
 
       int[] compare_bits = new int[32];
       for (int i = 0; i < 32; i++) {compare_bits[31-i] = trigger_bits[i] ? 1 : 0 ;}
-      if(false){
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        System.out.print("TriggerWord = " + TriggerWord + " = " + TriggerString + " = ");
-        for(int i=32-length;i<32;i++)System.out.print(compare_bits[i]);
-        System.out.print("\n");
-        System.out.print("TriggerWord = " + TriggerWord + " = ");
-        for(int i=32-length;i<32;i++)System.out.print(compare_bits[i]);
-        System.out.print("\n");
-        System.out.print("Length : " + length + " Trigger bits ID : ");
-        for(int i=0;i<32;i++)if(trigger_bits[i])System.out.print(i + " ");
-        System.out.print("\n");
-      }
+      // System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+      // System.out.print("TriggerWord = " + TriggerWord + " = " + TriggerString + " = ");
+      // for(int i=32-length;i<32;i++)System.out.print(compare_bits[i]);
+      // System.out.print("\n");
+      // System.out.print("TriggerWord = " + TriggerWord + " = ");
+      // for(int i=32-length;i<32;i++)System.out.print(compare_bits[i]);
+      // System.out.print("\n");
+      // System.out.print("Length : " + length + " Trigger bits ID : ");
+      // for(int i=0;i<32;i++)if(trigger_bits[i])System.out.print(i + " ");
+      // System.out.print("\n");
     }
 
-    DataBank eventBank = null, partBank = null, trackBank = null, trackDetBank = null, ecalBank = null, cherenkovBank = null, scintillBank = null, crossBank = null;
-    DataBank TrajBank = null;
+    DataBank partBank = null, trackBank = null, trackDetBank = null, scintillBank = null;
 
     if(userTimeBased){
-      if(event.hasBank("REC::Event"))eventBank = event.getBank("REC::Event");
       if(event.hasBank("REC::Particle"))partBank = event.getBank("REC::Particle");
       if(event.hasBank("REC::Track"))trackBank = event.getBank("REC::Track");
       if(event.hasBank("TimeBasedTrkg::TBTracks"))trackDetBank = event.getBank("TimeBasedTrkg::TBTracks");
-      if(event.hasBank("REC::Calorimeter")) ecalBank = event.getBank("REC::Calorimeter");
-      if(event.hasBank("REC::Cherenkov"))cherenkovBank = event.getBank("REC::Cherenkov");
       if(event.hasBank("REC::Scintillator"))scintillBank = event.getBank("REC::Scintillator");
-      if(event.hasBank("TimeBasedTrkg::TBCrosses"))crossBank = event.getBank("TimeBasedTrkg::TBCrosses");
     }
     if(!userTimeBased){
-      if(event.hasBank("RECHB::Event"))eventBank = event.getBank("RECHB::Event");
       if(event.hasBank("RECHB::Particle"))partBank = event.getBank("RECHB::Particle");
       if(event.hasBank("RECHB::Track"))trackBank = event.getBank("RECHB::Track");
       if(event.hasBank("HitBasedTrkg::HBTracks"))trackDetBank = event.getBank("HitBasedTrkg::HBTracks");
-      if(event.hasBank("RECHB::Calorimeter")) ecalBank = event.getBank("RECHB::Calorimeter");
-      if(event.hasBank("RECHB::Cherenkov"))cherenkovBank = event.getBank("RECHB::Cherenkov");
       if(event.hasBank("RECHB::Scintillator"))scintillBank = event.getBank("RECHB::Scintillator");
-      if(event.hasBank("HitBasedTrkg::HBCrosses"))crossBank = event.getBank("HitBasedTrkg::HBCrosses");
     }
 
-    if(event.hasBank("REC::Traj"))TrajBank = event.getBank("REC::Traj");
 
     if(partBank!=null)trig_part_ind = makeTrigElectron(partBank,event);
     if(trackBank!=null&&trackDetBank!=null)getTrigTBTrack(trackDetBank,trackBank);

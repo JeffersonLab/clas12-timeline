@@ -1,31 +1,17 @@
 package org.jlab.clas12.monitoring;
-import java.io.*;
 import java.util.*;
 
 
-import org.jlab.groot.math.*;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.math.F1D;
-import org.jlab.groot.fitter.DataFitter;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.hipo.HipoDataSource;
-import org.jlab.groot.fitter.ParallelSliceFitter;
 import org.jlab.groot.graphics.EmbeddedCanvas;
-import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.clas.physics.Vector3;
-import org.jlab.clas.physics.LorentzVector;
-import org.jlab.groot.base.GStyle;
 import org.jlab.utils.groups.IndexedTable;
-import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
-import org.jlab.groot.base.DatasetAttributes;
-import org.jlab.groot.base.Attributes;
-import org.jlab.groot.math.StatNumber;
 import org.jlab.groot.ui.PaveText;
-import org.jlab.groot.data.IDataSet;
 import org.jlab.groot.base.PadAttributes;
 import java.util.ArrayList;
 
