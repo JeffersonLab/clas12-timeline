@@ -1,4 +1,4 @@
-package org.jlab.clas12.timeline.histograms;
+package org.jlab.clas.timeline.histograms;
 
 import java.util.*;
 import org.jlab.clas.pdg.PhysicsConstants;

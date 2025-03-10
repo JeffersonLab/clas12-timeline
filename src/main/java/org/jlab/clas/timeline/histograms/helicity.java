@@ -1,4 +1,4 @@
-package org.jlab.clas12.timeline.histograms;
+package org.jlab.clas.timeline.histograms;
 
 import java.util.ArrayList;
 import org.jlab.groot.data.H1F;
