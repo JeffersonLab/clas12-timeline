@@ -3,8 +3,7 @@
 .sw*
 
 # builds
-detectors/target
-monitoring/target
+/target
 
 # transient files
 *.hipo

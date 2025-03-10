@@ -8,12 +8,7 @@
   <name>clas12-timeline</name>
   <url>http://www.github.com/JeffersonLab/clas12-timeline</url>
 
-  <packaging>pom</packaging>
-
-  <modules>
-    <module>monitoring</module>
-    <module>detectors</module>
-  </modules>
+  <packaging>jar</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
