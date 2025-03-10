@@ -37,6 +37,8 @@ jobs:
       with:
         java-version: ${{ env.java_version }}
         distribution: ${{ env.java_distribution }}
+    - name: maven version
+      run: mvn --version
     - name: build
       run: mvn package
     - name: tar # to preserve any permissions
