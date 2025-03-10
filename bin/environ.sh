@@ -31,10 +31,10 @@ fi
 java_classpath=(
   "$COATJAVA/lib/clas/*"
   "$COATJAVA/lib/utils/*"
-  "$TIMELINESRC/monitoring/target/*"
+  "$TIMELINESRC/target/*"
 )
 groovy_classpath=(
-  "$TIMELINESRC/detectors/target/*"
+  "$TIMELINESRC/target/*"
   "$(dirname $(dirname $(which groovy)))/lib/*"
 )
 
