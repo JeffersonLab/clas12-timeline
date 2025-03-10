@@ -94,13 +94,13 @@ fi
 export CLASSPATH="$JYPATH${CLASSPATH:+:${CLASSPATH}}"
 
 # get main executable for detector timelines
-run_detectors_script="org.jlab.clas.timeline.run_detectors"
+run_analysis_script="org.jlab.clas.timeline.analysis.run_analysis"
 
 # build list of timelines
 if ${modes['skip-mya']}; then
-  timelineList=$(java $run_detectors_script --timelines | grep -vE '^epics_' | sort | grep $match)
+  timelineList=$(java $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep $match)
 else
-  timelineList=$(java $run_detectors_script --timelines | sort | grep $match)
+  timelineList=$(java $run_analysis_script --timelines | sort | grep $match)
 fi
 
 # list detector timelines, if requested
@@ -227,12 +227,12 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
     echo ">>> producing timeline '$timelineObj' ..."
     if ${modes['debug']}; then
-      java $TIMELINE_JAVA_OPTS $run_detectors_script $timelineObj $inputDir
+      java $TIMELINE_JAVA_OPTS $run_analysis_script $timelineObj $inputDir
       echo "PREMATURE EXIT, since --debug option was used"
       exit
     else
       #sleep 1 
-      java $TIMELINE_JAVA_OPTS $run_detectors_script $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+      java $TIMELINE_JAVA_OPTS $run_analysis_script $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
       job_ids+=($!)
       job_names+=($timelineObj)
     fi

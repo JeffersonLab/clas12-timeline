@@ -9,8 +9,8 @@ import org.jlab.io.hipo.HipoDataSource;
 import org.jlab.groot.base.GStyle;
 import org.jlab.logging.DefaultLogger;
 
-public class ana_2p2 {
-  public ana_2p2(){}
+public class run_histograms {
+  public run_histograms(){}
   ////////////////////////////////////////////////
   public static void main(String[] args) {
     System.setProperty("java.awt.headless", "true");

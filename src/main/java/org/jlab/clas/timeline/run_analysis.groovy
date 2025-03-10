@@ -1,7 +1,6 @@
-package org.jlab.clas.timeline
+package org.jlab.clas.timeline.analysis
 
 import org.jlab.groot.data.TDirectory
-import org.jlab.clas.timeline.analysis.*
 
 def engines = [
   out_BAND: [new band_adccor(),

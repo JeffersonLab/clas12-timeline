@@ -391,7 +391,7 @@ export CLASSPATH=$CLASSPATH
 # produce histograms
 java \\
   $TIMELINE_JAVA_OPTS \\
-  org.jlab.clas.timeline.histograms.ana_2p2 \\
+  org.jlab.clas.timeline.histograms.run_histograms \\
     $runnum \\
     $outputSubDir \\
     $inputListFile \\
