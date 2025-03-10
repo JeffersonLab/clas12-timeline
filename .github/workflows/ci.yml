@@ -41,8 +41,7 @@ jobs:
       run: mvn package
     - name: tar # to preserve any permissions
       run: |
-        tar cavf build_detectors.tar.zst detectors/target
-        tar cavf build_monitoring.tar.zst monitoring/target
+        tar cavf build_timeline.tar.zst target
     - uses: actions/upload-artifact@v4
       with:
         name: build_timelines
