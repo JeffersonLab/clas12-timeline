@@ -29,13 +29,12 @@ fi
 
 # class paths
 java_classpath=(
-  "$COATJAVA/lib/clas/*"
-  "$COATJAVA/lib/utils/*"
   "$TIMELINESRC/target/*"
+  "$TIMELINESRC/target/dependency/*"
 )
 groovy_classpath=(
   "$TIMELINESRC/target/*"
-  "$(dirname $(dirname $(which groovy)))/lib/*"
+  "$TIMELINESRC/target/dependency/*"
 )
 
 # java and groovy options

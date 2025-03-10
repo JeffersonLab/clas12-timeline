@@ -13,11 +13,8 @@ git clone https://github.com/JeffersonLab/clas12-timeline.git
 ```
 Then build:
 ```bash
-mvn package
+./install.sh
 ```
 
 > [!TIP]
-> - Use `mvn clean` if you want to clean build targets.
-> - Use the `-f` option of `mvn` to build individual submodules:
->   1. [`monitoring`](/monitoring): generates histograms for detectors
->   1. [`detectors`](/detectors): uses detector histograms to generate timelines
+> - Use `./install.sh clean` if you want to clean build (or `mvn clean`)

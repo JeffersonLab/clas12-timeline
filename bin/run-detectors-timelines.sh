@@ -12,7 +12,7 @@ outputDir=""
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list build skip-mya focus-timelines focus-qa debug help; do
+for key in list skip-mya focus-timelines focus-qa debug help; do
   modes[$key]=false
 done
 
@@ -47,8 +47,6 @@ usage() {
     -m [MATCH]          only produce timelines matching [MATCH]
 
     --list              dump the list of timelines and exit
-
-    --build             cleanly-rebuild the timeline code, then run
 
     --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
 
@@ -144,15 +142,6 @@ NUM_THREADS     = $numThreads
 OPTIONS = {"""
 for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
 echo "}"
-
-# rebuild, if desired
-if ${modes['build']}; then
-  echo "building detector timeline"
-  pushd $TIMELINESRC/detectors
-  mvn clean package
-  [ $? -ne 0 ] && exit 100
-  popd
-fi
 
 # output detector subdirectories
 detDirs=(

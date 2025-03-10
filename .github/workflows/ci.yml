@@ -38,7 +38,7 @@ jobs:
         java-version: ${{ env.java_version }}
         distribution: ${{ env.java_distribution }}
     - name: build
-      run: mvn package
+      run: ./install.sh
     - name: tar # to preserve any permissions
       run: |
         tar cavf build_timeline.tar.zst target
