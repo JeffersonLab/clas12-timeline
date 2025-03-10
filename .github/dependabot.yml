@@ -4,6 +4,9 @@ registries:
   clas12maven:
     type: maven-repository
     url: https://clasweb.jlab.org/clas12maven
+  groovy_jfrog:
+    type: maven-repository
+    url: https://groovy.jfrog.io/artifactory/plugins-release
 
 updates:
   - package-ecosystem: "maven"
@@ -12,6 +15,7 @@ updates:
       interval: "weekly"
     registries:
       - clas12maven
+      - groovy_jfrog
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
