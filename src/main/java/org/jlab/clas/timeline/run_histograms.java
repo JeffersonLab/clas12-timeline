@@ -40,7 +40,6 @@ public class run_histograms {
     RICH          ana_rich    = new RICH(runNum,outputDir,EB,useTB);
     CND           ana_cnd     = new CND(runNum,outputDir,useTB);
     FT            ana_ft      = new FT(runNum,outputDir,useTB);
-    dst_mon       ana_dst_mon = new dst_mon(runNum,outputDir,EB);
     BAND          ana_band    = new BAND(runNum,outputDir,EB,useTB);
     helicity      helicity    = new helicity();
     trigger       trigger     = new trigger();
@@ -88,7 +87,6 @@ public class run_histograms {
         ana_ltc.processEvent(event);
         ana_cnd.processEvent(event);
         ana_ft.processEvent(event);
-        ana_dst_mon.processEvent(event);
         ana_band.processEvent(event);
         ana_rich.processEvent(event);
         helicity.processEvent(event);
@@ -118,7 +116,6 @@ public class run_histograms {
     ana_ltc.write();
     ana_cnd.write();
     ana_ft.write();
-    ana_dst_mon.write();
     ana_band.write();
     ana_rich.write();
     helicity.write(outputDir, runNum);
