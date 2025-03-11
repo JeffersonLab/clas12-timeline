@@ -44,7 +44,6 @@ public class run_histograms {
     BAND           ana_band     = new BAND(runNum,outputDir,EB,useTB);
     helicity       helicity     = new helicity();
     trigger        trigger      = new trigger();
-    // deuterontarget ana_deuteron = new deuterontarget(runNum,EB,useTB);
 
     List<String> toProcessFileNames = new ArrayList<String>();
     File file = new File(filelist);
@@ -92,7 +91,6 @@ public class run_histograms {
         ana_dst_mon.processEvent(event);
         ana_band.processEvent(event);
         ana_rich.processEvent(event);
-        // ana_deuteron.processEvent(event);
         helicity.processEvent(event);
         trigger.processEvent(event);
 
