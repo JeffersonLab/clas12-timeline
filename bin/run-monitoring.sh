@@ -307,13 +307,13 @@ for rdir in ${rdirs[@]}; do
   if [ -z "$runnum" ] || ${modes['swifjob']}; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
     if ${modes['flatdir']}; then
       $TIMELINESRC/bin/hipo-check.sh $rdir
-      runnum=$($TIMELINESRC/bin/run-groovy-timeline.sh $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-run-number.groovy $rdir | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+      runnum=$($TIMELINESRC/bin/run-groovy-timeline.sh $TIMELINESRC/bin/get-run-number.groovy $rdir | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
     else
       firstHipo=$(find $rdir -name "*.hipo" | head -n1)
       [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number or create job" && continue
       echo "using HIPO file $firstHipo to get run number for run directory '$rdir'"
       $TIMELINESRC/bin/hipo-check.sh $firstHipo
-      runnum=$($TIMELINESRC/bin/run-groovy-timeline.sh $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+      runnum=$($TIMELINESRC/bin/run-groovy-timeline.sh $TIMELINESRC/bin/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
     fi
   fi
   [ -z "$runnum" -o $runnum -eq 0 ] && printError "unknown run number for '$rdir'; ignoring it!" && continue
@@ -421,7 +421,6 @@ export TIMELINESRC=$TIMELINESRC
 
 # produce histograms
 $TIMELINESRC/bin/run-groovy-timeline.sh \\
-  $TIMELINE_GROOVY_OPTS \\
   $TIMELINESRC/qa-physics/monitorRead.groovy \\
     $(realpath $rdir) \\
     $outputSubDir \\
