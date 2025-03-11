@@ -11,7 +11,7 @@ Tools T = new Tools()
 //--------------------------------------------------------------------------
 // ARGUMENTS:
 if(args.length<2) {
-  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR] [DATASET] [USE_FT(optional,default=false)]"
+  System.err.println "USAGE: groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR] [DATASET] [USE_FT(optional,default=false)]"
   System.exit(101)
 }
 useFT = false // if true, use FT electrons instead

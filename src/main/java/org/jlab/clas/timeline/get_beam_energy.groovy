@@ -5,7 +5,7 @@ import org.rcdb.*
 
 // arguments
 if(args.length<1) {
-  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [RUN_NUMBER]"
+  System.err.println "USAGE: groovy ${this.class.getSimpleName()}.groovy [RUN_NUMBER]"
   System.out.println ''
   System.exit(101)
 }

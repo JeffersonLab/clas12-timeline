@@ -4,4 +4,4 @@
 pushd qa
 mv -v `ls -t qaTree*.bak | head -n1` qaTree.json
 popd
-run-groovy $TIMELINE_GROOVY_OPTS parseQaTree.groovy
+groovy $TIMELINE_GROOVY_OPTS parseQaTree.groovy

@@ -10,7 +10,7 @@ def debug = false
 
 // parse arguments
 if(args.length<1) {
-  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR]"
+  System.err.println "USAGE: groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR]"
   System.exit(101)
 }
 inDir = args[0] + "/outdat"

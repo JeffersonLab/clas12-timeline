@@ -8,7 +8,7 @@ import org.jlab.groot.data.GraphErrors
 //----------------------------------------------------------------------------------
 // ARGUMENTS:
 if(args.length<1) {
-  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR] [USE_FT(optional,default=false)]"
+  System.err.println "USAGE: groovy ${this.class.getSimpleName()}.groovy [INPUT_DIR] [USE_FT(optional,default=false)]"
   System.exit(101)
 }
 def useFT = false // if true, use FT electrons instead
