@@ -108,23 +108,23 @@ function exe {
 exe ./datasetOrganize.sh $dataset $inputDir $qaDir
 
 # produce chargeTree.json
-exe groovy $TIMELINE_GROOVY_OPTS buildChargeTree.groovy $qaDir
+exe run-groovy-timeline.sh $TIMELINE_GROOVY_OPTS buildChargeTree.groovy $qaDir
 
 # loop over datasets
 # trigger electrons monitor
-exe groovy $TIMELINE_GROOVY_OPTS qaPlot.groovy $qaDir
-exe groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $qaDir $dataset
+exe run-groovy-timeline.sh $TIMELINE_GROOVY_OPTS qaPlot.groovy $qaDir
+exe run-groovy-timeline.sh $TIMELINE_GROOVY_OPTS qaCut.groovy $qaDir $dataset
 # FT electrons
-exe groovy $TIMELINE_GROOVY_OPTS qaPlot.groovy $qaDir FT
-exe groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $qaDir $dataset FT
+exe run-groovy-timeline.sh $TIMELINE_GROOVY_OPTS qaPlot.groovy $qaDir FT
+exe run-groovy-timeline.sh $TIMELINE_GROOVY_OPTS qaCut.groovy $qaDir $dataset FT
 # meld FT and FD JSON files
-exe groovy $TIMELINE_GROOVY_OPTS mergeFTandFD.groovy $qaDir
+exe run-groovy-timeline.sh $TIMELINE_GROOVY_OPTS mergeFTandFD.groovy $qaDir
 # general monitor
-exe groovy $TIMELINE_GROOVY_OPTS monitorPlot.groovy $qaDir
+exe run-groovy-timeline.sh $TIMELINE_GROOVY_OPTS monitorPlot.groovy $qaDir
 # move timelines to output area
 exe ./stageTimelines.sh $qaDir $finalDir
 # trash empty files
-exe groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/qa-physics/removeEmptyFiles.groovy $outputDir/trash $finalDir
+exe run-groovy-timeline.sh $TIMELINE_GROOVY_OPTS $TIMELINESRC/qa-physics/removeEmptyFiles.groovy $outputDir/trash $finalDir
 
 popd
 

@@ -2,7 +2,7 @@ import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.groot.data.H1F
 import org.jlab.groot.math.F1D
-import groovy.yaml.YamlSlurper
+import org.yaml.snakeyaml.Yaml
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 import org.jlab.clas.timeline.util.Tools
@@ -35,8 +35,8 @@ if(!(cutDefsFile.exists())) {
   System.err.println "WARNING: using cutdefs/default.yaml"
   cutDefsFile = new File("cutdefs/default.yaml")
 }
-cutDefsSlurper = new YamlSlurper()
-cutDefsTree = cutDefsSlurper.parse(cutDefsFile)
+def cutDefsParser = new Yaml()
+def cutDefsTree = cutDefsParser.load(cutDefsFile.text)
 // return the cutDef for a given tree path
 def cutDef = { path, required=true ->
   def val
