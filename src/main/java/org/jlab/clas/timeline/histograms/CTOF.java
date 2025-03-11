@@ -12,7 +12,7 @@ import org.jlab.detector.base.DetectorType;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
-public class central {
+public class CTOF {
   boolean userTimeBased;
   public int runNum;
   public String outputDir;
@@ -51,7 +51,7 @@ public class central {
 
   public ConstantsManager ccdb;
 
-  public central(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
+  public CTOF(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
     runNum = reqrunNum;userTimeBased=reqTimeBased;
     outputDir = reqOutputDir;
     counter = 0;

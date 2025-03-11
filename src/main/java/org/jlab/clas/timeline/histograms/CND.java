@@ -12,7 +12,7 @@ import org.jlab.groot.data.TDirectory;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
-public class cndCheckPlots {
+public class CND {
   boolean userTimeBased;
   public int runNum;
   public String outputDir;
@@ -56,7 +56,7 @@ public class cndCheckPlots {
   public IndexedTable rfTable;
   public ConstantsManager ccdb;
 
-  public cndCheckPlots(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
+  public CND(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
     userTimeBased=reqTimeBased;
     runNum = reqrunNum;
     outputDir = reqOutputDir;

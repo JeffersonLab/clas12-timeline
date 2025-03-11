@@ -13,7 +13,7 @@ import org.jlab.groot.data.TDirectory;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
-public class tof_monitor {
+public class FTOFandDC {
   boolean userTimeBased;
   public int runNum;
   public String outputDir;
@@ -55,7 +55,7 @@ public class tof_monitor {
   public IndexedTable ftofTable, ctofTable;
   public ConstantsManager ccdb;
 
-  public tof_monitor(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
+  public FTOFandDC(int reqrunNum, String reqOutputDir, boolean reqTimeBased) {
     runNum = reqrunNum;userTimeBased=reqTimeBased;
     outputDir = reqOutputDir;
 

@@ -32,18 +32,18 @@ public class run_histograms {
     System.out.println("will process run number "+runNum+" from list "+filelist+" looking for up to "+maxevents+" events, beam energy setting "+EB);
 
     //// instantiate monitors
-    monitor2p2GeV  ana_mon      = new monitor2p2GeV(runNum,outputDir,EB,useTB);
-    tof_monitor    ana_tof      = new tof_monitor(runNum,outputDir,useTB);
-    central        ana_cen      = new central(runNum,outputDir,useTB);
-    HTCC           ana_htc      = new HTCC(runNum,outputDir);
-    LTCC           ana_ltc      = new LTCC(runNum,outputDir,EB,useTB);
-    RICH           ana_rich     = new RICH(runNum,outputDir,EB,useTB);
-    cndCheckPlots  ana_cnd      = new cndCheckPlots(runNum,outputDir,useTB);
-    FT             ana_ft       = new FT(runNum,outputDir,useTB);
-    dst_mon        ana_dst_mon  = new dst_mon(runNum,outputDir,EB);
-    BAND           ana_band     = new BAND(runNum,outputDir,EB,useTB);
-    helicity       helicity     = new helicity();
-    trigger        trigger      = new trigger();
+    monitor2p2GeV ana_mon     = new monitor2p2GeV(runNum,outputDir,EB,useTB);
+    FTOFandDC     ana_ftof_dc = new FTOFandDC(runNum,outputDir,useTB);
+    CTOF          ana_ctof    = new CTOF(runNum,outputDir,useTB);
+    HTCC          ana_htc     = new HTCC(runNum,outputDir);
+    LTCC          ana_ltc     = new LTCC(runNum,outputDir,EB,useTB);
+    RICH          ana_rich    = new RICH(runNum,outputDir,EB,useTB);
+    CND           ana_cnd     = new CND(runNum,outputDir,useTB);
+    FT            ana_ft      = new FT(runNum,outputDir,useTB);
+    dst_mon       ana_dst_mon = new dst_mon(runNum,outputDir,EB);
+    BAND          ana_band    = new BAND(runNum,outputDir,EB,useTB);
+    helicity      helicity    = new helicity();
+    trigger       trigger     = new trigger();
 
     List<String> toProcessFileNames = new ArrayList<String>();
     File file = new File(filelist);
@@ -82,8 +82,8 @@ public class run_histograms {
 
         //// call each monitor's `processEvent`
         ana_mon.processEvent(event);
-        ana_cen.processEvent(event);
-        ana_tof.processEvent(event);
+        ana_ctof.processEvent(event);
+        ana_ftof_dc.processEvent(event);
         ana_htc.processEvent(event);
         ana_ltc.processEvent(event);
         ana_cnd.processEvent(event);
@@ -112,8 +112,8 @@ public class run_histograms {
 
     //// call each monitor's `write`
     ana_mon.write();
-    ana_cen.write();
-    ana_tof.write();
+    ana_ctof.write();
+    ana_ftof_dc.write();
     ana_htc.write();
     ana_ltc.write();
     ana_cnd.write();
