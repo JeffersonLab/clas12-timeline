@@ -35,7 +35,6 @@ public class run_histograms {
     monitor2p2GeV  ana_mon      = new monitor2p2GeV(runNum,outputDir,EB,useTB);
     tof_monitor    ana_tof      = new tof_monitor(runNum,outputDir,useTB);
     central        ana_cen      = new central(runNum,outputDir,useTB);
-    // occupancies    ana_occ      = new occupancies(runNum,outputDir); // disabled, since no `write` method
     HTCC           ana_htc      = new HTCC(runNum,outputDir);
     LTCC           ana_ltc      = new LTCC(runNum,outputDir,EB,useTB);
     RICH           ana_rich     = new RICH(runNum,outputDir,EB,useTB);
@@ -86,7 +85,6 @@ public class run_histograms {
         ana_mon.processEvent(event);
         ana_cen.processEvent(event);
         ana_tof.processEvent(event);
-        // ana_occ.processEvent(event);
         ana_htc.processEvent(event);
         ana_ltc.processEvent(event);
         ana_cnd.processEvent(event);
