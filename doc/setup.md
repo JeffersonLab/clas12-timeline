@@ -17,4 +17,4 @@ Then build:
 ```
 
 > [!TIP]
-> - Use `./install.sh clean` if you want to clean build (or `mvn clean`)
+> - Use `mvn clean` if you want to clean the build
