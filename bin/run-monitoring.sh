@@ -416,9 +416,6 @@ set -u
 set -o pipefail
 echo "RUN $runnum"
 
-# set classpath
-export JYPATH=$JYPATH
-
 # additional env vars
 export TIMELINESRC=$TIMELINESRC
 

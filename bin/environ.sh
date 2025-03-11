@@ -49,7 +49,6 @@ timeline_java_opts_highmem=$(echo ${timeline_java_opts[*]} | sed 's;Xmx1024m;Xmx
 
 # exports
 export CLASSPATH="$(echo "${target_classpath[*]}" | sed 's; ;:;g')${CLASSPATH:+:${CLASSPATH}}"
-export JYPATH="$(echo "${target_classpath[*]}" | sed 's; ;:;g')${JYPATH:+:${JYPATH}}"
 export TIMELINE_JAVA_OPTS="${timeline_java_opts[*]}"
 export TIMELINE_GROOVY_OPTS="${timeline_groovy_opts[*]}"
 export TIMELINE_JAVA_OPTS_HIGHMEM=$timeline_java_opts_highmem

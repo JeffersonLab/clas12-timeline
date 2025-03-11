@@ -90,9 +90,6 @@ if ${modes['help']}; then
   exit 101
 fi
 
-# set class path to include groovy's classpath, for `java` calls
-export CLASSPATH="$JYPATH${CLASSPATH:+:${CLASSPATH}}"
-
 # get main executable for detector timelines
 run_analysis_script="org.jlab.clas.timeline.analysis.run_analysis"
 
