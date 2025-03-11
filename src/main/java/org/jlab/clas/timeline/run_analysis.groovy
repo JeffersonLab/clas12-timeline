@@ -73,8 +73,6 @@ def engines = [
   out_CTOF: [new ctof_edep(),
     new ctof_time(),
     new ctof_tdcadc(),
-    // new ctof_m2_pim(), // not needed, according to D. Carman
-    // new ctof_m2_pip(),
   ],
   out_FT: [new ftc_pi0_mass(),
     new ftc_time_charged(),
@@ -100,8 +98,6 @@ def engines = [
     new ftof_time_p1a(),
     new ftof_time_p1b(),
     new ftof_time_p2(),
-    // new ftof_time_noTriggers_p1a(), // not needed, according to D. Carman
-    // new ftof_time_noTriggers_p1b(),
     new ftof_tdcadc_p1a(),
     new ftof_tdcadc_p1b(),
     new ftof_tdcadc_p2(),
@@ -130,12 +126,6 @@ def engines = [
        new rich_npbar_m()],
   out_HELICITY: [new helicity()],
   out_TRIGGER: [new trigger()],
-  // dst_mon: [new ftof_m2_p1a_pim(), // not needed, according to D. Carman
-  //   new ftof_m2_p1a_pip(),
-  //   new ftof_m2_p1a_prot(),
-  //   new ftof_m2_p1b_pim(),
-  //   new ftof_m2_p1b_pip(),
-  //   new ftof_m2_p1b_prot()],
 ]
 
 
