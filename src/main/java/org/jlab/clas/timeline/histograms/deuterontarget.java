@@ -5,7 +5,6 @@ import org.jlab.groot.data.H2F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.groot.data.TDirectory;
-import org.jlab.clas.physics.Vector3;
 import org.jlab.clas.physics.LorentzVector;
 
 public class deuterontarget {
@@ -386,31 +385,6 @@ public class deuterontarget {
     return phi;
   }
   /////////////////////////////////////////////////
-  public double Vangle(Vector3 v1, Vector3 v2){
-    double res = 0;
-    double l1 = v1.mag();
-    double l2 = v2.mag();
-    double prod = v1.dot(v2);
-    if( l1 * l2 !=0 && Math.abs(prod)<l1*l2 )res = Math.toDegrees( Math.acos(prod/(l1*l2) ) );
-    return res;
-  }
-  public int makePiPlus(DataBank bank){
-    for(int k = 0; k < bank.rows(); k++){
-      float px = bank.getFloat("p0_x" , k);
-      float py = bank.getFloat("p0_y" , k);
-      float pz = bank.getFloat("p0_z" , k);
-      float vz = bank.getFloat("Vtx0_z", k);
-      float mom = (float)Math.sqrt(px*px+py*py+pz*pz);
-      float theta = (float)Math.toDegrees(Math.atan2(Math.sqrt(px*px+py*py), pz));
-      float phi = (float)Math.toDegrees(Math.atan2(py, px));
-      if(bank.getByte("q",k)>0){
-        pip_mom = mom;pip_theta=theta;pip_phi=phi;pip_vz=vz;pip_vx=0;pip_vy=0;
-        VPIP = new LorentzVector(px,py,pz,Math.sqrt(pip_mom*pip_mom+0.139*0.139));
-        return k;
-      }
-    }
-    return -1;
-  }
   public int makePiPlusPID(DataBank bank){
     boolean foundelec = false;
     int npositives = 0;

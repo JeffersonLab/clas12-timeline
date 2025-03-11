@@ -8,7 +8,6 @@ import org.jlab.groot.data.H2F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.groot.data.TDirectory;
-import org.jlab.clas.physics.Vector3;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
@@ -192,34 +191,6 @@ public class central {
     H_CTOF_edep_pim = new H1F("H_CTOF_edep_pim","H_CTOF_edep_pim",100,0,150);
     H_CTOF_edep_pim.setTitle("CTOF MIP (pi-) PathLCorrected Edep");
     H_CTOF_edep_pim.setTitleX("E (MeV)");
-  }
-  public double Vangle(Vector3 v1, Vector3 v2){ 
-    double res = 0; 
-    double l1 = v1.mag();
-    double l2 = v2.mag();
-    double prod = v1.dot(v2);
-    if( l1 * l2 !=0 && Math.abs(prod)<l1*l2 )res = Math.toDegrees( Math.acos(prod/(l1*l2) ) ); 
-    return res; 
-  }
-  public void FillTracks(DataBank DCbank, DataBank CVTbank){
-    for(int iDC=0;iDC<DCbank.rows();iDC++){
-      for(int iCVT=0;iCVT<CVTbank.rows() && !BackToBack;iCVT++){
-        float DelPhi = (float)Math.toDegrees( Math.atan2(DCbank.getFloat("p0_y",iDC),DCbank.getFloat("p0_x",iDC)) - CVTbank.getFloat("phi0",iCVT));
-        //DelPhi += 180f - 10f;
-        while(DelPhi>180)DelPhi-=360;
-        while(DelPhi<-180)DelPhi+=360;
-        if(Math.abs(DelPhi)<180){
-          H_vz_DC_CVT.fill(DCbank.getFloat("Vtx0_z",iDC),CVTbank.getFloat("z0",iCVT));
-          //H_vz_DC_CVT.fill(DCbank.getFloat("Vtx0_z",iDC),0.1f*CVTbank.getFloat("z0",iCVT));
-          H_phi_DC_CVT.fill(Math.toDegrees(Math.atan2(DCbank.getFloat("p0_y",iDC),DCbank.getFloat("p0_x",iDC))),Math.toDegrees(CVTbank.getFloat("phi0",iCVT)));
-          BackToBack = true;
-        }
-      }
-    }
-  }
-
-  public void fillCTOFCalibHists(DataBank part, DataBank CTOFbank, DataBank scintillBank, DataBank trk){
-
   }
 
   public void FillCVTCTOF(DataBank CVTbank, DataBank CTOFbank, DataBank partBank, DataBank trackBank){

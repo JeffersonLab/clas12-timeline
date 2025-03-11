@@ -199,6 +199,7 @@ public class occupancies {
     H_BMT_R3_phi.setTitleX("e^- #phi (^o)");
     H_BMT_R3_phi.setTitleY("R3 #phi (^o)");
   }
+
   public void MakeBST_hits(DataBank bank, DataBank hits){
     H_BST_multi.fill(hits.rows());
     for(int k=0;k<bank.rows();k++){
@@ -219,6 +220,7 @@ public class occupancies {
       //System.out.println(S + " , " + l + " , " + s);
       }
     }
+
     public void MakeBMT_hits(DataBank bank){
       H_BMT_multi.fill(bank.rows());
       for(int k=0;k<bank.rows();k++){
@@ -241,6 +243,7 @@ public class occupancies {
            */
       }
     }
+
     public void MakeBST_crosses(DataBank bank){
       for(int k=0;k<bank.rows();k++){
         int    s = bank.getInt("sector",k);
@@ -272,6 +275,7 @@ public class occupancies {
         }
       }
     }
+
     public void MakeBMT_crosses(DataBank bank){
       //System.out.println("MAKING BMT CROSSES");
       for(int k=0;k<bank.rows();k++){
@@ -311,6 +315,7 @@ public class occupancies {
         //}
       }
     }
+
     public void MakeElectron(DataBank bank){
       for(int k = 0; k < bank.rows() && found_elec==0; k++){
         int pid = bank.getInt("pid", k);
@@ -331,6 +336,7 @@ public class occupancies {
         }
       }
     }
+
     public void processEvent(DataEvent event) {
       found_elec = 0;
       if(event.hasBank("REC::Particle"))MakeElectron(event.getBank("REC::Particle"));

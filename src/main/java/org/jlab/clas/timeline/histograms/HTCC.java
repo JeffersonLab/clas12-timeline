@@ -6,7 +6,6 @@ import org.jlab.clas.pdg.PhysicsConstants;
 import org.jlab.groot.data.H1F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.groot.data.TDirectory;
 
 public class HTCC {
@@ -46,33 +45,6 @@ public class HTCC {
 
     npheAll = new H1F("npheAll", "npheAll", 50, 0, 50);
     npheAll.setOptStat(110);
-  }
-
-  int returnSector(double phi) {
-    double phiLoc = phi;
-    int sector = -100;
-    if (phiLoc < -30) {
-      phiLoc = phiLoc + 360;
-    }
-    if (phiLoc > 30 && phiLoc < 90) {
-      sector = 2;
-    }
-    if (phiLoc > 90 && phiLoc < 150) {
-      sector = 3;
-    }
-    if (phiLoc > 150 && phiLoc < 210) {
-      sector = 4;
-    }
-    if (phiLoc > 210 && phiLoc < 270) {
-      sector = 5;
-    }
-    if (phiLoc > 270 && phiLoc < 330) {
-      sector = 6;
-    }
-    if (phiLoc > 330 || phiLoc < 30) {
-      sector = 1;
-    }
-    return sector;
   }
 
   int returnHalfSector(double phi) {
@@ -115,24 +87,6 @@ public class HTCC {
       nhits = 1;
     }
     return nhits;
-  }
-
-  public void save(EmbeddedCanvas canvas, String name) {
-    canvas.save(String.format(outputDir+"/"+name+".png"));
-    System.out.println(String.format("saved "+outputDir+"/"+name+".png"));
-  }
-
-  public int isSingle(double theta, double phi) {
-    int isSigleTheta = 0;
-    int isSiglePhi = 0;
-    double resPhi = (phi + 166.0) % 30;
-    if ((theta > 8 && theta < 9) || (theta > 16 && theta < 17) || (theta > 23 && theta < 24) || (theta > 31 && theta < 32)) {
-      isSigleTheta = 1;
-    }
-    if (resPhi < 2 && resPhi > -2) {
-      isSiglePhi = 1;
-    }
-    return isSigleTheta * isSiglePhi;
   }
 
   public void processEvent(DataEvent event) {

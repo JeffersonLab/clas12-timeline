@@ -1837,24 +1837,6 @@ public class monitor2p2GeV {
     return res;
   }
 
-  public int makePiPlus(DataBank bank){
-    for(int k = 0; k < bank.rows(); k++){
-      float px = bank.getFloat("p0_x" , k);
-      float py = bank.getFloat("p0_y" , k);
-      float pz = bank.getFloat("p0_z" , k);
-      float vz = bank.getFloat("Vtx0_z", k);
-      float mom = (float)Math.sqrt(px*px+py*py+pz*pz);
-      float theta = (float)Math.toDegrees(Math.atan2(Math.sqrt(px*px+py*py), pz));
-      float phi = (float)Math.toDegrees(Math.atan2(py, px));
-      if(bank.getByte("q",k)>0){
-        pip_mom = mom;pip_theta=theta;pip_phi=phi;pip_vz=vz;pip_vx=0;pip_vy=0;
-        VPIP = new LorentzVector(px,py,pz,Math.sqrt(pip_mom*pip_mom+0.139*0.139));
-        return k;
-      }
-    }
-    return -1;
-  }
-
   public void makeValidateRoads(DataBank bank){
     for (int k = 0; k < bank.rows(); k++) {
       float px = bank.getFloat("px", k);
@@ -2380,21 +2362,6 @@ public class monitor2p2GeV {
     }
   }
 
-  public void fillTraj(DataBank bank){
-    for(int iI=0;iI<bank.rows();iI++){
-      if(bank.getInt("detector",iI)==8 && bank.getShort("trkId",iI)==e_track_ind){
-        found_e_FMM = 1;
-        float px = bank.getFloat("px", iI);
-        float py = bank.getFloat("py", iI);
-        float pz = bank.getFloat("pz", iI);
-        e_FMMmom[bank.getInt("layer",iI)-1] = (float)Math.sqrt(px*px+py*py+pz*pz);
-        e_FMMtheta[bank.getInt("layer",iI)-1] = (float)Math.toDegrees(Math.acos(pz/e_FMMmom[bank.getInt("layer",iI)-1]));
-        e_FMMphi[bank.getInt("layer",iI)-1] = (float)Math.toDegrees(Math.atan2(py,px));
-        e_FMMvz[bank.getInt("layer",iI)-1] = bank.getFloat("z",iI);
-      }
-    }
-  }
-
   public void fillTraj_HTCC(DataBank trajBank, DataBank htcc){
     for(int r=0;r<trajBank.rows();r++){
       if(trajBank.getShort("pindex",r)==e_part_ind){
@@ -2451,54 +2418,6 @@ public class monitor2p2GeV {
       H_trig_sector_elec.fill(e_sect);
       H_trig_sector_elec_rat.fill(e_sect);
     }
-  }
-
-  public void getElectronTriggerInfo(DataBank trackbank, DataBank htccbank, DataBank calbank, DataBank ftofbank, DataBank part) {
-    for (int k = 0; k < trackbank.rows(); k++) {
-      if (trackbank.getByte("q", k) == -1) {
-      }
-    }
-  }
-
-  public int isFTOFmatch(DataEvent event, int index) {
-    int sectorftof = -1;
-    if (userTimeBased && event.hasBank("REC::Scintillator")) {
-      DataBank FTOFbank = event.getBank("REC::Scintillator");
-      for (int l = 0; l < FTOFbank.rows(); l++) {
-        if (FTOFbank.getShort("pindex", l) == index && FTOFbank.getInt("detector", l) == 12) {
-          if (FTOFbank.getInt("layer", l) == 2) {
-            sectorftof = FTOFbank.getByte("sector", l);
-          }
-        }
-      }
-    }
-    return sectorftof;
-  }
-
-  public int isECALmatch(DataEvent event, int index) {
-    int sectorin = -1;
-    int sectorout = -1;
-    int retsector = -1;
-    if (userTimeBased && event.hasBank("REC::Calorimeter")) {
-      DataBank ECALbank = event.getBank("REC::Calorimeter");
-      for (int l = 0; l < ECALbank.rows(); l++) {
-        if (ECALbank.getShort("pindex", l) == index && ECALbank.getInt("detector", l) == 7) {
-          if (ECALbank.getInt("layer", l) == 4) {
-            sectorin = ECALbank.getByte("sector", l);
-          }
-          else if (ECALbank.getInt("layer", l) == 7) {
-            sectorout = ECALbank.getByte("sector", l);
-          }
-        }
-      }
-    }
-    if (sectorin > 0) {
-      retsector = sectorin;
-    }
-    if (sectorout > 0) {
-      retsector = sectorout;
-    }
-    return retsector;
   }
 
   public int isDCmatch(DataEvent event, int index){
@@ -3166,10 +3085,6 @@ public class monitor2p2GeV {
     }
   }
 
-  public void fillECAL(DataBank bank){
-
-  }
-
   public void fillTOFHists(DataBank bankTOF, DataBank bankDC){
     for(int k = 0; k < bankTOF.rows(); k++){
       int trackid = bankTOF.getInt("trackid",     k);
@@ -3343,9 +3258,6 @@ public class monitor2p2GeV {
     return (freq - 100f)/906.2f * 10.2f;
   }
 
-  public int getNelecs(){return this.Nelecs;}
-  public int getNtrigs(){return this.Ntrigs;}
-
   public void processEvent(DataEvent event) {
     trig_part_ind=-1;e_part_ind=-1;
     Nevts++;
@@ -3437,7 +3349,6 @@ public class monitor2p2GeV {
     if(partBank!=null)makeTrigOthers(partBank,event);
     if(partBank!=null && scintillBank!=null) makeRFHistograms(partBank, scintillBank);
     if(partBank!=null)makeMuonPairTrigPurity(partBank,event);
-    if(ecalBank!=null) fillECAL(ecalBank);
     if(trackDetBank!=null && event.hasBank("HTCC::rec"))checkTrigECAL(trackDetBank,event.getBank("HTCC::rec"));
     if(trackDetBank!=null && event.hasBank("FTOF::hits"))fillTOFHists(event.getBank("FTOF::hits") ,trackDetBank);
 

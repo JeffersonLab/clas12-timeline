@@ -572,23 +572,6 @@ public class RICH{
       else         dirout.writeFile(outputDir+"/out_RICH.hipo");
     }
 
-    public float getFWHM(H1F h){
-      double halfmax = h.getBinContent(h.getMaximumBin())/2;
-      int nbins = h.getXaxis().getNBins();
-      /* Calculate the FWHM */
-      int bin1 = 0;
-      int bin2 = 0;
-      /* The first bin above halfmax */
-      for (int c=0;c<nbins;c++) {
-        if (h.getBinContent(c)>=halfmax) {bin1=c; break;}
-      }
-      /* The last bin above halfmax */
-      for (int c=nbins-1;c>-1;c--) {
-        if (h.getBinContent(c)>=halfmax) {bin2=c; break;}
-      }	
-      double fwhm = h.getDataX(bin2) - h.getDataX(bin1) + 1;
-      return (float) fwhm;
-    }
 
     public float getRMS(H1F h, int binL, int binH){
       float rms=0.f;

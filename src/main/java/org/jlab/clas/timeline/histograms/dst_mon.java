@@ -658,8 +658,6 @@ public class dst_mon {
     H_pi0_G2_layers.setTitleX("nlayers");
 
   }
-  public int getNelecs(){return this.Nelecs;}
-  public int getNtrigs(){return this.Ntrigs;}
 
   public double Vangle(Vector3 v1, Vector3 v2){
     double res = 0;
@@ -693,10 +691,12 @@ public class dst_mon {
     }
     return selectTrig;
   }
+
   public void fillRecBank(DataBank recBank){
     STT = recBank.getFloat("startTime",0);
     RFT = recBank.getFloat("RFTime",0);
   }
+
   public void fillECAL(DataBank bank){
     e_EC_etot = 0;e_PCAL_edep=0;e_EC_ein=0;e_EC_eout=0;
     for(int r=0;r<bank.rows();r++){
@@ -905,6 +905,7 @@ public class dst_mon {
       }
     }
   }
+
   public void fillTraj(DataBank trajBank){
     for(int r=0;r<trajBank.rows();r++){
       //System.out.println("comparing "+e_part_ind+" and "+trajBank.getInt("pindex",r));
@@ -969,6 +970,7 @@ public class dst_mon {
       }
     }
   }
+
   public int makeElectron(DataBank bank){
     for(int k = 0; k < bank.rows(); k++){
       int pid = bank.getInt("pid", k); 
@@ -998,6 +1000,7 @@ public class dst_mon {
     }
     return -1;
   }
+
   public void makeOthers(DataBank bank){
     for(int k = 0; k < bank.rows(); k++){
       int pid = bank.getInt("pid", k);
@@ -1055,6 +1058,7 @@ public class dst_mon {
       }
     }
   }
+
   public boolean selectElastic(){
     boolean res = false;
     if(prot_part_ind>-1){
@@ -1070,6 +1074,7 @@ public class dst_mon {
     }
     return res;
   }
+
   public boolean select_epip(){
     boolean res = false;
     if(pip_part_ind>-1){
@@ -1086,6 +1091,7 @@ public class dst_mon {
     }
     return res;
   }
+
   public boolean select_epi0(){
     boolean res = false;
     if( true
@@ -1134,6 +1140,7 @@ public class dst_mon {
       }//if e_part_ind>-1
     }//event.hasBank("RUN::config")
   }//processEvent
+
   public void FillHists(){
     H_e_t_f.fill(e_phi,e_the);
     H_e_p_f.fill(e_phi,e_mom);
