@@ -291,7 +291,7 @@ cp -rL $finalDirPreQA/* $finalDir/
 if ${modes['focus-all']} || ${modes['focus-qa']}; then
   echo ">>> add QA lines..."
   logFile=$logDir/qa
-  run-groovy-timeline.sh $TIMELINE_GROOVY_OPTS $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
+  $TIMELINESRC/bin/run-groovy-timeline.sh $TIMELINE_GROOVY_OPTS $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
   outputFiles=$(find $finalDir -name "*_QA.hipo")
   [ -n "$outputFiles" ] && $TIMELINESRC/bin/hipo-check.sh $outputFiles
 fi
