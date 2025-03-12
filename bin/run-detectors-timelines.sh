@@ -12,7 +12,7 @@ outputDir=""
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list build skip-mya focus-timelines focus-qa debug help; do
+for key in list skip-mya focus-timelines focus-qa debug help; do
   modes[$key]=false
 done
 
@@ -47,8 +47,6 @@ usage() {
     -m [MATCH]          only produce timelines matching [MATCH]
 
     --list              dump the list of timelines and exit
-
-    --build             cleanly-rebuild the timeline code, then run
 
     --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
 
@@ -92,17 +90,14 @@ if ${modes['help']}; then
   exit 101
 fi
 
-# set class path to include groovy's classpath, for `java` calls
-export CLASSPATH="$JYPATH${CLASSPATH:+:${CLASSPATH}}"
-
 # get main executable for detector timelines
-run_detectors_script="org.jlab.clas.timeline.run_detectors"
+run_analysis_script="org.jlab.clas.timeline.analysis.run_analysis"
 
 # build list of timelines
 if ${modes['skip-mya']}; then
-  timelineList=$(java $run_detectors_script --timelines | grep -vE '^epics_' | sort | grep $match)
+  timelineList=$(java $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep $match)
 else
-  timelineList=$(java $run_detectors_script --timelines | sort | grep $match)
+  timelineList=$(java $run_analysis_script --timelines | sort | grep $match)
 fi
 
 # list detector timelines, if requested
@@ -144,15 +139,6 @@ NUM_THREADS     = $numThreads
 OPTIONS = {"""
 for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
 echo "}"
-
-# rebuild, if desired
-if ${modes['build']}; then
-  echo "building detector timeline"
-  pushd $TIMELINESRC/detectors
-  mvn clean package
-  [ $? -ne 0 ] && exit 100
-  popd
-fi
 
 # output detector subdirectories
 detDirs=(
@@ -238,12 +224,12 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
     echo ">>> producing timeline '$timelineObj' ..."
     if ${modes['debug']}; then
-      java $TIMELINE_JAVA_OPTS $run_detectors_script $timelineObj $inputDir
+      java $TIMELINE_JAVA_OPTS $run_analysis_script $timelineObj $inputDir
       echo "PREMATURE EXIT, since --debug option was used"
       exit
     else
       #sleep 1 
-      java $TIMELINE_JAVA_OPTS $run_detectors_script $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+      java $TIMELINE_JAVA_OPTS $run_analysis_script $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
       job_ids+=($!)
       job_names+=($timelineObj)
     fi
@@ -305,7 +291,7 @@ cp -rL $finalDirPreQA/* $finalDir/
 if ${modes['focus-all']} || ${modes['focus-qa']}; then
   echo ">>> add QA lines..."
   logFile=$logDir/qa
-  run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
+  $TIMELINESRC/bin/run-groovy-timeline.sh $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
   outputFiles=$(find $finalDir -name "*_QA.hipo")
   [ -n "$outputFiles" ] && $TIMELINESRC/bin/hipo-check.sh $outputFiles
 fi

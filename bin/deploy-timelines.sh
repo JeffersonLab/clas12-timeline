@@ -169,7 +169,7 @@ mkdir -pv $targetDir
 cp -rv $inputDir/* $targetDir/
 [ -n "$metadataFile" ] && cp -v $metadataFile $targetDir/metadata.json
 [ -n "$readmeNote" ] && echo "$readmeNote" > $targetDir/README
-run-groovy $TIMELINE_GROOVY_OPTS $TIMELINESRC/bin/index-webpage.groovy $targetDir
+$TIMELINESRC/bin/run-groovy-timeline.sh $TIMELINESRC/bin/index-webpage.groovy $targetDir
 echo "DONE."
 
 # print URL

@@ -23,7 +23,7 @@ def cutsFileList = [
 
 // parse arguments
 if(args.length!=2) { 
-  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [INPUT TIMELINES] [OUTPUT TIMELINES]"
+  System.err.println "USAGE: groovy ${this.class.getSimpleName()}.groovy [INPUT TIMELINES] [OUTPUT TIMELINES]"
   System.exit(100)
 }
 def indir  = args[0]

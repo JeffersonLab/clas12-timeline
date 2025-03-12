@@ -28,14 +28,9 @@ fi
 [ -n "${COATJAVA-}" ] && export PATH="$COATJAVA/bin${PATH:+:${PATH}}"
 
 # class paths
-java_classpath=(
-  "$COATJAVA/lib/clas/*"
-  "$COATJAVA/lib/utils/*"
-  "$TIMELINESRC/monitoring/target/*"
-)
-groovy_classpath=(
-  "$TIMELINESRC/detectors/target/*"
-  "$(dirname $(dirname $(which groovy)))/lib/*"
+target_classpath=(
+  "$TIMELINESRC/target/*"
+  "$TIMELINESRC/target/dependency/*"
 )
 
 # java and groovy options
@@ -45,25 +40,18 @@ timeline_java_opts=(
   -Xmx1536m
   -XX:+UseSerialGC
 )
-timeline_groovy_opts=(
-  -Djava.awt.headless=true
-)
 
 # run java with more resources, to mitigate large memory residence for long run periods
 timeline_java_opts_highmem=$(echo ${timeline_java_opts[*]} | sed 's;Xmx1024m;Xmx2048m;')
 
 # exports
-export CLASSPATH="$(echo "${java_classpath[*]}" | sed 's; ;:;g')${CLASSPATH:+:${CLASSPATH}}"
-export JYPATH="$(echo "${groovy_classpath[*]}" | sed 's; ;:;g')${JYPATH:+:${JYPATH}}"
+export CLASSPATH="$(echo "${target_classpath[*]}" | sed 's; ;:;g')${CLASSPATH:+:${CLASSPATH}}"
 export TIMELINE_JAVA_OPTS="${timeline_java_opts[*]}"
-export TIMELINE_GROOVY_OPTS="${timeline_groovy_opts[*]}"
 export TIMELINE_JAVA_OPTS_HIGHMEM=$timeline_java_opts_highmem
 
 # cleanup vars
 unset thisEnv
 unset log_config
-unset java_classpath
-unset groovy_classpath
+unset target_classpath
 unset timeline_java_opts
-unset timeline_groovy_opts
 unset timeline_java_opts_highmem

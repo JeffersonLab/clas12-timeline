@@ -58,14 +58,14 @@ defect_bits_FT=(
 
 for bit in ${defect_bits_FD[@]}; do
   echo "================ FD DEFECT BIT $bit ================"
-  run-groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $tlDir $dataset false $bit
+  $TIMELINESRC/bin/run-groovy-timeline.sh qaCut.groovy $tlDir $dataset false $bit
   qa=$(ls -t $tlDir/outmon/electron_FD_*QA*.hipo | grep -v epoch | head -n1)
   mv -v $qa ${qaDir}/$(echo $qa | sed 's/^.*_QA_//g')
 done
 
 for bit in ${defect_bits_FT[@]}; do
   echo "================ FT DEFECT BIT $bit ================"
-  run-groovy $TIMELINE_GROOVY_OPTS qaCut.groovy $tlDir $dataset FT $bit
+  $TIMELINESRC/bin/run-groovy-timeline.sh qaCut.groovy $tlDir $dataset FT $bit
   qa=$(ls -t $tlDir/outmon/electron_FT_*QA*.hipo | grep -v epoch | head -n1)
   mv -v $qa ${qaDir}/$(echo $qa | sed 's/^.*_QA_//g')
 done

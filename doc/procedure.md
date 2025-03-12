@@ -39,8 +39,7 @@ sbatch ./slurm/job.rga_sp19_v5.physics.slurm     # for physics timelines
 - monitor output logs in `/farm_out/$LOGNAME/` or use `bin/error-print.sh`
 
 > [!NOTE]
-> - data monitoring for detector timelines is handled by the [`monitoring/` subdirectory](/monitoring);
->   see [its documentation](/monitoring/README.md)
+> - data monitoring for detector timelines is handled by the [`org.jlab.clas.timeline.histograms` package](/src/main/java/org/jlab/clas/timeline/histograms)
 > - data monitoring for physics timelines is handled by the [`qa-physics/` subdirectory](/qa-physics);
 >   see [its documentation](/qa-physics/README.md)
 
@@ -76,8 +75,7 @@ bin/run-physics-timelines.sh   -d rga_sp19_v5   # for physics timelines
 
 
 > [!NOTE]
-> - detector timeline production is handled by the [`detectors/` subdirectory](/detectors);
->   see [its documentation](/detectors/README.md)
+> - detector timeline production is handled by the [`org.jlab.clas.timeline.analysis` package](/src/main/java/org/jlab/clas/timeline/analysis)
 > - QA of detector timelines is handled by the [`qa-detectors/` subdirectory](/qa-detectors);
 >   see [its documentation](/qa-detectors/README.md)
 > - physics timeline production and QA are handled by the [`qa-physics/` subdirectory](/qa-physics);

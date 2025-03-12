@@ -13,7 +13,7 @@ flowchart TB
 
     subgraph Data Monitoring
         subgraph "<strong>bin/run-monitoring.sh</strong>"
-            monitorDetectors["<strong>Make detector histograms</strong><br/>monitoring/: org.jlab.clas12.monitoring.ana_2p2"]:::proc
+            monitorDetectors["<strong>Make detector histograms</strong><br/>org.jlab.clas.timeline.histograms.run_histograms"]:::proc
             monitorPhysics["<strong>Make physics QA histograms</strong><br/>qa-physics/: monitorRead.groovy"]:::proc
         end
         outplots[(___/detectors/$run_number/*.hipo)]:::data
@@ -28,7 +28,7 @@ flowchart TB
 
     subgraph Timeline Production
         subgraph "<strong>bin/run-detectors-timelines.sh</strong>"
-            timelineDetectorsPreQA["<strong>Make detector timelines</strong><br/>detectors/: org.jlab.clas.timeline.run"]:::proc
+            timelineDetectorsPreQA["<strong>Make detector timelines</strong><br/>org.jlab.clas.timeline.analysis.run_analysis"]:::proc
             outTimelineDetectorsPreQA{{outfiles/$dataset/timeline_web_preQA/$detector/*.hipo}}:::timeline
             timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
         end
