@@ -144,13 +144,18 @@ def buildMonAveGr = { tObj ->
 }
 
 // build monitor 'runSum' distribution (sum of bins' distribtions for a run)
-def buildMonRunSumDist = { tObj,nb,lb,ub ->
+def buildMonRunSumDist = { tObj ->
   def histN = objToMonName(tObj.getName())
   def histT = objToMonTitle(tObj.getTitle())
   histN = histN + "_runSumDist"
   histT = histT.replaceAll(/$/,' distribution')
   histT = appendLegend(histT)
-  def hist = new H1F(histN,histT,nb,lb,ub)
+  def hist = new H1F(
+    histN,
+    histT,
+    tObj.getAxis().getNBins(),
+    tObj.getAxis().min(),
+    tObj.getAxis().max())
   if(histN.contains("_hm_")) { hist.setLineColor(2); }
   return hist
 }
@@ -205,8 +210,6 @@ def objList
 def part
 def hel
 def varStr
-def varNB
-def varLB,varUB
 def runnum
 def timeBinNum
 def obj
@@ -245,7 +248,7 @@ inList.each { inFile ->
         buildMonAveGr(obj)
       })
       T.addLeaf(monTree,[runnum,'helic','sinPhi',part,hel,'runSumDist'],{
-        buildMonRunSumDist(obj,100,-0.25,0.25)
+        buildMonRunSumDist(obj)
       })
 
       // instantiate sinPhi dists binned for an asymmetry, denoted "asymGrid" (if not
@@ -291,10 +294,10 @@ inList.each { inFile ->
         return g
       })
       T.addLeaf(monTree,[runnum,'helic','dist','heldef','heldefDist'],{
-        def h = buildMonRunSumDist(obj,50,0,1)
-        def hN = h.getName().replaceAll(/_runSumDist$/,'_heldefDist')
-        h.setName(hN)
-        h.setTitle('average defined helicity fraction distribution')
+        def histN = objToMonName(obj.getName()) + "_heldefDist"
+        def histT = appendLegend('average defined helicity fraction distribution')
+        def h = new H1F(histN, histT, 50, 0, 1)
+        if(histN.contains("_hm_")) { h.setLineColor(2); }
         return h
       })
       ent = obj.integral()
@@ -323,10 +326,10 @@ inList.each { inFile ->
         return g
       })
       T.addLeaf(monTree,[runnum,'helic','dist','rellum','rellumDist'],{
-        def h = buildMonRunSumDist(obj,50,0.9,1.1)
-        def hN = h.getName().replaceAll(/_runSumDist$/,'_rellumDist')
-        h.setName(hN)
-        h.setTitle('average n+/n- distribution')
+        def histN = objToMonName(obj.getName()) + "_rellumDist"
+        def histT = appendLegend('average n+/n- distribution')
+        def h = new H1F(histN, histT, 50, 0.9, 1.1)
+        if(histN.contains("_hm_")) { h.setLineColor(2); }
         return h
       })
       if(obj.integral()>0) {
@@ -378,13 +381,7 @@ inList.each { inFile ->
         varStr = tok[1]
 
         T.addLeaf(monTree,[runnum,'DIS',varStr,'aveGr'],{buildMonAveGr(obj)})
-        T.addLeaf(monTree,[runnum,'DIS',varStr,'runSumDist'],{
-          varNB = 100
-          if(varStr=="Q2") { varLB=0; varUB=12; }
-          else if(varStr=="W") { varLB=0; varUB=6; }
-          else { varLB=0; varUB=1; }
-          buildMonRunSumDist(obj,varNB,varLB,varUB)
-        })
+        T.addLeaf(monTree,[runnum,'DIS',varStr,'runSumDist'],{buildMonRunSumDist(obj)})
 
         // add <varStr> point to the monitors
         ent = obj.integral()
@@ -404,17 +401,7 @@ inList.each { inFile ->
       part = tok[1]
       varStr = tok[2]
       T.addLeaf(monTree,[runnum,'inclusive',part,varStr,'aveGr'],{buildMonAveGr(obj)})
-      T.addLeaf(monTree,[runnum,'inclusive',part,varStr,'runSumDist'],{
-        varNB = 100
-        varLB = 0
-        varUB = 0
-        if(varStr=='p') { varLB=0; varUB=10 }
-        else if(varStr=='pT') { varLB=0; varUB=4 }
-        else if(varStr=='z') { varLB=0; varUB=1 }
-        else if(varStr=='theta') { varLB=0; varUB=Math.toRadians(90.0) }
-        else if(varStr=='phiH') { varLB=-3.15; varUB=3.15 }
-        buildMonRunSumDist(obj,varNB,varLB,varUB)
-      })
+      T.addLeaf(monTree,[runnum,'inclusive',part,varStr,'runSumDist'],{buildMonRunSumDist(obj)})
       ent = obj.integral()
       if(ent>0) {
         aveX = obj.getMean()
