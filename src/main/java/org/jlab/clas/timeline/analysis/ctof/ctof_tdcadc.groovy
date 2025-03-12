@@ -9,7 +9,7 @@ class ctof_tdcadc {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/ctof/CTOF TDC-ADC Time Difference')
   def f1s = CTOFFitter.tdcadcdifffit(h1)
 
@@ -28,7 +28,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
   ['mean', 'sigma'].each{name->

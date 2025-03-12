@@ -7,7 +7,7 @@ class bst_Occupancy {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/cvt/hbstOccupancy')
   h1.setTitle("BST Occupancy");
   h1.setTitleX("BST Occupancy (%)");
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   TDirectory out = new TDirectory()
 

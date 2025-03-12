@@ -7,7 +7,7 @@ class band_adccor {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/BAND/H_BAND_ADC_LR_SectorCombination1')
   def h2 = dir.getObject('/BAND/H_BAND_ADC_LR_SectorCombination2')
 
@@ -16,7 +16,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
   TDirectory out = new TDirectory()

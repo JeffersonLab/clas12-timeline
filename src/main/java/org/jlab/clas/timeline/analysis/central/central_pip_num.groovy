@@ -7,7 +7,7 @@ class central_pip_num {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/trig/H_trig_central_piplus_rat')
 
   data[run] = [run:run, h1:h1]
@@ -15,7 +15,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   TDirectory out = new TDirectory()
 

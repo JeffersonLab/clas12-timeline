@@ -6,7 +6,7 @@ import org.jlab.groot.data.GraphErrors
 class htcc_nphe_sector {
   def data = new ConcurrentHashMap()
   
-  def processDirectory(dir, run) {
+  def processRun(dir, run) {
     // histogram with the nphe for all channels in a single run
     def h_npheAll = dir.getObject('/HTCC/npheAll')
     def averageNphe = h_npheAll.getMean() 
@@ -26,7 +26,7 @@ class htcc_nphe_sector {
     }
   }
 
-  def close() {
+  def write() {
     ['npheMean', 'normFactor'].each { plotType ->
       TDirectory out = new TDirectory()
       out.mkdir('/timelines')

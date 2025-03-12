@@ -8,7 +8,7 @@ class ec_ecin_time {
 
 def data = new ConcurrentHashMap()
 
-  def processDirectory(dir, run) {
+  def processRun(dir, run) {
     (1..6).each{sec->
       def ttl = "sec${sec}"
 
@@ -23,7 +23,7 @@ def data = new ConcurrentHashMap()
 
 
 
-  def close() {
+  def write() {
     ['mean', 'sigma'].each{name->
       TDirectory out = new TDirectory()
       out.mkdir('/timelines')

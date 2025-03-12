@@ -9,7 +9,7 @@ class ctof_edep {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/ctof/PathLCorrected Edep_p5')
   (6..10).each{
        def h2  = dir.getObject(String.format("/ctof/PathLCorrected Edep_p%d",it))
@@ -23,7 +23,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
   def grtl = new GraphErrors('Edep')

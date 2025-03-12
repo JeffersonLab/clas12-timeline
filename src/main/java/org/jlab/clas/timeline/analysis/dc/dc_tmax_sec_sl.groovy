@@ -8,7 +8,7 @@ class dc_tmax_sec_sl {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def tmaxfitlist = [[],[],[],[],[],[]]
   def tmaxlist = [[],[],[],[],[],[]]
   def tmaxchi2list = [[],[],[],[],[],[]]
@@ -31,7 +31,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   def name = 'tmax'
 

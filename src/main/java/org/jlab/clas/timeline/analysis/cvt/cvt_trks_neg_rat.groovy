@@ -7,7 +7,7 @@ class cvt_trks_neg_rat {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/cvt/hnegtrks_rat')
   h1.setTitle("CVT Negative Tracks/ trigger");
   h1.setTitleX("CVT Negative Tracks/ trigger");
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   TDirectory out = new TDirectory()
 

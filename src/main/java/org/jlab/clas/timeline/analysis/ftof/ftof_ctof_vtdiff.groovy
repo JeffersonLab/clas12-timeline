@@ -8,7 +8,7 @@ class ftof_ctof_vtdiff {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   (1..6).collect{sec->
     def h1 = dir.getObject("/tof/ftof-ctof_vtdiff_S${sec}")
     if(h1.integral() > 0.0) {
@@ -20,7 +20,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   ['mean', 'sigma'].each{ name ->
     TDirectory out = new TDirectory()

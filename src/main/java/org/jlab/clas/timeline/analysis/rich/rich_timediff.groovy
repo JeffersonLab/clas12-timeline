@@ -9,7 +9,7 @@ class rich_timediff {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/RICH/H_RICH_dt')
   def f1 = RICHFitter.timefit(h1)
 
@@ -18,7 +18,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
   ['mean', 'sigma'].each{name->

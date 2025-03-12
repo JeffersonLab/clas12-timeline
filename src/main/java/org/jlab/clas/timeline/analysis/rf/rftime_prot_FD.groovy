@@ -8,7 +8,7 @@ class rftime_prot_FD {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def rr = [run:run, mean:[], sigma:[], h1:[], f1:[]]
   (0..<6).each{
     def h1 = dir.getObject('/RF/H_p_RFtime1_S'+(it+1))
@@ -23,7 +23,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
   ['mean', 'sigma'].each{name ->

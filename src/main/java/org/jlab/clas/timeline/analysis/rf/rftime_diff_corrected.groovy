@@ -8,7 +8,7 @@ class rftime_diff_corrected {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/RF/H_RFtimediff_corrected')
 
   def f1 = RFFitter.fit(h1)
@@ -18,7 +18,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
   ['mean', 'sigma'].each{name ->

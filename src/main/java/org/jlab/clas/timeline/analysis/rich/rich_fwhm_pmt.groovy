@@ -9,14 +9,14 @@ class rich_fwhm_pmt {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/RICH/H_RICH_FWHM')
   data[run] = [run:run, h1:h1, fwhm_max:h1.getBinContent(h1.getMaximumBin())]
 }
 
 
 
-def close() {
+def write() {
 
 
   ['fwhm_max'].each{name->

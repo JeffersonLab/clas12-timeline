@@ -10,11 +10,11 @@ import org.jlab.clas.timeline.fitter.MoreFitter
 class epics_hall_weather {
   def runlist = []
 
-  def processDirectory(dir, run) {
+  def processRun(dir, run) {
     runlist.push(run)
   }
 
-  def close() {
+  def write() {
 
     def pvNames = [
       'pressure_hall_B':    'B_SYS_WEATHER_SF_L3_Press',

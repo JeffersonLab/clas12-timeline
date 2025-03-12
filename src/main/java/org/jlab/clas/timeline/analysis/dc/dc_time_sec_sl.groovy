@@ -8,7 +8,7 @@ class dc_time_sec_sl {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def funclist = [t0:[[],[],[],[],[],[]], tmax:[[],[],[],[],[],[]]] // actually it's dict! not a list!
   def fomlist = [t0:[[],[],[],[],[],[]], tmax:[[],[],[],[],[],[]]]
   def chi2list = [t0:[[],[],[],[],[],[]], tmax:[[],[],[],[],[],[]]]
@@ -36,7 +36,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   ['t0', 'tmax'].each{ name ->
     TDirectory out = new TDirectory()

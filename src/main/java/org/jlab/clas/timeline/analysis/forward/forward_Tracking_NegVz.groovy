@@ -8,7 +8,7 @@ class forward_Tracking_NegVz {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def funclist = []
   def meanlist = []
   def sigmalist = []
@@ -41,7 +41,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   TDirectory out = new TDirectory()
   out.mkdir('/timelines')

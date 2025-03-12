@@ -7,7 +7,7 @@ class ltcc_nphe_sector {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def hlist = [3,5].collect{
     def hist = dir.getObject('/elec/H_trig_LTCCn_theta_S'+it).projectionY()
     hist.setName("sec"+(it))
@@ -20,7 +20,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
   TDirectory out = new TDirectory()

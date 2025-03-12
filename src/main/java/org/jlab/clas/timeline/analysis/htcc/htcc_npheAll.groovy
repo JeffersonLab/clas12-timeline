@@ -8,7 +8,7 @@ class htcc_npheAll {
 
   def data = new ConcurrentHashMap()
 
-  def processDirectory(dir, run) {
+  def processRun(dir, run) {
     def h1 = dir.getObject('/HTCC/npheAll')
     def f1 = HTCCFitter.timeAllFit(h1)
     def mean = f1.getParameter(1)
@@ -18,7 +18,7 @@ class htcc_npheAll {
 
 
 
-  def close() {
+  def write() {
 
     TDirectory out = new TDirectory()
     out.mkdir('/timelines')

@@ -8,7 +8,7 @@ class ec_gg_m {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/gg/H_gg_m')
   def f1 = ECFitter.ggmfit(h1)
 
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
   ['mean', 'sigma'].each{name->

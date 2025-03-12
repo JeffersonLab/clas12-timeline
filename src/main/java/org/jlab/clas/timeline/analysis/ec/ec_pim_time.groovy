@@ -8,7 +8,7 @@ class ec_pim_time {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/tof/H_pim_vtd')
   def f1 = ECFitter.timefit(h1)
 
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
   ['mean', 'sigma'].each{name->

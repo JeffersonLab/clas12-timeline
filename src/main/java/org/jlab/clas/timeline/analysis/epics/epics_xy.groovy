@@ -11,7 +11,7 @@ import org.jlab.clas.timeline.fitter.MoreFitter
 class epics_xy {
   def runlist = []
 
-  def processDirectory(dir, run) {
+  def processRun(dir, run) {
     runlist.push(run)
   }
 
@@ -54,7 +54,7 @@ class epics_xy {
   }
 
 
-  def close() {
+  def write() {
 
     def MYQ = new MYQuery()
     MYQ.querySettings['l'] = "${1000*runlist.size()}" // downsample the payload, since it's too big for a full run period

@@ -7,7 +7,7 @@ class cvt_trks {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/cvt/htrks')
   h1.setTitle("CVT Track Multiplicity");
   h1.setTitleX("CVT Track Multiplicity");
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   TDirectory out = new TDirectory()
 

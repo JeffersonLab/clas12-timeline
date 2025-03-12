@@ -7,7 +7,7 @@ class cvt_chi2_neg {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/cvt/H_CVT_chi2_neg')
 
   data[run] = [run:run, h1:h1]
@@ -15,7 +15,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   TDirectory out = new TDirectory()
 

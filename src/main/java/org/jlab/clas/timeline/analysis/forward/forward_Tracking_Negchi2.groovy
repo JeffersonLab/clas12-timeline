@@ -7,7 +7,7 @@ class forward_Tracking_Negchi2 {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def histlist =   (0..<6).collect{
     def h1 = dir.getObject('/dc/H_dcm_chi2_S'+(it+1))
     return h1
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   TDirectory out = new TDirectory()
   out.mkdir('/timelines')

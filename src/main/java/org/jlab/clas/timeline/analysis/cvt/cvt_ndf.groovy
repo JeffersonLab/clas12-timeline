@@ -7,7 +7,7 @@ class cvt_ndf {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/cvt/hndf')
   h1.setTitle("CVT track ndf");
   h1.setTitleX("CVT track ndf");
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   TDirectory out = new TDirectory()
 

@@ -9,7 +9,7 @@ class rich_dt_m {
 
 def data = new ConcurrentHashMap()
 
-  def processDirectory(dir, run) {
+  def processRun(dir, run) {
     (1..2).each{module->
       def hs = dir.getObject("/RICH/H_RICH_setup")
       int m = module.toInteger()
@@ -31,7 +31,7 @@ def data = new ConcurrentHashMap()
   }
 
 
-  def close() {
+  def write() {
     ['mean', 'sigma'].each{ name ->
       TDirectory out = new TDirectory()
       out.mkdir('/timelines')

@@ -7,7 +7,7 @@ class cvt_chi2norm {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/cvt/hchi2norm')
   h1.setTitle("CVT track chi2norm");
   h1.setTitleX("CVT track chi2/ndf");
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   TDirectory out = new TDirectory()
 

@@ -7,14 +7,14 @@ class helicity {
 
     def data = new ConcurrentHashMap()
 
-    def processDirectory(dir, run) {
+    def processRun(dir, run) {
         def h1 = dir.getObject('/HELICITY/offlineRaw')
         def h2 = dir.getObject('/HELICITY/onlineRaw')
         def h3 = dir.getObject('/HELICITY/boardRaw')
         data[run] = [run:run, OfflineRaw:h1, OnlineRaw:h2, BoardRaw:h3]
     }
 
-    def close() {
+    def write() {
         TDirectory out = new TDirectory()
         out.mkdir('/timelines')
         ["OfflineRaw", "OnlineRaw","BoardRaw"].each{ name ->

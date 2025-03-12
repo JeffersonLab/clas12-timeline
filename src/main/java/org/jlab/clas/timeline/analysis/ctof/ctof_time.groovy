@@ -9,7 +9,7 @@ class ctof_time {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/ctof/H_CVT_t_neg')
   def f1 = CTOFFitter.timefit(h1)
 
@@ -18,7 +18,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
   ['mean', 'sigma'].each{name->

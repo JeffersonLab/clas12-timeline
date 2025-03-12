@@ -7,7 +7,7 @@ class bst_OnTrkLayers {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/cvt/hbstOnTrkLayers')
   h1.setTitle("BST Layers per Track");
   h1.setTitleX("BST Layers per Track");
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   TDirectory out = new TDirectory()
 

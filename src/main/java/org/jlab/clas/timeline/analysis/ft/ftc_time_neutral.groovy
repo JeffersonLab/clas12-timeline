@@ -8,7 +8,7 @@ class ftc_time_neutral {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/ft/hi_cal_time_neu')
   def f1 = FTFitter.ftctimefit(h1)
 
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
   ['mean', 'sigma'].each{name->

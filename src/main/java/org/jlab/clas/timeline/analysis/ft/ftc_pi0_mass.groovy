@@ -8,7 +8,7 @@ class ftc_pi0_mass {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/ft/hpi0sum')
   def f1 = FTFitter.pi0fit(h1)
 
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
   ['mean', 'sigma'].each{name->

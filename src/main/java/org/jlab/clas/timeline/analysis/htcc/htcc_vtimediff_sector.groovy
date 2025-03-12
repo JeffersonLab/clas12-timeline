@@ -9,7 +9,7 @@ class htcc_vtimediff_sector {
 
   def data = new ConcurrentHashMap()
 
-  def processDirectory(dir, run) {
+  def processRun(dir, run) {
 
     (0..<6).each{sec->
       def hlist = [(0..<4),(0..<2)].combinations().collect{ring,side->dir.getObject("/HTCC/H_HTCC_vtime_s${sec+1}_r${ring+1}_side${side+1}")}
@@ -27,7 +27,7 @@ class htcc_vtimediff_sector {
 
 
 
-  def close() {
+  def write() {
     ['mean', 'sigma'].each{name ->
       TDirectory out = new TDirectory()
       out.mkdir('/timelines')

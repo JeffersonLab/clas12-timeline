@@ -7,7 +7,7 @@ class ltcc_had_nphe_sector {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/LTCC/H_piplus_S3_nphe')
   def h2 = dir.getObject('/LTCC/H_piplus_S5_nphe')
   def h3 = dir.getObject('/LTCC/H_piminus_S3_nphe')
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
 
 

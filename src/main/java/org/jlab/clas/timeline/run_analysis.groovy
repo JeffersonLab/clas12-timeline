@@ -161,7 +161,7 @@ if(eng) {
       def m = fname =~ /\d+/
       def run = m[0].toInteger()
 
-      engine.processDirectory(dir, run)
+      engine.processRun(dir, run)
 
       println("debug: "+engine.getClass().getSimpleName()+" finished $arg")
     } catch(Exception ex) {
@@ -170,7 +170,7 @@ if(eng) {
       System.exit(100)
     }
   }
-  engine.close()
+  engine.write()
   println("debug: "+engine.getClass().getSimpleName()+" ended")
 } else {
   System.err.println("error: "+args[0]+" not found")

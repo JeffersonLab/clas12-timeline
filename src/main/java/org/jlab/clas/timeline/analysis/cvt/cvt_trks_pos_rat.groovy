@@ -7,7 +7,7 @@ class cvt_trks_pos_rat {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/cvt/hpostrks_rat')
   h1.setTitle("CVT Positive Tracks/ trigger");
   h1.setTitleX("CVT Positive Tracks/ trigger");
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   TDirectory out = new TDirectory()
 

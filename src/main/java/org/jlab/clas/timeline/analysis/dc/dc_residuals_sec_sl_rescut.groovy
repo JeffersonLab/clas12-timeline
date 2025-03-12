@@ -9,7 +9,7 @@ class dc_residuals_sec_sl_rescut {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def funclist = [[],[],[],[],[],[]]
   def meanlist = [[],[],[],[],[],[]]
   def sigmalist = [[],[],[],[],[],[]]
@@ -41,7 +41,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   ['mean', 'sigma', 'max'].each{ name ->
     TDirectory out = new TDirectory()

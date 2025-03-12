@@ -8,7 +8,7 @@ class dc_t0_sec_sl {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def t0fitlist = [[],[],[],[],[],[]]
   def t0list = [[],[],[],[],[],[]]
   def t0chi2list = [[],[],[],[],[],[]]
@@ -31,7 +31,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   def name = 't0'
 

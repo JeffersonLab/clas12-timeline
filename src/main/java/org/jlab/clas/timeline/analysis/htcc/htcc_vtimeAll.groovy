@@ -8,7 +8,7 @@ class htcc_vtimeAll {
 
   def data = new ConcurrentHashMap()
 
-  def processDirectory(dir, run) {
+  def processRun(dir, run) {
     def h1 = dir.getObject('/HTCC/timeAll')
     def f1 = HTCCFitter.timeAllFit(h1)
     def mean = f1.getParameter(1)
@@ -18,7 +18,7 @@ class htcc_vtimeAll {
 
 
 
-  def close() {
+  def write() {
 
   ['mean', 'sigma'].each{name->
       TDirectory out = new TDirectory()

@@ -8,7 +8,7 @@ class fth_MIPS_time {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def funclist = []
   def meanlist = []
   def sigmalist = []
@@ -31,7 +31,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   ['mean', 'sigma'].each{name->
     TDirectory out = new TDirectory()

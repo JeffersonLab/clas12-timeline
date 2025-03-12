@@ -7,7 +7,7 @@ class cvt_pt {
 
 def data = new ConcurrentHashMap()
 
-def processDirectory(dir, run) {
+def processRun(dir, run) {
   def h1 = dir.getObject('/cvt/hpt')
   h1.setTitle("CVT track transverse momentum");
   h1.setTitleX("CVT track transverse momentum (GeV/c)");
@@ -17,7 +17,7 @@ def processDirectory(dir, run) {
 
 
 
-def close() {
+def write() {
 
   TDirectory out = new TDirectory()
 

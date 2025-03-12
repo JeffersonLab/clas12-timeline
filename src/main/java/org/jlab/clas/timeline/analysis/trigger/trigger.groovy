@@ -8,12 +8,12 @@ class trigger {
 
     def data = new ConcurrentHashMap()
 
-    def processDirectory(dir, run) {
+    def processRun(dir, run) {
         def h = dir.getObject('/TRIGGER/bits')
         data[run] = [run:run, Bits:h]
     }
 
-    def close() {
+    def write() {
         TDirectory out = new TDirectory()
         out.mkdir('/timelines')
         for (int i=0; i<64; ++i) {
