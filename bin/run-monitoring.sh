@@ -385,12 +385,8 @@ set -u
 set -o pipefail
 echo "RUN $runnum"
 
-# set classpath
-export CLASSPATH=$CLASSPATH
-
 # produce histograms
-java \\
-  $TIMELINE_JAVA_OPTS \\
+java $TIMELINE_JAVA_OPTS \\
   org.jlab.clas.timeline.histograms.run_histograms \\
     $runnum \\
     $outputSubDir \\
