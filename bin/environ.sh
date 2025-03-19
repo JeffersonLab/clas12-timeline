@@ -12,7 +12,7 @@ log_config=logging # set to 'logging' for quiet, or to 'debug' for verbose
 export TIMELINESRC=$(realpath $(dirname $thisEnv)/..)
 
 # RCDB
-[ -z "${RCDB_CONNECTION-}" ] && RCDB_CONNECTION=mysql://rcdb@clasdb-farm.jlab.org/rcdb
+[ -z "${RCDB_CONNECTION-}" ] && RCDB_CONNECTION=mysql://rcdb@clasdb.jlab.org/rcdb
 export RCDB_CONNECTION
 
 # check coatjava environment

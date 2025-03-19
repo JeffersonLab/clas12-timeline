@@ -35,7 +35,9 @@ SQLite : sqlite:////group/clas12/rcdb/example.db
 */
 
 // Open SQL database connection
-def address = "mysql://rcdb@clasdb/rcdb"
+def address = System.getenv('RCDB_CONNECTION')
+if(address==null)
+  throw new Exception("RCDB_CONNECTION not set")
 def db      = RCDB.createProvider(address)
 def success = false
 try { db.connect(); success = true; println("Connected to "+address) }
