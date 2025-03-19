@@ -95,9 +95,9 @@ run_analysis_script="org.jlab.clas.timeline.analysis.run_analysis"
 
 # build list of timelines
 if ${modes['skip-mya']}; then
-  timelineList=$(java $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep $match)
+  timelineList=$(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep $match)
 else
-  timelineList=$(java $run_analysis_script --timelines | sort | grep $match)
+  timelineList=$(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | sort | grep $match)
 fi
 
 # list detector timelines, if requested
