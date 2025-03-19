@@ -4,7 +4,7 @@ import org.jlab.groot.data.TDirectory
 def outFilePrefix = "out"
 if(args.length<1) {
   System.err.println """
-  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [TIMELINE] [OUTPUT FILE PREFIX]
+  USAGE: groovy ${this.class.getSimpleName()}.groovy [TIMELINE] [OUTPUT FILE PREFIX]
   - [TIMELINE] may either be a timeline URL or a timeline HIPO file
   - [OUTPUT FILE PREFIX] for the dumped timelines (default = $outFilePrefix)
   """

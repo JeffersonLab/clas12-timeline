@@ -1,10 +1,11 @@
 # text editor tmp files
 .*.sw*
 .sw*
+.settings
+.project
 
 # builds
-detectors/target
-monitoring/target
+/target
 
 # transient files
 *.hipo

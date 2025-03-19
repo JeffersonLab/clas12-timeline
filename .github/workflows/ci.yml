@@ -12,11 +12,9 @@ defaults:
 
 env:
   dataset: ci_test
-  rcdb_connection: mysql://rcdb@clasdb.jlab.org/rcdb # RCDB server available to runners
   # NOTE: if any of these versions are changed, update the POM files too
   java_version: 21
   java_distribution: zulu
-  groovy_version: 4.x
 
 
 concurrency:
@@ -38,39 +36,13 @@ jobs:
         java-version: ${{ env.java_version }}
         distribution: ${{ env.java_distribution }}
     - name: build
-      run: mvn package
+      run: ./install.sh
     - name: tar # to preserve any permissions
       run: |
-        tar cavf build_detectors.tar.zst detectors/target
-        tar cavf build_monitoring.tar.zst monitoring/target
+        tar cavf build_timeline.tar.zst target
     - uses: actions/upload-artifact@v4
       with:
         name: build_timelines
-        retention-days: 1
-        path: build*.tar.zst
-
-  build_coatjava:
-    runs-on: ubuntu-latest
-    steps:
-    - name: setup java
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.java_version }}
-        distribution: ${{ env.java_distribution }}
-    - name: checkout coatjava
-      uses: actions/checkout@v4
-      with:
-        repository: JeffersonLab/coatjava
-        ref: development
-    - name: build coatjava
-      run: ./build-coatjava.sh
-    - name: tree
-      run: tree
-    - name: tar
-      run: tar cavf build_coatjava.tar.zst coatjava
-    - uses: actions/upload-artifact@v4
-      with:
-        name: build_coatjava
         retention-days: 1
         path: build*.tar.zst
 
@@ -112,7 +84,6 @@ jobs:
   run_monitoring:
     needs:
       - build_timelines
-      - build_coatjava
       - download_test_data
     runs-on: ubuntu-latest
     strategy:
@@ -125,12 +96,6 @@ jobs:
       with:
         java-version: ${{ env.java_version }}
         distribution: ${{ env.java_distribution }}
-    - name: setup groovy
-      uses: wtfjoke/setup-groovy@v2
-      with:
-        groovy-version: ${{ env.groovy_version }}
-    - name: groovy version
-      run: groovy --version
     - uses: actions/checkout@v4
     - uses: actions/cache/restore@v4
       with:
@@ -144,8 +109,6 @@ jobs:
       run: ls *.tar.zst | xargs -I{} tar xavf {}
     - name: tree
       run: tree
-    - name: set RCDB connection # to one that's available to the runner
-      run: echo RCDB_CONNECTION=${{env.rcdb_connection}} | tee -a $GITHUB_ENV
     - name: run monitoring
       run: bin/run-monitoring.sh -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
     - name: tree slurm
@@ -166,7 +129,6 @@ jobs:
   test_swifjob:
     needs:
       - build_timelines
-      - build_coatjava
       - download_test_data
     runs-on: ubuntu-latest
     strategy:
@@ -179,12 +141,6 @@ jobs:
       with:
         java-version: ${{ env.java_version }}
         distribution: ${{ env.java_distribution }}
-    - name: setup groovy
-      uses: wtfjoke/setup-groovy@v2
-      with:
-        groovy-version: ${{ env.groovy_version }}
-    - name: groovy version
-      run: groovy --version
     - uses: actions/checkout@v4
     - uses: actions/cache/restore@v4
       with:
@@ -198,8 +154,6 @@ jobs:
       run: ls *.tar.zst | xargs -I{} tar xavf {}
     - name: tree
       run: tree
-    - name: set RCDB connection # to one that's available to the runner
-      run: echo RCDB_CONNECTION=${{env.rcdb_connection}} | tee -a $GITHUB_ENV
     - name: test monitoring swifjob
       run: |
         single_rundir=$(find validation_files -mindepth 1 -maxdepth 1 -type d | head -n1)
@@ -227,12 +181,6 @@ jobs:
       with:
         java-version: ${{ env.java_version }}
         distribution: ${{ env.java_distribution }}
-    - name: setup groovy
-      uses: wtfjoke/setup-groovy@v2
-      with:
-        groovy-version: ${{ env.groovy_version }}
-    - name: groovy version
-      run: groovy --version
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
       with:
@@ -266,12 +214,6 @@ jobs:
       - run_timelines
     runs-on: ubuntu-latest
     steps:
-    - name: setup groovy
-      uses: wtfjoke/setup-groovy@v2
-      with:
-        groovy-version: ${{ env.groovy_version }}
-    - name: groovy version
-      run: groovy --version
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
       with:

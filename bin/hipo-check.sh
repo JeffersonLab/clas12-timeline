@@ -43,7 +43,7 @@ for hipoFile in ${hipoFiles[@]}; do
 
   # run `hipo-utils -test`
   set +e
-  hipo-utils -test $hipoFile
+  java $TIMELINE_JAVA_OPTS org.jlab.jnp.hipo4.utils.HipoUtilities -test $hipoFile
   testCode=$?
   set -e
   [ $testCode -ne 0 ] && markBad $hipoFile "\`hipo-utils -test\` failed" && continue

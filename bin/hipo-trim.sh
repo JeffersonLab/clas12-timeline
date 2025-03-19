@@ -54,7 +54,7 @@ for inputDir in $inputDirs; do
       outputSubDir: $outputSubDir
     """
 
-    # if the output file exists, `hipo-utils -filter` will fail
+    # if the output file exists, `HipoUtilities -filter` will fail
     if [ -f $outputFile ]; then
       echo """
       ERROR: this output file already exists...
@@ -69,7 +69,7 @@ for inputDir in $inputDirs; do
     mkdir -pv $outputSubDir
 
     # trim the input file
-    hipo-utils -filter \
+    java $TIMELINE_JAVA_OPTS org.jlab.jnp.hipo4.utils.HipoUtilities -filter \
       -b "*::*"      \
       -n $nEvents    \
       -o $outputFile \

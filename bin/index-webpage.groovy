@@ -5,7 +5,7 @@ import groovy.json.JsonOutput
 
 if(args.length!=1) {
   System.err.println """
-  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [WEBSERVER_DIRECTORY]
+  USAGE: groovy ${this.class.getSimpleName()}.groovy [WEBSERVER_DIRECTORY]
   """
   System.exit(101)
 }
