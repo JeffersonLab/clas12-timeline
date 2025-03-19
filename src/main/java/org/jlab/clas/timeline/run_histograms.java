@@ -31,7 +31,7 @@ public class run_histograms {
     if(args.length>5)if(Integer.parseInt(args[5])==0)useTB=false;
     System.out.println("will process run number "+runNum+" from list "+filelist+" looking for up to "+maxevents+" events, beam energy setting "+EB);
 
-    //// instantiate monitors
+    //// instantiate histogramming classes
     monitor2p2GeV ana_mon     = new monitor2p2GeV(runNum,outputDir,EB,useTB);
     FTOFandDC     ana_ftof_dc = new FTOFandDC(runNum,outputDir,useTB);
     CTOF          ana_ctof    = new CTOF(runNum,outputDir,useTB);
@@ -79,7 +79,7 @@ public class run_histograms {
       while(reader.hasEvent()&& count<maxevents ) {
         DataEvent event = reader.getNextEvent();
 
-        //// call each monitor's `processEvent`
+        //// call each histogramming class instance's `processEvent`
         ana_mon.processEvent(event);
         ana_ctof.processEvent(event);
         ana_ftof_dc.processEvent(event);
@@ -108,7 +108,7 @@ public class run_histograms {
     }
     System.out.println("Total : " + count + " events");
 
-    //// call each monitor's `write`
+    //// call each histogramming class instance's `write`
     ana_mon.write();
     ana_ctof.write();
     ana_ftof_dc.write();

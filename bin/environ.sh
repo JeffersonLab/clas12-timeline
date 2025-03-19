@@ -7,51 +7,33 @@ printWarning() { echo -e "\e[1;35m[WARNING]: $* \e[0m" >&2; }
 # enable/disable verbose logger
 log_config=logging # set to 'logging' for quiet, or to 'debug' for verbose
 
-# get the working directory
+# get the source code directory
 [ -z "${BASH_SOURCE[0]}" ] && thisEnv=$0 || thisEnv=${BASH_SOURCE[0]}
 export TIMELINESRC=$(realpath $(dirname $thisEnv)/..)
 
 # RCDB
-[ -z "${RCDB_CONNECTION-}" ] && RCDB_CONNECTION=mysql://rcdb@clasdb.jlab.org/rcdb
-export RCDB_CONNECTION
+[ -z "${RCDB_CONNECTION-}" ] && export RCDB_CONNECTION=mysql://rcdb@clasdb.jlab.org/rcdb
 
-# check coatjava environment
-if [ -z "${COATJAVA-}" ]; then
-  # if on a CI runner, use CI coatjava build artifacts; otherwise print error
-  coatjava_ci=$TIMELINESRC/coatjava
-  [ -d $coatjava_ci ] &&
-    export COATJAVA=$coatjava_ci ||
-    printError "cannot find coatjava; please make sure environment variable COATJAVA is set to your coatjava installation"
-fi
-
-# ensure coatjava executables are found
-[ -n "${COATJAVA-}" ] && export PATH="$COATJAVA/bin${PATH:+:${PATH}}"
-
-# class paths
-target_classpath=(
-  "$TIMELINESRC/target/*"
-  "$TIMELINESRC/target/dependency/*"
-)
-
-# java and groovy options
+# java options
 timeline_java_opts=(
-  -DCLAS12DIR=$COATJAVA/
-  -Djava.util.logging.config.file=$COATJAVA/etc/logging/$log_config.properties
+  -cp "$TIMELINESRC/target/*:$TIMELINESRC/target/dependency/*"
+  -Djava.util.logging.config.file=$TIMELINESRC/data/logging/$log_config.properties
   -Xmx1536m
   -XX:+UseSerialGC
 )
 
-# run java with more resources, to mitigate large memory residence for long run periods
-timeline_java_opts_highmem=$(echo ${timeline_java_opts[*]} | sed 's;Xmx1024m;Xmx2048m;')
+# groovy options
+timeline_groovy_opts=(
+  -cp "$TIMELINESRC/target/*:$TIMELINESRC/target/dependency/*"
+  -Djava.awt.headless=true
+)
 
 # exports
-export CLASSPATH="$(echo "${target_classpath[*]}" | sed 's; ;:;g')${CLASSPATH:+:${CLASSPATH}}"
 export TIMELINE_JAVA_OPTS="${timeline_java_opts[*]}"
-export TIMELINE_JAVA_OPTS_HIGHMEM=$timeline_java_opts_highmem
+export TIMELINE_GROOVY_OPTS="${timeline_groovy_opts[*]}"
 
 # cleanup vars
 unset thisEnv
 unset log_config
-unset target_classpath
 unset timeline_java_opts
-unset timeline_java_opts_highmem
+unset timeline_groovy_opts

@@ -23,15 +23,6 @@ Physics QA features:
 > [!IMPORTANT]
 > See the [QADB Ground rules](https://github.com/JeffersonLab/clas12-qadb), which must be strictly followed for the QA procedure.
 
-# Setup
-
-It is recommended to use `bash` or `zsh` as your shell; `tcsh` is not supported.
-
-1. Set `COATJAVA` environment (follow CLAS12 software documentation)
-2. Note for developers: set local environment variables with `source ../bin/environ.sh`.
-   Wrapper scripts in `../bin/` do this automatically, but if you intend to run
-   individual scripts here (namely during manual QA), you may need to call this `source` command.
-
 # Notes
 
 For run-group specific notes, including the commands used to perform the QA, see
