@@ -143,15 +143,19 @@ def buildMonAveGr = { tObj ->
   return gr
 }
 
-// build monitor 'average X' distribution
-def buildMonAveDist = { tObj,nb,lb,ub ->
+// build monitor 'runSum' distribution (sum of bins' distribtions for a run)
+def buildMonRunSumDist = { tObj ->
   def histN = objToMonName(tObj.getName())
   def histT = objToMonTitle(tObj.getTitle())
-  histN = histN + "_aveDist"
-  histT = "average " + histT
+  histN = histN + "_runSumDist"
   histT = histT.replaceAll(/$/,' distribution')
   histT = appendLegend(histT)
-  def hist = new H1F(histN,histT,nb,lb,ub)
+  def hist = new H1F(
+    histN,
+    histT,
+    tObj.getAxis().getNBins(),
+    tObj.getAxis().min(),
+    tObj.getAxis().max())
   if(histN.contains("_hm_")) { hist.setLineColor(2); }
   return hist
 }
@@ -206,8 +210,6 @@ def objList
 def part
 def hel
 def varStr
-def varNB
-def varLB,varUB
 def runnum
 def timeBinNum
 def obj
@@ -245,8 +247,8 @@ inList.each { inFile ->
       T.addLeaf(monTree,[runnum,'helic','sinPhi',part,hel,'aveGr'],{
         buildMonAveGr(obj)
       })
-      T.addLeaf(monTree,[runnum,'helic','sinPhi',part,hel,'aveDist'],{
-        buildMonAveDist(obj,100,-0.25,0.25)
+      T.addLeaf(monTree,[runnum,'helic','sinPhi',part,hel,'runSumDist'],{
+        buildMonRunSumDist(obj)
       })
 
       // instantiate sinPhi dists binned for an asymmetry, denoted "asymGrid" (if not
@@ -267,7 +269,7 @@ inList.each { inFile ->
         aveXerr = obj.getRMS() / Math.sqrt(ent)
         monTree[runnum]['helic']['sinPhi'][part][hel]['aveGr'].addPoint(
           timeBinNum, aveX, 0, aveXerr )
-        monTree[runnum]['helic']['sinPhi'][part][hel]['aveDist'].fill(aveX)
+        monTree[runnum]['helic']['sinPhi'][part][hel]['runSumDist'].add(obj)
         // add rebinned <sinPhi> distribution to asymGrid
         obj.getAxis().getNBins().times { bin ->
           def counts = obj.getBinContent(bin)
@@ -292,10 +294,10 @@ inList.each { inFile ->
         return g
       })
       T.addLeaf(monTree,[runnum,'helic','dist','heldef','heldefDist'],{
-        def h = buildMonAveDist(obj,50,0,1)
-        def hN = h.getName().replaceAll(/_aveDist$/,'_heldefDist')
-        h.setName(hN)
-        h.setTitle('average defined helicity fraction distribution')
+        def histN = objToMonName(obj.getName()) + "_heldefDist"
+        def histT = appendLegend('average defined helicity fraction distribution')
+        def h = new H1F(histN, histT, 50, 0, 1)
+        if(histN.contains("_hm_")) { h.setLineColor(2); }
         return h
       })
       ent = obj.integral()
@@ -324,10 +326,10 @@ inList.each { inFile ->
         return g
       })
       T.addLeaf(monTree,[runnum,'helic','dist','rellum','rellumDist'],{
-        def h = buildMonAveDist(obj,50,0.9,1.1)
-        def hN = h.getName().replaceAll(/_aveDist$/,'_rellumDist')
-        h.setName(hN)
-        h.setTitle('average n+/n- distribution')
+        def histN = objToMonName(obj.getName()) + "_rellumDist"
+        def histT = appendLegend('average n+/n- distribution')
+        def h = new H1F(histN, histT, 50, 0.9, 1.1)
+        if(histN.contains("_hm_")) { h.setLineColor(2); }
         return h
       })
       if(obj.integral()>0) {
@@ -379,13 +381,7 @@ inList.each { inFile ->
         varStr = tok[1]
 
         T.addLeaf(monTree,[runnum,'DIS',varStr,'aveGr'],{buildMonAveGr(obj)})
-        T.addLeaf(monTree,[runnum,'DIS',varStr,'aveDist'],{
-          varNB = 100
-          if(varStr=="Q2") { varLB=0; varUB=12; }
-          else if(varStr=="W") { varLB=0; varUB=6; }
-          else { varLB=0; varUB=1; }
-          buildMonAveDist(obj,varNB,varLB,varUB)
-        })
+        T.addLeaf(monTree,[runnum,'DIS',varStr,'runSumDist'],{buildMonRunSumDist(obj)})
 
         // add <varStr> point to the monitors
         ent = obj.integral()
@@ -394,7 +390,7 @@ inList.each { inFile ->
           aveXerr = obj.getRMS() / Math.sqrt(ent)
           monTree[runnum]['DIS'][varStr]['aveGr'].addPoint(
             timeBinNum, aveX, 0, aveXerr )
-          monTree[runnum]['DIS'][varStr]['aveDist'].fill(aveX)
+          monTree[runnum]['DIS'][varStr]['runSumDist'].add(obj)
         }
       }
     }
@@ -405,24 +401,14 @@ inList.each { inFile ->
       part = tok[1]
       varStr = tok[2]
       T.addLeaf(monTree,[runnum,'inclusive',part,varStr,'aveGr'],{buildMonAveGr(obj)})
-      T.addLeaf(monTree,[runnum,'inclusive',part,varStr,'aveDist'],{
-        varNB = 100
-        varLB = 0
-        varUB = 0
-        if(varStr=='p') { varLB=0; varUB=10 }
-        else if(varStr=='pT') { varLB=0; varUB=4 }
-        else if(varStr=='z') { varLB=0; varUB=1 }
-        else if(varStr=='theta') { varLB=0; varUB=Math.toRadians(90.0) }
-        else if(varStr=='phiH') { varLB=-3.15; varUB=3.15 }
-        buildMonAveDist(obj,varNB,varLB,varUB)
-      })
+      T.addLeaf(monTree,[runnum,'inclusive',part,varStr,'runSumDist'],{buildMonRunSumDist(obj)})
       ent = obj.integral()
       if(ent>0) {
         aveX = obj.getMean()
         aveXerr = obj.getRMS() / Math.sqrt(ent)
         monTree[runnum]['inclusive'][part][varStr]['aveGr'].addPoint(
           timeBinNum, aveX, 0, aveXerr )
-        monTree[runnum]['inclusive'][part][varStr]['aveDist'].fill(aveX)
+        monTree[runnum]['inclusive'][part][varStr]['runSumDist'].add(obj)
       }
     }
 
@@ -470,7 +456,7 @@ inList.each { inFile ->
 // build timelines
 //---------------------
 
-// loop through 'aveDist' monitors: for each one, add its mean to the timeline
+// loop through monitors: for each one, add its mean to the timeline
 def timelineTree = [:]
 T.exeLeaves(monTree,{
   if(T.key.contains('Dist') || T.key.contains('Graph')) {
@@ -552,7 +538,7 @@ T.exeLeaves(monTree,{
     }
 
     // add this run's <X> to the timeline (and stddev to the stddev timelines)
-    if(T.key=='aveDist') {
+    if(T.key=='runSumDist') {
       aveX = T.leaf.getMean()
       stddevX = T.leaf.getRMS()
       aveXerr = stddevX / Math.sqrt(T.leaf.integral())

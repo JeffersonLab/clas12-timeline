@@ -65,25 +65,46 @@ class HistoUtil {
     if( !(hist.getEntries() > 0) || !(hist.integral() > 0) ) { // `.getEntries()` can be nonzero for empty histograms, so be sure to check the integral too
       return defIfEmpty
     }
-    def hist_list = []
-    hist.getAxis().getNBins().times { bin ->
-      def counts = hist.getBinContent(bin).toInteger() // FIXME: assumes the histogram is unweighted
+    def bins_list = []
+    def cum_counts_list = []
+    int sum = 0
+    int nbins = hist.getAxis().getNBins()
+    nbins.times { bin ->
+      int counts = hist.getBinContent(bin).toInteger() // FIXME: assumes the histogram is unweighted
       def value  = hist.getAxis().getBinCenter(bin)
-      counts.times { hist_list += value }
+      bins_list += value
+      sum += counts
+      cum_counts_list += sum
     }
-    def listMedian = { d ->
-      if(d.size()==0) {
+    def listMedian = { _sum, bins, cum_counts ->
+      if(bins.size()==0 || cum_counts.size()==0) {
         // this list may end up being empty if there are _few_ entries in the histogram, since this method
         // is called to get the quartiles; in this case, just return `defIfEmpty`
         return defIfEmpty
       }
-      d.sort()
-      def m = d.size().intdiv(2)
-      d.size() % 2 ? d[m] : (d[m-1]+d[m]) / 2
+      // Compute the median using the fact that you have histogrammed data to do this slightly more efficiently
+      int mid_count = _sum.intdiv(2)
+      boolean is_even = (_sum%2==0)
+      if (is_even) mid_count += 1 //NOTE: If you have an even length list there is no middle element and you will need to average the middle+1 and middle-1 elements.
+      for (int i=0; i<cum_counts.size(); i++) {
+        if (cum_counts[i]+1==mid_count && is_even) {
+          return [(bins[i]+bins[i+1])/2, i+1, mid_count]
+        }
+        if (cum_counts[i]>mid_count) { 
+          return [bins[i], i, mid_count]
+        }
+      }
+      return [bins[bins.size()-1], bins.size()-1, mid_count] //NOTE: SHOULD NEVER REACH THIS POINT
     }
-    def mq = listMedian(hist_list)
-    def lq = listMedian(hist_list.findAll{it<mq})
-    def uq = listMedian(hist_list.findAll{it>mq})
+
+    def mq_list = listMedian(sum,bins_list,cum_counts_list)
+    int mq_idx = mq_list[1]
+    int mq_sum = mq_list[2]
+    def lq_list = listMedian(mq_sum,bins_list.subList(0,mq_idx+1),cum_counts_list.subList(0,mq_idx+1))
+    def lq = lq_list[0]
+    def uq_list = listMedian(mq_sum*3,bins_list.subList(mq_idx,nbins),cum_counts_list.subList(mq_idx,nbins))
+    def uq = uq_list[0]
+
     return uq - lq
   }
 }

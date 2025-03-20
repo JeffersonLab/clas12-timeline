@@ -42,7 +42,7 @@ groovy_classpath=(
 timeline_java_opts=(
   -DCLAS12DIR=$COATJAVA/
   -Djava.util.logging.config.file=$COATJAVA/etc/logging/$log_config.properties
-  -Xmx1024m
+  -Xmx1536m
   -XX:+UseSerialGC
 )
 timeline_groovy_opts=(
