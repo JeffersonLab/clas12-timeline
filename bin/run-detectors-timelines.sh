@@ -359,8 +359,7 @@ EOF
 
 srun \$(head -n\$SLURM_ARRAY_TASK_ID $joblist | tail -n1)
 EOF
-      exelist+=($slurm)
-    fi
+    exelist+=($slurm)
 
     # execution
     [ ${#exelist[@]} -eq 0 ] && printError "no jobs were created at all; check errors and warnings above" && exit 100
