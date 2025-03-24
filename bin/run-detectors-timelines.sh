@@ -107,6 +107,10 @@ if ${modes['help']}; then
   usage
   exit 101
 fi
+if (${modes['run-slurm']} && ${modes['debug']}); then
+  echo "ERROR: --run-slurm and --debug are mutually exclusive" >&2
+  exit 100
+fi
 
 # set class path to include groovy's classpath, for `java` calls
 export CLASSPATH="$JYPATH${CLASSPATH:+:${CLASSPATH}}"
