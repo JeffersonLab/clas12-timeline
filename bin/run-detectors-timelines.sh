@@ -339,7 +339,7 @@ EOF
     exelist=()
 
     # check if we have any jobs to run
-    [ ! -s $joblist ] && printError "there are no timeline jobs to run" && continue
+    [ ! -s $joblist ] && printError "there are no timeline jobs to run" && exit 100
     slurm=$(echo $joblist | sed 's;.list$;.slurm;')
 
     cat > $slurm << EOF
