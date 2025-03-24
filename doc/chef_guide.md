@@ -17,9 +17,11 @@ Output files will appear in your chosen output directory, within `hist/detectors
 ## :green_circle: Step 2: Make the timelines
 
 ```bash
-run-detectors-timelines.sh -d $dataset -i $out_dir/hist/detectors
+run-detectors-timelines.sh -d $dataset -i $out_dir/hist/detectors --run-slurm
 ```
 where `$out_dir` is your output directory from **Step 1** and `$dataset` is a unique name for this cook, _e.g._, `rga_v1.23`.
+
+Notice the `--run-slurm` option which will set up a slurm script for each detector timeline.  To submit the jobs, run the printed sbatch command **or** run with the `--submit-slurm` option to automatically submit.  Once all jobs have finished successfully, rerun using the `--after-slurm` option instead to complete the organization of the output.
 
 Output will appear in `./outfiles/$dataset/`.
 
