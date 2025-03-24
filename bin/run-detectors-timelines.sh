@@ -61,16 +61,15 @@ usage() {
     --focus-timelines   only produce the detector timelines, do not run detector QA code
     --focus-qa          only run the QA code (assumes you have detector timelines already)
 
-    --run-slurm         run timelines on SLURM instead of running multi-threaded locally
-    --after-slurm       organize timelines **after** running them with --run-slurm
-                        **Note**, if this option is not used after running on slurm,
-                        all files from output directories will be removed.
-
     *** EXECUTION CONTROL OPTIONS: choose only one, or the default will generate a
          Slurm job description and print out the suggested \`sbatch\` command
 
+       --run-slurm      run timelines on SLURM instead of running multi-threaded locally
        --submit-slurm   submit the slurm jobs, rather than just
                         printing the \`sbatch\` command
+       --after-slurm    organize timelines **after** running them with --run-slurm
+                        **Note**, if this option is not used after running on slurm,
+                        all files from output directories will be removed.
 
     --debug             enable debug mode: run a single timeline with stderr and stdout printed to screen;
                         it is best to use this with the '-t' option to debug specific timeline issues
