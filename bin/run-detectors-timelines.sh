@@ -18,7 +18,7 @@ outputDir=""
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list build skip-mya focus-timelines focus-qa run-slurm after-slurm single series submit swifjob debug help; do
+for key in list build skip-mya focus-timelines focus-qa run-slurm after-slurm submit debug help; do
   modes[$key]=false
 done
 
@@ -69,18 +69,8 @@ usage() {
     *** EXECUTION CONTROL OPTIONS: choose only one, or the default will generate a
          Slurm job description and print out the suggested \`sbatch\` command
 
-       --single    run only the first job, locally; useful for
-                   testing before submitting jobs to slurm
-
-       --series    run all jobs locally, one at a time; useful
-                   for testing on systems without slurm
-
        --submit    submit the slurm jobs, rather than just
                    printing the \`sbatch\` command
-
-       --swifjob   run this on a workflow runner, where the input
-                   files are found in ./; overrides some other settings; this is NOT meant
-                   to be used interactively, but rather as a part of a workflow
 
     --debug             enable debug mode: run a single timeline with stderr and stdout printed to screen;
                         it is best to use this with the '-t' option to debug specific timeline issues
@@ -349,22 +339,7 @@ EOF
     [ ! -s $joblist ] && printError "there are no timeline jobs to run" && continue
     slurm=$(echo $joblist | sed 's;.list$;.slurm;')
 
-    # either generate single/sequential run scripts
-    if ${modes['single']} || ${modes['series']} || ${modes['swifjob']}; then
-      localScript=$(echo $joblist | sed 's;.list$;.local.sh;')
-      echo "#!/usr/bin/env bash" > $localScript
-      echo "set -e" >> $localScript
-      if ${modes['single']}; then
-        head -n1 $joblist >> $localScript
-      else # ${modes['series']} || ${modes['swifjob']}
-        cat $joblist >> $localScript
-      fi
-      chmod u+x $localScript
-      exelist+=($localScript)
-
-    # otherwise generate slurm description
-    else
-      cat > $slurm << EOF
+    cat > $slurm << EOF
 #!/bin/sh
 #SBATCH --ntasks=1
 #SBATCH --job-name=$slurmJobName
@@ -389,20 +364,7 @@ EOF
     echo """
     $sep
     """
-    if ${modes['single']} || ${modes['series']} || ${modes['swifjob']}; then
-      if ${modes['single']}; then
-        echo "RUNNING ONE SINGLE JOB LOCALLY:"
-      elif ${modes['series']}; then
-        echo "RUNNING ALL JOBS SEQUENTIALLY, LOCALLY:"
-      fi
-      for exe in ${exelist[@]}; do
-        echo """
-        $sep
-        EXECUTING: $exe
-        $sep"""
-        $exe
-      done
-    elif ${modes['submit']}; then
+    if ${modes['submit']}; then
       echo "SUBMITTING JOBS TO SLURM"
       echo $sep
       for exe in ${exelist[@]}; do sbatch $exe; done
