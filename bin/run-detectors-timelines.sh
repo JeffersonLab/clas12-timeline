@@ -18,7 +18,7 @@ outputDir=""
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list build skip-mya focus-timelines focus-qa run-slurm after-slurm submit debug help; do
+for key in list build skip-mya focus-timelines focus-qa run-slurm submit-slurm after-slurm debug help; do
   modes[$key]=false
 done
 
@@ -69,8 +69,8 @@ usage() {
     *** EXECUTION CONTROL OPTIONS: choose only one, or the default will generate a
          Slurm job description and print out the suggested \`sbatch\` command
 
-       --submit    submit the slurm jobs, rather than just
-                   printing the \`sbatch\` command
+       --submit-slurm   submit the slurm jobs, rather than just
+                        printing the \`sbatch\` command
 
     --debug             enable debug mode: run a single timeline with stderr and stdout printed to screen;
                         it is best to use this with the '-t' option to debug specific timeline issues
@@ -364,7 +364,7 @@ EOF
     echo """
     $sep
     """
-    if ${modes['submit']}; then
+    if ${modes['submit-slurm']}; then
       echo "SUBMITTING JOBS TO SLURM"
       echo $sep
       for exe in ${exelist[@]}; do sbatch $exe; done
