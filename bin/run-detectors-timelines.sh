@@ -324,7 +324,7 @@ echo "TIMELINE OBJECT $key"
 export CLASSPATH=$CLASSPATH
 
 # produce detector timelines
-java $TIMELINE_JAVA_OPTS $run_detectors_script $key $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail
+java $TIMELINE_JAVA_OPTS $run_detectors_script $key $inputDir
 EOF
 
       # grant permission and add it `joblist`
