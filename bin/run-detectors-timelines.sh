@@ -275,7 +275,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
 
   fi # condition end: produce timelines, multi-threaded
 
-  # produce timelines, distributed on SLURM or test singly or sequentially locally
+  # produce timelines, distributed on SLURM
   if ${modes['run-slurm']} && ! ${modes['after-slurm']}; then
 
     # initial checks and preparations
@@ -383,7 +383,7 @@ EOF
       """
     fi
     exit 0
-  fi # condition end: produce timelines, distributed on SLURM or test singly or sequentially locally
+  fi # condition end: produce timelines, distributed on SLURM
 
   # organize output timelines
   echo ">>> organizing output timelines..."
