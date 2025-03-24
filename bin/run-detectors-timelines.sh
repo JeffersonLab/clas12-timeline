@@ -307,9 +307,6 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
     echo "..... generating job scripts ....."
     for key in ${jobkeys[@]}; do
 
-      # set log file
-      logFile=$logDir/$key
-
       # make job scripts for each $key
       jobscript=$slurmDir/scripts/$key.$dataset.sh
 
