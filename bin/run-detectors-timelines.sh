@@ -247,7 +247,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   done
 
   # produce timelines, multithreaded
-  if ! ${modes['run-slurm']} || ${modes['debug']} && ! ${modes['after-slurm']}; then
+  if (! ${modes['run-slurm']} || ${modes['debug']}) && ! ${modes['after-slurm']}; then
     job_ids=()
     job_names=()
     for timelineObj in $timelineList; do
