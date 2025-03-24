@@ -18,7 +18,7 @@ outputDir=""
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list build skip-mya focus-timelines focus-qa run-slurm organize-only single series submit swifjob debug help; do
+for key in list build skip-mya focus-timelines focus-qa run-slurm after-slurm single series submit swifjob debug help; do
   modes[$key]=false
 done
 
@@ -62,8 +62,9 @@ usage() {
     --focus-qa          only run the QA code (assumes you have detector timelines already)
 
     --run-slurm         run timelines on SLURM instead of running multi-threaded locally
-    --organize-only     only organize timelines assuming they have already been run with --run-slurm
-                        if not used, all files from output directories will be removed
+    --after-slurm       organize timelines **after** running them with --run-slurm
+                        **Note**, if this option is not used after running on slurm,
+                        all files from output directories will be removed.
 
     *** EXECUTION CONTROL OPTIONS: choose only one, or the default will generate a
          Slurm job description and print out the suggested \`sbatch\` command
@@ -204,12 +205,12 @@ detDirs=(
 )
 
 # cleanup output directories IF you are not just organizing files after running on SLURM
-if (${modes['focus-all']} || ${modes['focus-timelines']}) && ! ${modes['organize-only']}; then
+if (${modes['focus-all']} || ${modes['focus-timelines']}) && ! ${modes['after-slurm']}; then
   if [ -d $finalDirPreQA ]; then
     rm -rv $finalDirPreQA
   fi
 fi
-if [ -d $logDir ] && ! ${modes['organize-only']}; then
+if [ -d $logDir ] && ! ${modes['after-slurm']}; then
   for fail in $(find $logDir -name "*.fail"); do
     rm $fail
   done
@@ -257,7 +258,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   done
 
   # produce timelines, multithreaded
-  if ! ${modes['run-slurm']} || ${modes['debug']} && ! ${modes['organize-only']}; then
+  if ! ${modes['run-slurm']} || ${modes['debug']} && ! ${modes['after-slurm']}; then
     job_ids=()
     job_names=()
     for timelineObj in $timelineList; do
@@ -282,7 +283,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   fi # condition end: produce timelines, multi-threaded
 
   # produce timelines, distributed on SLURM or test singly or sequentially locally
-  if ${modes['run-slurm']} && ! ${modes['organize-only']}; then
+  if ${modes['run-slurm']} && ! ${modes['after-slurm']}; then
 
     # initial checks and preparations
     echo $dataset | grep -q "/" && printError "dataset name must not contain '/' " && echo && exit 100
