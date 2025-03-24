@@ -286,7 +286,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
     # start job lists
     echo """
     Generating job scripts..."""
-    slurmDir=./slurm/step2
+    slurmDir=$outputDir/slurm/step2
     mkdir -p $slurmDir/scripts
     jobkeys=()
     for timelineObj in $timelineList; do
