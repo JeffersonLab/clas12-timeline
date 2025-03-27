@@ -16,5 +16,11 @@ Then build:
 ./install.sh
 ```
 
+- The directory `target/` will contain the build files, which are mostly JAR files
+- You may then use the scripts in `bin/`
+
 > [!TIP]
-> - Use `mvn clean` if you want to clean the build
+> For convenience, you may prepend the `bin/` directory to your `$PATH`
+
+> [!TIP]
+> Use `mvn clean` if you want to clean the build
