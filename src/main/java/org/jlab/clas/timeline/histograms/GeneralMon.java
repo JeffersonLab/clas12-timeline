@@ -12,7 +12,10 @@ import org.jlab.clas.physics.LorentzVector;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
-public class monitor2p2GeV {
+/**
+ * General Monitoring histograms (a.k.a. General Monolith)
+ */
+public class GeneralMon {
 
   /**
    * Assume 1+6 bit groupings, one for each bit in the given
@@ -208,7 +211,7 @@ public class monitor2p2GeV {
   public IndexedTable rfTable, rfTableOffset;
   public ConstantsManager ccdb;
 
-  public monitor2p2GeV(int reqrunNum, String reqOutputDir, float reqEB, boolean reqTimeBased) {
+  public GeneralMon(int reqrunNum, String reqOutputDir, float reqEB, boolean reqTimeBased) {
 
     runNum = reqrunNum;EB=reqEB;userTimeBased=reqTimeBased;
     outputDir = reqOutputDir;

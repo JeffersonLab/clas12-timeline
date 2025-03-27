@@ -32,17 +32,17 @@ public class run_histograms {
     System.out.println("will process run number "+runNum+" from list "+filelist+" looking for up to "+maxevents+" events, beam energy setting "+EB);
 
     //// instantiate histogramming classes
-    monitor2p2GeV ana_mon     = new monitor2p2GeV(runNum,outputDir,EB,useTB);
-    FTOFandDC     ana_ftof_dc = new FTOFandDC(runNum,outputDir,useTB);
-    CTOF          ana_ctof    = new CTOF(runNum,outputDir,useTB);
-    HTCC          ana_htc     = new HTCC(runNum,outputDir);
-    LTCC          ana_ltc     = new LTCC(runNum,outputDir,EB,useTB);
-    RICH          ana_rich    = new RICH(runNum,outputDir,EB,useTB);
-    CND           ana_cnd     = new CND(runNum,outputDir,useTB);
-    FT            ana_ft      = new FT(runNum,outputDir,useTB);
-    BAND          ana_band    = new BAND(runNum,outputDir,EB,useTB);
-    helicity      helicity    = new helicity();
-    trigger       trigger     = new trigger();
+    GeneralMon ana_mon     = new GeneralMon(runNum,outputDir,EB,useTB);
+    DCandFTOF  ana_dc_ftof = new DCandFTOF(runNum,outputDir,useTB);
+    CTOF       ana_ctof    = new CTOF(runNum,outputDir,useTB);
+    HTCC       ana_htc     = new HTCC(runNum,outputDir);
+    LTCC       ana_ltc     = new LTCC(runNum,outputDir,EB,useTB);
+    RICH       ana_rich    = new RICH(runNum,outputDir,EB,useTB);
+    CND        ana_cnd     = new CND(runNum,outputDir,useTB);
+    FT         ana_ft      = new FT(runNum,outputDir,useTB);
+    BAND       ana_band    = new BAND(runNum,outputDir,EB,useTB);
+    helicity   helicity    = new helicity();
+    trigger    trigger     = new trigger();
 
     List<String> toProcessFileNames = new ArrayList<String>();
     File file = new File(filelist);
@@ -82,7 +82,7 @@ public class run_histograms {
         //// call each histogramming class instance's `processEvent`
         ana_mon.processEvent(event);
         ana_ctof.processEvent(event);
-        ana_ftof_dc.processEvent(event);
+        ana_dc_ftof.processEvent(event);
         ana_htc.processEvent(event);
         ana_ltc.processEvent(event);
         ana_cnd.processEvent(event);
@@ -111,7 +111,7 @@ public class run_histograms {
     //// call each histogramming class instance's `write`
     ana_mon.write();
     ana_ctof.write();
-    ana_ftof_dc.write();
+    ana_dc_ftof.write();
     ana_htc.write();
     ana_ltc.write();
     ana_cnd.write();
