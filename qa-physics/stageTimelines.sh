@@ -41,6 +41,7 @@ extraList=(
   electron_FT_yield_QA_epoch_view
   electron_FT_yield_stddev
   electron_FT_yield_values
+  faraday_cup_charge_non-monotonicity
   faraday_cup_stddev
   helicity_sinPhi
   live_time_average
