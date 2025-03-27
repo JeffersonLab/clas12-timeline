@@ -7,17 +7,14 @@ module load timeline/dev   # load the 'dev' version (likely the most recent vers
 module load timeline/1.0.0 # alternatively, load a specific version, such as 1.0.0
 ```
 
-If you want to install locally, download the repository:
-```bash
-git clone https://github.com/JeffersonLab/clas12-timeline.git
-```
-Then build:
+If you want to install locally, clone the repository, then run:
 ```bash
 ./install.sh
 ```
 
-- The directory `target/` will contain the build files, which are mostly JAR files
-- You may then use the scripts in `bin/`
+The directory `target/` will contain the build files, which are mostly JAR files.
+
+You may now use the scripts in `bin/`.
 
 > [!TIP]
 > For convenience, you may prepend the `bin/` directory to your `$PATH`
