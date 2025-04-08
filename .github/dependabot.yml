@@ -6,7 +6,7 @@ registries:
     url: https://clasweb.jlab.org/clas12maven
   groovy_jfrog:
     type: maven-repository
-    url: https://groovy.jfrog.io/artifactory/plugins-release
+    url: https://groovy.jfrog.io/artifactory/plugins-release-local
 
 updates:
   - package-ecosystem: "maven"

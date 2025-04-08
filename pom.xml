@@ -26,7 +26,8 @@
     <!-- for latest `groovy-eclipse-*` plugins -->
     <pluginRepository>
       <id>groovy-plugins-release</id>
-      <url>https://groovy.jfrog.io/artifactory/plugins-release</url>
+      <!-- <url>https://groovy.jfrog.io/artifactory/plugins-release</url> -->
+      <url>https://groovy.jfrog.io/artifactory/plugins-release-local</url> <!-- prefer 'plugins-release-local', which has ONLY groovy artifacts -->
     </pluginRepository>
   </pluginRepositories>
 
@@ -70,13 +71,13 @@
           <compilerId>groovy-eclipse-compiler</compilerId>
         </configuration>
         <dependencies>
-          <!-- https://groovy.jfrog.io/ui/native/plugins-release/org/codehaus/groovy/groovy-eclipse-compiler/ -->
+          <!-- https://groovy.jfrog.io/ui/native/plugins-release-local/org/codehaus/groovy/groovy-eclipse-compiler/ -->
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-compiler</artifactId>
             <version>3.9.0</version>
           </dependency>
-          <!-- https://groovy.jfrog.io/ui/native/plugins-release/org/codehaus/groovy/groovy-eclipse-batch/ -->
+          <!-- https://groovy.jfrog.io/ui/native/plugins-release-local/org/codehaus/groovy/groovy-eclipse-batch/ -->
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-batch</artifactId>
