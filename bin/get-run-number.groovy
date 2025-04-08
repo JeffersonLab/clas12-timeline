@@ -4,7 +4,7 @@ Tools T = new Tools()
 
 if(args.length<1) {
   System.err.println """
-  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO file]
+  USAGE: groovy ${this.class.getSimpleName()}.groovy [HIPO file]
   Returns run number for a given file
   """
   System.exit(101)

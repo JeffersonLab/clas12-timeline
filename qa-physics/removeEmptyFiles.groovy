@@ -19,7 +19,7 @@ import org.jlab.groot.data.Directory
 //--------------------------------------------------------------------------
 // ARGUMENTS:
 if(args.length<2) {
-  System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [TRASH_DIR] [INPUT_DIR1 INPUTDIR2...] "
+  System.err.println "USAGE: groovy ${this.class.getSimpleName()}.groovy [TRASH_DIR] [INPUT_DIR1 INPUTDIR2...] "
   System.exit(101)
 }
 def verbose = false

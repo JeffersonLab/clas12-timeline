@@ -33,7 +33,7 @@ def printDebug = { msg -> if(VERBOSE) println "[DEBUG]: $msg" }
 // ARGUMENTS
 if(args.length<5) {
   System.err.println """
-  USAGE: run-groovy ${this.class.getSimpleName()}.groovy [HIPO directory or file] [output directory] [type] [runnum] [beam energy]
+  USAGE: groovy ${this.class.getSimpleName()}.groovy [HIPO directory or file] [output directory] [type] [runnum] [beam energy]
          REQUIRED parameters:
            - [HIPO directory or file] should be a directory of HIPO files
              or a single hipo file (depends on [type]: use 'dst' for directory

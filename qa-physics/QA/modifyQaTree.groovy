@@ -247,7 +247,10 @@ else if(cmd=="misc") {
     if(args.length<5 || args[4]=="all") secList = (1..6).collect{it}
     else (4..<args.length).each{ secList<<args[it].toInteger() }
 
-    def db = RCDB.createProvider("mysql://rcdb@clasdb/rcdb")
+    def rcdbURL = System.getenv('RCDB_CONNECTION')
+    if(rcdbURL==null)
+      throw new Exception("RCDB_CONNECTION not set")
+    def db = RCDB.createProvider(rcdbURL)
     def shift_expert_comment = null
     try {
       db.connect()
@@ -455,4 +458,4 @@ else { System.err.println("ERROR: unknown command!"); System.exit(100) }
 
 // update qaTree.json
 new File("qa/qaTree.json").write(JsonOutput.toJson(qaTree))
-["run-groovy", "parseQaTree.groovy"].execute().waitFor()
+["${System.getenv('TIMELINESRC')}/bin/run-groovy-timeline.sh", "parseQaTree.groovy"].execute().waitFor()

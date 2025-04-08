@@ -4,21 +4,32 @@
 
   <groupId>org.jlab.clas.timeline</groupId>
   <artifactId>clas12-timeline</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>2.99.0-SNAPSHOT</version>
   <name>clas12-timeline</name>
   <url>http://www.github.com/JeffersonLab/clas12-timeline</url>
 
-  <packaging>pom</packaging>
-
-  <modules>
-    <module>monitoring</module>
-    <module>detectors</module>
-  </modules>
+  <packaging>jar</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <release>21</release>
   </properties>
+
+  <repositories>
+    <repository>
+      <id>clas12maven</id>
+      <url>https://clasweb.jlab.org/clas12maven</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <!-- for latest `groovy-eclipse-*` plugins -->
+    <pluginRepository>
+      <id>groovy-plugins-release</id>
+      <!-- <url>https://groovy.jfrog.io/artifactory/plugins-release</url> -->
+      <url>https://groovy.jfrog.io/artifactory/plugins-release-local</url> <!-- prefer 'plugins-release-local', which has ONLY groovy artifacts -->
+    </pluginRepository>
+  </pluginRepositories>
 
   <dependencies>
     <dependency>
@@ -27,13 +38,54 @@
       <version>10.0.8-SNAPSHOT</version>
       <type>jar</type>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-all -->
+    <dependency>
+      <groupId>org.apache.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
+      <version>4.0.26</version>
+      <type>pom</type>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-dateutil -->
+    <dependency>
+      <groupId>org.apache.groovy</groupId>
+      <artifactId>groovy-dateutil</artifactId>
+      <version>4.0.26</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.codehaus.gpars/gpars -->
+    <dependency>
+      <groupId>org.codehaus.gpars</groupId>
+      <artifactId>gpars</artifactId>
+      <version>1.2.1</version>
+    </dependency>
   </dependencies>
 
-  <repositories>
-    <repository>
-      <id>clas12maven</id>
-      <url>https://clasweb.jlab.org/clas12maven</url>
-    </repository>
-  </repositories>
+  <build>
+    <plugins>
+      <!-- https://github.com/groovy/groovy-eclipse/wiki/Groovy-Eclipse-Maven-plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.14.0</version>
+        <configuration>
+          <release>21</release>
+          <compilerId>groovy-eclipse-compiler</compilerId>
+        </configuration>
+        <dependencies>
+          <!-- https://groovy.jfrog.io/ui/native/plugins-release-local/org/codehaus/groovy/groovy-eclipse-compiler/ -->
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-compiler</artifactId>
+            <version>3.9.0</version>
+          </dependency>
+          <!-- https://groovy.jfrog.io/ui/native/plugins-release-local/org/codehaus/groovy/groovy-eclipse-batch/ -->
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-batch</artifactId>
+            <version>4.0.26-01</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

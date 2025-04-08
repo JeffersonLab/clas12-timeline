@@ -7,17 +7,17 @@ module load timeline/dev   # load the 'dev' version (likely the most recent vers
 module load timeline/1.0.0 # alternatively, load a specific version, such as 1.0.0
 ```
 
-If you want to install locally, download the repository:
+If you want to install locally, clone the repository, then run:
 ```bash
-git clone https://github.com/JeffersonLab/clas12-timeline.git
-```
-Then build:
-```bash
-mvn package
+./install.sh
 ```
 
+The directory `target/` will contain the build files, which are mostly JAR files.
+
+You may now use the scripts in `bin/`.
+
 > [!TIP]
-> - Use `mvn clean` if you want to clean build targets.
-> - Use the `-f` option of `mvn` to build individual submodules:
->   1. [`monitoring`](/monitoring): generates histograms for detectors
->   1. [`detectors`](/detectors): uses detector histograms to generate timelines
+> For convenience, you may prepend the `bin/` directory to your `$PATH`
+
+> [!TIP]
+> Use `mvn clean` if you want to clean the build
