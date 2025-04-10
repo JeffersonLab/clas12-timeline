@@ -28,12 +28,13 @@ class HTCCFitter{
 
     f1.setParameter(0, h1.getMax());
     f1.setParameter(1, maxV);
+    def absolute_min_sigma = 0.2
     if(iqr > 0) {
       f1.setParameter(2, Math.max(iqr / 2.0, 0.1));
-      f1.setParLimits(2, Math.max(iqr / 5.0, 0.05), Math.min(iqr * 5.0, h1.getAxis().getBinCenter(h1.getAxis().getNBins()-1)));
+      f1.setParLimits(2, Math.max(iqr / 5.0, absolute_min_sigma), Math.min(iqr * 5.0, h1.getAxis().getBinCenter(h1.getAxis().getNBins()-1)));
     } else {
       f1.setParameter(2, 0.1);
-      f1.setParLimits(2, 0.05, h1.getAxis().getBinCenter(h1.getAxis().getNBins()-1));
+      f1.setParLimits(2, absolute_min_sigma, h1.getAxis().getBinCenter(h1.getAxis().getNBins()-1));
     }
 
     DataFitter.fit(f1, h1, "");
