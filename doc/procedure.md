@@ -74,6 +74,20 @@ bin/run-physics-timelines.sh   -d rga_sp19_v5   # for physics timelines
 ```
 - the dataset name must match that of Step 1, otherwise you need to specify the path to the input files with `-i`
 
+### Distributing Detector Timelines with SLURM
+The detector timelines can take quite a while to run locally, and this is only recommended if you are running a single timeline or debugging.  Instead, it is more efficient to distribute each timeline to a different slurm job.  Continuing along with the example scenario above, you would first run with the `--run-slurm` option:
+```bash
+bin/run-detectors-timelines.sh -d rga_sp19_v5 --run-slurm   # for detector timelines
+```
+which will set up the slurm scripts and print out the appropriate sbatch command to submit all the detector timeline jobs.  This is analagous to when you are submitting jobs with `bin/run-monitoring.sh` in [Step 1](#-step-1-data-monitoring) so see the directions there for monitoring your jobs and checking the slurm output files.  If you trust yourself well enough, you can just submit automatically too by adding the `--submit-slurm` option:
+```bash
+bin/run-detectors-timelines.sh -d rga_sp19_v5 --run-slurm --submit-slurm   # for detector timelines
+```
+**After** all the detector timeline jobs finish successfully, you will then need to run the script again with the `--after-slurm` option:
+```bash
+bin/run-detectors-timelines.sh -d rga_sp19_v5 --after-slurm   # for detector timelines
+```
+which will finish organizing all the output files in the appropriate directories.
 
 > [!NOTE]
 > - detector timeline production is handled by the [`detectors/` subdirectory](/detectors);

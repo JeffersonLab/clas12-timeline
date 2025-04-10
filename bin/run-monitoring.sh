@@ -281,7 +281,7 @@ slurmJobName=clas12-timeline--$dataset
 # start job lists
 echo """
 Generating job scripts..."""
-slurmDir=./slurm
+slurmDir=./slurm/step1
 mkdir -p $slurmDir/scripts
 jobkeys=()
 for key in detectors physics; do

@@ -3,6 +3,12 @@
 set -e
 set -u
 source $(dirname $0)/environ.sh
+# constants ############################################################
+# slurm settings
+SLURM_MEMORY=1500
+SLURM_TIME=10:00:00
+SLURM_LOG=/farm_out/%u/%x-%A_%a
+########################################################################
 
 # default options
 match="^"
@@ -12,7 +18,7 @@ outputDir=""
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list build skip-mya focus-timelines focus-qa debug help; do
+for key in list build skip-mya focus-timelines focus-qa run-slurm submit-slurm after-slurm debug help; do
   modes[$key]=false
 done
 
@@ -55,6 +61,16 @@ usage() {
     --focus-timelines   only produce the detector timelines, do not run detector QA code
     --focus-qa          only run the QA code (assumes you have detector timelines already)
 
+    *** EXECUTION CONTROL OPTIONS: choose only one, or the default will generate a
+         Slurm job description and print out the suggested \`sbatch\` command
+
+       --run-slurm      run timelines on SLURM instead of running multi-threaded locally
+       --submit-slurm   submit the slurm jobs, rather than just
+                        printing the \`sbatch\` command
+       --after-slurm    organize timelines **after** running them with --run-slurm
+                        **Note**, if this option is not used after running on slurm,
+                        all files from output directories will be removed.
+
     --debug             enable debug mode: run a single timeline with stderr and stdout printed to screen;
                         it is best to use this with the '-t' option to debug specific timeline issues
 
@@ -90,6 +106,10 @@ done
 if ${modes['help']}; then
   usage
   exit 101
+fi
+if (${modes['run-slurm']} && ${modes['debug']}); then
+  echo "ERROR: --run-slurm and --debug are mutually exclusive" >&2
+  exit 100
 fi
 
 # set class path to include groovy's classpath, for `java` calls
@@ -177,13 +197,13 @@ detDirs=(
   trigger
 )
 
-# cleanup output directories
-if ${modes['focus-all']} || ${modes['focus-timelines']}; then
+# cleanup output directories IF you are not just organizing files after running on SLURM
+if (${modes['focus-all']} || ${modes['focus-timelines']}) && ! ${modes['after-slurm']}; then
   if [ -d $finalDirPreQA ]; then
     rm -rv $finalDirPreQA
   fi
 fi
-if [ -d $logDir ]; then
+if [ -d $logDir ] && ! ${modes['after-slurm']}; then
   for fail in $(find $logDir -name "*.fail"); do
     rm $fail
   done
@@ -231,26 +251,135 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   done
 
   # produce timelines, multithreaded
-  job_ids=()
-  job_names=()
-  for timelineObj in $timelineList; do
-    logFile=$logDir/$timelineObj
-    [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
-    echo ">>> producing timeline '$timelineObj' ..."
-    if ${modes['debug']}; then
-      java $TIMELINE_JAVA_OPTS $run_detectors_script $timelineObj $inputDir
-      echo "PREMATURE EXIT, since --debug option was used"
-      exit
-    else
-      #sleep 1 
-      java $TIMELINE_JAVA_OPTS $run_detectors_script $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
-      job_ids+=($!)
-      job_names+=($timelineObj)
-    fi
-    wait_for_jobs $numThreads
-  done
+  if (! ${modes['run-slurm']} || ${modes['debug']}) && ! ${modes['after-slurm']}; then
+    job_ids=()
+    job_names=()
+    for timelineObj in $timelineList; do
+      logFile=$logDir/$timelineObj
+      [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
+      echo ">>> producing timeline '$timelineObj' ..."
+      if ${modes['debug']}; then
+        java $TIMELINE_JAVA_OPTS $run_detectors_script $timelineObj $inputDir
+        echo "PREMATURE EXIT, since --debug option was used"
+        exit
+      else
+        #sleep 1 
+        java $TIMELINE_JAVA_OPTS $run_detectors_script $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
+        job_ids+=($!)
+        job_names+=($timelineObj)
+      fi
+      wait_for_jobs $numThreads
+    done
 
-  wait_for_jobs 0
+    wait_for_jobs 0
+
+  fi # condition end: produce timelines, multi-threaded
+
+  # produce timelines, distributed on SLURM
+  if ${modes['run-slurm']} && ! ${modes['after-slurm']}; then
+
+    # initial checks and preparations
+    echo $dataset | grep -q "/" && printError "dataset name must not contain '/' " && echo && exit 100
+    [ -z "$dataset" ] && printError "dataset name must not be empty" && echo && exit 100
+    slurmJobName=clas12-timeline--$dataset
+
+    # start job lists
+    echo """
+    Generating job scripts..."""
+    slurmDir=$outputDir/slurm/step2
+    mkdir -p $slurmDir/scripts
+    jobkeys=()
+    for timelineObj in $timelineList; do
+      [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
+      jobkeys+=($timelineObj)
+    done
+    #NOTE: A separate list is created for each key in run-monitoring.sh,
+    # but here we just want to submit all timelines in the same slurm job array so just create one job list.
+    joblist=$slurmDir/job.$dataset.detectors.list
+    > $joblist
+
+    # get list of input files, and append prefix for SWIF
+    echo "..... getting input files ....."
+    inputListFile=$slurmDir/files.$dataset.inputs.list
+    realpath $inputDir > $inputListFile
+
+    # generate job scripts
+    echo "..... generating job scripts ....."
+    for key in ${jobkeys[@]}; do
+
+      # make job scripts for each $key
+      jobscript=$slurmDir/scripts/$key.$dataset.sh
+
+      cat > $jobscript << EOF
+#!/usr/bin/env bash
+set -e
+set -u
+set -o pipefail
+echo "TIMELINE OBJECT $key"
+
+# set classpath
+export CLASSPATH=$CLASSPATH
+
+# produce detector timelines
+java $TIMELINE_JAVA_OPTS $run_detectors_script $key $inputDir
+EOF
+
+      # grant permission and add it `joblist`
+      chmod u+x $jobscript
+      echo $jobscript >> $joblist
+
+    done # loop over `jobkeys`
+
+    # now generate slurm descriptions and/or local scripts
+    echo """
+    Generating batch scripts..."""
+    exelist=()
+
+    # check if we have any jobs to run
+    [ ! -s $joblist ] && printError "there are no timeline jobs to run" && exit 100
+    slurm=$(echo $joblist | sed 's;.list$;.slurm;')
+
+    cat > $slurm << EOF
+#!/bin/sh
+#SBATCH --ntasks=1
+#SBATCH --job-name=$slurmJobName
+#SBATCH --output=$SLURM_LOG.out
+#SBATCH --error=$SLURM_LOG.err
+#SBATCH --partition=production
+#SBATCH --account=clas12
+
+#SBATCH --mem-per-cpu=$SLURM_MEMORY
+#SBATCH --time=$SLURM_TIME
+
+#SBATCH --array=1-$(cat $joblist | wc -l)
+#SBATCH --ntasks=1
+
+srun \$(head -n\$SLURM_ARRAY_TASK_ID $joblist | tail -n1)
+EOF
+    exelist+=($slurm)
+
+    # execution
+    [ ${#exelist[@]} -eq 0 ] && printError "no jobs were created at all; check errors and warnings above" && exit 100
+    echo """
+    $sep
+    """
+    if ${modes['submit-slurm']}; then
+      echo "SUBMITTING JOBS TO SLURM"
+      echo $sep
+      for exe in ${exelist[@]}; do sbatch $exe; done
+      echo $sep
+      echo "JOBS SUBMITTED!"
+    else
+      echo """  SLURM JOB DESCRIPTIONS GENERATED
+      - Slurm job name prefix will be: $slurmJobName
+      - To submit all jobs to slurm, run:
+        ------------------------------------------"""
+      for exe in ${exelist[@]}; do echo "    sbatch $exe"; done
+      echo """    ------------------------------------------
+      """
+    fi
+    exit 0
+  fi # condition end: produce timelines, distributed on SLURM
 
   # organize output timelines
   echo ">>> organizing output timelines..."
