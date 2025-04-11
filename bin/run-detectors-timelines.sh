@@ -242,7 +242,6 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
       echo "PREMATURE EXIT, since --debug option was used"
       exit
     else
-      #sleep 1 
       java $TIMELINE_JAVA_OPTS $run_detectors_script $timelineObj $inputDir > $logFile.out 2> $logFile.err || touch $logFile.fail &
       job_ids+=($!)
       job_names+=($timelineObj)
@@ -279,9 +278,13 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
     esac
   done
 
-  # check timelines
+  # check timelines; remove and complain about any bad ones
+  echo ">>> running hipo-check on timeline HIPO files..."
   outputFiles=$(find . -name "*.hipo")
-  [ -n "$outputFiles" ] && $TIMELINESRC/bin/hipo-check.sh $outputFiles
+  if [ -n "$outputFiles" ]; then
+    logFile=$logDir/hipo-check
+    $TIMELINESRC/bin/hipo-check.sh --rm-bad $outputFiles > $logFile.out 2> $logFile.err || touch $logFile.fail
+  fi
 
   # remove any empty directories
   echo ">>> removing any empty directories..."
@@ -326,11 +329,15 @@ $logDir/*.err
 
 # exit nonzero if any jobs exitted nonzero
 failedJobs=($(find $logDir -name "*.fail" | xargs -I{} basename {} .fail))
+somethingFailed=false
 if [ ${#failedJobs[@]} -gt 0 ]; then
   for failedJob in ${failedJobs[@]}; do
     echo $sep
     printError "job '$failedJob' returned non-zero exit code; error log dump:"
     cat $logDir/$failedJob.err
+    if [ "$failedJob" = "hipo-check" ]; then
+      printWarning "These HIPO files are TIMELINE files; if this '$failedJob' job is the ONLY failed job, you may proceed with timeline deployment, but these failed timelines will not be deployed."
+    fi
   done
   if [ -z "$singleTimeline" -a ${modes['focus-qa']} = false ]; then
     echo $sep
@@ -338,19 +345,28 @@ if [ ${#failedJobs[@]} -gt 0 ]; then
     for failedJob in ${failedJobs[@]}; do
       if [ "$failedJob" = "qa" ]; then
         echo "  $0 $@ --focus-qa"
+      elif [ "$failedJob" = "hipo-check" ]; then
+        echo "  $0 $@ --focus-timelines -t [BAD_TIMELINE]"
+        echo "  where [BAD_TIMELINE] is any timeline that failed 'hipo-check'"
       else
         echo "  $0 $@ --focus-timelines -t $failedJob"
       fi
     done
   fi
-  exit 100
+  somethingFailed=true
 else
   echo "All jobs exitted normally"
 fi
 
 # grep for suspicious things in error logs
 errPattern="error:|exception:|warning"
-echo """To look for any quieter errors, running \`grep -iE '$errPattern'\` on *.err files:
+echo """Now scanning for any quieter errors, by running \`grep -iE '$errPattern'\` on *.err files:
 $sep"""
 grep -iE --color "$errPattern" $logDir/*.err || echo "Good news: grep found no errors, but you still may want to take a look yourself..."
 echo $sep
+
+# exit nonzero if something failed
+if $somethingFailed; then
+  printWarning "At least one job had issues; look above or in the log files to see what's wrong."
+  exit 100
+fi
