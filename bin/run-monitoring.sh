@@ -8,7 +8,7 @@ source $(dirname $0)/environ.sh
 # max number of events for detector monitoring timelines
 MAX_NUM_EVENTS=100000000
 # slurm settings
-SLURM_MEMORY=1500
+SLURM_MEMORY=1600 # must be more than max heap size in $TIMELINE_JAVA_OPTS
 SLURM_TIME=10:00:00
 SLURM_LOG=/farm_out/%u/%x-%A_%a
 ########################################################################
