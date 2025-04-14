@@ -4,17 +4,33 @@ set -e
 set -u
 source $(dirname $0)/environ.sh
 
+# default options
+rm_bad=false
+hipoFiles=()
+
 # arguments
 if [ $# -lt 1 ]; then
-  printError "no HIPO files specified for $(basename $0)"
   echo """
-  USAGE: $0 [HIPO_FILE(S)]...
+  USAGE: $0 [OPTIONS]... [HIPO_FILE(S)]...
 
   Checks each [HIPO_FILE] for corruption, etc.
+
+  OPTIONS
+    --rm-bad           delete (rm) bad HIPO files
   """ >&2
   exit 101
 fi
-hipoFiles=$@
+for arg in "$@"; do
+  if [[ $arg =~ ^- ]]; then
+    case $arg in
+      --rm-bad) rm_bad=true ;;
+      *) printError "unknown option $arg" && exit 100 ;;
+    esac
+  else
+    hipoFiles+=($arg)
+  fi
+done
+[ ${#hipoFiles[@]} -lt 1 ] && printError "no HIPO files specified for $(basename $0)" && exit 100
 
 # minimum file size for a valid HIPO file
 # - seems to be 192 bytes, but setting the threshold slightly higher may be safer
@@ -56,5 +72,12 @@ if [ ${#badFiles[@]} -gt 0 ]; then
   for badFile in ${badFiles[@]}; do
     echo "         - $badFile" >&2
   done
+  # remove bad HIPO files
+  if $rm_bad; then
+    printError "These HIPO files will now be REMOVED!"
+    for badFile in ${badFiles[@]}; do
+      rm -v $badFile >&2
+    done
+  fi
   exit 100
 fi
