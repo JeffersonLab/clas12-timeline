@@ -3,6 +3,8 @@
 .sw*
 .settings
 .project
+.classpath
+.factorypath
 
 # builds
 /target
