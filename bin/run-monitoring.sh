@@ -385,6 +385,9 @@ set -u
 set -o pipefail
 echo "RUN $runnum"
 
+# set env vars
+source $TIMELINESRC/bin/environ.sh
+
 # produce histograms
 java $TIMELINE_JAVA_OPTS \\
   org.jlab.clas.timeline.histograms.run_histograms \\
@@ -412,8 +415,8 @@ set -u
 set -o pipefail
 echo "RUN $runnum"
 
-# additional env vars
-export TIMELINESRC=$TIMELINESRC
+# set env vars
+source $TIMELINESRC/bin/environ.sh
 
 # produce histograms
 $TIMELINESRC/bin/run-groovy-timeline.sh \\
