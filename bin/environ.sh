@@ -20,21 +20,11 @@ timeline_java_opts=(
   -Djava.util.logging.config.file=$TIMELINESRC/data/logging/$log_config.properties
   -Xmx1536m
   -XX:+UseSerialGC
-)
-
-# groovy options
-timeline_groovy_opts=(
-  -cp "$TIMELINESRC/target/*:$TIMELINESRC/target/dependency/*"
-  -Xmx1536m
   -Djava.awt.headless=true
 )
-
-# exports
 export TIMELINE_JAVA_OPTS="${timeline_java_opts[*]}"
-export TIMELINE_GROOVY_OPTS="${timeline_groovy_opts[*]}"
 
 # cleanup vars
 unset this_env
 unset log_config
 unset timeline_java_opts
-unset timeline_groovy_opts
