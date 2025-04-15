@@ -25,6 +25,7 @@ timeline_java_opts=(
 # groovy options
 timeline_groovy_opts=(
   -cp "$TIMELINESRC/target/*:$TIMELINESRC/target/dependency/*"
+  -Xmx1536m
   -Djava.awt.headless=true
 )
 
