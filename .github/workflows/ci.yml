@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+      options: --user root
     steps:
       - uses: actions/checkout@v4
       - name: build
@@ -46,6 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+      options: --user root
     strategy:
       fail-fast: true
       matrix:
@@ -77,6 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+      options: --user root
     strategy:
       fail-fast: false
       matrix:
@@ -115,6 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+      options: --user root
     strategy:
       fail-fast: false
       matrix:
@@ -147,6 +151,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+      options: --user root
     strategy:
       fail-fast: false
       matrix:
@@ -185,6 +190,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+      options: --user root
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
