@@ -12,9 +12,6 @@ defaults:
 
 env:
   dataset: ci_test
-  # NOTE: if any of these versions are changed, update the POM files too
-  java_version: 21
-  java_distribution: zulu
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -28,7 +25,7 @@ jobs:
   build_timeline:
     runs-on: ubuntu-latest
     container:
-      image: codecr.jlab.org/hallb/clas12/container-forge/recon:latest
+      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
     steps:
       - uses: actions/checkout@v4
       - name: build
@@ -48,7 +45,7 @@ jobs:
   download_test_data:
     runs-on: ubuntu-latest
     container:
-      image: codecr.jlab.org/hallb/clas12/container-forge/recon:latest
+      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
     strategy:
       fail-fast: true
       matrix:
@@ -79,7 +76,7 @@ jobs:
       - download_test_data
     runs-on: ubuntu-latest
     container:
-      image: codecr.jlab.org/hallb/clas12/container-forge/recon:latest
+      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
     strategy:
       fail-fast: false
       matrix:
@@ -117,7 +114,7 @@ jobs:
       - download_test_data
     runs-on: ubuntu-latest
     container:
-      image: codecr.jlab.org/hallb/clas12/container-forge/recon:latest
+      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
     strategy:
       fail-fast: false
       matrix:
@@ -149,7 +146,7 @@ jobs:
       - run_monitoring
     runs-on: ubuntu-latest
     container:
-      image: codecr.jlab.org/hallb/clas12/container-forge/recon:latest
+      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
     strategy:
       fail-fast: false
       matrix:
@@ -187,7 +184,7 @@ jobs:
       - run_timelines
     runs-on: ubuntu-latest
     container:
-      image: codecr.jlab.org/hallb/clas12/container-forge/recon:latest
+      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
