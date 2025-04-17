@@ -90,9 +90,10 @@ jobs:
         with:
           key: validation_files_${{ matrix.type }}
           path: validation_files.tar.zst
-      - uses: actions/download-artifact@v4
+      - name: download timeline build
+        uses: actions/download-artifact@v4
         with:
-          pattern: build_timeline
+          name: build_timeline
       - name: untar
         run: ls *.tar.zst | xargs -I{} tar xavf {}
       - run: tree
@@ -129,9 +130,10 @@ jobs:
         with:
           key: validation_files_${{ matrix.type }}
           path: validation_files.tar.zst
-      - uses: actions/download-artifact@v4
+      - name: download timeline build
+        uses: actions/download-artifact@v4
         with:
-          pattern: build_timeline
+          name: build_timeline
       - name: untar
         run: ls *.tar.zst | xargs -I{} tar xavf {}
       - run: tree
@@ -160,14 +162,16 @@ jobs:
           - { type: physics,    args: '' }
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - name: download outfiles
+        uses: actions/download-artifact@v4
         with:
           pattern: outfiles_*
           merge-multiple: true
           path: outfiles
-      - uses: actions/download-artifact@v4
+      - name: download timeline build
+        uses: actions/download-artifact@v4
         with:
-          pattern: build_timeline
+          name: build_timeline
       - name: untar
         run: ls *.tar.zst | xargs -I{} tar xavf {}
       - run: tree
@@ -193,14 +197,16 @@ jobs:
       options: --user root
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - name: download outfiles
+        uses: actions/download-artifact@v4
         with:
           pattern: outfiles_*
           merge-multiple: true
           path: outfiles
-      - uses: actions/download-artifact@v4
+      - name: download timeline build
+        uses: actions/download-artifact@v4
         with:
-          pattern: build_timeline
+          name: build_timeline
       - name: untar
         run: ls *.tar.zst | xargs -I{} tar xavf {}
       - name: tree outfiles
