@@ -14,7 +14,7 @@ inputCmdOpts=""
 
 usage() {
   echo """
-  USAGE: $0 [OPTIONS]...
+  USAGE: thyme deploy [OPTIONS]...
 
   ========================================================================
   | CAUTION: READ ALL OF THIS GUIDE BEFORE RUNNING!

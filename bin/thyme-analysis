@@ -25,7 +25,7 @@ sep="================================================================"
 usage() {
   echo """
   $sep
-  USAGE: $0 [OPTIONS]...
+  USAGE: thyme analysis [OPTIONS]...
   $sep
   Creates web-ready detector timelines locally
 

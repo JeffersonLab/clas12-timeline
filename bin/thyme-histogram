@@ -5,7 +5,7 @@ set -u
 source $(dirname $0)/../libexec/environ.sh
 
 # constants ############################################################
-# max number of events for detector monitoring timelines
+# max number of events for detector histogramming timelines
 MAX_NUM_EVENTS=100000000
 # slurm settings
 SLURM_MEMORY=1600 # must be more than max heap size in $TIMELINE_JAVA_OPTS
@@ -26,9 +26,9 @@ outputDir=""
 sep="================================================================"
 usageTerse() {
   echo """
-  Run the timeline monitoring jobs
+  Run the timeline histogramming jobs
   $sep
-  USAGE: $0 -d [DATASET_NAME] [RUN_DIRECTORY]
+  USAGE: thyme histogram -d [DATASET_NAME] [RUN_DIRECTORY]
   $sep
 
      -d [DATASET_NAME]   unique dataset name, defined by the user, used for organization
@@ -116,9 +116,9 @@ usageVerbose() {
          rather than the default of running everything; you may specify more
          than one
 
-       --focus-detectors   run monitoring for detector QA timelines
+       --focus-detectors   run histogramming for detector QA timelines
 
-       --focus-physics     run monitoring for physics QA timelines
+       --focus-physics     run histogramming for physics QA timelines
 
   $sep
 
