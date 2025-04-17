@@ -2,7 +2,7 @@
 
 set -e
 set -u
-source $(dirname $0)/environ.sh
+source $(dirname $0)/../libexec/environ.sh
 
 # default options
 inputDir=""
@@ -10,7 +10,7 @@ dataset=""
 outputDir=""
 
 # input finding command
-inputCmd="$TIMELINESRC/bin/set-input-dir.sh -s timeline_physics"
+inputCmd="$TIMELINESRC/libexec/set-input-dir.sh -s timeline_physics"
 inputCmdOpts=""
 
 # usage
@@ -108,23 +108,23 @@ function exe {
 exe ./datasetOrganize.sh $dataset $inputDir $qaDir
 
 # produce chargeTree.json
-exe $TIMELINESRC/bin/run-groovy-timeline.sh buildChargeTree.groovy $qaDir
+exe $TIMELINESRC/libexec/run-groovy-timeline.sh buildChargeTree.groovy $qaDir
 
 # loop over datasets
 # trigger electrons monitor
-exe $TIMELINESRC/bin/run-groovy-timeline.sh qaPlot.groovy $qaDir
-exe $TIMELINESRC/bin/run-groovy-timeline.sh qaCut.groovy $qaDir $dataset
+exe $TIMELINESRC/libexec/run-groovy-timeline.sh qaPlot.groovy $qaDir
+exe $TIMELINESRC/libexec/run-groovy-timeline.sh qaCut.groovy $qaDir $dataset
 # FT electrons
-exe $TIMELINESRC/bin/run-groovy-timeline.sh qaPlot.groovy $qaDir FT
-exe $TIMELINESRC/bin/run-groovy-timeline.sh qaCut.groovy $qaDir $dataset FT
+exe $TIMELINESRC/libexec/run-groovy-timeline.sh qaPlot.groovy $qaDir FT
+exe $TIMELINESRC/libexec/run-groovy-timeline.sh qaCut.groovy $qaDir $dataset FT
 # meld FT and FD JSON files
-exe $TIMELINESRC/bin/run-groovy-timeline.sh mergeFTandFD.groovy $qaDir
+exe $TIMELINESRC/libexec/run-groovy-timeline.sh mergeFTandFD.groovy $qaDir
 # general monitor
-exe $TIMELINESRC/bin/run-groovy-timeline.sh monitorPlot.groovy $qaDir
+exe $TIMELINESRC/libexec/run-groovy-timeline.sh monitorPlot.groovy $qaDir
 # move timelines to output area
 exe ./stageTimelines.sh $qaDir $finalDir
 # trash empty files
-exe $TIMELINESRC/bin/run-groovy-timeline.sh $TIMELINESRC/qa-physics/removeEmptyFiles.groovy $outputDir/trash $finalDir
+exe $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-physics/removeEmptyFiles.groovy $outputDir/trash $finalDir
 
 popd
 

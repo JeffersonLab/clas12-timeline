@@ -2,7 +2,7 @@
 
 set -e
 set -u
-source $(dirname $0)/environ.sh
+source $(dirname $0)/../libexec/environ.sh
 
 # constants ############################################################
 # max number of events for detector monitoring timelines
@@ -258,7 +258,7 @@ $sep
 # check cache (and exit), if requested
 if ${modes['check-cache']}; then
   echo "Cross-checking /cache and /mss..."
-  $TIMELINESRC/bin/check-cache.sh ${rdirs[@]}
+  $TIMELINESRC/libexec/check-cache.sh ${rdirs[@]}
   exit $?
 fi
 
@@ -306,14 +306,14 @@ for rdir in ${rdirs[@]}; do
   runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory (or file) basename
   if [ -z "$runnum" ] || ${modes['swifjob']}; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
     if ${modes['flatdir']}; then
-      $TIMELINESRC/bin/hipo-check.sh $rdir
-      runnum=$($TIMELINESRC/bin/run-groovy-timeline.sh $TIMELINESRC/bin/get-run-number.groovy $rdir | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+      $TIMELINESRC/libexec/hipo-check.sh $rdir
+      runnum=$($TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/libexec/get-run-number.groovy $rdir | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
     else
       firstHipo=$(find $rdir -name "*.hipo" | head -n1)
       [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number or create job" && continue
       echo "using HIPO file $firstHipo to get run number for run directory '$rdir'"
-      $TIMELINESRC/bin/hipo-check.sh $firstHipo
-      runnum=$($TIMELINESRC/bin/run-groovy-timeline.sh $TIMELINESRC/bin/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
+      $TIMELINESRC/libexec/hipo-check.sh $firstHipo
+      runnum=$($TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/libexec/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
     fi
   fi
   [ -z "$runnum" -o $runnum -eq 0 ] && printError "unknown run number for '$rdir'; ignoring it!" && continue
@@ -348,7 +348,7 @@ for rdir in ${rdirs[@]}; do
 
     # get beam energy from RCDB
     echo "Retrieving beam energy from RCDB..."
-    beam_energy=$($TIMELINESRC/bin/get-beam-energy.sh $runnum | tail -n1)
+    beam_energy=$($TIMELINESRC/libexec/get-beam-energy.sh $runnum | tail -n1)
     # override beam energy, for cases where RCDB is incorrect
     # - currently only needed for RG-F
     beam_energy_override=`python -c """
@@ -386,7 +386,7 @@ set -o pipefail
 echo "RUN $runnum"
 
 # set env vars
-source $TIMELINESRC/bin/environ.sh
+source $TIMELINESRC/libexec/environ.sh
 
 # produce histograms
 java $TIMELINE_JAVA_OPTS \\
@@ -398,7 +398,7 @@ java $TIMELINE_JAVA_OPTS \\
     $beam_energy
 
 # check output HIPO files
-$TIMELINESRC/bin/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
+$TIMELINESRC/libexec/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
 EOF
         ;;
 
@@ -416,10 +416,10 @@ set -o pipefail
 echo "RUN $runnum"
 
 # set env vars
-source $TIMELINESRC/bin/environ.sh
+source $TIMELINESRC/libexec/environ.sh
 
 # produce histograms
-$TIMELINESRC/bin/run-groovy-timeline.sh \\
+$TIMELINESRC/libexec/run-groovy-timeline.sh \\
   $TIMELINESRC/qa-physics/monitorRead.groovy \\
     $(realpath $rdir) \\
     $outputSubDir \\
@@ -428,7 +428,7 @@ $TIMELINESRC/bin/run-groovy-timeline.sh \\
     $beam_energy
 
 # check output HIPO files
-$TIMELINESRC/bin/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
+$TIMELINESRC/libexec/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
 EOF
         ;;
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ -z "$TIMELINESRC" ]; then source `dirname $0`/../../bin/environ.sh; fi
+if [ -z "$TIMELINESRC" ]; then source `dirname $0`/../../libexec/environ.sh; fi
 
 # copy qaTree.json, so we can start the QA
 if [ $# -lt 2 ]; then
@@ -40,4 +40,4 @@ ln -sv qa.${dataset} qa
 echo "imported $qatree to local area: qa/qaTree.json"
 
 # parse the JSON file into human-readable format
-$TIMELINESRC/bin/run-groovy-timeline.sh parseQaTree.groovy qa/qaTree.json $opts
+$TIMELINESRC/libexec/run-groovy-timeline.sh parseQaTree.groovy qa/qaTree.json $opts

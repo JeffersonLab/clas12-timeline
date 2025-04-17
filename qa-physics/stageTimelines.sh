@@ -16,7 +16,7 @@ outputDir=$2
 
 # check HIPO files
 timelineFiles=$(find $inputDir -name "*.hipo" -type f | grep -v 'monitorElec')
-$TIMELINESRC/bin/hipo-check.sh $timelineFiles
+$TIMELINESRC/libexec/hipo-check.sh $timelineFiles
 
 # copy timelines to output directory
 mkdir -p $outputDir

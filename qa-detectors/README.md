@@ -26,5 +26,5 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
   ../bin/run-detectors-timelines.sh  --focus-qa   # run detector QA only (for debugging this QA code; you may need to set other options)
   ```
 - see [main documentation](../README.md) for more details
-- note to developers: if you want to run local scripts, call `source ../bin/environ.sh` (this is
+- note to developers: if you want to run local scripts, call `source ../libexec/environ.sh` (this is
   automatically done when running the wrapper `../bin/run-detectors-timelines.sh`)

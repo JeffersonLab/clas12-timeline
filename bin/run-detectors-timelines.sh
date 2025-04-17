@@ -2,7 +2,7 @@
 
 set -e
 set -u
-source $(dirname $0)/environ.sh
+source $(dirname $0)/../libexec/environ.sh
 
 # default options
 match="^"
@@ -17,7 +17,7 @@ for key in list skip-mya focus-timelines focus-qa debug help; do
 done
 
 # input finding command
-inputCmd="$TIMELINESRC/bin/set-input-dir.sh -s timeline_detectors"
+inputCmd="$TIMELINESRC/libexec/set-input-dir.sh -s timeline_detectors"
 inputCmdOpts=""
 
 # usage
@@ -269,7 +269,7 @@ if ${modes['focus-all']} || ${modes['focus-timelines']}; then
   outputFiles=$(find . -name "*.hipo")
   if [ -n "$outputFiles" ]; then
     logFile=$logDir/hipo-check
-    $TIMELINESRC/bin/hipo-check.sh --rm-bad $outputFiles > $logFile.out 2> $logFile.err || touch $logFile.fail
+    $TIMELINESRC/libexec/hipo-check.sh --rm-bad $outputFiles > $logFile.out 2> $logFile.err || touch $logFile.fail
   fi
 
   # remove any empty directories
@@ -294,9 +294,9 @@ cp -rL $finalDirPreQA/* $finalDir/
 if ${modes['focus-all']} || ${modes['focus-qa']}; then
   echo ">>> add QA lines..."
   logFile=$logDir/qa
-  $TIMELINESRC/bin/run-groovy-timeline.sh $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
+  $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
   outputFiles=$(find $finalDir -name "*_QA.hipo")
-  [ -n "$outputFiles" ] && $TIMELINESRC/bin/hipo-check.sh $outputFiles
+  [ -n "$outputFiles" ] && $TIMELINESRC/libexec/hipo-check.sh $outputFiles
 fi
 
 

@@ -3,13 +3,13 @@
 
 set -e
 set -u
-source $(dirname $0)/environ.sh
+source $(dirname $0)/../libexec/environ.sh
 
 # timeline webserver directory
 TIMELINEDIR=/u/group/clas/www/clas12mon/html/hipo
 
 # input finding command
-inputCmd="$TIMELINESRC/bin/set-input-dir.sh -s timeline_web"
+inputCmd="$TIMELINESRC/libexec/set-input-dir.sh -s timeline_web"
 inputCmdOpts=""
 
 usage() {
@@ -169,7 +169,7 @@ mkdir -pv $targetDir
 cp -rv $inputDir/* $targetDir/
 [ -n "$metadataFile" ] && cp -v $metadataFile $targetDir/metadata.json
 [ -n "$readmeNote" ] && echo "$readmeNote" > $targetDir/README
-$TIMELINESRC/bin/run-groovy-timeline.sh $TIMELINESRC/bin/index-webpage.groovy $targetDir
+$TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/libexec/index-webpage.groovy $targetDir
 echo "DONE."
 
 # print URL
