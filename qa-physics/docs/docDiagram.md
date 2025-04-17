@@ -30,7 +30,7 @@ Note: output directories `$output_dir` and `$qa_dir` are typically set by wrappe
 ```mermaid
 flowchart TB
 
-    subgraph "Automated by ../bin/run-monitoring.sh"
+    subgraph "Automated by thyme histogram"
       dst{{DSTs}}:::data
       monitorRead[monitorRead.groovy]:::auto
       monitorReadOut{{$output_dir/data_table_$run.dat<br>$output_dir/monitor_$run.hipo}}:::data

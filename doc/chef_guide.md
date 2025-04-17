@@ -17,7 +17,7 @@ Output files will appear in your chosen output directory, within `hist/detectors
 ## :green_circle: Step 2: Make the timelines
 
 ```bash
-run-detectors-timelines.sh -d $dataset -i $out_dir/hist/detectors
+thyme analysis -d $dataset -i $out_dir/hist/detectors
 ```
 where `$out_dir` is your output directory from **Step 1** and `$dataset` is a unique name for this cook, _e.g._, `rga_v1.23`.
 
@@ -26,7 +26,7 @@ Output will appear in `./outfiles/$dataset/`.
 ## :green_circle: Step 3: Deploy the timelines
 
 ```bash
-deploy-timelines.sh -d $dataset -t $target_dir -D
+thyme deploy -d $dataset -t $target_dir -D
 ```
 where `$target_dir` is a subdirectory of `/group/clas/www/clas12mon/html/hipo`, for example,
 ```bash
