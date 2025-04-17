@@ -80,7 +80,7 @@ jobs:
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
       ports: [ 3306 ]
-      options: --user root
+      options: --user root --publish 3306:3306
     strategy:
       fail-fast: false
       matrix:
@@ -121,7 +121,7 @@ jobs:
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
       ports: [ 3306 ]
-      options: --user root
+      options: --user root --publish 3306:3306
     strategy:
       fail-fast: false
       matrix:
