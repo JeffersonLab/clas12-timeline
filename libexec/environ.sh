@@ -13,7 +13,6 @@ export TIMELINESRC=$(realpath $(dirname $this_env)/..)
 
 # RCDB
 [ -z "${RCDB_CONNECTION-}" ] && export RCDB_CONNECTION=mysql://rcdb@clasdb.jlab.org/rcdb
-[ -z "${CCDB_CONNECTION-}" ] && export CCDB_CONNECTION=mysql://clas12reader@clasdb.jlab.org:3306/clas12
 
 # java options
 timeline_java_opts=(
