@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
-      options: --user root
+      options: --user root --expose 3306
     strategy:
       fail-fast: false
       matrix:
@@ -119,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
-      options: --user root
+      options: --user root --expose 3306
     strategy:
       fail-fast: false
       matrix:
