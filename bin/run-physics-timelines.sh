@@ -2,7 +2,7 @@
 
 set -e
 set -u
-source $(dirname $0)/environ.sh
+source $(dirname $0)/../libexec/environ.sh
 
 # default options
 inputDir=""

@@ -4,7 +4,7 @@
 
 set -e
 
-if [ -z "$TIMELINESRC" ]; then source `dirname $0`/../bin/environ.sh; fi
+if [ -z "$TIMELINESRC" ]; then source `dirname $0`/../libexec/environ.sh; fi
 
 if [ $# -ne 2 ]; then
   echo """USAGE: $0 [INPUT_DIR] [DATASET]

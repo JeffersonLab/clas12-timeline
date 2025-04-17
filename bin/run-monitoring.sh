@@ -2,7 +2,7 @@
 
 set -e
 set -u
-source $(dirname $0)/environ.sh
+source $(dirname $0)/../libexec/environ.sh
 
 # constants ############################################################
 # max number of events for detector monitoring timelines
@@ -386,7 +386,7 @@ set -o pipefail
 echo "RUN $runnum"
 
 # set env vars
-source $TIMELINESRC/bin/environ.sh
+source $TIMELINESRC/libexec/environ.sh
 
 # produce histograms
 java $TIMELINE_JAVA_OPTS \\
@@ -416,7 +416,7 @@ set -o pipefail
 echo "RUN $runnum"
 
 # set env vars
-source $TIMELINESRC/bin/environ.sh
+source $TIMELINESRC/libexec/environ.sh
 
 # produce histograms
 $TIMELINESRC/libexec/run-groovy-timeline.sh \\

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ -z "$TIMELINESRC" ]; then source `dirname $0`/../../bin/environ.sh; fi
+if [ -z "$TIMELINESRC" ]; then source `dirname $0`/../../libexec/environ.sh; fi
 
 # copy qaTree.json, so we can start the QA
 if [ $# -lt 2 ]; then
