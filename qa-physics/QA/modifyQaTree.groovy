@@ -458,4 +458,4 @@ else { System.err.println("ERROR: unknown command!"); System.exit(100) }
 
 // update qaTree.json
 new File("qa/qaTree.json").write(JsonOutput.toJson(qaTree))
-["${System.getenv('TIMELINESRC')}/bin/run-groovy-timeline.sh", "parseQaTree.groovy"].execute().waitFor()
+["${System.getenv('TIMELINESRC')}/libexec/run-groovy-timeline.sh", "parseQaTree.groovy"].execute().waitFor()

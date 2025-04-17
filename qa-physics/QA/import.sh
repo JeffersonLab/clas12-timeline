@@ -40,4 +40,4 @@ ln -sv qa.${dataset} qa
 echo "imported $qatree to local area: qa/qaTree.json"
 
 # parse the JSON file into human-readable format
-$TIMELINESRC/bin/run-groovy-timeline.sh parseQaTree.groovy qa/qaTree.json $opts
+$TIMELINESRC/libexec/run-groovy-timeline.sh parseQaTree.groovy qa/qaTree.json $opts

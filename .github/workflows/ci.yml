@@ -158,7 +158,7 @@ jobs:
       run: |
         single_rundir=$(find validation_files -mindepth 1 -maxdepth 1 -type d | head -n1)
         echo "single_rundir = $single_rundir"
-        bin/test-swifjob.sh $single_rundir runner --focus-${{ matrix.type }}
+        util/test-swifjob.sh $single_rundir runner --focus-${{ matrix.type }}
     - name: tree runner
       run: tree runner
 
