@@ -79,8 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
-      ports: [ 3306 ]
-      options: --user root --publish 3306:3306
+      options: --user root
     strategy:
       fail-fast: false
       matrix:
@@ -120,8 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
-      ports: [ 3306 ]
-      options: --user root --publish 3306:3306
+      options: --user root
     strategy:
       fail-fast: false
       matrix:
