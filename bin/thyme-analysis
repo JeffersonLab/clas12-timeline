@@ -4,15 +4,24 @@ set -e
 set -u
 source $(dirname $0)/../libexec/environ.sh
 
+# timeline webserver directory
+WEBURL="https://clas12mon.jlab.org"
+WEBDIR=/u/group/clas/www/clas12mon/html/hipo
+
 # default options
 match="^"
 inputDir=""
+publishEnabled=false
+publishDir=""
+publishFilter=""
+publishNote=""
+publishUrl=""
 dataset=""
 outputDir=""
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list skip-mya focus-timelines focus-qa debug help; do
+for key in list only-publish skip-mya focus-timelines focus-qa debug help; do
   modes[$key]=false
 done
 
@@ -25,20 +34,38 @@ usage() {
   $sep
   Analyzes histograms and produces timeline HIPO files
 
-  REQUIRED OPTIONS: specify at least one of the following:
+  CHEF OPTIONS: most of these are required for chef's production
 
-    -d [DATASET_NAME]   unique dataset name, defined by the user
+    -d [DATASET_NAME]   required unique dataset name, defined by the user
 
-    -i [INPUT_DIR]      input directory; chefs should use the output 'hist' directory, which
-                        contains subdirectories for each run
+    -i [INPUT_DIR]      input directory
+                        - chefs: use the output 'hist' directory, which
+                          contains subdirectories for each run
+                        - default = ./outfiles/[DATASET_NAME]
+
+    -p [PUBLISH_DIR]    publish timeline results to
+                        $WEBURL/[PUBLISH_DIR]/[DATASET_NAME]
+                        - chefs: usually your run group (e.g., 'rgb'), or a
+                          subdirectory within (e.g. 'rgb/pass0')
+                        - CAUTION: this may overwrite data!
+                        - default: analyze timelines but don't publish; you may
+                          follow up using --only-publish to publish analyzed timelines
+
+    -f [FILTER]         publish with run-filter controls for specific datasets, such
+                        as target types; available choices:
+$(find $TIMELINESRC/data/metadata -name "*.json" -exec basename {} .json \; | sed 's;^;                           ;')
+                        - default: no custom filter
+
+    -n [NOTE]           additional note that will be shown on the clas12mon webpage
+                        (i.e., the README file); surround your note in quotes
+                        - default: ''
+
+  ADDITIONAL OPTIONS:
+
+    -o [OUTPUT_DIR]     output directory for the analyzed timelines
                         default = ./outfiles/[DATASET_NAME]
 
-  OPTIONAL OPTIONS:
-
-    -o [OUTPUT_DIR]     output directory
-                        default = ./outfiles/[DATASET_NAME]
-
-    -n [NUM_THREADS]    number of parallel threads to run
+    -j [NUM_THREADS]    number of parallel threads to run
                         default = $numThreads
 
     -t [TIMELINE]       produce only the single detector timeline [TIMELINE]; useful for debugging
@@ -48,6 +75,8 @@ usage() {
     -m [MATCH]          only produce timelines matching [MATCH]
 
     --list              dump the list of timelines and exit
+
+    --only-publish      just publish the timelines, if they are already analyzed
 
     --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
 
@@ -66,18 +95,23 @@ if [ $# -eq 0 ]; then
 fi
 
 # parse options
-while getopts "d:i:o:r:n:t:m:h-:" opt; do
+while getopts "d:i:p:f:n:o:j:t:m:h-:" opt; do
   case $opt in
     d)
       echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
       dataset=$OPTARG
       ;;
     i) inputDir=$OPTARG ;;
+    p)
+      publishDir=$OPTARG
+      publishEnabled=true
+      ;;
+    f) publishFilter=$OPTARG ;;
+    n) publishNote=$OPTARG ;;
     o) outputDir=$OPTARG ;;
-    r) printError "option '-r' has been deprecated, since it is no longer needed" && exit 100 ;;
-    n) numThreads=$OPTARG ;;
-    m) match=$OPTARG ;;
+    j) numThreads=$OPTARG ;;
     t) singleTimeline=$OPTARG ;;
+    m) match=$OPTARG ;;
     h) modes['help']=true ;;
     -)
       for key in "${!modes[@]}"; do
@@ -128,6 +162,36 @@ for key in focus-timelines focus-qa; do
   if ${modes[$key]}; then modes['focus-all']=false; fi
 done
 
+# check publishing options
+if $publishEnabled; then
+  # publishing URL
+  publishUrl=$WEBURL/$publishDir/$subDir/tlsummary
+  # set full path to publish dir
+  [ "$publishDir" = "." ] && printError "publishing directory argument cannot be '.'" && exit 100
+  publishDir=$WEBDIR/$publishDir/$dataset
+  echo "publishing directory: $publishDir"
+  if [ -d $publishDir ]; then
+    printWarning "Publishing directory already exists! Timelines will be overwritten!"
+    printWarning "Press 'Ctrl-C' NOW if this is not what you want! Otherwise, just wait..."
+    sleep 8
+  fi
+  # path to filter file
+  if [ -n "$publishFilter" ]; then
+    publishFilter=$TIMELINESRC/data/metadata/$publishFilter.json
+    if [ -f "$publishFilter" ]; then
+      echo "using metadata file '$publishFilter'"
+    else
+      printError "metadata file '$publishFilter' does not exist (bad argument for option '-m')"
+      exit 100
+    fi
+  fi
+  # add info to the note
+  version=$($TIMELINESRC/bin/thyme --version)
+  timestamp=$(date '+%a %D')
+  [ -n "$publishNote" ] && publishNote="; $publishNote"
+  publishNote="${timestamp}${publishNote}; timeline-code v$version"
+fi
+
 # print settings
 echo """
 Settings:
@@ -167,7 +231,7 @@ detDirs=(
 )
 
 # cleanup output directories
-if ${modes['focus-all']} || ${modes['focus-timelines']}; then
+if ! ${modes['only-publish']} && ( ${modes['focus-all']} || ${modes['focus-timelines']} ); then
   if [ -d $finalDirPreQA ]; then
     rm -rv $finalDirPreQA
   fi
@@ -209,7 +273,7 @@ function wait_for_jobs() {
 ######################################
 # produce detector timelines
 ######################################
-if ${modes['focus-all']} || ${modes['focus-timelines']}; then
+if ! ${modes['only-publish']} && ( ${modes['focus-all']} || ${modes['focus-timelines']} ); then
 
   # change working directory to output directory
   pushd $finalDirPreQA
@@ -291,16 +355,19 @@ fi
 
 # first, copy the timelines to the final timeline directory; we do this regardless of whether QA is run
 # so that (1) only `$finalDir` needs deployment and (2) we can re-run the QA with 'focus-qa' mode
-echo ">>> copy timelines to final directory..."
-cp -rL $finalDirPreQA/* $finalDir/
+if ! ${modes['only-publish']}; then
+  echo ">>> copy timelines to final directory..."
+  cp -rL $finalDirPreQA/* $finalDir/
+fi
 
-if ${modes['focus-all']} || ${modes['focus-qa']}; then
+if ! ${modes['only-publish']} && ( ${modes['focus-all']} || ${modes['focus-qa']} ); then
   echo ">>> add QA lines..."
   logFile=$logDir/qa
   $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
   outputFiles=$(find $finalDir -name "*_QA.hipo")
   [ -n "$outputFiles" ] && $TIMELINESRC/libexec/hipo-check.sh $outputFiles
 fi
+
 
 
 ######################################
@@ -353,6 +420,25 @@ echo """Now scanning for any quieter errors, by running \`grep -iE '$errPattern'
 $sep"""
 grep -iE --color "$errPattern" $logDir/*.err || echo "Good news: grep found no errors, but you still may want to take a look yourself..."
 echo $sep
+
+
+######################################
+# publishing
+######################################
+
+if $publishEnabled; then
+  echo "Publishing..."
+  mkdir -pv $publishDir
+  cp -r $finalDir/* $publishDir/
+  [ -n "$publishFilter" ] && cp -v $publishFilter $publishDir/metadata.json
+  [ -n "$publishNote" ] && echo "$publishNote" > $publishDir/README
+  $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/libexec/index-webpage.groovy $publishDir
+  echo """
+___________________________________________________________
+TIMELINE URL:
+  $publishUrl
+  """
+fi
 
 # exit nonzero if something failed
 if $somethingFailed; then
