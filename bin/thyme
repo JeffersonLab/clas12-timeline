@@ -13,10 +13,9 @@ usage() {
   Run clas12-timeline commands.
 
   COMMAND: the command to run, one of:
-      histogram     Run the timeline histogramming jobs
-      analysis      Analyze the histograms and generate timelines
-      deploy        Deploy the timelines to the web server
-      error         Scan for errors in Slurm logs
+      histogram     Run the timeline histogramming jobs (Step 1)
+      analysis      Analyze the histograms and generate timelines (Step 2)
+      error         Scan for errors in Slurm logs (for Step 1)
 
   OPTIONS: Each command has its own set of options; run a command with no
            additional options to see usage for that command.
@@ -37,7 +36,6 @@ shift
 case $cmd in
   hi*) exec $TIMELINESRC/bin/thyme-histogram "$@" ;;
   an*) exec $TIMELINESRC/bin/thyme-analysis "$@" ;;
-  de*) exec $TIMELINESRC/bin/thyme-deploy "$@" ;;
   er*) exec $TIMELINESRC/bin/thyme-error "$@" ;;
   -v|--version)
     echo $(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec -f $TIMELINESRC/pom.xml || echo "UNKNOWN")

@@ -26,7 +26,9 @@ outputDir=""
 sep="================================================================"
 usageTerse() {
   echo """
-  Run the timeline histogramming jobs
+  Run the timeline histogramming jobs.
+  NOTE: This is not for chefs; instead, use the chef's workflow.
+
   $sep
   USAGE: thyme histogram -d [DATASET_NAME] [RUN_DIRECTORY]
   $sep
@@ -40,14 +42,13 @@ usageTerse() {
   one is for detector QA timelines and the other is for physics QA timelines.
   Output files will appear in ./outfiles/[DATASET_NAME]
 
-  For more options, run:
-    $0 --help
+  For more options, run with '--help'
   """ >&2
 }
 usageVerbose() {
   echo """
   $sep
-  USAGE: $0  [OPTIONS]...  [RUN_DIRECTORY]...
+  USAGE: thyme histogram  [OPTIONS]...  [RUN_DIRECTORY]...
   $sep
 
   REQUIRED ARGUMENTS:

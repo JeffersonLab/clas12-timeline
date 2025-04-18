@@ -27,12 +27,12 @@ done
 
 # usage
 sep="================================================================"
-usage() {
+usageTerse() {
   echo """
   $sep
   USAGE: thyme analysis [OPTIONS]...
   $sep
-  Analyzes histograms and produces timeline HIPO files
+  Analyzes histograms and produces timelines.
 
   CHEF OPTIONS: most of these are required for chef's production
 
@@ -59,8 +59,10 @@ $(find $TIMELINESRC/data/metadata -name "*.json" -exec basename {} .json \; | se
     -n [NOTE]           additional note that will be shown on the clas12mon webpage
                         (i.e., the README file); surround your note in quotes
                         - default: ''
-
-  ADDITIONAL OPTIONS:
+  """>&2
+}
+usageVerbose() {
+  echo """  ADDITIONAL OPTIONS:
 
     -o [OUTPUT_DIR]     output directory for the analyzed timelines
                         default = ./outfiles/[DATASET_NAME]
@@ -90,7 +92,8 @@ $(find $TIMELINESRC/data/metadata -name "*.json" -exec basename {} .json \; | se
   """ >&2
 }
 if [ $# -eq 0 ]; then
-  usage
+  usageTerse
+  echo "  For more options, run with '--help'" >&2
   exit 101
 fi
 
@@ -123,7 +126,8 @@ while getopts "d:i:p:f:n:o:j:t:m:h-:" opt; do
   esac
 done
 if ${modes['help']}; then
-  usage
+  usageTerse
+  usageVerbose
   exit 101
 fi
 
