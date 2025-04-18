@@ -9,10 +9,6 @@ inputDir=""
 dataset=""
 outputDir=""
 
-# input finding command
-inputCmd="$TIMELINESRC/libexec/set-input-dir.sh -s timeline_physics"
-inputCmdOpts=""
-
 # usage
 sep="================================================================"
 usage() {
@@ -22,9 +18,13 @@ usage() {
   $sep
   Creates web-ready physics timelines locally
 
-  REQUIRED OPTIONS: specify at least one of the following:""" >&2
-  $inputCmd -h
-  echo """
+  REQUIRED OPTIONS: specify at least one of the following:
+
+    -d [DATASET_NAME]   unique dataset name, defined by the user
+
+    -i [INPUT_DIR]      input directory
+                        default = ./outfiles/[DATASET_NAME]
+
   OPTIONAL OPTIONS:
 
     -o [OUTPUT_DIR]     output directory
@@ -40,11 +40,13 @@ fi
 
 # parse options
 helpMode=false
-while getopts "d:i:Uo:h-:" opt; do
+while getopts "d:i:o:h-:" opt; do
   case $opt in
-    d) inputCmdOpts+=" -d $OPTARG" ;;
-    i) inputCmdOpts+=" -i $OPTARG" ;;
-    U) inputCmdOpts+=" -U" ;;
+    d)
+      echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
+      dataset=$OPTARG
+      ;;
+    i) inputDir=$OPTARG ;;
     o) outputDir=$OPTARG ;;
     h) helpMode=true ;;
     -)
@@ -58,9 +60,9 @@ if $helpMode; then
   exit 101
 fi
 
-# set input/output directories and dataset name
-dataset=$($inputCmd $inputCmdOpts -D)
-inputDir=$(realpath $($inputCmd $inputCmdOpts -I))
+# set input and output directories
+[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_physics
+[ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100
 [ -z "$outputDir" ] && outputDir=$(realpath $(pwd -P)/outfiles/$dataset) || outputDir=$(realpath $outputDir)
 
 # set subdirectories

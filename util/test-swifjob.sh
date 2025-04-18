@@ -9,7 +9,7 @@ source $(dirname $0)/../libexec/environ.sh
 if [ $# -lt 2 ]; then
   echo """
   USAGE: $0 [INPUT_RUN_DIRECTORY] [RUNNER_DIRECTORY] [OPTIONS]...
-         where [OPTIONS] are forwared to run-monitoring.sh
+         where [OPTIONS] are forwarded to 'thyme histogram'
   """ >&2
   exit 101
 fi
@@ -17,7 +17,7 @@ inputDir=$(realpath $1)
 runnerDir=$2
 shift
 shift
-cmd="$TIMELINESRC/bin/run-monitoring.sh --swifjob $@"
+cmd="$TIMELINESRC/bin/thyme histogram --swifjob $@"
 
 # symlink inputs to runner directory
 [ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100

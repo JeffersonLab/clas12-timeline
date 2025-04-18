@@ -15,17 +15,17 @@ This step reads input HIPO files (_e.g._, DST or `mon` files) and produces histo
 
 This step can either be run during the usual data cooking procedure, using [`clas12-workflow`](https://github.com/baltzell/clas12-workflow) (see its usage guide), or it may be run separately on already-cooked data using:
 ```bash
-bin/run-monitoring.sh
+thyme histogram
 ```
 Running it with no arguments will print the usage guide; use the `--help` option for more detailed guidance.
 
 > [!NOTE]
-> If you are performing physics QA for QADB, consider using [**prescaled trains**](/qa-physics/prescaler) (and `run-monitoring.sh` will need the `--flatdir` argument)
+> If you are performing physics QA for QADB, consider using [**prescaled trains**](/qa-physics/prescaler) (and `thyme histogram` will need the `--flatdir` argument)
 
 ### Example
-If using `clas12-workflow`, see it's documentation; otherwise if using `run-monitoring.sh`:
+If using `clas12-workflow`, see it's documentation; otherwise if using `thyme histogram`:
 ```bash
-bin/run-monitoring.sh -d rga_sp19_v5 /volatile/clas12/rg-a/production/pass0/sp19/v5/mon
+thyme histogram -d rga_sp19_v5 /volatile/clas12/rg-a/production/pass0/sp19/v5/mon
 ```
 - sets the `dataset` name to `"rga_sp19_v5"`, which will be referenced in subsequent steps
 - assumes the input data are found in `/volatile/clas12/rg-a/production/pass0/sp19/v5/mon`
@@ -36,7 +36,7 @@ sbatch ./slurm/job.rga_sp19_v5.detectors.slurm   # for detector timelines (need 
 sbatch ./slurm/job.rga_sp19_v5.physics.slurm     # for physics timelines
 ```
 - monitor progress with Slurm tools (e.g., `squeue -u $LOGNAME`)
-- monitor output logs in `/farm_out/$LOGNAME/` or use `bin/error-print.sh`
+- monitor output logs in `/farm_out/$LOGNAME/` or use `thyme error`
 
 > [!NOTE]
 > - data monitoring for detector timelines is handled by the [`org.jlab.clas.timeline.histograms` package](/src/main/java/org/jlab/clas/timeline/histograms)
@@ -48,8 +48,8 @@ sbatch ./slurm/job.rga_sp19_v5.physics.slurm     # for physics timelines
 After Step 1 is complete, run the following Step 2 scripts to produce the timeline HIPO files and to run the automatic QA procedures. There is one script for each timeline type: run them with no arguments to print the usage guides:
 
 ```bash
-bin/run-detectors-timelines.sh
-bin/run-physics-timelines.sh
+thyme analysis             # for detector timelines
+run-physics-timelines.sh   # for physics timelines (will eventually be combined with 'thyme analysis')
 ```
 
 > [!IMPORTANT]
@@ -58,18 +58,16 @@ bin/run-physics-timelines.sh
 > - use the scripts' `-o` option to set the output locations
 
 ### Example
-**If** you used `clas12-workflow` for Step 1:
+**If** you used `clas12-workflow` for Step 1, the script arguments should be
 ```bash
-bin/run-detectors-timelines.sh -d rga_sp19_v5 -i /path/to/output/files   # for detector timelines
-bin/run-physics-timelines.sh   -d rga_sp19_v5 -i /path/to/output/files   # for physics timelines
+-d rga_sp19_v5 -i /path/to/output/files
 ```
 - the dataset is _given_ the name `"rga_sp19_v5"` (and does not have to be related to any name given from Step 1)
 - the output from `clas12-workflow` is `/path/to/output/files`; its subdirectories should be run numbers
 
 **Otherwise**, you may omit the `-i /path/to/output/files` option (unless you customized it from Step 1):
 ```bash
-bin/run-detectors-timelines.sh -d rga_sp19_v5   # for detector timelines
-bin/run-physics-timelines.sh   -d rga_sp19_v5   # for physics timelines
+-d rga_sp19_v5
 ```
 - the dataset name must match that of Step 1, otherwise you need to specify the path to the input files with `-i`
 
@@ -86,16 +84,16 @@ bin/run-physics-timelines.sh   -d rga_sp19_v5   # for physics timelines
 To view the timelines on the web, you must deploy them by copying the timeline HIPO files to a directory with a running web server. Note that you must have write-permission for that directory. To deploy, run (with no arguments, for the usage guide):
 
 ```bash
-bin/deploy-timelines.sh
+thyme deploy
 ```
 
 If all went well, a URL for the new timelines will be printed; open it in a browser to view them.
 
 ### Example
 ```bash
-bin/deploy-timelines.sh -d rga_sp19_v5 -t rga/sp19/pass0/v5 -D   # deploy to a run-group web directory (for chefs)
+thyme deploy -d rga_sp19_v5 -t rga/sp19/pass0/v5 -D   # deploy to a run-group web directory (for chefs)
 ### or ###
-bin/deploy-timelines.sh -d rga_sp19_v5 -t $LOGNAME/my_test -D    # deploy to a personal web directory (for testing)
+thyme deploy -d rga_sp19_v5 -t $LOGNAME/my_test -D    # deploy to a personal web directory (for testing)
 ```
 - this will _only_ print what will be done: deploy the timelines from dataset `"rga_sp19_v5"` (defined in previous step(s)) to the printed path
   - you must have write access to that path; contact the maintainers if you need help with this

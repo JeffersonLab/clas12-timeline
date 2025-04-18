@@ -43,13 +43,13 @@ For run-group specific notes, including the commands used to perform the QA, see
     * if you find that the DAQ-gated FC charge is larger than the ungated
       charge, you may have assumed here that the recharge option was ON, when
       actually it was OFF and needs to be ON
-* `../bin/run-monitoring.sh`: runs `monitorRead.groovy` on DSTs using `slurm`
+* `thyme histogram`: runs `monitorRead.groovy` on DSTs using `slurm`
   * **IMPORTANT**: call this first with the `--check-cache` option to make sure that ALL required DST files are cached; if all files are on `/cache`, you may proceed, removing the `--check-cache` option
   * **IMPORTANT**: if you do **NOT** want to analyze full DSTs, and prefer to analyze trains:
     * use the option `--flatdir`, since likely all the HIPO files are in a single directory
     * use the scripts in the [`prescaler/` directory](prescaler) if you want to create a random "prescale" train
   * wait for `slurm` jobs to finish
-  * inspect error logs (_e.g._, `../bin/error-print.sh`) to make sure all jobs ran successfully
+  * inspect error logs (_e.g._, `thyme error`) to make sure all jobs ran successfully
 * `../bin/run-physics-timelines.sh $dataset`, which does the following:
   * runs `datasetOrganize.sh`
   * runs `qaPlot.groovy` (on FD and FT)
