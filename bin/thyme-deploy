@@ -8,10 +8,6 @@ source $(dirname $0)/../libexec/environ.sh
 # timeline webserver directory
 TIMELINEDIR=/u/group/clas/www/clas12mon/html/hipo
 
-# input finding command
-inputCmd="$TIMELINESRC/libexec/set-input-dir.sh -s timeline_web"
-inputCmdOpts=""
-
 usage() {
   echo """
   USAGE: thyme deploy [OPTIONS]...
@@ -28,10 +24,10 @@ usage() {
 
   REQUIRED OPTIONS: copy timelines for dataset [DATASET] to [TARGET_DIRECTORY]
 
-  *** Specify at least one of the following:""" >&2
-  $inputCmd -h
-  echo """
-  *** Also, specify the target:
+    -d [DATASET_NAME]       unique dataset name, defined by the user
+
+    -i [INPUT_DIR]          input directory
+                            default = ./outfiles/[DATASET_NAME]
 
     -t [TARGET_DIRECTORY]   the top-level destination where the directory of
                             final timelines will be copied to
@@ -83,11 +79,13 @@ metadataFile=""
 readmeNote=""
 inputDir=""
 helpMode=false
-while getopts "d:i:Ut:Dcs:m:n:h-:" opt; do
+while getopts "d:i:t:Dcs:m:n:h-:" opt; do
   case $opt in
-    d) inputCmdOpts+=" -d $OPTARG" ;;
-    i) inputCmdOpts+=" -i $OPTARG" ;;
-    U) inputCmdOpts+=" -U" ;;
+    d)
+      echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
+      dataset=$OPTARG
+      ;;
+    i) inputDir=$OPTARG ;;
     t) targetDirArg=$OPTARG ;;
     D) dryRun=true ;;
     c) customTarget=true ;;
@@ -107,9 +105,9 @@ if $helpMode; then
   exit 101
 fi
 
-# set input directory and dataset name
-dataset=$($inputCmd $inputCmdOpts -D)
-inputDir=$($inputCmd $inputCmdOpts -I)
+# set input directory
+[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_web
+[ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100
 
 # check required options
 [ -z "$dataset" -o -z "$inputDir" -o -z "$targetDirArg" ] && printError "missing one or more required options" && usage && exit 100
