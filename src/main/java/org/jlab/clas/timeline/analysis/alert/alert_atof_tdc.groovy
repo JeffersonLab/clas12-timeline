@@ -27,7 +27,7 @@ def data = new ConcurrentHashMap()
       data[run].put(String.format('fit_atof_tdc_%s', file_index),  f1)
       data[run].put(String.format('peak_location_atof_tdc_%s', file_index),  f1.getParameter(1))
       data[run].put(String.format('sigma_atof_tdc_%s', file_index),  f1.getParameter(2))
-      data[run].put(String.format('integral_per_trigger_atof_tdc_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
+      data[run].put(String.format('integral_normalized_to_trigger_atof_tdc_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
     }
   }
 
@@ -37,7 +37,7 @@ def data = new ConcurrentHashMap()
 
     TDirectory out = new TDirectory()
     out.mkdir('/timelines')
-    ['peak_location', 'sigma', 'integral_per_trigger'].each{variable->
+    ['peak_location', 'sigma', 'integral_normalized_to_trigger'].each{variable->
       (0..<15).collect{sector->
         (0..<4).collect{layer->
           def names = []
