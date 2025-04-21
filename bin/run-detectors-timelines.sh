@@ -142,6 +142,7 @@ echo "}"
 
 # output detector subdirectories
 detDirs=(
+  alert
   band
   bmtbst
   central
