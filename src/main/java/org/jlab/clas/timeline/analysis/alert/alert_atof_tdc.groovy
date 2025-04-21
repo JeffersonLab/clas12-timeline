@@ -35,12 +35,12 @@ def data = new ConcurrentHashMap()
 
   def write() {
 
-    TDirectory out = new TDirectory()
-    out.mkdir('/timelines')
     ['peak_location', 'sigma', 'integral_normalized_to_trigger'].each{variable->
       (0..<15).collect{sector->
         (0..<4).collect{layer->
           def names = []
+          TDirectory out = new TDirectory()
+          out.mkdir('/timelines')
           (0..<12).collect{component->
             def file_index = ''
             if (component <= 10) file_index = String.format('sector%d_layer%d_component%d_order0', sector, layer, component)
