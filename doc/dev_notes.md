@@ -32,7 +32,7 @@ flowchart TB
             outTimelineDetectorsPreQA{{outfiles/$dataset/timeline_web_preQA/$detector/*.hipo}}:::timeline
             timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
         end
-        subgraph "<strong>bin/run-physics-timelines.sh</strong>"
+        subgraph "<strong>bin/qtl physics</strong>"
             timelinePhysics["<strong>Make physics QA timelines:</strong><br/>qa-physics/: (see documentation)"]:::proc
         end
     end
@@ -109,7 +109,7 @@ outfiles
     │   ├── ltcc
     │   ├── ...
     │   │
-    │   ├── phys_qa                   # physics timelines, with QA, from `bin/run-physics-timelines.sh`
+    │   ├── phys_qa                   # physics timelines, with QA, from `bin/qtl physics`
     │   ├── phys_qa_extra             # extra physics QA timelines, for experts
     │   └── qadb                      # QADB results timeline
     │

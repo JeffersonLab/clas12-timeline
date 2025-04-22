@@ -48,8 +48,8 @@ qtl histogram -d rga_sp19_nSidis --submit --flatdir --focus-physics /cache/clas1
 
 Make the timelines:
 ```bash
-bin/run-physics-timelines.sh -d rga_sp19_prescaled
-bin/run-physics-timelines.sh -d rga_sp19_nSidis
+bin/qtl physics -d rga_sp19_prescaled
+bin/qtl physics -d rga_sp19_nSidis
 ```
 
 Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):

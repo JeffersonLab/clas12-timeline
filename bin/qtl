@@ -15,6 +15,7 @@ usage() {
   COMMAND: the command to run, one of:
       histogram     Run the timeline histogramming jobs (Step 1)
       analysis      Analyze the histograms and generate timelines (Step 2)
+      physics       Generate and analyze physics QA timelines (Step 2)
       error         Scan for errors in Slurm logs (for Step 1)
 
   OPTIONS: Each command has its own set of options; run a command with no
@@ -36,6 +37,7 @@ shift
 case $cmd in
   hi*) exec $TIMELINESRC/bin/qtl-histogram "$@" ;;
   an*) exec $TIMELINESRC/bin/qtl-analysis "$@" ;;
+  ph*) exec $TIMELINESRC/bin/qtl-physics "$@" ;;
   er*) exec $TIMELINESRC/bin/qtl-error "$@" ;;
   -v|--version)
     echo $(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec -f $TIMELINESRC/pom.xml || echo "UNKNOWN")

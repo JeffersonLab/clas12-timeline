@@ -28,8 +28,8 @@ qtl histogram -d rga_fa18_outbending_nSidis --submit --flatdir --focus-physics /
 
 Make the timelines:
 ```bash
-bin/run-physics-timelines.sh -d rga_fa18_inbending_nSidis
-bin/run-physics-timelines.sh -d rga_fa18_outbending_nSidis
+bin/qtl physics -d rga_fa18_inbending_nSidis
+bin/qtl physics -d rga_fa18_outbending_nSidis
 ```
 
 Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):

@@ -158,8 +158,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { type: detectors, run_script: 'bin/qtl analysis',           args: '-n 4 --skip-mya' }
-          - { type: physics,   run_script: 'bin/run-physics-timelines.sh', args: '' }
+          - { type: detectors, run_script: 'bin/qtl analysis', args: '-n 4 --skip-mya' }
+          - { type: physics,   run_script: 'bin/qtl physics',  args: '' }
     steps:
       - uses: actions/checkout@v4
       - name: download outfiles

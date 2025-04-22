@@ -50,7 +50,7 @@ For run-group specific notes, including the commands used to perform the QA, see
     * use the scripts in the [`prescaler/` directory](prescaler) if you want to create a random "prescale" train
   * wait for `slurm` jobs to finish
   * inspect error logs (_e.g._, `qtl error`) to make sure all jobs ran successfully
-* `../bin/run-physics-timelines.sh $dataset`, which does the following:
+* `../bin/qtl physics $dataset`, which does the following:
   * runs `datasetOrganize.sh`
   * runs `qaPlot.groovy` (on FD and FT)
   * runs `qaCut.groovy` (on FD and FT)
@@ -63,7 +63,7 @@ For run-group specific notes, including the commands used to perform the QA, see
       to diagnose the problem (the full command for each script is printed in the output)
 * take a look at the "time bin analysis" plots by running `timebin_analysis/timebin_plot.C`
 * integrity check: check if all available data were analyzed (must be done AFTER
-  `../bin/run-physics-timelines.sh`)
+  `../bin/qtl physics`)
   * `getListOfDSTs.sh [dataset]` (takes some time to run)
   * `integrityCheck.sh [dataset]`
 * if you are running on a _fully_ cooked dataset, perform the manual QA (see QA procedure below)
@@ -191,7 +191,7 @@ the timelines and recording features not identified by the automatic QA in
 `qaTree.json`
 * first, make sure you have an automatically generated `qaTree.json`
   * verify your epoch lines are where you want them
-  * if you make changes to the epoch lines, re-run `../bin/run-physics-timelines.sh` to
+  * if you make changes to the epoch lines, re-run `../bin/qtl physics` to
     generate the updated `qaTree.json`
 * verify all the data have been analyzed by the automatic QA
   * execute `getListOfDSTs.sh [dataset]` to obtain a list of run numbers and file

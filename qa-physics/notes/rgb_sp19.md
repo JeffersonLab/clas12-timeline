@@ -26,7 +26,7 @@ qtl histogram -d rgb_sp19_sidisdvcs --submit --flatdir --focus-physics /cache/cl
 
 Make the timelines:
 ```bash
-bin/run-physics-timelines.sh -d rgb_sp19_sidisdvcs
+bin/qtl physics -d rgb_sp19_sidisdvcs
 ```
 
 Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):

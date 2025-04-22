@@ -55,8 +55,8 @@ qtl histogram -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/cla
 
 Make the timelines:
 ```bash
-bin/run-physics-timelines.sh -d rgc_su22_prescaled
-bin/run-physics-timelines.sh -d rgc_su22_sidisdvcs
+bin/qtl physics -d rgc_su22_prescaled
+bin/qtl physics -d rgc_su22_sidisdvcs
 ```
 
 Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):

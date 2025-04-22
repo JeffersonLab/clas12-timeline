@@ -48,8 +48,8 @@ sbatch ./slurm/job.rga_sp19_v5.physics.slurm     # for physics timelines
 After Step 1 is complete, run the following Step 2 scripts to produce the timeline HIPO files and to run the automatic QA procedures. There is one script for each timeline type: run them with no arguments to print the usage guides:
 
 ```bash
-qtl analysis             # for detector timelines
-run-physics-timelines.sh   # for physics timelines (will eventually be combined with 'qtl analysis')
+qtl analysis  # for detector timelines
+qtl physics   # for physics timelines (will eventually be combined with 'qtl analysis')
 ```
 
 > [!IMPORTANT]
