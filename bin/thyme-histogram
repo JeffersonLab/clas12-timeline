@@ -30,7 +30,7 @@ usageTerse() {
   NOTE: This is not for chefs; instead, use the chef's workflow.
 
   $sep
-  USAGE: thyme histogram -d [DATASET_NAME] [RUN_DIRECTORY]
+  USAGE: qtl histogram -d [DATASET_NAME] [RUN_DIRECTORY]
   $sep
 
      -d [DATASET_NAME]   unique dataset name, defined by the user, used for organization
@@ -48,7 +48,7 @@ usageTerse() {
 usageVerbose() {
   echo """
   $sep
-  USAGE: thyme histogram  [OPTIONS]...  [RUN_DIRECTORY]...
+  USAGE: qtl histogram  [OPTIONS]...  [RUN_DIRECTORY]...
   $sep
 
   REQUIRED ARGUMENTS:

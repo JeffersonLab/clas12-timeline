@@ -34,9 +34,9 @@ cmd=$1
 shift
 
 case $cmd in
-  hi*) exec $TIMELINESRC/bin/thyme-histogram "$@" ;;
-  an*) exec $TIMELINESRC/bin/thyme-analysis "$@" ;;
-  er*) exec $TIMELINESRC/bin/thyme-error "$@" ;;
+  hi*) exec $TIMELINESRC/bin/qtl-histogram "$@" ;;
+  an*) exec $TIMELINESRC/bin/qtl-analysis "$@" ;;
+  er*) exec $TIMELINESRC/bin/qtl-error "$@" ;;
   -v|--version)
     echo $(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec -f $TIMELINESRC/pom.xml || echo "UNKNOWN")
     exit 0

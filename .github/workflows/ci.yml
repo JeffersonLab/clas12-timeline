@@ -98,7 +98,7 @@ jobs:
         run: ls *.tar.zst | xargs -I{} tar xavf {}
       - run: tree
       - name: run monitoring
-        run: thyme histogram -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
+        run: bin/qtl histogram -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
       - run: tree slurm
       - run: tree outfiles
       - uses: actions/upload-artifact@v4
@@ -158,7 +158,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { type: detectors, run_script: 'bin/thyme analysis',           args: '-n 4 --skip-mya' }
+          - { type: detectors, run_script: 'bin/qtl analysis',           args: '-n 4 --skip-mya' }
           - { type: physics,   run_script: 'bin/run-physics-timelines.sh', args: '' }
     steps:
       - uses: actions/checkout@v4
@@ -217,7 +217,7 @@ jobs:
           tree outfiles | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
       - name: deploy
-        run: thyme deploy -d ${{env.dataset}} -c -t web
+        run: bin/qtl deploy -d ${{env.dataset}} -c -t web
       - uses: actions/upload-artifact@v4
         with:
           name: web

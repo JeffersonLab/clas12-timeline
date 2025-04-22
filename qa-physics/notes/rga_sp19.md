@@ -26,12 +26,12 @@ start-workflow.sh rga-a-sp19*.json  ## check that this is the correct JSON file 
 
 For the prescaled train:
 ```bash
-thyme histogram -d rga_sp19_prescaled --submit --focus-physics PATH_TO_PRESCALED_TRAIN
+qtl histogram -d rga_sp19_prescaled --submit --focus-physics PATH_TO_PRESCALED_TRAIN
 ```
 
 For the SIDIS train, `nSidis`, first make sure all skim files are cached:
 ```bash
-thyme histogram -d rga_sp19_nSidis --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
+qtl histogram -d rga_sp19_nSidis --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
 ```
 If they are not:
 ```bash
@@ -41,7 +41,7 @@ jcache get $(cat jlist.txt)
 ```
 then run monitoring
 ```bash
-thyme histogram -d rga_sp19_nSidis --submit --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
+qtl histogram -d rga_sp19_nSidis --submit --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
 ```
 
 ## Make timelines
@@ -55,10 +55,10 @@ bin/run-physics-timelines.sh -d rga_sp19_nSidis
 Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):
 ```bash
 # your area, for testing
-thyme deploy -d rga_sp19_prescaled -t $LOGNAME -D
-thyme deploy -d rga_sp19_nSidis -t $LOGNAME -D
+qtl deploy -d rga_sp19_prescaled -t $LOGNAME -D
+qtl deploy -d rga_sp19_nSidis -t $LOGNAME -D
 
 # common area
-thyme deploy -d rga_sp19_prescaled -t rga/pass2/sp19/qa -D
-thyme deploy -d rga_sp19_nSidis -t rga/pass2/sp19/qa -D
+qtl deploy -d rga_sp19_prescaled -t rga/pass2/sp19/qa -D
+qtl deploy -d rga_sp19_nSidis -t rga/pass2/sp19/qa -D
 ```

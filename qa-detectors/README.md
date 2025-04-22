@@ -22,9 +22,9 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
 ## Procedure
 - Run one of:
   ```bash
-  thyme analysis               # print usage guide
-  thyme analysis  --focus-qa   # run detector QA only (for debugging this QA code; you may need to set other options)
+  qtl analysis               # print usage guide
+  qtl analysis  --focus-qa   # run detector QA only (for debugging this QA code; you may need to set other options)
   ```
 - see [main documentation](../README.md) for more details
 - note to developers: if you want to run local scripts, call `source ../libexec/environ.sh` (this is
-  automatically done when running the wrapper `thyme analysis`)
+  automatically done when running the wrapper `qtl analysis`)

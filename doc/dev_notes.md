@@ -12,7 +12,7 @@ flowchart TB
     dst[(Input HIPO Files)]:::data
 
     subgraph Data Monitoring
-        subgraph "<strong>bin/thyme histogram</strong>"
+        subgraph "<strong>bin/qtl histogram</strong>"
             monitorDetectors["<strong>Make detector histograms</strong><br/>org.jlab.clas.timeline.histograms.run_histograms"]:::proc
             monitorPhysics["<strong>Make physics QA histograms</strong><br/>qa-physics/: monitorRead.groovy"]:::proc
         end
@@ -27,7 +27,7 @@ flowchart TB
     monitorPhysics   --> outmon
 
     subgraph Timeline Production
-        subgraph "<strong>bin/thyme analysis</strong>"
+        subgraph "<strong>bin/qtl analysis</strong>"
             timelineDetectorsPreQA["<strong>Make detector timelines</strong><br/>org.jlab.clas.timeline.analysis.run_analysis"]:::proc
             outTimelineDetectorsPreQA{{outfiles/$dataset/timeline_web_preQA/$detector/*.hipo}}:::timeline
             timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
@@ -39,7 +39,7 @@ flowchart TB
     subgraph Final Timelines
         outTimelinePhysics{{outfiles/$dataset/timeline_web/phys_*/*}}:::timeline
         outTimelineDetectors{{outfiles/$dataset/timeline_web/$detector/*.hipo}}:::timeline
-        deploy["<strong>Deployment</strong><br/>thyme deploy"]:::proc
+        deploy["<strong>Deployment</strong><br/>qtl deploy"]:::proc
         timelineDir{{timelines on web server}}:::timeline
     end
     outplots --> timelineDetectorsPreQA --> outTimelineDetectorsPreQA --> timelineDetectors --> outTimelineDetectors
@@ -69,7 +69,7 @@ Temporary files are additionally stored in `tmp/`, including backups (for the ca
 outfiles
 └── $dataset
     │
-    ├── timeline_detectors            # histograms, etc. for detector timelines, from `bin/thyme histogram`
+    ├── timeline_detectors            # histograms, etc. for detector timelines, from `bin/qtl histogram`
     │   │
     │   ├── 5000                      # for run number 5000
     │   │   ├── out_HTCC_5000.hipo
@@ -79,7 +79,7 @@ outfiles
     │   ├── 5001                      # for run number 5001
     │   └── ...
     │
-    ├── timeline_physics              # histograms, etc. for physics timelines, from `bin/thyme histogram`
+    ├── timeline_physics              # histograms, etc. for physics timelines, from `bin/qtl histogram`
     │   │
     │   ├── 5000                      # for run number 5000
     │   │   ├── data_table_5000.dat
@@ -105,7 +105,7 @@ outfiles
     │
     ├── timeline_web                  # final output timeline files, for deployment to web server
     │   │
-    │   ├── htcc                      # detector timelines, with QA, from `bin/thyme analysis`
+    │   ├── htcc                      # detector timelines, with QA, from `bin/qtl analysis`
     │   ├── ltcc
     │   ├── ...
     │   │
@@ -113,17 +113,17 @@ outfiles
     │   ├── phys_qa_extra             # extra physics QA timelines, for experts
     │   └── qadb                      # QADB results timeline
     │
-    └── log                           # log files from `bin/thyme analysis` (not slurm logs (/farm_out/$LOGNAME/))
+    └── log                           # log files from `bin/qtl analysis` (not slurm logs (/farm_out/$LOGNAME/))
         ├── $timeline.out
         └── $timeline.err
 ```
 
 # Notes on SWIF Workflows
 
-For [CLAS12 `swif` workflow](https://github.com/baltzell/clas12-workflow) integration, the `bin/thyme histogram` command (which normally generates `slurm` jobs) has a specific mode `--swifjob`:
+For [CLAS12 `swif` workflow](https://github.com/baltzell/clas12-workflow) integration, the `bin/qtl histogram` command (which normally generates `slurm` jobs) has a specific mode `--swifjob`:
 ```bash
-thyme histogram --swifjob --focus-detectors   # generate files for detector timelines
-thyme histogram --swifjob --focus-physics     # generate files for physics QA timelines
+qtl histogram --swifjob --focus-detectors   # generate files for detector timelines
+qtl histogram --swifjob --focus-physics     # generate files for physics QA timelines
 ```
 Either or both of these commands is _all_ that needs to be executed on a runner node, within [`clas12-workflow`](https://github.com/baltzell/clas12-workflow); calling one of these will automatically run the wrapped code, with the following assumptions and conventions:
 - input HIPO files are at `./` and only a single run will be processed
@@ -149,7 +149,7 @@ top_level_target_directory
   │
   └── ...
 ```
-For compatibility with the file tree expected by downstream `thyme analysis` (see above), symbolic links may be made to these `timeline_{detectors,physics}` directories, but this is not required since these scripts also allow for the specification of an input directory.
+For compatibility with the file tree expected by downstream `qtl analysis` (see above), symbolic links may be made to these `timeline_{detectors,physics}` directories, but this is not required since these scripts also allow for the specification of an input directory.
 
 Separate `--focus-detectors` and `--focus-physics` options are preferred, since:
 - offers better organization of the contract data between `swif` jobs and downstream scripts

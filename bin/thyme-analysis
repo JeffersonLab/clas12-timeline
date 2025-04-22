@@ -30,7 +30,7 @@ sep="================================================================"
 usageTerse() {
   echo """
   $sep
-  USAGE: thyme analysis [OPTIONS]...
+  USAGE: qtl analysis [OPTIONS]...
   $sep
   Analyzes histograms and produces timelines.
 
@@ -190,7 +190,7 @@ if $publishEnabled; then
     fi
   fi
   # add info to the note
-  version=$($TIMELINESRC/bin/thyme --version)
+  version=$($TIMELINESRC/bin/qtl --version)
   timestamp=$(date '+%a %D')
   [ -n "$publishNote" ] && publishNote="; $publishNote"
   publishNote="${timestamp}${publishNote}; timeline-code v$version"
