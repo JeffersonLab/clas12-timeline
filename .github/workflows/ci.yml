@@ -12,10 +12,6 @@ defaults:
 
 env:
   dataset: ci_test
-  # NOTE: if any of these versions are changed, update the POM files too
-  java_version: 21
-  java_distribution: zulu
-
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -26,31 +22,32 @@ jobs:
   # build
   #############################################################################
 
-  build_timelines:
+  build_timeline:
     runs-on: ubuntu-latest
+    container:
+      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+      options: --user root
     steps:
-    - uses: actions/checkout@v4
-    - name: setup java
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.java_version }}
-        distribution: ${{ env.java_distribution }}
-    - name: build
-      run: ./install.sh
-    - name: tar # to preserve any permissions
-      run: |
-        tar cavf build_timeline.tar.zst target
-    - uses: actions/upload-artifact@v4
-      with:
-        name: build_timelines
-        retention-days: 1
-        path: build*.tar.zst
+      - uses: actions/checkout@v4
+      - name: build
+        run: ./install.sh
+      - name: tar # to preserve any permissions
+        run: |
+          tar cavf build_timeline.tar.zst target
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build_timeline
+          retention-days: 1
+          path: build_timeline.tar.zst
 
   # download test data
   #############################################################################
 
   download_test_data:
     runs-on: ubuntu-latest
+    container:
+      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+      options: --user root
     strategy:
       fail-fast: true
       matrix:
@@ -60,107 +57,92 @@ jobs:
     env:
       xrootd_file: xroot://sci-xrootd.jlab.org//osgpool/hallb/clas12/validation/recon/${{ matrix.schema }}/validation_files.tar.zst
     steps:
-    - uses: actions/cache@v4
-      id: cache
-      with:
-        key: validation_files_${{ matrix.type }}
-        path: validation_files.tar.zst
-        lookup-only: true
-    - name: install dependencies
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        sudo apt -y update
-        sudo apt -y upgrade
-        sudo apt -y install xrootd-client
-    - name: download
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: xrdcp ${{ env.xrootd_file }} ./
-    - run: ls -lh .
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          key: validation_files_${{ matrix.type }}
+          path: validation_files.tar.zst
+          lookup-only: true
+      - name: download
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: xrdcp ${{ env.xrootd_file }} ./
+      - run: ls -lh .
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
 
   # monitoring
   #############################################################################
 
   run_monitoring:
     needs:
-      - build_timelines
+      - build_timeline
       - download_test_data
     runs-on: ubuntu-latest
+    container:
+      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+      options: --user root
     strategy:
       fail-fast: false
       matrix:
         type: [ detectors, physics ]
     steps:
-    - name: setup java
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.java_version }}
-        distribution: ${{ env.java_distribution }}
-    - uses: actions/checkout@v4
-    - uses: actions/cache/restore@v4
-      with:
-        key: validation_files_${{ matrix.type }}
-        path: validation_files.tar.zst
-    - uses: actions/download-artifact@v4
-      with:
-        pattern: build_*
-        merge-multiple: true
-    - name: untar
-      run: ls *.tar.zst | xargs -I{} tar xavf {}
-    - name: tree
-      run: tree
-    - name: run monitoring
-      run: bin/run-monitoring.sh -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
-    - name: tree slurm
-      run: tree slurm
-    - name: tree outfiles
-      run: tree outfiles
-    - uses: actions/upload-artifact@v4
-      with:
-        name: slurm_${{ matrix.type }}
-        retention-days: 1
-        path: slurm
-    - uses: actions/upload-artifact@v4
-      with:
-        name: outfiles_monitoring_${{ matrix.type }}
-        retention-days: 14
-        path: outfiles
+      - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        with:
+          key: validation_files_${{ matrix.type }}
+          path: validation_files.tar.zst
+      - name: download timeline build
+        uses: actions/download-artifact@v4
+        with:
+          name: build_timeline
+      - name: untar
+        run: ls *.tar.zst | xargs -I{} tar xavf {}
+      - run: tree
+      - name: run monitoring
+        run: bin/run-monitoring.sh -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
+      - run: tree slurm
+      - run: tree outfiles
+      - uses: actions/upload-artifact@v4
+        with:
+          name: slurm_${{ matrix.type }}
+          retention-days: 1
+          path: slurm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: outfiles_monitoring_${{ matrix.type }}
+          retention-days: 14
+          path: outfiles
 
   test_swifjob:
     needs:
-      - build_timelines
+      - build_timeline
       - download_test_data
     runs-on: ubuntu-latest
+    container:
+      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+      options: --user root
     strategy:
       fail-fast: false
       matrix:
         type: [ detectors, physics ]
     steps:
-    - name: setup java
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.java_version }}
-        distribution: ${{ env.java_distribution }}
-    - uses: actions/checkout@v4
-    - uses: actions/cache/restore@v4
-      with:
-        key: validation_files_${{ matrix.type }}
-        path: validation_files.tar.zst
-    - uses: actions/download-artifact@v4
-      with:
-        pattern: build_*
-        merge-multiple: true
-    - name: untar
-      run: ls *.tar.zst | xargs -I{} tar xavf {}
-    - name: tree
-      run: tree
-    - name: test monitoring swifjob
-      run: |
-        single_rundir=$(find validation_files -mindepth 1 -maxdepth 1 -type d | head -n1)
-        echo "single_rundir = $single_rundir"
-        util/test-swifjob.sh $single_rundir runner --focus-${{ matrix.type }}
-    - name: tree runner
-      run: tree runner
+      - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        with:
+          key: validation_files_${{ matrix.type }}
+          path: validation_files.tar.zst
+      - name: download timeline build
+        uses: actions/download-artifact@v4
+        with:
+          name: build_timeline
+      - name: untar
+        run: ls *.tar.zst | xargs -I{} tar xavf {}
+      - run: tree
+      - name: test monitoring swifjob
+        run: |
+          single_rundir=$(find validation_files -mindepth 1 -maxdepth 1 -type d | head -n1)
+          echo "single_rundir = $single_rundir"
+          util/test-swifjob.sh $single_rundir runner --focus-${{ matrix.type }}
+      - run: tree runner
 
   # timeline production
   #############################################################################
@@ -169,6 +151,9 @@ jobs:
     needs:
       - run_monitoring
     runs-on: ubuntu-latest
+    container:
+      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+      options: --user root
     strategy:
       fail-fast: false
       matrix:
@@ -176,34 +161,28 @@ jobs:
           - { type: detectors,  args: '-n 4 --skip-mya' }
           - { type: physics,    args: '' }
     steps:
-    - name: setup java
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.java_version }}
-        distribution: ${{ env.java_distribution }}
-    - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
-      with:
-        pattern: outfiles_*
-        merge-multiple: true
-        path: outfiles
-    - uses: actions/download-artifact@v4
-      with:
-        pattern: build_*
-        merge-multiple: true
-    - name: untar
-      run: ls *.tar.zst | xargs -I{} tar xavf {}
-    - name: tree
-      run: tree
-    - name: run timelines
-      run: bin/run-${{matrix.type}}-timelines.sh -d ${{env.dataset}} ${{matrix.args}}
-    - name: tree outfiles
-      run: tree outfiles
-    - uses: actions/upload-artifact@v4
-      with:
-        name: outfiles_timelines_${{ matrix.type }}
-        retention-days: 14
-        path: outfiles
+      - uses: actions/checkout@v4
+      - name: download outfiles
+        uses: actions/download-artifact@v4
+        with:
+          pattern: outfiles_*
+          merge-multiple: true
+          path: outfiles
+      - name: download timeline build
+        uses: actions/download-artifact@v4
+        with:
+          name: build_timeline
+      - name: untar
+        run: ls *.tar.zst | xargs -I{} tar xavf {}
+      - run: tree
+      - name: run timelines
+        run: bin/run-${{matrix.type}}-timelines.sh -d ${{env.dataset}} ${{matrix.args}}
+      - run: tree outfiles
+      - uses: actions/upload-artifact@v4
+        with:
+          name: outfiles_timelines_${{ matrix.type }}
+          retention-days: 14
+          path: outfiles
 
   # timeline deployment
   #############################################################################
@@ -213,30 +192,34 @@ jobs:
     needs:
       - run_timelines
     runs-on: ubuntu-latest
+    container:
+      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+      options: --user root
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
-      with:
-        pattern: outfiles_*
-        merge-multiple: true
-        path: outfiles
-    - uses: actions/download-artifact@v4
-      with:
-        pattern: build_*
-        merge-multiple: true
-    - name: untar
-      run: ls *.tar.zst | xargs -I{} tar xavf {}
-    - name: tree outfiles
-      run: |
-        rm -r outfiles/${{ env.dataset }}/log
-        echo "# Output File Tree" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        tree outfiles | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-    - name: deploy
-      run: bin/deploy-timelines.sh -d ${{env.dataset}} -c -t web
-    - uses: actions/upload-artifact@v4
-      with:
-        name: web
-        retention-days: 14
-        path: web
+      - uses: actions/checkout@v4
+      - name: download outfiles
+        uses: actions/download-artifact@v4
+        with:
+          pattern: outfiles_*
+          merge-multiple: true
+          path: outfiles
+      - name: download timeline build
+        uses: actions/download-artifact@v4
+        with:
+          name: build_timeline
+      - name: untar
+        run: ls *.tar.zst | xargs -I{} tar xavf {}
+      - name: tree outfiles
+        run: |
+          rm -r outfiles/${{ env.dataset }}/log
+          echo "# Output File Tree" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tree outfiles | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+      - name: deploy
+        run: bin/deploy-timelines.sh -d ${{env.dataset}} -c -t web
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web
+          retention-days: 14
+          path: web

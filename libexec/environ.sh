@@ -11,8 +11,14 @@ log_config=logging # set to 'logging' for quiet, or to 'debug' for verbose
 [ -z "${BASH_SOURCE[0]}" ] && this_env=$0 || this_env=${BASH_SOURCE[0]}
 export TIMELINESRC=$(realpath $(dirname $this_env)/..)
 
-# RCDB
-[ -z "${RCDB_CONNECTION-}" ] && export RCDB_CONNECTION=mysql://rcdb@clasdb.jlab.org/rcdb
+# database URIs
+[ -z "${RCDB_CONNECTION-}" ] && export RCDB_CONNECTION=mysql://rcdb@clasdb-farm.jlab.org/rcdb
+[ -z "${CCDB_CONNECTION-}" ] && export CCDB_CONNECTION=mysql://clas12reader@clasdb-farm.jlab.org/clas12
+# overrides for CI
+if ${GITHUB_ACTIONS:-false}; then
+  export RCDB_CONNECTION=mysql://rcdb@clasdb.jlab.org/rcdb
+  export CCDB_CONNECTION=mysql://clas12reader@clasdb.jlab.org/clas12
+fi
 
 # java options
 timeline_java_opts=(
