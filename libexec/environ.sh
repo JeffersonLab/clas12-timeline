@@ -12,7 +12,7 @@ log_config=logging # set to 'logging' for quiet, or to 'debug' for verbose
 export TIMELINESRC=$(realpath $(dirname $this_env)/..)
 
 # database URIs
-[ -z "${RCDB_CONNECTION-}" ] && export RCDB_CONNECTION=mysql://rcdb@clasdb.jlab.org/rcdb
+[ -z "${RCDB_CONNECTION-}" ] && export RCDB_CONNECTION=mysql://rcdb@clasdb-farm.jlab.org/rcdb
 [ -z "${CCDB_CONNECTION-}" ] && export CCDB_CONNECTION=mysql://clas12reader@clasdb-farm.jlab.org/clas12
 # overrides for CI
 if ${GITHUB_ACTIONS:-false}; then
