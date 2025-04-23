@@ -19,8 +19,9 @@ dataset=""
 outputDir=""
 numThreads=8
 singleTimeline=""
+# modes, set by CLI long opts (--$key)
 declare -A modes
-for key in list just-pub just-ana skip-mya focus-timelines focus-qa debug enable-publishing overwrite help; do
+for key in list just-pub just-ana skip-mya debug overwrite help; do
   modes[$key]=false
 done
 
@@ -87,9 +88,6 @@ usageVerbose() {
 
     --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
 
-    --focus-timelines   only produce the detector timelines, do not run detector QA code
-    --focus-qa          only run the QA code (assumes you have detector timelines already)
-
     --debug             enable debug mode: run a single timeline with stderr and stdout printed to screen;
                         it is best to use this with the '-t' option to debug specific timeline issues
 
@@ -110,10 +108,7 @@ while getopts "d:i:p:n:s:o:j:t:m:h-:" opt; do
       dataset=$OPTARG
       ;;
     i) inputDir=$OPTARG ;;
-    p)
-      publishDir=$OPTARG
-      modes['enable-publishing']=true
-      ;;
+    p) publishDir=$OPTARG ;;
     n) publishNote=$OPTARG ;;
     s) metaSettings=$OPTARG ;;
     o) outputDir=$OPTARG ;;
@@ -134,6 +129,31 @@ if ${modes['help']}; then
   usageTerse
   usageVerbose
   exit 101
+fi
+
+# set flow control booleans
+## handle `--just-ana` and `--just-pub`
+enableAna=false
+enablePub=false
+if ${modes['just-ana']} && ! ${modes['just-pub']}; then # --just-ana
+  enableAna=true
+  enablePub=false
+elif ! ${modes['just-ana']} && ${modes['just-pub']}; then # --just-pub
+  enableAna=false
+  enablePub=true
+elif ${modes['just-ana']} && ${modes['just-pub']}; then # --just-ana AND --just-pub
+  printWarning "both '--just-ana' and '--just-pub' means that we will do both analysis and publishing, i.e., the default behavior"
+  enableAna=true
+  enablePub=true
+else # default behavior (neither --just-ana NOR --just-pub)
+  enableAna=true
+  enablePub=true
+fi
+## disable publishing when `--debug`
+if ${modes['debug']}; then
+  printWarning "DEBUG mode used; timelines will NOT be published"
+  enableAna=true
+  enablePub=false
 fi
 
 # get main executable for detector timelines
@@ -165,14 +185,14 @@ finalDirPreQA=$outputDir/timeline_web_preQA
 finalDir=$outputDir/timeline_web
 logDir=$outputDir/log
 
-# check focus options
-modes['focus-all']=true
-for key in focus-timelines focus-qa; do
-  if ${modes[$key]}; then modes['focus-all']=false; fi
-done
-
 # check publishing options
-if ${modes['enable-publishing']}; then
+if $enablePub; then
+  # check publishDir arg
+  if [ -z "$publishDir" ]; then
+    printError "option '-p' is required, to specify a publishing directory"
+    printError "(otherwise, use '--just-ana' if you really do not want to publish)"
+    exit 100
+  fi
   # publishing URL
   publishUrl=$WEBURL/$publishDir/$subDir/tlsummary
   # set full path to publish dir
@@ -205,14 +225,6 @@ if ${modes['enable-publishing']}; then
   timestamp=$(date '+%a %D')
   [ -n "$publishNote" ] && publishNote="; $publishNote"
   publishNote="${timestamp}${publishNote}; timeline-code v$version"
-else # ${modes['enable-publishing']} == false
-  if ${modes['just-ana']} || ${modes['debug']}; then
-    echo "NOT PUBLISHING TIMELINES, since '--just-ana' or '--debug' used"
-  else
-    printError "option '-p' is required, to specify a publishing directory"
-    printError "(otherwise, use '--just-ana' if you really do not want to publish)"
-    exit 100
-  fi
 fi
 
 # print settings
@@ -255,15 +267,15 @@ detDirs=(
 )
 
 # cleanup output directories
-if ! ${modes['just-pub']} && ( ${modes['focus-all']} || ${modes['focus-timelines']} ); then
+if $enableAna; then
   if [ -d $finalDirPreQA ]; then
     rm -rv $finalDirPreQA
   fi
-fi
-if [ -d $logDir ]; then
-  for fail in $(find $logDir -name "*.fail"); do
-    rm $fail
-  done
+  if [ -d $logDir ]; then
+    for fail in $(find $logDir -name "*.fail"); do
+      rm $fail
+    done
+  fi
 fi
 
 # make output directories
@@ -273,7 +285,7 @@ mkdir -p $logDir $finalDirPreQA $finalDir
 ######################################
 # produce detector timelines
 ######################################
-if ! ${modes['just-pub']} && ( ${modes['focus-all']} || ${modes['focus-timelines']} ); then
+if $enableAna; then
 
   function wait_for_jobs() {
       stat=10
@@ -378,20 +390,16 @@ fi
 # run QA
 ######################################
 
-if ! ${modes['just-pub']}; then
-  # first, copy the timelines to the final timeline directory; we do this regardless of whether QA is run
-  # so that (1) only `$finalDir` needs deployment and (2) we can re-run the QA with 'focus-qa' mode
+if $enableAna; then
+  # first, copy the timelines to the final timeline directory
   echo ">>> copy timelines to final directory..."
   cp -rL $finalDirPreQA/* $finalDir/
-
   # then add the QA lines
-  if ${modes['focus-all']} || ${modes['focus-qa']}; then
-    echo ">>> add QA lines..."
-    logFile=$logDir/qa
-    $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
-    outputFiles=$(find $finalDir -name "*_QA.hipo")
-    [ -n "$outputFiles" ] && $TIMELINESRC/libexec/hipo-check.sh $outputFiles
-  fi
+  echo ">>> add QA lines..."
+  logFile=$logDir/qa
+  $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
+  outputFiles=$(find $finalDir -name "*_QA.hipo")
+  [ -n "$outputFiles" ] && $TIMELINESRC/libexec/hipo-check.sh $outputFiles
 fi
 
 
@@ -421,20 +429,6 @@ if [ ${#failedJobs[@]} -gt 0 ]; then
       printWarning "These HIPO files are TIMELINE files; if this '$failedJob' job is the ONLY failed job, you may proceed with timeline deployment, but these failed timelines will not be deployed."
     fi
   done
-  if [ -z "$singleTimeline" -a ${modes['focus-qa']} = false ]; then
-    echo $sep
-    echo "To re-run only the failed timelines, for debugging, try one of the following commands:"
-    for failedJob in ${failedJobs[@]}; do
-      if [ "$failedJob" = "qa" ]; then
-        echo "  $0 $@ --focus-qa"
-      elif [ "$failedJob" = "hipo-check" ]; then
-        echo "  $0 $@ --focus-timelines -t [BAD_TIMELINE]"
-        echo "  where [BAD_TIMELINE] is any timeline that failed 'hipo-check'"
-      else
-        echo "  $0 $@ --focus-timelines -t $failedJob"
-      fi
-    done
-  fi
   somethingFailed=true
 else
   echo "All jobs exitted normally"
@@ -452,7 +446,7 @@ echo $sep
 # publishing
 ######################################
 
-if ${modes['enable-publishing']}; then
+if $enablePub; then
   echo "Publishing..."
   mkdir -pv $publishDir
   cp -r $finalDir/* $publishDir/
@@ -460,9 +454,11 @@ if ${modes['enable-publishing']}; then
   [ -n "$publishNote" ] && echo "$publishNote" > $publishDir/README
   $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/libexec/index-webpage.groovy $publishDir
   echo """
+Done! Timeline files published to: $publishDir
 ___________________________________________________________
 TIMELINE URL:
   $publishUrl
+___________________________________________________________
   """
 fi
 
