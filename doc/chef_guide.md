@@ -4,21 +4,18 @@ The timeline code is provided on `ifarm` via
 ```bash
 module load timeline
 ```
-The main script for running timelines is `qtl`:
-```bash
-qtl --help
-qtl --version
-```
+Please report _any_ issues to the software maintainers, such as warnings or error messages.
 
-Please report any issues to the software maintainers, such as warnings or error messages.
-
-## General Timelines
+## Producing Timelines
 
 ### :green_circle: Step 1: Fill Timeline Histograms
 
-Use the "qtl" model as part of your usual cooking workflow; see [the Chefs' documentation wiki](https://clasweb.jlab.org/wiki/index.php/CLAS12_Chef_Documentation).
+Use the "qtl" model as part of your usual cooking workflow; see [the Chefs' documentation wiki](https://clasweb.jlab.org/wiki/index.php/CLAS12_Chef_Documentation). Output files will appear in your chosen output directory, within `hist/detectors/`.
 
-Output files will appear in your chosen output directory, within `hist/detectors/`.
+> [!NOTE]
+> For physics QA timelines, either
+> - Use the `--physics` option with the workflow "qtl" model
+> - Use `qtl histogram` instead of the workflow, with the option `--focus-physics`; this will run on SLURM directly (rather than through SWIF)
 
 ### :green_circle: Step 2: Analyze Histograms and Make the Timelines
 
@@ -41,16 +38,10 @@ Additional options may be _needed_ for your specific dataset, so check the usage
 A URL will be printed upon success, and a link will appear in [`clas12mon`](https://clas12mon.jlab.org/) in your run group's area momentarily.
 
 > [!TIP]
-> `qtl analysis` produces temporary files, by default in a subdirectory of `./outfiles/`. Consider making a symbolic link named `outfiles` pointing to somewhere on `/volatile`.
+> Step 2 produces temporary files, by default in a subdirectory of `./outfiles/`. Consider making a symbolic link named `outfiles` pointing to somewhere on `/volatile`.
 
-## Physics QA timelines
-
-The physics timelines will eventually be combined with the detector timelines; until then, they are run separately:
-
-- **Step 1:** Either:
-  - Use `qtl histogram` instead of the workflow, with the option `--focus-physics`; this will run on SLURM directly (rather than through SWIF)
-  - Use the `--physics` option with the workflow "qtl" model
-- **Step 2:** Run `qtl physics` instead of `qtl analysis`; its options are similar
+> [!NOTE]
+> For physics timelines, run `qtl physics` instead of `qtl analysis`; its options are similar.
 
 ---
 

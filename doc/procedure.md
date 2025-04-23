@@ -1,5 +1,11 @@
 # Procedure for Timeline Production
 
+The main script for running timelines is `qtl`:
+```bash
+qtl --help
+qtl --version
+```
+
 Two types of timelines are produced:
 1. **Detector timelines**: monitor detector parameters, histograms, and calibration
 1. **Physics timelines**: monitor higher-level quantities to perform Quality Assurance (QA) for physics analysis
@@ -60,15 +66,13 @@ qtl physics   # for physics timelines (will eventually be combined with 'qtl ana
 ### Example
 **If** you used `clas12-workflow` for Step 1, the script arguments should be
 ```bash
--d rga_sp19_v5 -i /path/to/output/files -p some/publish/directory
+-i /path/to/output/files -p some/publish/directory/rga_sp19_v5
 ```
-- the dataset is _given_ the name `"rga_sp19_v5"` (and does not have to be related to any name given from Step 1)
 - the output from `clas12-workflow` is `/path/to/output/files`; its subdirectories should be run numbers
-- the publish directory given by `-p` is a subdirectory of the web server; see `qtl analysis` usage guide
+- the publishing directory given by `-p` is a subdirectory of the web server; see `qtl analysis` usage guide
 
 **Otherwise**, you may omit the `-i /path/to/output/files` option (unless you customized it from Step 1)
-- the dataset name must match that of Step 1, otherwise you need to specify the path to the input files with `-i`
-
+- notice the dataset name from Step 1 should be the publishing directory basename
 
 > [!NOTE]
 > - detector timeline production is handled by the [`org.jlab.clas.timeline.analysis` package](/src/main/java/org/jlab/clas/timeline/analysis)
