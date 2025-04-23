@@ -259,7 +259,8 @@ finalDir=$outputDir/timeline_web
 logDir=$outputDir/log
 
 # print settings
-echo """
+if $enableAna; then
+  echo """
 Settings:
 $sep
 INPUT_DIR       = $inputDir
@@ -270,8 +271,10 @@ FINAL_DIR       = $finalDir
 LOG_DIR         = $logDir
 NUM_THREADS     = $numThreads
 OPTIONS = {"""
-for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
-echo "}"
+  for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
+  echo "}"
+fi
+
 
 # output detector subdirectories
 detDirs=(
@@ -444,38 +447,41 @@ fi
 # error checking
 ######################################
 
-
-# print log file info
-echo """
-$sep
-OUTPUT AND ERROR LOGS:
-$logDir/*.out
-$logDir/*.err
-"""
-
-# exit nonzero if any jobs exitted nonzero
-failedJobs=($(find $logDir -name "*.fail" | xargs -I{} basename {} .fail))
 somethingFailed=false
-if [ ${#failedJobs[@]} -gt 0 ]; then
-  for failedJob in ${failedJobs[@]}; do
-    echo $sep
-    printError "job '$failedJob' returned non-zero exit code; error log dump:"
-    cat $logDir/$failedJob.err
-    if [ "$failedJob" = "hipo-check" ]; then
-      printWarning "These HIPO files are TIMELINE files; they will NOT be published"
-    fi
-  done
-  somethingFailed=true
-else
-  echo "All jobs exitted normally"
-fi
+if $enableAna; then
 
-# grep for suspicious things in error logs
-errPattern="error:|exception:|warning"
-echo """Now scanning for any quieter errors, by running \`grep -iE '$errPattern'\` on *.err files:
-$sep"""
-grep -iE --color "$errPattern" $logDir/*.err || echo "Good news: grep found no errors, but you still may want to take a look yourself..."
-echo $sep
+  # print log file info
+  echo """
+  $sep
+  OUTPUT AND ERROR LOGS:
+  $logDir/*.out
+  $logDir/*.err
+  """
+
+  # exit nonzero if any jobs exitted nonzero
+  failedJobs=($(find $logDir -name "*.fail" | xargs -I{} basename {} .fail))
+  if [ ${#failedJobs[@]} -gt 0 ]; then
+    for failedJob in ${failedJobs[@]}; do
+      echo $sep
+      printError "job '$failedJob' returned non-zero exit code; error log dump:"
+      cat $logDir/$failedJob.err
+      if [ "$failedJob" = "hipo-check" ]; then
+        printWarning "These HIPO files are TIMELINE files; they will NOT be published"
+      fi
+    done
+    somethingFailed=true
+  else
+    echo "All jobs exitted normally"
+  fi
+
+  # grep for suspicious things in error logs
+  errPattern="error:|exception:|warning"
+  echo """Now scanning for any quieter errors, by running \`grep -iE '$errPattern'\` on *.err files:
+  $sep"""
+  grep -iE --color "$errPattern" $logDir/*.err || echo "Good news: grep found no errors, but you still may want to take a look yourself..."
+  echo $sep
+
+fi
 
 
 ######################################

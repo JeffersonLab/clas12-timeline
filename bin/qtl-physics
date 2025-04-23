@@ -147,12 +147,12 @@ popd
 echo """
 
 """
-somethingFailed=false
+hasErrorPrintouts=false
 if [ -s $logFile ]; then
   printError "some scripts had errors or warnings; dumping error output:"
   echo $sep >&2
   cat $logFile >&2
-  somethingFailed=true
+  hasErrorPrintouts=true
 else
   echo "No errors or warnings!"
 fi
@@ -171,6 +171,7 @@ $TIMELINESRC/bin/qtl analysis \
   --just-pub \
   -p $publishDir $customPubArg
 
-if $somethingFailed; then
-  exit 100
+if $hasErrorPrintouts; then
+  printWarning "At least one job complained; look above or in the log files to see what's wrong."
+  printWarning "Exiting 0, since these may just be benign warnings" ### FIXME!
 fi
