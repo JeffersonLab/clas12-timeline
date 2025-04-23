@@ -159,7 +159,7 @@ jobs:
       matrix:
         include:
           - { type: detectors, run_script: 'bin/qtl analysis', args: '-j 4 --skip-mya --custom-pub' }
-          - { type: physics,   run_script: 'bin/qtl physics',  args: '' }
+          - { type: physics,   run_script: 'bin/qtl physics',  args: '-C' }
     steps:
       - uses: actions/checkout@v4
       - name: download outfiles

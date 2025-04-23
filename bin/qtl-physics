@@ -43,7 +43,8 @@ fi
 
 # parse options
 helpMode=false
-while getopts "d:i:p:o:h-:" opt; do
+customPub=false
+while getopts "d:i:p:Co:h-:" opt; do
   case $opt in
     d)
       echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
@@ -52,6 +53,7 @@ while getopts "d:i:p:o:h-:" opt; do
     i) inputDir=$OPTARG ;;
     o) outputDir=$OPTARG ;;
     p) publishDir=$OPTARG ;;
+    C) customPub=true ;; # secret for now; doesn't matter since we plan to remove this script someday...
     h) helpMode=true ;;
     -)
       [ "$OPTARG" != "help" ] && printError "unknown option --$OPTARG"
@@ -153,12 +155,14 @@ fi
 # kluge for now: removed the independent 'deploy-timelines.sh' script, so just call
 # qtl-analysis to do the deployment
 echo "Now publishing..."
+customPubArg=''
+if $customPub; then customPubArg=--custom-pub
 $TIMELINESRC/qtl analysis \
   --just-pub \
   -d $dataset \
   -i $inputDir \
   -o $outputDir \
-  -p $publishDir
+  -p $publishDir $customPubArg
 
 if $somethingFailed;
   exit 100
