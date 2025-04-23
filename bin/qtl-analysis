@@ -4,16 +4,19 @@ set -e
 set -u
 source $(dirname $0)/../libexec/environ.sh
 
+##################################################################################
+
 # timeline webserver directory
 WEBURL="https://clas12mon.jlab.org"
-WEBDIR=/u/group/clas/www/clas12mon/html/hipo
+WEBDIR=/group/clas/www/clas12mon/html/hipo
+
+##################################################################################
 
 # default options
 match="^"
 inputDir=""
 publishDir=""
 publishNote=""
-publishUrl=""
 metaSettings=""
 dataset=""
 outputDir=""
@@ -24,6 +27,8 @@ declare -A modes
 for key in list just-pub just-ana skip-mya debug overwrite custom-pub help; do
   modes[$key]=false
 done
+
+##################################################################################
 
 # usage
 sep="================================================================"
@@ -36,21 +41,15 @@ usageTerse() {
 
   CHEF OPTIONS: most of these are required for chef's production
 
-    -d [DATASET_NAME]   required unique dataset name, defined by the user
+    -i [INPUT_DIR]      input directory; use the output workflow
+                        directory, which has subdirectories for each run
 
-    -i [INPUT_DIR]      input directory
-                        - chefs: use the output 'hist' directory, which
-                          contains subdirectories for each run
-                        - default = ./outfiles/[DATASET_NAME]
+    -p [PUBLISH_DIR]    publish timeline results to URL
+                        $WEBURL/[PUBLISH_DIR]/tlsummary
+                        (i.e., $WEBDIR/[PUBLISH_DIR])
 
-    -p [PUBLISH_DIR]    publish timeline results to
-                        $WEBURL/[PUBLISH_DIR]/[DATASET_NAME]/tlsummary
-                        - chefs: usually your run group (e.g., 'rgb'), or a
-                          subdirectory within (e.g. 'rgb/pass0')
-                        - required (or see expert options with '--help')
-
-    -n [NOTE]           additional note that will be shown on the clas12mon webpage
-                        (i.e., the README file); surround your note in quotes
+    -n [NOTE]           additional note that will be shown on the clas12mon
+                        webpage; surround it in quotes
                         - default: ''
 
     -s [SETTINGS]       apply run-group or dataset specific settings; one of:
@@ -59,13 +58,19 @@ $(find $TIMELINESRC/data/metadata -name "*.json" -exec basename {} .json \; | se
   """>&2
 }
 usageVerbose() {
-  echo """  EXPERT OPTIONS: these are generally for developers, not chefs
+  echo """  DEVELOPER OPTIONS: these are generally for developers, not chefs
+
+    -d [DATASET_NAME]   unique dataset name, defined by the user
+                        - you may have used it in 'qtl histogram'
+                        - default: directory basename of [PUBLISH_DIR]
+
+    -i [INPUT_DIR]      input directory
+                        - the default is such that users only ever have
+                          to use '-d [DATASET]' to refer to a local dataset
+                        - default: ./outfiles/[DATASET_NAME]
 
     -o [OUTPUT_DIR]     output directory for the analyzed timelines
                         - default = ./outfiles/[DATASET_NAME]
-                          - chefs: if you use this default, it may be convenient
-                            to make a symbolic link named 'outfiles' to a
-                            directory on '/volatile'
 
     -j [NUM_THREADS]    number of parallel threads to run
                         - default = $numThreads
@@ -98,7 +103,7 @@ usageVerbose() {
 }
 if [ $# -eq 0 ]; then
   usageTerse
-  echo "  For more (expert) options, run with '--help'" >&2
+  echo "  For more options, run with '--help'" >&2
   exit 101
 fi
 
@@ -133,6 +138,29 @@ if ${modes['help']}; then
   exit 101
 fi
 
+##################################################################################
+
+# main executable for detector timelines
+run_analysis_script="org.jlab.clas.timeline.analysis.run_analysis"
+
+# build list of timelines
+if ${modes['skip-mya']}; then
+  timelineList=$(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep $match)
+else
+  timelineList=$(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | sort | grep $match)
+fi
+
+# list detector timelines, if requested
+if ${modes['list']}; then
+  echo $sep
+  echo "LIST OF TIMELINES"
+  echo $sep
+  echo $timelineList | sed 's; ;\n;g'
+  exit $?
+fi
+
+##################################################################################
+
 # set flow control booleans
 ## handle `--just-ana` and `--just-pub`
 enableAna=false
@@ -158,37 +186,10 @@ if ${modes['debug']}; then
   enablePub=false
 fi
 
-# get main executable for detector timelines
-run_analysis_script="org.jlab.clas.timeline.analysis.run_analysis"
-
-# build list of timelines
-if ${modes['skip-mya']}; then
-  timelineList=$(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep $match)
-else
-  timelineList=$(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | sort | grep $match)
-fi
-
-# list detector timelines, if requested
-if ${modes['list']}; then
-  echo $sep
-  echo "LIST OF TIMELINES"
-  echo $sep
-  echo $timelineList | sed 's; ;\n;g'
-  exit $?
-fi
-
-# set input and output directories
-[ -z "$dataset" ] && printError "data set not specified, use option '-d'" && exit 100
-[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_detectors
-[ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100
-[ -z "$outputDir" ] && outputDir=$(realpath $(pwd -P)/outfiles/$dataset) || outputDir=$(realpath $outputDir)
-
-# set subdirectories
-finalDirPreQA=$outputDir/timeline_web_preQA
-finalDir=$outputDir/timeline_web
-logDir=$outputDir/log
+##################################################################################
 
 # check publishing options
+publishUrl=""
 if $enablePub; then
   # check publishDir arg
   if [ -z "$publishDir" ]; then
@@ -198,9 +199,9 @@ if $enablePub; then
   fi
   # set full path to publish dir (unless --custom-pub)
   if ! ${modes['custom-pub']}; then
-    publishUrl=$WEBURL/$publishDir/$dataset/tlsummary
+    publishUrl=$WEBURL/$publishDir/tlsummary
     [ "$publishDir" = "." ] && printError "publishing directory argument cannot be '.'" && exit 100
-    publishDir=$WEBDIR/$publishDir/$dataset
+    publishDir=$WEBDIR/$publishDir
   else
     publishUrl="option '--custom-pub' was used, therefore timeline URL is UNKNOWN"
   fi
@@ -235,6 +236,27 @@ if $enablePub; then
   [ -n "$publishNote" ] && publishNote="; $publishNote"
   publishNote="${timestamp}${publishNote}; timeline-code v$version"
 fi
+
+# set the dataset name, if not already set
+if [ -z "$dataset" ]; then
+  if [ -n "$publishDir" ]; then
+    dataset=$(basename $publishDir)
+    echo "setting dataset name from the publishing directory to '$dataset'"
+  else
+    printError "neither dataset name (-d) nor publishing directory (-p) are set; need at least one..."
+    exit 100
+  fi
+fi
+
+# set input and output directories
+[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_detectors
+[ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100
+[ -z "$outputDir" ] && outputDir=$(realpath $(pwd -P)/outfiles/$dataset) || outputDir=$(realpath $outputDir)
+
+# set subdirectories
+finalDirPreQA=$outputDir/timeline_web_preQA
+finalDir=$outputDir/timeline_web
+logDir=$outputDir/log
 
 # print settings
 echo """
@@ -289,6 +311,11 @@ fi
 
 # make output directories
 mkdir -p $logDir $finalDirPreQA $finalDir
+
+
+##################################################################################
+##################################################################################
+##################################################################################
 
 
 ######################################

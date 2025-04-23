@@ -164,7 +164,7 @@ customPubArg=''
 if ${modes['custom-pub']}; then
   customPubArg=--custom-pub
 fi
-$TIMELINESRC/qtl analysis \
+$TIMELINESRC/bin/qtl analysis \
   -d $dataset \
   -i $inputDir \
   -o $outputDir \
