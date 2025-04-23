@@ -28,17 +28,6 @@ qtl histogram -d rga_fa18_outbending_nSidis --submit --flatdir --focus-physics /
 
 Make the timelines:
 ```bash
-bin/qtl physics -d rga_fa18_inbending_nSidis
-bin/qtl physics -d rga_fa18_outbending_nSidis
-```
-
-Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):
-```bash
-# your area, for testing
-qtl deploy -d rga_fa18_inbending_nSidis  -t $LOGNAME -D
-qtl deploy -d rga_fa18_outbending_nSidis -t $LOGNAME -D
-
-# common area
-qtl deploy -d rga_fa18_inbending_nSidis  -t rga/pass2/fa18/qa -D
-qtl deploy -d rga_fa18_outbending_nSidis -t rga/pass2/fa18/qa -D
+bin/qtl physics -d rga_fa18_inbending_nSidis -p rga/pass2/fa18/qa
+bin/qtl physics -d rga_fa18_outbending_nSidis -p rga/pass2/fa18/qa
 ```

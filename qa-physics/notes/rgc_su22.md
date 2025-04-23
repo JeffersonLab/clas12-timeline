@@ -55,19 +55,8 @@ qtl histogram -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/cla
 
 Make the timelines:
 ```bash
-bin/qtl physics -d rgc_su22_prescaled
-bin/qtl physics -d rgc_su22_sidisdvcs
-```
-
-Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):
-```bash
-# your area, for testing
-qtl deploy -d rgc_su22_prescaled -t $LOGNAME -m rgc_su22 -D
-qtl deploy -d rgc_su22_sidisdvcs -t $LOGNAME -m rgc_su22 -D
-
-# common area
-qtl deploy -d rgc_su22_prescaled -t rgc/Summer2022/qa-physics -s pass1-prescaled -m rgc_su22 -D
-qtl deploy -d rgc_su22_sidisdvcs -t rgc/Summer2022/qa-physics -s pass1-sidisdvcs -m rgc_su22 -D
+bin/qtl physics -d rgc_su22_prescaled -p rgc/Summer2022/qa-physics
+bin/qtl physics -d rgc_su22_sidisdvcs -p rgc/Summer2022/qa-physics
 ```
 
 # List of Runs

@@ -426,7 +426,7 @@ if [ ${#failedJobs[@]} -gt 0 ]; then
     printError "job '$failedJob' returned non-zero exit code; error log dump:"
     cat $logDir/$failedJob.err
     if [ "$failedJob" = "hipo-check" ]; then
-      printWarning "These HIPO files are TIMELINE files; if this '$failedJob' job is the ONLY failed job, you may proceed with timeline deployment, but these failed timelines will not be deployed."
+      printWarning "These HIPO files are TIMELINE files; they will NOT be published"
     fi
   done
   somethingFailed=true

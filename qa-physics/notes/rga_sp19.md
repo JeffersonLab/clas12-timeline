@@ -48,17 +48,6 @@ qtl histogram -d rga_sp19_nSidis --submit --flatdir --focus-physics /cache/clas1
 
 Make the timelines:
 ```bash
-bin/qtl physics -d rga_sp19_prescaled
-bin/qtl physics -d rga_sp19_nSidis
-```
-
-Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):
-```bash
-# your area, for testing
-qtl deploy -d rga_sp19_prescaled -t $LOGNAME -D
-qtl deploy -d rga_sp19_nSidis -t $LOGNAME -D
-
-# common area
-qtl deploy -d rga_sp19_prescaled -t rga/pass2/sp19/qa -D
-qtl deploy -d rga_sp19_nSidis -t rga/pass2/sp19/qa -D
+bin/qtl physics -d rga_sp19_prescaled -p rga/pass2/sp19/qa
+bin/qtl physics -d rga_sp19_nSidis -p rga/pass2/sp19/qa
 ```

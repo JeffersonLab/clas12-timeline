@@ -52,7 +52,7 @@ qtl analysis  # for detector timelines
 qtl physics   # for physics timelines (will eventually be combined with 'qtl analysis')
 ```
 
-> [!IMPORTANT]
+> [!TIP]
 > If you are processing a large data set on `ifarm`, direct your output files to a location within `/volatile`. Either:
 > - make a symbolic link in your working directory named `outfiles` pointing to a location within `/volatile`
 > - use the scripts' `-o` option to set the output locations
@@ -60,15 +60,13 @@ qtl physics   # for physics timelines (will eventually be combined with 'qtl ana
 ### Example
 **If** you used `clas12-workflow` for Step 1, the script arguments should be
 ```bash
--d rga_sp19_v5 -i /path/to/output/files
+-d rga_sp19_v5 -i /path/to/output/files -p some/publish/directory
 ```
 - the dataset is _given_ the name `"rga_sp19_v5"` (and does not have to be related to any name given from Step 1)
 - the output from `clas12-workflow` is `/path/to/output/files`; its subdirectories should be run numbers
+- the publish directory given by `-p` is a subdirectory of the web server; see `qtl analysis` usage guide
 
-**Otherwise**, you may omit the `-i /path/to/output/files` option (unless you customized it from Step 1):
-```bash
--d rga_sp19_v5
-```
+**Otherwise**, you may omit the `-i /path/to/output/files` option (unless you customized it from Step 1)
 - the dataset name must match that of Step 1, otherwise you need to specify the path to the input files with `-i`
 
 
@@ -78,28 +76,3 @@ qtl physics   # for physics timelines (will eventually be combined with 'qtl ana
 >   see [its documentation](/qa-detectors/README.md)
 > - physics timeline production and QA are handled by the [`qa-physics/` subdirectory](/qa-physics);
 >   see [their documentation](/qa-physics/README.md)
-
-<!-- FIXME
-we need to remove 'qtl deploy' stuff everywhere...
--->
-
-<!-- ## 🟢 Step 3: Deployment -->
-<!---->
-<!-- To view the timelines on the web, you must deploy them by copying the timeline HIPO files to a directory with a running web server. Note that you must have write-permission for that directory. To deploy, run (with no arguments, for the usage guide): -->
-<!---->
-<!-- ```bash -->
-<!-- qtl deploy -->
-<!-- ``` -->
-<!---->
-<!-- If all went well, a URL for the new timelines will be printed; open it in a browser to view them. -->
-<!---->
-<!-- ### Example -->
-<!-- ```bash -->
-<!-- qtl deploy -d rga_sp19_v5 -t rga/sp19/pass0/v5 -D   # deploy to a run-group web directory (for chefs) -->
-<!-- ### or ### -->
-<!-- qtl deploy -d rga_sp19_v5 -t $LOGNAME/my_test -D    # deploy to a personal web directory (for testing) -->
-<!-- ``` -->
-<!-- - this will _only_ print what will be done: deploy the timelines from dataset `"rga_sp19_v5"` (defined in previous step(s)) to the printed path -->
-<!--   - you must have write access to that path; contact the maintainers if you need help with this -->
-<!--   - if you are a chef, consider using the appropriate run group subdirectory, _e.g._, `rga/sp19/pass0/v5` -->
-<!-- - if it looks correct, remove the `-D` option to deploy for real and follow the printed URL -->

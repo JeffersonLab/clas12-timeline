@@ -39,7 +39,7 @@ flowchart TB
     subgraph Final Timelines
         outTimelinePhysics{{outfiles/$dataset/timeline_web/phys_*/*}}:::timeline
         outTimelineDetectors{{outfiles/$dataset/timeline_web/$detector/*.hipo}}:::timeline
-        deploy["<strong>Deployment</strong><br/>qtl deploy"]:::proc
+        deploy["<strong>Publishing</strong><br/>handled by qtl analysis"]:::proc
         timelineDir{{timelines on web server}}:::timeline
     end
     outplots --> timelineDetectorsPreQA --> outTimelineDetectorsPreQA --> timelineDetectors --> outTimelineDetectors

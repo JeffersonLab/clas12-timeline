@@ -26,14 +26,5 @@ qtl histogram -d rgb_wi20_sidisdvcs --submit --flatdir --focus-physics /cache/cl
 
 Make the timelines:
 ```bash
-bin/qtl physics -d rgb_wi20_sidisdvcs
-```
-
-Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):
-```bash
-# your area, for testing
-qtl deploy -d rgb_wi20_sidisdvcs  -t $LOGNAME -D
-
-# common area
-qtl deploy -d rgb_wi20_sidisdvcs  -t rgb/pass2/qa/wi20 -D
+bin/qtl physics -d rgb_wi20_sidisdvcs -p rgb/pass2/qa/wi20
 ```

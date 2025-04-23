@@ -8,6 +8,7 @@ source $(dirname $0)/../libexec/environ.sh
 inputDir=""
 dataset=""
 outputDir=""
+publishDir=""
 
 # usage
 sep="================================================================"
@@ -25,6 +26,8 @@ usage() {
     -i [INPUT_DIR]      input directory
                         default = ./outfiles/[DATASET_NAME]
 
+    -p [PUBLISH_DIR]    publish timeline results (see 'qtl analysis')
+
   OPTIONAL OPTIONS:
 
     -o [OUTPUT_DIR]     output directory
@@ -40,7 +43,7 @@ fi
 
 # parse options
 helpMode=false
-while getopts "d:i:o:h-:" opt; do
+while getopts "d:i:p:o:h-:" opt; do
   case $opt in
     d)
       echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
@@ -48,6 +51,7 @@ while getopts "d:i:o:h-:" opt; do
       ;;
     i) inputDir=$OPTARG ;;
     o) outputDir=$OPTARG ;;
+    p) publishDir=$OPTARG ;;
     h) helpMode=true ;;
     -)
       [ "$OPTARG" != "help" ] && printError "unknown option --$OPTARG"
@@ -65,6 +69,7 @@ fi
 [ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_physics
 [ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100
 [ -z "$outputDir" ] && outputDir=$(realpath $(pwd -P)/outfiles/$dataset) || outputDir=$(realpath $outputDir)
+[ -z "$publishDir" ] && printError "need publishing directory, option '-p'" && exit 100
 
 # set subdirectories
 qaDir=$outputDir/timeline_physics_qa
