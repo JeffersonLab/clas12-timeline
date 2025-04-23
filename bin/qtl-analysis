@@ -11,7 +11,6 @@ WEBDIR=/u/group/clas/www/clas12mon/html/hipo
 # default options
 match="^"
 inputDir=""
-publishEnabled=false
 publishDir=""
 publishNote=""
 publishUrl=""
@@ -21,7 +20,7 @@ outputDir=""
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list just-pub just-ana skip-mya focus-timelines focus-qa debug help; do
+for key in list just-pub just-ana skip-mya focus-timelines focus-qa debug enable-publishing overwrite help; do
   modes[$key]=false
 done
 
@@ -47,7 +46,6 @@ usageTerse() {
                         $WEBURL/[PUBLISH_DIR]/[DATASET_NAME]
                         - chefs: usually your run group (e.g., 'rgb'), or a
                           subdirectory within (e.g. 'rgb/pass0')
-                        - CAUTION: this may overwrite data!
                         - required (or see expert options with '--help')
 
     -n [NOTE]           additional note that will be shown on the clas12mon webpage
@@ -85,6 +83,8 @@ usageVerbose() {
 
     --just-pub          just publish analyzed timelines from [OUTPUT_DIR]
 
+    --overwrite         allow publishing to overwrite the target directory
+
     --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
 
     --focus-timelines   only produce the detector timelines, do not run detector QA code
@@ -112,7 +112,7 @@ while getopts "d:i:p:n:s:o:j:t:m:h-:" opt; do
     i) inputDir=$OPTARG ;;
     p)
       publishDir=$OPTARG
-      publishEnabled=true
+      modes['enable-publishing']=true
       ;;
     n) publishNote=$OPTARG ;;
     s) metaSettings=$OPTARG ;;
@@ -172,7 +172,7 @@ for key in focus-timelines focus-qa; do
 done
 
 # check publishing options
-if $publishEnabled; then
+if ${modes['enable-publishing']}; then
   # publishing URL
   publishUrl=$WEBURL/$publishDir/$subDir/tlsummary
   # set full path to publish dir
@@ -180,9 +180,15 @@ if $publishEnabled; then
   publishDir=$WEBDIR/$publishDir/$dataset
   echo "publishing directory: $publishDir"
   if [ -d $publishDir ]; then
-    printWarning "Publishing directory already exists! Timelines will be overwritten!"
-    printWarning "Press 'Ctrl-C' NOW if this is not what you want! Otherwise, just wait..."
-    sleep 8
+    if ${modes['overwrite']}; then
+      printWarning "Publishing directory already exists! Timelines will be overwritten!"
+      printWarning "Press 'Ctrl-C' NOW if this is not what you want! Otherwise, just wait..."
+      sleep 5
+      rm -rv $publishDir
+    else
+      printError "Publishing directory already exists! Either choose another directory, or re-run with '--overwrite' option to overwrite (be careful...)"
+      exit 100
+    fi
   fi
   # path to filter file
   if [ -n "$metaSettings" ]; then
@@ -199,9 +205,9 @@ if $publishEnabled; then
   timestamp=$(date '+%a %D')
   [ -n "$publishNote" ] && publishNote="; $publishNote"
   publishNote="${timestamp}${publishNote}; timeline-code v$version"
-else # $publishEnabled == false
-  if ${modes['just-ana']}; then
-    echo "NOT PUBLISHING TIMELINES, since '--just-ana' used"
+else # ${modes['enable-publishing']} == false
+  if ${modes['just-ana']} || ${modes['debug']}; then
+    echo "NOT PUBLISHING TIMELINES, since '--just-ana' or '--debug' used"
   else
     printError "option '-p' is required, to specify a publishing directory"
     printError "(otherwise, use '--just-ana' if you really do not want to publish)"
@@ -263,35 +269,36 @@ fi
 # make output directories
 mkdir -p $logDir $finalDirPreQA $finalDir
 
-function wait_for_jobs() {
-    stat=10
-    while [ "${#job_ids[@]}" -gt $1 ]; do
-        for i in "${!job_ids[@]}"; do
-            if [ "$1" -eq 0 ]; then
-                if [ "${#job_ids[@]}" -lt $stat ]; then
-                    echo ">>> $(date) >>> waiting on ${#job_ids[@]} jobs:"
-                    let stat=${#job_ids[@]}
-                    #let stat=stat-1
-                    printf '>>>     %s\n' "${job_names[@]}"
-                fi
-            fi
-            set +e
-            ps ${job_ids[$i]} >& /dev/null
-            if [ "$?" -ne 0 ]; then
-                echo ">>> ${job_names[$i]} finished."
-                unset job_ids[$i]
-                unset job_names[$i]
-            fi
-            set -e
-        done
-        sleep 1
-    done
-}
 
 ######################################
 # produce detector timelines
 ######################################
 if ! ${modes['just-pub']} && ( ${modes['focus-all']} || ${modes['focus-timelines']} ); then
+
+  function wait_for_jobs() {
+      stat=10
+      while [ "${#job_ids[@]}" -gt $1 ]; do
+          for i in "${!job_ids[@]}"; do
+              if [ "$1" -eq 0 ]; then
+                  if [ "${#job_ids[@]}" -lt $stat ]; then
+                      echo ">>> $(date) >>> waiting on ${#job_ids[@]} jobs:"
+                      let stat=${#job_ids[@]}
+                      #let stat=stat-1
+                      printf '>>>     %s\n' "${job_names[@]}"
+                  fi
+              fi
+              set +e
+              ps ${job_ids[$i]} >& /dev/null
+              if [ "$?" -ne 0 ]; then
+                  echo ">>> ${job_names[$i]} finished."
+                  unset job_ids[$i]
+                  unset job_names[$i]
+              fi
+              set -e
+          done
+          sleep 1
+      done
+  }
 
   # change working directory to output directory
   pushd $finalDirPreQA
@@ -371,19 +378,20 @@ fi
 # run QA
 ######################################
 
-# first, copy the timelines to the final timeline directory; we do this regardless of whether QA is run
-# so that (1) only `$finalDir` needs deployment and (2) we can re-run the QA with 'focus-qa' mode
 if ! ${modes['just-pub']}; then
+  # first, copy the timelines to the final timeline directory; we do this regardless of whether QA is run
+  # so that (1) only `$finalDir` needs deployment and (2) we can re-run the QA with 'focus-qa' mode
   echo ">>> copy timelines to final directory..."
   cp -rL $finalDirPreQA/* $finalDir/
-fi
 
-if ! ${modes['just-pub']} && ( ${modes['focus-all']} || ${modes['focus-qa']} ); then
-  echo ">>> add QA lines..."
-  logFile=$logDir/qa
-  $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
-  outputFiles=$(find $finalDir -name "*_QA.hipo")
-  [ -n "$outputFiles" ] && $TIMELINESRC/libexec/hipo-check.sh $outputFiles
+  # then add the QA lines
+  if ${modes['focus-all']} || ${modes['focus-qa']}; then
+    echo ">>> add QA lines..."
+    logFile=$logDir/qa
+    $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
+    outputFiles=$(find $finalDir -name "*_QA.hipo")
+    [ -n "$outputFiles" ] && $TIMELINESRC/libexec/hipo-check.sh $outputFiles
+  fi
 fi
 
 
@@ -444,7 +452,7 @@ echo $sep
 # publishing
 ######################################
 
-if $publishEnabled; then
+if ${modes['enable-publishing']}; then
   echo "Publishing..."
   mkdir -pv $publishDir
   cp -r $finalDir/* $publishDir/
