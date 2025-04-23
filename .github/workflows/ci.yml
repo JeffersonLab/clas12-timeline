@@ -98,7 +98,13 @@ jobs:
         run: ls *.tar.zst | xargs -I{} tar xavf {}
       - run: tree
       - name: run monitoring
-        run: bin/qtl histogram -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
+        run: |
+          bin/qtl histogram \
+            -d ${{env.dataset}} \
+            --findhipo \
+            --series \
+            --focus-${{matrix.type}} \
+            validation_files
       - run: tree slurm
       - run: tree outfiles
       - uses: actions/upload-artifact@v4
@@ -158,8 +164,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { type: detectors, run_script: 'bin/qtl analysis', args: '-j 4 --skip-mya --custom-pub' }
-          - { type: physics,   run_script: 'bin/qtl physics',  args: '-C' }
+          - { type: detectors, qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya' }
+          - { type: physics,   qtl_cmd: 'bin/qtl physics',  args: '' }
     steps:
       - uses: actions/checkout@v4
       - name: download outfiles
@@ -177,9 +183,10 @@ jobs:
       - run: tree
       - name: run timelines
         run: |
-          ${{matrix.run_script}} \
+          ${{matrix.qtl_cmd}} \
             -d ${{env.dataset}} \
             -p web \
+            --custom-pub \
             ${{matrix.args}}
       - run: tree outfiles
       - name: summarize
