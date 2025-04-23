@@ -7,10 +7,10 @@ source $(dirname $0)/../libexec/environ.sh
 sep="================================================================"
 usage() {
   echo """
+  qtl: Quality Time Lines
   $sep
   USAGE: $0 [COMMAND] [OPTIONS]...
   $sep
-  Run clas12-timeline commands.
 
   COMMAND: the command to run, one of:
       histogram     Run the timeline histogramming jobs (Step 1)
