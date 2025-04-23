@@ -1,14 +1,9 @@
 # Chefs' Guide for Timeline Production
 
-The timeline code is provided on `ifarm` via
-```bash
-module load timeline
-```
+The timeline code is provided on `ifarm` via `module load timeline`.
 Please report _any_ issues to the software maintainers, such as warnings or error messages.
 
-## Producing Timelines
-
-### :green_circle: Step 1: Fill Timeline Histograms
+## :green_circle: Step 1: Fill Timeline Histograms
 
 Use the "qtl" model as part of your usual cooking workflow; see [the Chefs' documentation wiki](https://clasweb.jlab.org/wiki/index.php/CLAS12_Chef_Documentation). Output files will appear in your chosen output directory, within `hist/detectors/`.
 
@@ -20,19 +15,17 @@ Use the "qtl" model as part of your usual cooking workflow; see [the Chefs' docu
 > - Use `qtl histogram` instead of the workflow, with the option `--focus-physics`; this will run on SLURM directly (rather than through SWIF)
 </details>
 
-### :green_circle: Step 2: Analyze Histograms and Make the Timelines
+## :green_circle: Step 2: Analyze Histograms and Make the Timelines
 
-Print the usage guide:
-```bash
-qtl analysis
-```
-In general,
+In general, run:
 ```bash
 qtl analysis -i $out_dir/hist/detectors -p $publish_dir
 ```
 where `$out_dir` is the output directory from **Step 1** and `$publish_dir` is the publishing directory to [`clas12mon`](https://clas12mon.jlab.org/).
-Additional options may be _needed_ for your specific dataset, so check the usage guide (run `qtl analysis`).
-
+Additional options may be _needed_ for your specific dataset, so check the usage guide by running with no arguments:
+```bash
+qtl analysis
+```
 A URL will be printed upon success, and a link will appear in [`clas12mon`](https://clas12mon.jlab.org/) in your run group's area momentarily.
 
 <details>
