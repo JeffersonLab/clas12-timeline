@@ -44,7 +44,7 @@ usageTerse() {
                         - default = ./outfiles/[DATASET_NAME]
 
     -p [PUBLISH_DIR]    publish timeline results to
-                        $WEBURL/[PUBLISH_DIR]/[DATASET_NAME]
+                        $WEBURL/[PUBLISH_DIR]/[DATASET_NAME]/tlsummary
                         - chefs: usually your run group (e.g., 'rgb'), or a
                           subdirectory within (e.g. 'rgb/pass0')
                         - required (or see expert options with '--help')
@@ -79,7 +79,6 @@ usageVerbose() {
     --list              dump the list of timelines and exit
 
     --just-ana          just do the analysis and do not attempt to publish
-                        - option '-p' is therefore not required
                         - follow up with '--just-pub' and '-p' to publish
 
     --just-pub          just publish analyzed timelines from [OUTPUT_DIR]
@@ -195,7 +194,7 @@ if $enablePub; then
     exit 100
   fi
   # publishing URL
-  publishUrl=$WEBURL/$publishDir/$subDir/tlsummary
+  publishUrl=$WEBURL/$publishDir/$dataset/tlsummary
   # set full path to publish dir
   [ "$publishDir" = "." ] && printError "publishing directory argument cannot be '.'" && exit 100
   publishDir=$WEBDIR/$publishDir/$dataset
