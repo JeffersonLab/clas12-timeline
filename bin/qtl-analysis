@@ -13,15 +13,15 @@ match="^"
 inputDir=""
 publishEnabled=false
 publishDir=""
-publishFilter=""
 publishNote=""
 publishUrl=""
+metaSettings=""
 dataset=""
 outputDir=""
 numThreads=8
 singleTimeline=""
 declare -A modes
-for key in list only-publish skip-mya focus-timelines focus-qa debug help; do
+for key in list just-pub just-ana skip-mya focus-timelines focus-qa debug help; do
   modes[$key]=false
 done
 
@@ -48,37 +48,42 @@ usageTerse() {
                         - chefs: usually your run group (e.g., 'rgb'), or a
                           subdirectory within (e.g. 'rgb/pass0')
                         - CAUTION: this may overwrite data!
-                        - default: analyze timelines but don't publish; you may
-                          follow up using --only-publish to publish analyzed timelines
-
-    -f [FILTER]         publish with run-filter controls for specific datasets, such
-                        as target types; available choices:
-$(find $TIMELINESRC/data/metadata -name "*.json" -exec basename {} .json \; | sed 's;^;                           ;')
-                        - default: no custom filter
+                        - required (or see expert options with '--help')
 
     -n [NOTE]           additional note that will be shown on the clas12mon webpage
                         (i.e., the README file); surround your note in quotes
                         - default: ''
+
+    -s [SETTINGS]       apply run-group or dataset specific settings; one of:
+$(find $TIMELINESRC/data/metadata -name "*.json" -exec basename {} .json \; | sed 's;^;                           ;')
+                        - default: no custom settings
   """>&2
 }
 usageVerbose() {
-  echo """  ADDITIONAL OPTIONS:
+  echo """  EXPERT OPTIONS: these are generally for developers, not chefs
 
     -o [OUTPUT_DIR]     output directory for the analyzed timelines
-                        default = ./outfiles/[DATASET_NAME]
+                        - default = ./outfiles/[DATASET_NAME]
+                          - chefs: if you use this default, it may be convenient
+                            to make a symbolic link named 'outfiles' to a
+                            directory on '/volatile'
 
     -j [NUM_THREADS]    number of parallel threads to run
-                        default = $numThreads
+                        - default = $numThreads
 
     -t [TIMELINE]       produce only the single detector timeline [TIMELINE]; useful for debugging
-                        use --list to dump the list of timelines
-                        default: run all
+                        - use --list to dump the list of timelines
+                        - default: run all
 
     -m [MATCH]          only produce timelines matching [MATCH]
 
     --list              dump the list of timelines and exit
 
-    --only-publish      just publish the timelines, if they are already analyzed
+    --just-ana          just do the analysis and do not attempt to publish
+                        - option '-p' is therefore not required
+                        - follow up with '--just-pub' and '-p' to publish
+
+    --just-pub          just publish analyzed timelines from [OUTPUT_DIR]
 
     --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
 
@@ -93,12 +98,12 @@ usageVerbose() {
 }
 if [ $# -eq 0 ]; then
   usageTerse
-  echo "  For more options, run with '--help'" >&2
+  echo "  For more (expert) options, run with '--help'" >&2
   exit 101
 fi
 
 # parse options
-while getopts "d:i:p:f:n:o:j:t:m:h-:" opt; do
+while getopts "d:i:p:n:s:o:j:t:m:h-:" opt; do
   case $opt in
     d)
       echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
@@ -109,8 +114,8 @@ while getopts "d:i:p:f:n:o:j:t:m:h-:" opt; do
       publishDir=$OPTARG
       publishEnabled=true
       ;;
-    f) publishFilter=$OPTARG ;;
     n) publishNote=$OPTARG ;;
+    s) metaSettings=$OPTARG ;;
     o) outputDir=$OPTARG ;;
     j) numThreads=$OPTARG ;;
     t) singleTimeline=$OPTARG ;;
@@ -180,12 +185,12 @@ if $publishEnabled; then
     sleep 8
   fi
   # path to filter file
-  if [ -n "$publishFilter" ]; then
-    publishFilter=$TIMELINESRC/data/metadata/$publishFilter.json
-    if [ -f "$publishFilter" ]; then
-      echo "using metadata file '$publishFilter'"
+  if [ -n "$metaSettings" ]; then
+    metaSettings=$TIMELINESRC/data/metadata/$metaSettings.json
+    if [ -f "$metaSettings" ]; then
+      echo "using metadata file '$metaSettings'"
     else
-      printError "metadata file '$publishFilter' does not exist (bad argument for option '-m')"
+      printError "metadata file '$metaSettings' does not exist (bad argument for option '-m')"
       exit 100
     fi
   fi
@@ -194,6 +199,14 @@ if $publishEnabled; then
   timestamp=$(date '+%a %D')
   [ -n "$publishNote" ] && publishNote="; $publishNote"
   publishNote="${timestamp}${publishNote}; timeline-code v$version"
+else # $publishEnabled == false
+  if ${modes['just-ana']}; then
+    echo "NOT PUBLISHING TIMELINES, since '--just-ana' used"
+  else
+    printError "option '-p' is required, to specify a publishing directory"
+    printError "(otherwise, use '--just-ana' if you really do not want to publish)"
+    exit 100
+  fi
 fi
 
 # print settings
@@ -236,7 +249,7 @@ detDirs=(
 )
 
 # cleanup output directories
-if ! ${modes['only-publish']} && ( ${modes['focus-all']} || ${modes['focus-timelines']} ); then
+if ! ${modes['just-pub']} && ( ${modes['focus-all']} || ${modes['focus-timelines']} ); then
   if [ -d $finalDirPreQA ]; then
     rm -rv $finalDirPreQA
   fi
@@ -278,7 +291,7 @@ function wait_for_jobs() {
 ######################################
 # produce detector timelines
 ######################################
-if ! ${modes['only-publish']} && ( ${modes['focus-all']} || ${modes['focus-timelines']} ); then
+if ! ${modes['just-pub']} && ( ${modes['focus-all']} || ${modes['focus-timelines']} ); then
 
   # change working directory to output directory
   pushd $finalDirPreQA
@@ -360,12 +373,12 @@ fi
 
 # first, copy the timelines to the final timeline directory; we do this regardless of whether QA is run
 # so that (1) only `$finalDir` needs deployment and (2) we can re-run the QA with 'focus-qa' mode
-if ! ${modes['only-publish']}; then
+if ! ${modes['just-pub']}; then
   echo ">>> copy timelines to final directory..."
   cp -rL $finalDirPreQA/* $finalDir/
 fi
 
-if ! ${modes['only-publish']} && ( ${modes['focus-all']} || ${modes['focus-qa']} ); then
+if ! ${modes['just-pub']} && ( ${modes['focus-all']} || ${modes['focus-qa']} ); then
   echo ">>> add QA lines..."
   logFile=$logDir/qa
   $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
@@ -435,7 +448,7 @@ if $publishEnabled; then
   echo "Publishing..."
   mkdir -pv $publishDir
   cp -r $finalDir/* $publishDir/
-  [ -n "$publishFilter" ] && cp -v $publishFilter $publishDir/metadata.json
+  [ -n "$metaSettings" ] && cp -v $metaSettings $publishDir/metadata.json
   [ -n "$publishNote" ] && echo "$publishNote" > $publishDir/README
   $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/libexec/index-webpage.groovy $publishDir
   echo """

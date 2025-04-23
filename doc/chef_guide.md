@@ -17,23 +17,19 @@ Output files will appear in your chosen output directory, within `hist/detectors
 ## :green_circle: Step 2: Make the timelines
 
 ```bash
-qtl analysis -d $dataset -i $out_dir/hist/detectors
+qtl analysis -d $dataset -i $out_dir/hist/detectors -p $publish_dir
 ```
-where `$out_dir` is your output directory from **Step 1** and `$dataset` is a unique name for this cook, _e.g._, `rga_v1.23`.
+- `$out_dir` is your output directory from **Step 1** and `$dataset` is a unique name for this cook, _e.g._, `rga_v1.23`.
+- `$publish_dir` is the publishing directory
+  - example: `rgb/pass0`
 
-Output will appear in `./outfiles/$dataset/`.
+A URL will be printed upon success, and a link will appear in [`clas12mon`](https://clas12mon.jlab.org/) in your run group's area momentarily.
 
-## :green_circle: Step 3: Deploy the timelines
-
-```bash
-qtl deploy -d $dataset -t $target_dir -D
-```
-where `$target_dir` is a subdirectory of `/group/clas/www/clas12mon/html/hipo`, for example,
-```bash
--t rgb/pass0/$dataset   # deploys to /group/clas/www/clas12mon/html/hipo/rgb/pass0/$dataset/
-```
-- remove the `-D` argument if everything looks okay (`-D` only prints what the script will do, _i.e._, a "dry run")
-- a URL will be printed upon success, and a link will appear in [`clas12mon`](https://clas12mon.jlab.org/) in your run group's area momentarily
+> [!TIP]
+> Step 2 generates analyzed timeline files and logging information to a
+> separate directory.
+> - You can control that directory with the `-o` option, or just use the default.
+> - If using the default, consider making a symbolic link named `outfiles` pointing to somewhere on `/volatile`
 
 ---
 
