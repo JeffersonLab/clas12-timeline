@@ -51,6 +51,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
+        type: [ detectors, physics ]
         include:
           - { type: detectors, schema: mon }
           - { type: physics,   schema: dst }
@@ -163,6 +164,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        type: [ detectors, physics ]
         include:
           - { type: detectors, qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya' }
           - { type: physics,   qtl_cmd: 'bin/qtl physics',  args: '' }
