@@ -21,7 +21,7 @@ numThreads=8
 singleTimeline=""
 # modes, set by CLI long opts (--$key)
 declare -A modes
-for key in list just-pub just-ana skip-mya debug overwrite help; do
+for key in list just-pub just-ana skip-mya debug overwrite custom-pub help; do
   modes[$key]=false
 done
 
@@ -84,6 +84,9 @@ usageVerbose() {
     --just-pub          just publish analyzed timelines from [OUTPUT_DIR]
 
     --overwrite         allow publishing to overwrite the target directory
+
+    --custom-pub        interpret [PUBLISH_DIR] as a fully custom directory,
+                        rather than as a subdirectory of the web server
 
     --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
 
@@ -193,12 +196,16 @@ if $enablePub; then
     printError "(otherwise, use '--just-ana' if you really do not want to publish)"
     exit 100
   fi
-  # publishing URL
-  publishUrl=$WEBURL/$publishDir/$dataset/tlsummary
-  # set full path to publish dir
-  [ "$publishDir" = "." ] && printError "publishing directory argument cannot be '.'" && exit 100
-  publishDir=$WEBDIR/$publishDir/$dataset
+  # set full path to publish dir (unless --custom-pub)
+  if ! ${modes['custom-pub']}; then
+    publishUrl=$WEBURL/$publishDir/$dataset/tlsummary
+    [ "$publishDir" = "." ] && printError "publishing directory argument cannot be '.'" && exit 100
+    publishDir=$WEBDIR/$publishDir/$dataset
+  else
+    publishUrl="option '--custom-pub' was used, therefore timeline URL is UNKNOWN"
+  fi
   echo "publishing directory: $publishDir"
+  # check if the publishing directory already exists
   if [ -d $publishDir ]; then
     if ${modes['overwrite']}; then
       printWarning "Publishing directory already exists! Timelines will be overwritten!"
@@ -210,6 +217,8 @@ if $enablePub; then
       exit 100
     fi
   fi
+  # make the publishing directory (which also verifies write permission)
+  mkdir -pv $publishDir
   # path to filter file
   if [ -n "$metaSettings" ]; then
     metaSettings=$TIMELINESRC/data/metadata/$metaSettings.json
@@ -448,7 +457,6 @@ echo $sep
 
 if $enablePub; then
   echo "Publishing..."
-  mkdir -pv $publishDir
   cp -r $finalDir/* $publishDir/
   [ -n "$metaSettings" ] && cp -v $metaSettings $publishDir/metadata.json
   [ -n "$publishNote" ] && echo "$publishNote" > $publishDir/README
