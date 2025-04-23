@@ -66,13 +66,14 @@ qtl physics   # for physics timelines (will eventually be combined with 'qtl ana
 ### Example
 **If** you used `clas12-workflow` for Step 1, the script arguments should be
 ```bash
--i /path/to/output/files -p some/publish/directory/rga_sp19_v5
+qtl analysis -i /path/to/output/files -p some/publish/directory/rga_sp19_v5
 ```
 - the output from `clas12-workflow` is `/path/to/output/files`; its subdirectories should be run numbers
 - the publishing directory given by `-p` is a subdirectory of the web server; see `qtl analysis` usage guide
 
 **Otherwise**, you may omit the `-i /path/to/output/files` option (unless you customized it from Step 1)
 - notice the dataset name from Step 1 should be the publishing directory basename
+- NOTE: `qtl physics` still needs the dataset name (`-d`) too...
 
 > [!NOTE]
 > - detector timeline production is handled by the [`org.jlab.clas.timeline.analysis` package](/src/main/java/org/jlab/clas/timeline/analysis)

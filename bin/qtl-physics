@@ -171,6 +171,6 @@ $TIMELINESRC/bin/qtl analysis \
   --just-pub \
   -p $publishDir $customPubArg
 
-if $somethingFailed;
+if $somethingFailed; then
   exit 100
 fi
