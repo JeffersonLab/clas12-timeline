@@ -35,6 +35,9 @@ A URL will be printed upon success, and a link will appear in [`clas12mon`](http
 </details>
 
 > [!TIP]
+> Step 2 runs on an interactive node and can take some time if there are a lot of data. We recommend using tools such as [`tmux` terminal multiplexer](https://github.com/tmux/tmux/wiki) or [`GNU Screen`](https://www.gnu.org/software/screen/) to keep the job running if you lose your SSH connection.
+
+> [!TIP]
 > Step 2 produces temporary files, by default in a subdirectory of `./outfiles/`. Consider making a symbolic link named `outfiles` pointing to somewhere on `/volatile`.
 
 ---
