@@ -17,7 +17,7 @@ match="^"
 inputDir=""
 publishDir=""
 publishNote=""
-metaSettings=""
+metaSettings="" # FIXME: generalize `metaSettings` to run-group-specific settings (e.g., exclude irrelevant timelines for RG-L)
 dataset=""
 outputDir=""
 numThreads=8
@@ -201,6 +201,7 @@ if $enablePub; then
   if ! ${modes['custom-pub']}; then
     publishUrl=$WEBURL/$publishDir/tlsummary
     [ "$publishDir" = "." ] && printError "publishing directory argument cannot be '.'" && exit 100
+    [[ "$publishDir" =~ '..' ]] && printError "publishing directory cannot contain '..'" && exit 100
     publishDir=$WEBDIR/$publishDir
   else
     publishUrl="option '--custom-pub' was used, therefore timeline URL is UNKNOWN"
@@ -226,7 +227,7 @@ if $enablePub; then
     if [ -f "$metaSettings" ]; then
       echo "using metadata file '$metaSettings'"
     else
-      printError "metadata file '$metaSettings' does not exist (bad argument for option '-m')"
+      printError "metadata file '$metaSettings' does not exist (bad argument for option '-s')"
       exit 100
     fi
   fi

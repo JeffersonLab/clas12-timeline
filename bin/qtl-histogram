@@ -27,7 +27,7 @@ sep="================================================================"
 usageTerse() {
   echo """
   Run the timeline histogramming jobs.
-  NOTE: This is not for chefs; instead, use the chef's workflow.
+  NOTE: chefs typically run this program using the CLAS12 workflow
 
   $sep
   USAGE: qtl histogram -d [DATASET_NAME] [RUN_DIRECTORY]

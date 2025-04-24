@@ -48,7 +48,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # parse options
-while getopts "d:i:p:Co:h-:" opt; do
+while getopts "d:i:p:o:h-:" opt; do
   case $opt in
     d)
       echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
@@ -157,8 +157,9 @@ else
   echo "No errors or warnings!"
 fi
 
-# kluge for now: removed the independent 'deploy-timelines.sh' script, so just call
-# qtl-analysis to do the deployment
+# FIXME: removed the independent 'deploy-timelines.sh' script, so just call
+# qtl-analysis to do the deployment; eventually we'll absorb 'qtl-physics' into 'qtl-analysis',
+# so this kluge is good enough for now...
 echo "Now publishing..."
 customPubArg=''
 if ${modes['custom-pub']}; then
