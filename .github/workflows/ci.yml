@@ -70,10 +70,10 @@ jobs:
       - run: ls -lh .
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
 
-  # monitoring
+  # histogramming
   #############################################################################
 
-  run_monitoring:
+  run_histogram:
     needs:
       - build_timeline
       - download_test_data
@@ -154,9 +154,9 @@ jobs:
   # timeline production
   #############################################################################
 
-  run_timelines:
+  run_analysis:
     needs:
-      - run_monitoring
+      - run_histogram
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
