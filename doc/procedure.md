@@ -15,7 +15,7 @@ Both of these timeline types are produced in the following steps (🟢) .
 > [!NOTE]
 > Physics timeline production and QA are typically only valuable on high-statistics datasets, whereas detector timelines need files produced with `mon` schema, which are typically only produced with low statistics; therefore, for a given dataset, typically one set of timelines is produced but not the other.
 
-## 🟢 Step 1: Data Monitoring
+## 🟢 Step 1: Histogramming
 
 This step reads input HIPO files (_e.g._, DST or `mon` files) and produces histograms and auxiliary files, which are then consumed by Step 2 to produce the timelines. Since many input files are read, it is recommended to use a computing cluster.
 
@@ -45,11 +45,11 @@ sbatch ./slurm/job.rga_sp19_v5.physics.slurm     # for physics timelines
 - monitor output logs in `/farm_out/$LOGNAME/` or use `qtl error`
 
 > [!NOTE]
-> - data monitoring for detector timelines is handled by the [`org.jlab.clas.timeline.histograms` package](/src/main/java/org/jlab/clas/timeline/histograms)
-> - data monitoring for physics timelines is handled by the [`qa-physics/` subdirectory](/qa-physics);
+> - histogramming for detector timelines is handled by the [`org.jlab.clas.timeline.histograms` package](/src/main/java/org/jlab/clas/timeline/histograms)
+> - histogramming for physics timelines is handled by the [`qa-physics/` subdirectory](/qa-physics);
 >   see [its documentation](/qa-physics/README.md)
 
-## 🟢 Step 2: Timeline Production and QA
+## 🟢 Step 2: Timeline Analysis and QA
 
 After Step 1 is complete, run the following Step 2 scripts to produce the timeline HIPO files and to run the automatic QA procedures. There is one script for each timeline type: run them with no arguments to print the usage guides:
 

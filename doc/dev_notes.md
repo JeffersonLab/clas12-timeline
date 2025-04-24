@@ -11,37 +11,36 @@ flowchart TB
 
     dst[(Input HIPO Files)]:::data
 
-    subgraph Data Monitoring
+    subgraph Step 1: Timeline Histogramming
         subgraph "<strong>bin/qtl histogram</strong>"
-            monitorDetectors["<strong>Make detector histograms</strong><br/>org.jlab.clas.timeline.histograms.run_histograms"]:::proc
-            monitorPhysics["<strong>Make physics QA histograms</strong><br/>qa-physics/: monitorRead.groovy"]:::proc
+            histogramDetectors["<strong>Make detector histograms</strong><br/>org.jlab.clas.timeline.histograms.run_histograms"]:::proc
+            histogramPhysics["<strong>Make physics QA histograms</strong><br/>qa-physics/: monitorRead.groovy"]:::proc
         end
         outplots[(___/detectors/$run_number/*.hipo)]:::data
         outdat[(___/physics/$run_number/*.dat)]:::data
         outmon[(___/physics/$run_number/*.hipo)]:::data
     end
-    dst --> monitorDetectors
-    dst --> monitorPhysics
-    monitorDetectors --> outplots
-    monitorPhysics   --> outdat
-    monitorPhysics   --> outmon
+    dst --> histogramDetectors
+    dst --> histogramPhysics
+    histogramDetectors --> outplots
+    histogramPhysics   --> outdat
+    histogramPhysics   --> outmon
 
-    subgraph Timeline Production
+    subgraph Step 2: Timeline Analysis
         subgraph "<strong>bin/qtl analysis</strong>"
             timelineDetectorsPreQA["<strong>Make detector timelines</strong><br/>org.jlab.clas.timeline.analysis.run_analysis"]:::proc
             outTimelineDetectorsPreQA{{outfiles/$dataset/timeline_web_preQA/$detector/*.hipo}}:::timeline
             timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
+            outTimelineDetectors{{outfiles/$dataset/timeline_web/$detector/*.hipo}}:::timeline
+            deploy["<strong>Publishing</strong><br/>handled by qtl analysis"]:::proc
         end
         subgraph "<strong>bin/qtl physics</strong>"
             timelinePhysics["<strong>Make physics QA timelines:</strong><br/>qa-physics/: (see documentation)"]:::proc
+            outTimelinePhysics{{outfiles/$dataset/timeline_web/phys_*/*}}:::timeline
         end
     end
-    subgraph Final Timelines
-        outTimelinePhysics{{outfiles/$dataset/timeline_web/phys_*/*}}:::timeline
-        outTimelineDetectors{{outfiles/$dataset/timeline_web/$detector/*.hipo}}:::timeline
-        deploy["<strong>Publishing</strong><br/>handled by qtl analysis"]:::proc
-        timelineDir{{timelines on web server}}:::timeline
-    end
+    timelineDir{{timelines on web server}}:::timeline
+
     outplots --> timelineDetectorsPreQA --> outTimelineDetectorsPreQA --> timelineDetectors --> outTimelineDetectors
     outdat   --> timelinePhysics
     outmon   --> timelinePhysics
