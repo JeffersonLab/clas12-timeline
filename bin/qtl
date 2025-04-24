@@ -9,7 +9,7 @@ usage() {
   echo """
   qtl: Quality Time Lines
   $sep
-  USAGE: $0 [COMMAND] [OPTIONS]...
+  USAGE: qtl [COMMAND] [OPTIONS]...
   $sep
 
   COMMAND: the command to run, one of:
