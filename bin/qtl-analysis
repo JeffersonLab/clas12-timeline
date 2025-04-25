@@ -479,9 +479,9 @@ if $enableAna; then
 
   # grep for suspicious things in error logs
   errPattern="error:|exception:|warning"
-  echo """Now scanning for any quieter errors, by running \`grep -iE '$errPattern'\` on *.err files:
-  $sep"""
-  grep -iE --color "$errPattern" $logDir/*.err || echo "Good news: grep found no errors, but you still may want to take a look yourself..."
+  echo "Now scanning for any quieter errors, by running \`grep -iE '$errPattern'\` on *.err files:"
+  echo $sep
+  grep -iE --color "$errPattern" $logDir/*.err && printWarning "errors/warnings found in log files!" || echo "Good news: grep found no errors, but you still may want to take a look yourself..."
   echo $sep
 
 fi
