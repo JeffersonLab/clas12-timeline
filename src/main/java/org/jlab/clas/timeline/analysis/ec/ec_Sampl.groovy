@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ECFitter
+import org.jlab.clas.timeline.util.QA
 
 class ec_Sampl {
 
@@ -35,7 +36,7 @@ def write() {
 
   TDirectory out = new TDirectory()
   out.mkdir('/timelines')
-  (0..<6).each{ sec->
+  def grtlList = (0..<6).collect{ sec->
     def grtl = new GraphErrors('sec'+(sec+1))
     grtl.setTitle("ECAL Sampling Fraction per sector")
     grtl.setTitleY("ECAL Sampling Fraction per sector")
@@ -50,10 +51,10 @@ def write() {
       out.addDataSet(it.flist[sec])
       grtl.addPoint(it.run, it.Sampling[sec], 0, 0)
     }
-    out.cd('/timelines')
-    out.addDataSet(grtl)
+    grtl
   }
-
-  out.writeFile('ec_Sampling.hipo')
+  out.cd('/timelines')
+  QA.cutGraphs(grtlList, lb: 0.23, ub: 0.26, out: out)
+  out.writeFile('ec_Sampling_QA.hipo')
 }
 }
