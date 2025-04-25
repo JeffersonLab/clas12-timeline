@@ -75,13 +75,14 @@ fi
 [ -z "$dataset" ] && printError "data set not specified, use option '-d'" && exit 100
 [ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_physics
 [ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100
+inputDir=$(realpath $inputDir)
 [ -z "$outputDir" ] && outputDir=$(realpath $(pwd -P)/outfiles/$dataset) || outputDir=$(realpath $outputDir)
 [ -z "$publishDir" ] && printError "need publishing directory, option '-p'" && exit 100
 
 # set subdirectories
 qaDir=$outputDir/timeline_physics_qa
 finalDir=$outputDir/timeline_web
-logDir=$outputDir/log
+logDir=$outputDir/log_physics
 
 # print settings
 echo """

@@ -305,12 +305,12 @@ detDirs=(
 # cleanup output directories
 if $enableAna; then
   if [ -d $finalDirPreQA ]; then
-    rm -rv $finalDirPreQA
+    printWarning "removing output directory $finalDirPreQA"
+    rm -r $finalDirPreQA
   fi
   if [ -d $logDir ]; then
-    for fail in $(find $logDir -name "*.fail"); do
-      rm $fail
-    done
+    printWarning "removing log directory $logDir"
+    rm -r $logDir
   fi
 fi
 
