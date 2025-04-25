@@ -271,6 +271,7 @@ OUTPUT_DIR      = $outputDir
 FINAL_DIR_PREQA = $finalDirPreQA
 FINAL_DIR       = $finalDir
 LOG_DIR         = $logDir
+PUBLISH_DIR     = $publishDir
 NUM_THREADS     = $numThreads
 OPTIONS = {"""
   for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
