@@ -144,6 +144,7 @@ def eng = engines.collectMany{key,engs->engs.collect{[key,it]}}
 if(eng) {
   def (name,engine) = eng
   def input = new File(args[1])
+  def allow_timeline = true
   println([name,args[0],engine.getClass().getSimpleName(),input])
   def fnames = []
   input.traverse {
@@ -163,17 +164,36 @@ if(eng) {
       def m = fname =~ /\d+/
       def run = m[0].toInteger()
 
-      engine.processRun(dir, run)
+      // allow / disallow certain timelines, based on run number
+      if(run < 21317) { // before RG-L
+        if(args[0] == "alert_atof_tdc") { allow_timeline = false }
+      }
 
-      println("debug: "+engine.getClass().getSimpleName()+" finished $arg")
+      // run the analysis for this run
+      if(allow_timeline) {
+        engine.processRun(dir, run)
+        println("debug: "+engine.getClass().getSimpleName()+" finished $arg")
+      }
+      else {
+        println("debug: "+engine.getClass().getSimpleName()+" is not allowed for run $run")
+      }
+
     } catch(Exception ex) {
       System.err.println("error: "+engine.getClass().getSimpleName()+" didn't process $arg, due to exception:")
       ex.printStackTrace()
       System.exit(100)
     }
   }
-  engine.write()
-  println("debug: "+engine.getClass().getSimpleName()+" ended")
+
+  // write the timeline HIPO file
+  if(allow_timeline) {
+    engine.write()
+    println("debug: "+engine.getClass().getSimpleName()+" ended")
+  }
+  else {
+    println("debug: "+engine.getClass().getSimpleName()+" was not produced, since not allowed for these data")
+  }
+
 } else {
   System.err.println("error: "+args[0]+" not found")
   System.exit(100)
