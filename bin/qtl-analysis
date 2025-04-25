@@ -440,7 +440,8 @@ if $enableAna; then
   logFile=$logDir/qa
   $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
   outputFiles=$(find $finalDir -name "*_QA.hipo")
-  [ -n "$outputFiles" ] && $TIMELINESRC/libexec/hipo-check.sh $outputFiles
+  logFile=$logDir/qa_hipo-check
+  [ -n "$outputFiles" ] && $TIMELINESRC/libexec/hipo-check.sh $outputFiles > $logFile.out 2> $logFile.err || touch $logFile.fail
 fi
 
 
