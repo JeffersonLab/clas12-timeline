@@ -4,20 +4,6 @@ import org.jlab.groot.data.TDirectory
 
 class QA {
 
-  /// @returns a single horizontal cut line
-  /// @param value the y-axis value of this line
-  /// @param the color of this line
-  static GraphErrors makeCutLine(double value, String color=null) {
-    if(value==null) return null;
-    line_name = [
-      'plotLine',
-      'horizontal',
-      value,
-      color ?: 'black',
-    ].join(':');
-    new GraphErrors(line_name);
-  }
-
   /// result of `cutGraphs`
   class CutGraphResult {
     /// graphs which include only the "bad" points (points outside QA cuts)
@@ -40,18 +26,26 @@ class QA {
       [args.lb, args.lb_color],
       [args.ub, args.ub_color],
     ]
-      .collect{makeCutLine(*it)}
+      .collect{ val, color ->
+        if(val==null) return null;
+        new GraphErrors([
+          'plotLine',
+          'horizontal',
+          value,
+          color ?: 'black',
+        ].join(':'));
+      }
       .findAll{it != null};
-    // define QA cut
-    def reqs = []
+    // define QA criteria
+    def qa_crit = []
     if(args.lb != null)
-      reqs << {val -> val >= args.lb };
+      qa_crit << {val -> val >= args.lb };
     if(args.ub != null)
-      reqs << {val -> val <= args.ub };
-    def checkPoint = { val ->
+      qa_crit << {val -> val <= args.ub };
+    def qa_cut = { val ->
       allow = true;
-      reqs.each{ req -> allow &= req(val) };
-      pass;
+      qa_crit.each{ crit -> allow &= crit(val) };
+      allow;
     };
     // apply cuts
     result.bad_graphs = input_graphs.collect{ input_graph ->
@@ -64,7 +58,7 @@ class QA {
       input_graph.getDataSize(0).times{ i ->
         def val_x = input_graph.getDataX(i);
         def val_y = input_graph.getDataY(i);
-        if(!checkPoint(val_y))
+        if(!qa_cut(val_y))
           bad_graph.addPoint(val_x, val_y);
       }
       bad_graph;
