@@ -7,9 +7,9 @@ module load timeline/dev   # load the 'dev' version (likely the most recent vers
 module load timeline/1.0.0 # alternatively, load a specific version, such as 1.0.0
 ```
 
-If you want to install locally, clone the repository, then run:
+If you want to install locally, clone the repository, `cd` into it, then run:
 ```bash
-./install.sh
+mvn install
 ```
 
 The directory `target/` will contain the build files, which are mostly JAR files.
