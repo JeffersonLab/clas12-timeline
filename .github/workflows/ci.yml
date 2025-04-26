@@ -98,7 +98,7 @@ jobs:
       - name: untar
         run: ls *.tar.zst | xargs -I{} tar xavf {}
       - run: tree
-      - name: run monitoring
+      - name: qtl histogram
         run: |
           bin/qtl histogram \
             -d ${{env.dataset}} \
@@ -115,7 +115,7 @@ jobs:
           path: slurm
       - uses: actions/upload-artifact@v4
         with:
-          name: outfiles_monitoring_${{ matrix.type }}
+          name: outfiles_histogram_${{ matrix.type }}
           retention-days: 14
           path: outfiles
 
@@ -144,7 +144,7 @@ jobs:
       - name: untar
         run: ls *.tar.zst | xargs -I{} tar xavf {}
       - run: tree
-      - name: test monitoring swifjob
+      - name: test swifjob
         run: |
           single_rundir=$(find validation_files -mindepth 1 -maxdepth 1 -type d | head -n1)
           echo "single_rundir = $single_rundir"
@@ -183,7 +183,7 @@ jobs:
       - name: untar
         run: ls *.tar.zst | xargs -I{} tar xavf {}
       - run: tree
-      - name: run timelines
+      - name: qtl analysis
         run: |
           ${{matrix.qtl_cmd}} \
             -d ${{env.dataset}} \
