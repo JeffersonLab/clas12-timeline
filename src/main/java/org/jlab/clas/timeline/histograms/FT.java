@@ -14,9 +14,6 @@ import org.jlab.clas.physics.Particle;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
-import org.jlab.groot.base.GStyle;
-import org.jlab.groot.ui.TCanvas;
-import org.jlab.io.hipo.HipoDataSource;
 
 public class FT {
 
@@ -323,13 +320,11 @@ public class FT {
             int calID = ftPart.getShort("calID", loop);
             double theta = Math.toDegrees(Math.acos(cz));
 
-            double energyR = 0;
             int size = 0;
             double path = 0;
             vz = triggerVZ;
             for (int i = 0; i < CalClusters.rows(); i++) {
                 if (calID == CalClusters.getShort("id", i)) {
-                    energyR = CalClusters.getFloat("recEnergy", i);
                     size = CalClusters.getInt("size", i);
                     double x = CalClusters.getFloat("x", i) - vx;
                     double y = CalClusters.getFloat("y", i) - vy;
