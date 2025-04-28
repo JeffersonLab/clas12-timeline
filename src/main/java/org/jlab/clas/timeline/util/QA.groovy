@@ -20,7 +20,7 @@ class QA {
   /// @param args.out TDirectory for adding graphs and lines, if defined
   /// @returns `CutGraphResult`
   static CutGraphResult cutGraphs(Map args, GraphErrors[] input_graphs) {
-    def result = new CutGraphResult();
+    CutGraphResult result;
     // make lines
     result.cut_lines = [
       [args.lb, args.lb_color],

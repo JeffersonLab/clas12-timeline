@@ -307,6 +307,9 @@ detDirs=(
 
 # cleanup output directories
 if $enableAna; then
+  ##
+  ## FIXME: is this really necessary?
+  ##
   if [ -d $finalDir ]; then
     printWarning "removing output directory $finalDir"
     rm -r $finalDir
