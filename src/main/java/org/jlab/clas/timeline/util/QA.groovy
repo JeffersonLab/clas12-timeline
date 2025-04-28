@@ -71,4 +71,36 @@ class QA {
     result;
   }
 
+
+  /// @param mean_or_sigma should be 'mean' or 'sigma'
+  /// @param input_graphs input graphs to process
+  /// @param args.mean_lb lower bound for mean
+  /// @param args.mean_ub upper bound for mean
+  /// @param args.sigma_ub upper bound for sigma
+  /// @param args.mean_lb_color color of lower bound line for mean
+  /// @param args.mean_ub_color color of upper bound line for mean
+  /// @param args.sigma_ub_color color of upper bound line for sigma
+  /// @param args.out TDirectory for adding graphs and lines, if defined
+  /// @returns `CutGraphResult`
+  static CutGraphResult cutGraphsMeanSigma(Map args, String mean_or_sigma, GraphErrors... input_graphs) {
+    if(mean_or_sigma == 'mean') {
+      return cutGraphs(
+          input_graphs,
+          lb: args.mean_lb,
+          ub: args.mean_ub,
+          lb_color: args.mean_lb_color,
+          ub_color: args.mean_ub_color,
+          out: args.out,
+          );
+    }
+    else { // sigma
+      return cutGraphs(
+          input_graphs,
+          ub: args.sigma_ub,
+          ub_color: args.sigma_ub_color,
+          out: args.out,
+          );
+    }
+  }
+
 }

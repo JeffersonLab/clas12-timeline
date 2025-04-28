@@ -50,10 +50,7 @@ def data = new ConcurrentHashMap()
       }
 
       out.cd('/timelines')
-      if(name == 'mean')
-        QA.cutGraphs(*grtlList, lb: -0.15, ub: 0.15, out: out)
-      else if(name == 'sigma')
-        QA.cutGraphs(*grtlList, ub: 0.6, out: out)
+      QA.cutGraphsMeanSigma(name, *grtlList, mean_lb: -0.15, mean_ub: 0.15, sigma_ub: 0.6, out: out)
       out.writeFile("ec_elec_ecin_time_${name}_QA.hipo")
 
     }
