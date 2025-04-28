@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ECFitter
+import org.jlab.clas.timeline.util.QA
 
 class ec_ecou_time {
 
@@ -46,9 +47,12 @@ def data = new ConcurrentHashMap()
         }
 
         out.cd('/timelines')
-        out.addDataSet(grtl)
-       }
-       out.writeFile("ec_elec_ecou_time_${name}.hipo")
+        if(name == 'mean')
+          QA.cutGraphs(grtl, lb: -0.15, ub: 0.15, out: out)
+        else if(name == 'sigma')
+          QA.cutGraphs(grtl, ub: 1.2, out: out)
+      }
+      out.writeFile("ec_elec_ecou_time_${name}_QA.hipo")
     }
   }
 }
