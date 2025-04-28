@@ -45,9 +45,7 @@ jobs:
 
   download_test_data:
     runs-on: ubuntu-latest
-    container:
-      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
-      options: --user root
+   # NOTE: using Ubuntu runner, rather than a `container-forge` image, since it's much faster for cache hits
     strategy:
       fail-fast: true
       matrix:
@@ -64,6 +62,12 @@ jobs:
           key: validation_files_${{ matrix.type }}
           path: validation_files.tar.zst
           lookup-only: true
+      - name: install dependencies
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt -y update
+          sudo apt -y upgrade
+          sudo apt -y install xrootd-client
       - name: download
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: xrdcp ${{ env.xrootd_file }} ./
