@@ -28,9 +28,6 @@ ft   fth_MIPS_time_mean          -0.5   0.5    ns     layer2
 ft   fth_MIPS_time_sigma         NB     1.4    ns     layer1
 ft   fth_MIPS_time_sigma         NB     1.2    ns     layer2
 
-ec   ec_Sampling                 0.23   0.26   unitless
-ec   ec_gg_m_mean                0.129  0.133  GeV
-ec   ec_gg_m_sigma               NB     0.015  GeV
 ec   ec_elec_pcal_time_mean      -0.150 0.150  ns
 ec   ec_elec_pcal_time_sigma     NB     0.600  ns
 ec   ec_elec_ecin_time_mean      -0.150 0.150  ns

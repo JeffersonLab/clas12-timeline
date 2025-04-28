@@ -12,14 +12,14 @@ class CutGraphResult {
 
 class QA {
 
-  /// @param input_graphs a list of graphs to cut
+  /// @param input_graphs input graphs to process
   /// @param args.lb lower QA bound (default: no bound)
   /// @param args.ub upper QA bound (default: no bound)
   /// @param args.lb_color color of lower bound line
   /// @param args.ub_color color of upper bound line
   /// @param args.out TDirectory for adding graphs and lines, if defined
   /// @returns `CutGraphResult`
-  static CutGraphResult cutGraphs(Map args, ArrayList<GraphErrors> input_graphs) {
+  static CutGraphResult cutGraphs(Map args, GraphErrors... input_graphs) {
     CutGraphResult result = new CutGraphResult();
     // make lines
     result.cut_lines = [

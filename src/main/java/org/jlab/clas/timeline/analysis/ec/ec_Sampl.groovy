@@ -54,7 +54,7 @@ def write() {
     grtl
   }
   out.cd('/timelines')
-  QA.cutGraphs(grtlList, lb: 0.23, ub: 0.26, out: out)
+  QA.cutGraphs(*grtlList, lb: 0.23, ub: 0.26, out: out)
   out.writeFile('ec_Sampling_QA.hipo')
 }
 }
