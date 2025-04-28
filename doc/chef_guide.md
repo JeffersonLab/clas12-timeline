@@ -10,7 +10,9 @@ Use the "qtl" model as part of your usual cooking workflow; see [the Chefs' docu
 <details>
 <summary>For physics QA timelines...</summary>
 
-> Either:
+> Note: we are working on combining the procedure for physics timelines with
+> that for detector timelines; until then, to get the _full_ set of physics
+> timelines, the procedure is separate. For Step 1, either:
 > - Use the `--physics` option with the workflow "qtl" model
 > - Use `qtl histogram` instead of the workflow, with the option `--focus-physics`; this will run on SLURM directly (rather than through SWIF)
 </details>
