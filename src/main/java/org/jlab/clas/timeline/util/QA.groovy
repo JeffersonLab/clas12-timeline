@@ -2,15 +2,15 @@ package org.jlab.clas.timeline.util
 import org.jlab.groot.data.GraphErrors
 import org.jlab.groot.data.TDirectory
 
-class QA {
+/// result of `QA.cutGraphs`
+class CutGraphResult {
+  /// graphs which include only the "bad" points (points outside QA cuts)
+  public ArrayList<GraphErrors> bad_graphs;
+  /// cut lines
+  public ArrayList<GraphErrors> cut_lines;
+}
 
-  /// result of `cutGraphs`
-  class CutGraphResult {
-    /// graphs which include only the "bad" points (points outside QA cuts)
-    public GraphErrors[] bad_graphs;
-    /// cut lines
-    public GraphErrors[] cut_lines;
-  }
+class QA {
 
   /// @param input_graphs a list of graphs to cut
   /// @param args.lb lower QA bound (default: no bound)
@@ -19,8 +19,8 @@ class QA {
   /// @param args.ub_color color of upper bound line
   /// @param args.out TDirectory for adding graphs and lines, if defined
   /// @returns `CutGraphResult`
-  static CutGraphResult cutGraphs(Map args, GraphErrors[] input_graphs) {
-    CutGraphResult result;
+  static CutGraphResult cutGraphs(Map args, ArrayList<GraphErrors> input_graphs) {
+    CutGraphResult result = new CutGraphResult();
     // make lines
     result.cut_lines = [
       [args.lb, args.lb_color],
@@ -31,7 +31,7 @@ class QA {
         new GraphErrors([
           'plotLine',
           'horizontal',
-          value,
+          val,
           color ?: 'black',
         ].join(':'));
       }
@@ -43,7 +43,7 @@ class QA {
     if(args.ub != null)
       qa_crit << {val -> val <= args.ub };
     def qa_cut = { val ->
-      allow = true;
+      def allow = true;
       qa_crit.each{ crit -> allow &= crit(val) };
       allow;
     };
@@ -56,10 +56,9 @@ class QA {
       bad_graph.setTitleY(input_graph.getTitleY());
       // loop over points, checking the cuts
       input_graph.getDataSize(0).times{ i ->
-        def val_x = input_graph.getDataX(i);
-        def val_y = input_graph.getDataY(i);
-        if(!qa_cut(val_y))
-          bad_graph.addPoint(val_x, val_y);
+        def val = input_graph.getDataY(i);
+        if(!qa_cut(val))
+          bad_graph.addPoint(input_graph.getDataX(i), val, input_graph.getDataEX(i), input_graph.getDataEY(i));
       }
       bad_graph;
     }
