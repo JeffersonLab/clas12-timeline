@@ -29,7 +29,7 @@ def data = new ConcurrentHashMap()
       TDirectory out = new TDirectory()
       out.mkdir('/timelines')
 
-      data.sort{it.key}.each{ttl, runs->
+      def grtlList = data.sort{it.key}.collect{ttl, runs->
 
         def grtl = new GraphErrors(ttl)
         grtl.setTitle("e- time - start time, ${name}")
@@ -46,13 +46,16 @@ def data = new ConcurrentHashMap()
           grtl.addPoint(it.run, it[name], 0, 0)
         }
 
-        out.cd('/timelines')
-        if(name == 'mean')
-          QA.cutGraphs(grtl, lb: -0.15, ub: 0.15, out: out)
-        else if(name == 'sigma')
-          QA.cutGraphs(grtl, ub: 0.6, out: out)
+        grtl
       }
+
+      out.cd('/timelines')
+      if(name == 'mean')
+        QA.cutGraphs(*grtlList, lb: -0.15, ub: 0.15, out: out)
+      else if(name == 'sigma')
+        QA.cutGraphs(*grtlList, ub: 0.6, out: out)
       out.writeFile("ec_elec_ecin_time_${name}_QA.hipo")
+
     }
   }
 }
