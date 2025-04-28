@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+source $(dirname $0)/../libexec/environ.sh
+
+sep="================================================================"
+usage() {
+  echo """
+  qtl: Quality Time Lines
+  $sep
+  USAGE: qtl [COMMAND] [OPTIONS]...
+  $sep
+
+  COMMAND: the command to run, one of:
+      histogram     Run the timeline histogramming jobs (Step 1)
+      analysis      Analyze the histograms and generate timelines (Step 2)
+      physics       Generate and analyze physics QA timelines (Step 2)
+      error         Scan for errors in Slurm logs (for Step 1)
+
+  OPTIONS: Each command has its own set of options; run a command with no
+           additional options to see usage for that command.
+
+  ADDITIONAL OPTIONS:
+      -v, --version  Print version number
+      -h, --help     Show this message
+  """ >&2
+}
+if [ $# -eq 0 ]; then
+  usage
+  exit 101
+fi
+
+cmd=$1
+shift
+
+case $cmd in
+  hi*) exec $TIMELINESRC/bin/qtl-histogram "$@" ;;
+  an*) exec $TIMELINESRC/bin/qtl-analysis "$@" ;;
+  ph*) exec $TIMELINESRC/bin/qtl-physics "$@" ;;
+  er*) exec $TIMELINESRC/bin/qtl-error "$@" ;;
+  -v|--version)
+    echo $(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec -f $TIMELINESRC/pom.xml || echo "UNKNOWN")
+    exit 0
+    ;;
+  -h|--help)
+    usage
+    exit 101
+    ;;
+  *)
+    printError "unknown command '$cmd'"
+    exit 100
+    ;;
+esac

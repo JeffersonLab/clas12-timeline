@@ -11,37 +11,36 @@ flowchart TB
 
     dst[(Input HIPO Files)]:::data
 
-    subgraph Data Monitoring
-        subgraph "<strong>bin/run-monitoring.sh</strong>"
-            monitorDetectors["<strong>Make detector histograms</strong><br/>org.jlab.clas.timeline.histograms.run_histograms"]:::proc
-            monitorPhysics["<strong>Make physics QA histograms</strong><br/>qa-physics/: monitorRead.groovy"]:::proc
+    subgraph Step 1: Timeline Histogramming
+        subgraph "<strong>bin/qtl histogram</strong>"
+            histogramDetectors["<strong>Make detector histograms</strong><br/>org.jlab.clas.timeline.histograms.run_histograms"]:::proc
+            histogramPhysics["<strong>Make physics QA histograms</strong><br/>qa-physics/: monitorRead.groovy"]:::proc
         end
         outplots[(___/detectors/$run_number/*.hipo)]:::data
         outdat[(___/physics/$run_number/*.dat)]:::data
         outmon[(___/physics/$run_number/*.hipo)]:::data
     end
-    dst --> monitorDetectors
-    dst --> monitorPhysics
-    monitorDetectors --> outplots
-    monitorPhysics   --> outdat
-    monitorPhysics   --> outmon
+    dst --> histogramDetectors
+    dst --> histogramPhysics
+    histogramDetectors --> outplots
+    histogramPhysics   --> outdat
+    histogramPhysics   --> outmon
 
-    subgraph Timeline Production
-        subgraph "<strong>bin/run-detectors-timelines.sh</strong>"
+    subgraph Step 2: Timeline Analysis
+        subgraph "<strong>bin/qtl analysis</strong>"
             timelineDetectorsPreQA["<strong>Make detector timelines</strong><br/>org.jlab.clas.timeline.analysis.run_analysis"]:::proc
             outTimelineDetectorsPreQA{{outfiles/$dataset/timeline_web_preQA/$detector/*.hipo}}:::timeline
             timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
+            outTimelineDetectors{{outfiles/$dataset/timeline_web/$detector/*.hipo}}:::timeline
+            deploy["<strong>Publishing</strong><br/>handled by qtl analysis"]:::proc
         end
-        subgraph "<strong>bin/run-physics-timelines.sh</strong>"
+        subgraph "<strong>bin/qtl physics</strong>"
             timelinePhysics["<strong>Make physics QA timelines:</strong><br/>qa-physics/: (see documentation)"]:::proc
+            outTimelinePhysics{{outfiles/$dataset/timeline_web/phys_*/*}}:::timeline
         end
     end
-    subgraph Final Timelines
-        outTimelinePhysics{{outfiles/$dataset/timeline_web/phys_*/*}}:::timeline
-        outTimelineDetectors{{outfiles/$dataset/timeline_web/$detector/*.hipo}}:::timeline
-        deploy["<strong>Deployment</strong><br/>bin/deploy-timelines.sh"]:::proc
-        timelineDir{{timelines on web server}}:::timeline
-    end
+    timelineDir{{timelines on web server}}:::timeline
+
     outplots --> timelineDetectorsPreQA --> outTimelineDetectorsPreQA --> timelineDetectors --> outTimelineDetectors
     outdat   --> timelinePhysics
     outmon   --> timelinePhysics
@@ -69,7 +68,7 @@ Temporary files are additionally stored in `tmp/`, including backups (for the ca
 outfiles
 └── $dataset
     │
-    ├── timeline_detectors            # histograms, etc. for detector timelines, from `bin/run-monitoring.sh`
+    ├── timeline_detectors            # histograms, etc. for detector timelines, from `bin/qtl histogram`
     │   │
     │   ├── 5000                      # for run number 5000
     │   │   ├── out_HTCC_5000.hipo
@@ -79,7 +78,7 @@ outfiles
     │   ├── 5001                      # for run number 5001
     │   └── ...
     │
-    ├── timeline_physics              # histograms, etc. for physics timelines, from `bin/run-monitoring.sh`
+    ├── timeline_physics              # histograms, etc. for physics timelines, from `bin/qtl histogram`
     │   │
     │   ├── 5000                      # for run number 5000
     │   │   ├── data_table_5000.dat
@@ -105,25 +104,25 @@ outfiles
     │
     ├── timeline_web                  # final output timeline files, for deployment to web server
     │   │
-    │   ├── htcc                      # detector timelines, with QA, from `bin/run-detectors-timelines.sh`
+    │   ├── htcc                      # detector timelines, with QA, from `bin/qtl analysis`
     │   ├── ltcc
     │   ├── ...
     │   │
-    │   ├── phys_qa                   # physics timelines, with QA, from `bin/run-physics-timelines.sh`
+    │   ├── phys_qa                   # physics timelines, with QA, from `bin/qtl physics`
     │   ├── phys_qa_extra             # extra physics QA timelines, for experts
     │   └── qadb                      # QADB results timeline
     │
-    └── log                           # log files from `bin/run-*-timelines.sh` (not slurm logs (/farm_out/$LOGNAME/))
+    └── log                           # log files from `bin/qtl analysis` (not slurm logs (/farm_out/$LOGNAME/))
         ├── $timeline.out
         └── $timeline.err
 ```
 
 # Notes on SWIF Workflows
 
-For [CLAS12 `swif` workflow](https://github.com/baltzell/clas12-workflow) integration, the `bin/run-monitoring.sh` script (which normally generates `slurm` jobs) has a specific mode `--swifjob`:
+For [CLAS12 `swif` workflow](https://github.com/baltzell/clas12-workflow) integration, the `bin/qtl histogram` command (which normally generates `slurm` jobs) has a specific mode `--swifjob`:
 ```bash
-bin/run-monitoring.sh --swifjob --focus-detectors   # generate files for detector timelines
-bin/run-monitoring.sh --swifjob --focus-physics     # generate files for physics QA timelines
+qtl histogram --swifjob --focus-detectors   # generate files for detector timelines
+qtl histogram --swifjob --focus-physics     # generate files for physics QA timelines
 ```
 Either or both of these commands is _all_ that needs to be executed on a runner node, within [`clas12-workflow`](https://github.com/baltzell/clas12-workflow); calling one of these will automatically run the wrapped code, with the following assumptions and conventions:
 - input HIPO files are at `./` and only a single run will be processed
@@ -149,7 +148,7 @@ top_level_target_directory
   │
   └── ...
 ```
-For compatibility with the file tree expected by downstream `bin/run-*-timelines.sh` scripts (see above), symbolic links may be made to these `timeline_{detectors,physics}` directories, but this is not required since these scripts also allow for the specification of an input directory.
+For compatibility with the file tree expected by downstream `qtl analysis` (see above), symbolic links may be made to these `timeline_{detectors,physics}` directories, but this is not required since these scripts also allow for the specification of an input directory.
 
 Separate `--focus-detectors` and `--focus-physics` options are preferred, since:
 - offers better organization of the contract data between `swif` jobs and downstream scripts

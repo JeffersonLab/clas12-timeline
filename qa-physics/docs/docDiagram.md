@@ -30,7 +30,7 @@ Note: output directories `$output_dir` and `$qa_dir` are typically set by wrappe
 ```mermaid
 flowchart TB
 
-    subgraph "Automated by ../bin/run-monitoring.sh"
+    subgraph "Automated by qtl histogram"
       dst{{DSTs}}:::data
       monitorRead[monitorRead.groovy]:::auto
       monitorReadOut{{$output_dir/data_table_$run.dat<br>$output_dir/monitor_$run.hipo}}:::data
@@ -38,7 +38,7 @@ flowchart TB
       monitorRead --> monitorReadOut
     end
 
-    subgraph "Automated by ../bin/run-physics-timelines.sh"
+    subgraph "Automated by ../bin/qtl physics"
       datasetOrganize[datasetOrganize.sh]:::auto
       outmonFiles{{$qa_dir/outmon/monitor_$run.hipo}}:::data
       outdatFiles{{$qa_dir/outdat/data_table.dat}}:::data

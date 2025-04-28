@@ -43,31 +43,20 @@ Assuming your output data are in
 ```
 and that this wildcard pattern does _not_ include any files you _don't_ want, you may run
 ```bash
-bin/run-monitoring.sh -d rgc_su22_prescaled --flatdir --focus-physics $(ls -d /volatile/clas12/users/$LOGNAME/qa_rgc_su22_*/train/QA)
+qtl histogram -d rgc_su22_prescaled --flatdir --focus-physics $(ls -d /volatile/clas12/users/$LOGNAME/qa_rgc_su22_*/train/QA)
 ```
 Alternatively, for `sidisdvcs` trains (which have better statistics for asymmetries):
 ```bash
-bin/run-monitoring.sh --check-cache -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
-bin/run-monitoring.sh -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
+qtl histogram --check-cache -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
+qtl histogram -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
 ```
 
 ## Make timelines
 
 Make the timelines:
 ```bash
-bin/run-physics-timelines.sh -d rgc_su22_prescaled
-bin/run-physics-timelines.sh -d rgc_su22_sidisdvcs
-```
-
-Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):
-```bash
-# your area, for testing
-bin/deploy-timelines.sh -d rgc_su22_prescaled -t $LOGNAME -m rgc_su22 -D
-bin/deploy-timelines.sh -d rgc_su22_sidisdvcs -t $LOGNAME -m rgc_su22 -D
-
-# common area
-bin/deploy-timelines.sh -d rgc_su22_prescaled -t rgc/Summer2022/qa-physics -s pass1-prescaled -m rgc_su22 -D
-bin/deploy-timelines.sh -d rgc_su22_sidisdvcs -t rgc/Summer2022/qa-physics -s pass1-sidisdvcs -m rgc_su22 -D
+bin/qtl physics -d rgc_su22_prescaled -p rgc/Summer2022/qa-physics
+bin/qtl physics -d rgc_su22_sidisdvcs -p rgc/Summer2022/qa-physics
 ```
 
 # List of Runs

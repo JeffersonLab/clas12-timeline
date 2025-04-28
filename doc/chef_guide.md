@@ -1,39 +1,46 @@
 # Chefs' Guide for Timeline Production
 
-The timeline code is provided on `ifarm` via
+The timeline code is provided on `ifarm` via `module load timeline`.
+Please report _any_ issues to the software maintainers, such as warnings or error messages.
+
+## :green_circle: Step 1: Fill Timeline Histograms
+
+Use the "qtl" model as part of your usual cooking workflow; see [the Chefs' documentation wiki](https://clasweb.jlab.org/wiki/index.php/CLAS12_Chef_Documentation). Output files will appear in your chosen output directory, within `hist/detectors/`.
+
+<details>
+<summary>For physics QA timelines...</summary>
+
+> Note: we are working on combining the procedure for physics timelines with
+> that for detector timelines; until then, to get the _full_ set of physics
+> timelines, the procedure is separate. For Step 1, either:
+> - Use the `--physics` option with the workflow "qtl" model
+> - Use `qtl histogram` instead of the workflow, with the option `--focus-physics`; this will run on SLURM directly (rather than through SWIF)
+</details>
+
+## :green_circle: Step 2: Analyze Histograms and Make the Timelines
+
+In general, run:
 ```bash
-module load timeline
+qtl analysis -i $out_dir/hist/detectors -p $publish_dir
 ```
-
-Please report any issues to the software maintainers, such as warnings or error messages.
-
-## :green_circle: Step 1: The workflow
-
-Use the `qtl` model as part of your usual cooking workflow;
-see [the Chefs' documentation wiki](https://clasweb.jlab.org/wiki/index.php/CLAS12_Chef_Documentation).
-
-Output files will appear in your chosen output directory, within `hist/detectors/`.
-
-## :green_circle: Step 2: Make the timelines
-
+where `$out_dir` is the output directory from **Step 1** and `$publish_dir` is the publishing directory to [`clas12mon`](https://clas12mon.jlab.org/).
+Additional options may be _needed_ for your specific dataset, so check the usage guide by running with no arguments:
 ```bash
-run-detectors-timelines.sh -d $dataset -i $out_dir/hist/detectors
+qtl analysis
 ```
-where `$out_dir` is your output directory from **Step 1** and `$dataset` is a unique name for this cook, _e.g._, `rga_v1.23`.
+A URL will be printed upon success, and a link will appear in [`clas12mon`](https://clas12mon.jlab.org/) in your run group's area momentarily.
 
-Output will appear in `./outfiles/$dataset/`.
+<details>
+<summary>For physics QA timelines...</summary>
 
-## :green_circle: Step 3: Deploy the timelines
+> Run `qtl physics` instead of `qtl analysis`; its options are similar.
+</details>
 
-```bash
-deploy-timelines.sh -d $dataset -t $target_dir -D
-```
-where `$target_dir` is a subdirectory of `/group/clas/www/clas12mon/html/hipo`, for example,
-```bash
--t rgb/pass0/$dataset   # deploys to /group/clas/www/clas12mon/html/hipo/rgb/pass0/$dataset/
-```
-- remove the `-D` argument if everything looks okay (`-D` only prints what the script will do, _i.e._, a "dry run")
-- a URL will be printed upon success, and a link will appear in [`clas12mon`](https://clas12mon.jlab.org/) in your run group's area momentarily
+> [!TIP]
+> Step 2 runs on an interactive node and can take some time if there are a lot of data. We recommend using tools such as [`tmux` terminal multiplexer](https://github.com/tmux/tmux/wiki) or [`GNU Screen`](https://www.gnu.org/software/screen/) to keep the job running if you lose your SSH connection.
+
+> [!TIP]
+> Step 2 produces temporary files, by default in a subdirectory of `./outfiles/`. Consider making a symbolic link named `outfiles` pointing to somewhere on `/volatile`.
 
 ---
 

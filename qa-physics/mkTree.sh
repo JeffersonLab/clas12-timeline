@@ -7,7 +7,7 @@ if [ $# -eq 2 ]; then
 else
   echo """
   USAGE: $0 [INPUT_DIR] [DATASET]
-  - [INPUT_DIR] is a dataset's output dir from ../bin/run-physics-timelines.sh
+  - [INPUT_DIR] is a dataset's output dir from ../bin/qtl physics
   - [DATASET] is needed by readTree.C to draw the epoch lines
   """ >&2
   exit 101

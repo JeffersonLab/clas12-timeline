@@ -14,7 +14,7 @@ if(args.length>1) outFilePrefix = args[1]
 def inSpec = args[0]
 def inFiles = []
 if(inSpec ==~ /^https.*clas12mon.jlab.org.*timeline.*/) {
-  def inDir = inSpec.replaceAll(/^.*jlab.org/, "/u/group/clas/www/clas12mon/html/hipo")
+  def inDir = inSpec.replaceAll(/^.*jlab.org/, "/group/clas/www/clas12mon/html/hipo")
   inDir = "/"+inDir.tokenize('/')[0..-2].join("/")
   def inDirObj = new File(inDir)
   inDirObj.traverse(type: groovy.io.FileType.FILES, nameFilter: ~/.*\.hipo/) {

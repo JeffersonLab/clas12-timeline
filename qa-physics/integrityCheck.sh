@@ -21,7 +21,7 @@ fi
 
 if [ ! -f $inDir/outdat/data_table.dat ]; then
   echo "ERROR: $inDir/outdat/data_table.dat does not exist" >&2
-  echo "execute ../bin/run-physics-timelines.sh first" >&2
+  echo "execute ../bin/qtl physics first" >&2
   exit 100
 fi
 

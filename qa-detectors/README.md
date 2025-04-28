@@ -22,9 +22,9 @@ The specifications are specified by text files in [the `cuts` directory](cuts). 
 ## Procedure
 - Run one of:
   ```bash
-  ../bin/run-detectors-timelines.sh               # print usage guide
-  ../bin/run-detectors-timelines.sh  --focus-qa   # run detector QA only (for debugging this QA code; you may need to set other options)
+  qtl analysis               # print usage guide
+  qtl analysis  --focus-qa   # run detector QA only (for debugging this QA code; you may need to set other options)
   ```
 - see [main documentation](../README.md) for more details
 - note to developers: if you want to run local scripts, call `source ../libexec/environ.sh` (this is
-  automatically done when running the wrapper `../bin/run-detectors-timelines.sh`)
+  automatically done when running the wrapper `qtl analysis`)

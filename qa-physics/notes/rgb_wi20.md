@@ -9,11 +9,11 @@ We will use the `sidisdvcs` train.
 
 First make sure all skim files are cached:
 ```bash
-bin/run-monitoring.sh -d rgb_wi20_sidisdvcs --check-cache --flatdir --focus-physics /cache/clas12/rg-b/production/recon/spring2020/torus-1/pass2/v1/dst/train/sidisdvcs
+qtl histogram -d rgb_wi20_sidisdvcs --check-cache --flatdir --focus-physics /cache/clas12/rg-b/production/recon/spring2020/torus-1/pass2/v1/dst/train/sidisdvcs
 ```
 then run monitoring
 ```bash
-bin/run-monitoring.sh -d rgb_wi20_sidisdvcs --submit --flatdir --focus-physics /cache/clas12/rg-b/production/recon/spring2020/torus-1/pass2/v1/dst/train/sidisdvcs
+qtl histogram -d rgb_wi20_sidisdvcs --submit --flatdir --focus-physics /cache/clas12/rg-b/production/recon/spring2020/torus-1/pass2/v1/dst/train/sidisdvcs
 ```
 
 ## Double check that we have all the runs
@@ -26,14 +26,5 @@ bin/run-monitoring.sh -d rgb_wi20_sidisdvcs --submit --flatdir --focus-physics /
 
 Make the timelines:
 ```bash
-bin/run-physics-timelines.sh -d rgb_wi20_sidisdvcs
-```
-
-Deploy either to your area or the common area (remove the `-D` option once you confirm this is the correct directory):
-```bash
-# your area, for testing
-bin/deploy-timelines.sh -d rgb_wi20_sidisdvcs  -t $LOGNAME -D
-
-# common area
-bin/deploy-timelines.sh -d rgb_wi20_sidisdvcs  -t rgb/pass2/qa/wi20 -D
+bin/qtl physics -d rgb_wi20_sidisdvcs -p rgb/pass2/qa/wi20
 ```

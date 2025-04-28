@@ -51,6 +51,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
+        type: [ detectors, physics ]
         include:
           - { type: detectors, schema: mon }
           - { type: physics,   schema: dst }
@@ -69,10 +70,10 @@ jobs:
       - run: ls -lh .
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
 
-  # monitoring
+  # histogramming
   #############################################################################
 
-  run_monitoring:
+  run_histogram:
     needs:
       - build_timeline
       - download_test_data
@@ -97,8 +98,14 @@ jobs:
       - name: untar
         run: ls *.tar.zst | xargs -I{} tar xavf {}
       - run: tree
-      - name: run monitoring
-        run: bin/run-monitoring.sh -d ${{env.dataset}} --findhipo --series --focus-${{matrix.type}} validation_files
+      - name: qtl histogram
+        run: |
+          bin/qtl histogram \
+            -d ${{env.dataset}} \
+            --findhipo \
+            --series \
+            --focus-${{matrix.type}} \
+            validation_files
       - run: tree slurm
       - run: tree outfiles
       - uses: actions/upload-artifact@v4
@@ -108,7 +115,7 @@ jobs:
           path: slurm
       - uses: actions/upload-artifact@v4
         with:
-          name: outfiles_monitoring_${{ matrix.type }}
+          name: outfiles_histogram_${{ matrix.type }}
           retention-days: 14
           path: outfiles
 
@@ -137,7 +144,7 @@ jobs:
       - name: untar
         run: ls *.tar.zst | xargs -I{} tar xavf {}
       - run: tree
-      - name: test monitoring swifjob
+      - name: test swifjob
         run: |
           single_rundir=$(find validation_files -mindepth 1 -maxdepth 1 -type d | head -n1)
           echo "single_rundir = $single_rundir"
@@ -147,9 +154,9 @@ jobs:
   # timeline production
   #############################################################################
 
-  run_timelines:
+  run_analysis:
     needs:
-      - run_monitoring
+      - run_histogram
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
@@ -157,9 +164,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        type: [ detectors, physics ]
         include:
-          - { type: detectors,  args: '-n 4 --skip-mya' }
-          - { type: physics,    args: '' }
+          - { type: detectors, qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya' }
+          - { type: physics,   qtl_cmd: 'bin/qtl physics',  args: '' }
     steps:
       - uses: actions/checkout@v4
       - name: download outfiles
@@ -175,51 +183,27 @@ jobs:
       - name: untar
         run: ls *.tar.zst | xargs -I{} tar xavf {}
       - run: tree
-      - name: run timelines
-        run: bin/run-${{matrix.type}}-timelines.sh -d ${{env.dataset}} ${{matrix.args}}
+      - name: qtl analysis
+        run: |
+          ${{matrix.qtl_cmd}} \
+            -d ${{env.dataset}} \
+            -p web \
+            --custom-pub \
+            ${{matrix.args}}
       - run: tree outfiles
+      - name: summarize
+        run: |
+          echo "# Output File Tree" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tree web | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@v4
         with:
           name: outfiles_timelines_${{ matrix.type }}
           retention-days: 14
           path: outfiles
-
-  # timeline deployment
-  #############################################################################
-
-  deploy_timelines:
-    name: Deployment
-    needs:
-      - run_timelines
-    runs-on: ubuntu-latest
-    container:
-      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
-      options: --user root
-    steps:
-      - uses: actions/checkout@v4
-      - name: download outfiles
-        uses: actions/download-artifact@v4
-        with:
-          pattern: outfiles_*
-          merge-multiple: true
-          path: outfiles
-      - name: download timeline build
-        uses: actions/download-artifact@v4
-        with:
-          name: build_timeline
-      - name: untar
-        run: ls *.tar.zst | xargs -I{} tar xavf {}
-      - name: tree outfiles
-        run: |
-          rm -r outfiles/${{ env.dataset }}/log
-          echo "# Output File Tree" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          tree outfiles | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-      - name: deploy
-        run: bin/deploy-timelines.sh -d ${{env.dataset}} -c -t web
       - uses: actions/upload-artifact@v4
         with:
-          name: web
+          name: web_timelines_${{ matrix.type }}
           retention-days: 14
           path: web

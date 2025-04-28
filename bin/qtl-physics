@@ -8,10 +8,12 @@ source $(dirname $0)/../libexec/environ.sh
 inputDir=""
 dataset=""
 outputDir=""
-
-# input finding command
-inputCmd="$TIMELINESRC/libexec/set-input-dir.sh -s timeline_physics"
-inputCmdOpts=""
+publishDir=""
+# modes, set by CLI long opts (--$key)
+declare -A modes
+for key in custom-pub help; do
+  modes[$key]=false
+done
 
 # usage
 sep="================================================================"
@@ -22,9 +24,16 @@ usage() {
   $sep
   Creates web-ready physics timelines locally
 
-  REQUIRED OPTIONS: specify at least one of the following:""" >&2
-  $inputCmd -h
-  echo """
+  REQUIRED OPTIONS: specify at least one of the following:
+
+    -d [DATASET_NAME]   unique dataset name, defined by the user
+
+    -i [INPUT_DIR]      input directory
+                        default = ./outfiles/[DATASET_NAME]
+
+    -p [PUBLISH_DIR]    publish timeline results (see 'qtl analysis');
+                        use --custom-pub for fully custom dir
+
   OPTIONAL OPTIONS:
 
     -o [OUTPUT_DIR]     output directory
@@ -39,34 +48,41 @@ if [ $# -eq 0 ]; then
 fi
 
 # parse options
-helpMode=false
-while getopts "d:i:Uo:h-:" opt; do
+while getopts "d:i:p:o:h-:" opt; do
   case $opt in
-    d) inputCmdOpts+=" -d $OPTARG" ;;
-    i) inputCmdOpts+=" -i $OPTARG" ;;
-    U) inputCmdOpts+=" -U" ;;
+    d)
+      echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
+      dataset=$OPTARG
+      ;;
+    i) inputDir=$OPTARG ;;
     o) outputDir=$OPTARG ;;
-    h) helpMode=true ;;
+    p) publishDir=$OPTARG ;;
+    h) modes['help']=true ;;
     -)
-      [ "$OPTARG" != "help" ] && printError "unknown option --$OPTARG"
-      helpMode=true
+      for key in "${!modes[@]}"; do
+        [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
+      done
+      [ -z "${modes[$OPTARG]-}" ] && printError "unknown option --$OPTARG" && exit 100
       ;;
   esac
 done
-if $helpMode; then
+if ${modes['help']}; then
   usage
   exit 101
 fi
 
-# set input/output directories and dataset name
-dataset=$($inputCmd $inputCmdOpts -D)
-inputDir=$(realpath $($inputCmd $inputCmdOpts -I))
+# set input and output directories
+[ -z "$dataset" ] && printError "data set not specified, use option '-d'" && exit 100
+[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_physics
+[ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100
+inputDir=$(realpath $inputDir)
 [ -z "$outputDir" ] && outputDir=$(realpath $(pwd -P)/outfiles/$dataset) || outputDir=$(realpath $outputDir)
+[ -z "$publishDir" ] && printError "need publishing directory, option '-p'" && exit 100
 
 # set subdirectories
 qaDir=$outputDir/timeline_physics_qa
 finalDir=$outputDir/timeline_web
-logDir=$outputDir/log
+logDir=$outputDir/log_physics
 
 # print settings
 echo """
@@ -132,10 +148,32 @@ popd
 echo """
 
 """
+hasErrorPrintouts=false
 if [ -s $logFile ]; then
   printError "some scripts had errors or warnings; dumping error output:"
   echo $sep >&2
   cat $logFile >&2
+  hasErrorPrintouts=true
 else
   echo "No errors or warnings!"
+fi
+
+# FIXME: removed the independent 'deploy-timelines.sh' script, so just call
+# qtl-analysis to do the deployment; eventually we'll absorb 'qtl-physics' into 'qtl-analysis',
+# so this kluge is good enough for now...
+echo "Now publishing..."
+customPubArg=''
+if ${modes['custom-pub']}; then
+  customPubArg=--custom-pub
+fi
+$TIMELINESRC/bin/qtl analysis \
+  -d $dataset \
+  -i $inputDir \
+  -o $outputDir \
+  --just-pub \
+  -p $publishDir $customPubArg
+
+if $hasErrorPrintouts; then
+  printWarning "At least one job complained; look above or in the log files to see what's wrong."
+  printWarning "Exiting 0, since these may just be benign warnings" ### FIXME!
 fi
