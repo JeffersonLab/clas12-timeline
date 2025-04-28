@@ -1,16 +1,6 @@
 ltcc ltcc_elec_nphe_sec          11     14     counts sec3
 ltcc ltcc_elec_nphe_sec          11     14     counts sec5
 
-ftof ftof_edep_p1a_midangles     8.75   10.75  MeV
-ftof ftof_edep_p1b_midangles     10.5   12.5   MeV
-ftof ftof_edep_p2                8.75   10.75  MeV
-ftof ftof_time_p1a_mean          -0.030 0.030  ns
-ftof ftof_time_p1a_sigma         NB     0.135  ns
-ftof ftof_time_p1b_mean          -0.020 0.020  ns
-ftof ftof_time_p1b_sigma         NB     0.075  ns
-ftof ftof_time_p2_mean           -0.070 0.070  ns
-ftof ftof_time_p2_sigma          NB     0.350  ns
-
 ft   ftc_pi0_mass_mean           134    136    MeV
 ft   ftc_pi0_mass_sigma          NB     5      MeV
 ft   fth_MIPS_energy             0.9    1.9    MeV    layer1
