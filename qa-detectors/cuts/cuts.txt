@@ -1,10 +1,6 @@
 ltcc ltcc_elec_nphe_sec          11     14     counts sec3
 ltcc ltcc_elec_nphe_sec          11     14     counts sec5
 
-ft   ftc_pi0_mass_mean           134    136    MeV
-ft   ftc_pi0_mass_sigma          NB     5      MeV
-ft   fth_MIPS_energy             0.9    1.9    MeV    layer1
-ft   fth_MIPS_energy             2.3    3.3    MeV    layer2
 ft   fth_MIPS_time_mean          -0.5   0.5    ns     layer1
 ft   fth_MIPS_time_mean          -0.5   0.5    ns     layer2
 ft   fth_MIPS_time_sigma         NB     1.4    ns     layer1
