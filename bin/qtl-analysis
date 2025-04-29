@@ -96,7 +96,7 @@ usageVerbose() {
     --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
 
     --debug             enable debug mode: run a single timeline with stderr and stdout printed to screen;
-                        it is best to use this with the '-t' option to debug specific timeline issues
+                        use this with the '-t' option to debug specific timeline issues
 
     -h, --help          print this usage guide
   """ >&2
@@ -184,6 +184,10 @@ if ${modes['debug']}; then
   printWarning "DEBUG mode used; timelines will NOT be published"
   enableAna=true
   enablePub=false
+  if [ -z "$singleTimeline" ]; then
+    printError "DEBUG mode used, but you need to choose a timeline with '-t'"
+    exit 100
+  fi
 fi
 
 ##################################################################################
