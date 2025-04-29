@@ -185,7 +185,7 @@ if ${modes['debug']}; then
   enableAna=true
   enablePub=false
   if [ -z "$singleTimeline" ]; then
-    printError "DEBUG mode used, but you need to choose a timeline with '-t'"
+    printError "DEBUG mode used, but you need to also choose a timeline with '-t'"
     exit 100
   fi
 fi
