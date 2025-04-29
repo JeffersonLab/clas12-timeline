@@ -1,5 +1,6 @@
 package org.jlab.clas.timeline.analysis
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.MoreFitter
@@ -7,6 +8,7 @@ import org.jlab.clas.timeline.fitter.MoreFitter
 class ftof_ctof_vtdiff {
 
 def data = new ConcurrentHashMap()
+def has_data = new AtomicBoolean(false)
 
 def processRun(dir, run) {
   (1..6).collect{sec->
@@ -14,6 +16,7 @@ def processRun(dir, run) {
     if(h1.integral() > 0.0) {
       def f1 = MoreFitter.fitgaus(h1)
       data.computeIfAbsent(sec, {[]}).add([run:run, h1:h1, f1:f1, mean:f1.getParameter(1), sigma:f1.getParameter(2).abs()])
+      has_data.set(true)
     }
   }
 }
@@ -21,6 +24,11 @@ def processRun(dir, run) {
 
 
 def write() {
+
+  if(!has_data.get()) {
+    System.err.println "WARNING: no data for this timeline, not producing"
+    return
+  }
 
   ['mean', 'sigma'].each{ name ->
     TDirectory out = new TDirectory()

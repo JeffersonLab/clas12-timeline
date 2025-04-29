@@ -41,7 +41,7 @@ def has_data = new AtomicBoolean(false)
   def write() {
 
     if(!has_data.get()) {
-      System.err.println "ERROR: no data for this ALERT timeline, not producing"
+      System.err.println "WARNING: no data for this timeline, not producing"
       return
     }
 
