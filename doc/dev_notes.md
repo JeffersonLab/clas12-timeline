@@ -28,9 +28,7 @@ flowchart TB
 
     subgraph Step 2: Timeline Analysis
         subgraph "<strong>bin/qtl analysis</strong>"
-            timelineDetectorsPreQA["<strong>Make detector timelines</strong><br/>org.jlab.clas.timeline.analysis.run_analysis"]:::proc
-            outTimelineDetectorsPreQA{{outfiles/$dataset/timeline_web_preQA/$detector/*.hipo}}:::timeline
-            timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
+            timelineDetectors["<strong>Make detector timelines</strong><br/>org.jlab.clas.timeline.analysis.run_analysis"]:::proc
             outTimelineDetectors{{outfiles/$dataset/timeline_web/$detector/*.hipo}}:::timeline
             deploy["<strong>Publishing</strong><br/>handled by qtl analysis"]:::proc
         end
@@ -41,7 +39,7 @@ flowchart TB
     end
     timelineDir{{timelines on web server}}:::timeline
 
-    outplots --> timelineDetectorsPreQA --> outTimelineDetectorsPreQA --> timelineDetectors --> outTimelineDetectors
+    outplots --> timelineDetectors --> outTimelineDetectors
     outdat   --> timelinePhysics
     outmon   --> timelinePhysics
     timelinePhysics --> outTimelinePhysics

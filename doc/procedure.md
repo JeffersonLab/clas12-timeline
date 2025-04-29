@@ -80,7 +80,5 @@ qtl analysis -i /path/to/output/files -p some/publish/directory/rga_sp19_v5
 
 > [!NOTE]
 > - detector timeline production is handled by the [`org.jlab.clas.timeline.analysis` package](/src/main/java/org/jlab/clas/timeline/analysis)
-> - QA of detector timelines is handled by the [`qa-detectors/` subdirectory](/qa-detectors);
->   see [its documentation](/qa-detectors/README.md)
 > - physics timeline production and QA are handled by the [`qa-physics/` subdirectory](/qa-physics);
 >   see [their documentation](/qa-physics/README.md)
