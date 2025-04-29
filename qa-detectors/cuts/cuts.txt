@@ -23,5 +23,3 @@ dc   dc_residuals_sec_sl_mean    -0.010 0.010  cm     R3
 dc   dc_residuals_sec_sl_sigma   NB     0.0400 cm     R1
 dc   dc_residuals_sec_sl_sigma   NB     0.0400 cm     R2
 dc   dc_residuals_sec_sl_sigma   NB     0.0400 cm     R3
-
-rich rich_time_fwhm_max          NB     1      ns
