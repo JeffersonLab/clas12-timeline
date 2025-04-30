@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ForwardFitter
+import org.jlab.clas.timeline.util.RunDependentCut;
 
 class forward_Tracking_PosVz {
 
@@ -10,14 +11,14 @@ def data = new ConcurrentHashMap()
 def data_2nd_peak = new ConcurrentHashMap()
 
 def is_RGD_LD2 = { run ->
-  return ((18305 <= run && run <= 18313) ||
-          (18317 <= run && run <= 18336) ||
-          (18419 <= run && run <= 18439) ||
-          (18528 <= run && run <= 18559) ||
-          (18644 <= run && run <= 18656) || 
-          (18763 <= run && run <= 18790) || 
-          (18851 <= run && run <= 18873) || 
-          (18977 <= run && run <= 19059))
+  return (RunDependentCut.runIsInRange(run, 18305, 18313, true) ||
+          RunDependentCut.runIsInRange(run, 18317, 18336, true) ||
+          RunDependentCut.runIsInRange(run, 18419, 18439, true) ||
+          RunDependentCut.runIsInRange(run, 18528, 18559, true) ||
+          RunDependentCut.runIsInRange(run, 18644, 18656, true) ||
+          RunDependentCut.runIsInRange(run, 18763, 18790, true) ||
+          RunDependentCut.runIsInRange(run, 18851, 18873, true) ||
+          RunDependentCut.runIsInRange(run, 18977, 19059, true))
 }
 
 def processRun(dir, run) {
@@ -38,14 +39,14 @@ def processRun(dir, run) {
 
     def usefitBimodal = false
     def f1
-    if(run >= 18305 && run <= 19131) {
+    if (RunDependentCut.runIsInRange(run, 18305, 19131, true)) {
       if (is_RGD_LD2(run)) {
         f1 = ForwardFitter.fit(h1)
       }
       else {
-        if (run == 18399) {
+        if (RunDependentCut.runIsOneOf(run, 18399)) {
           f1 = ForwardFitter.fitBimodal(h1, -17.5, -13, 1, 1, -19, -10)
-          }
+        }
         else {
           f1 = ForwardFitter.fitBimodal(h1, -8, -3, 0.8, 0.8, -10, 0)
         }
@@ -54,6 +55,7 @@ def processRun(dir, run) {
     } else {
       f1 = ForwardFitter.fit(h1)
     }
+
     funclist.add(f1)
     meanlist.add(f1.getParameter(1))
     sigmalist.add(f1.getParameter(2).abs())
@@ -65,7 +67,6 @@ def processRun(dir, run) {
       sigmalist_2nd_peak.add(f1.getParameter(5).abs())
       chi2list_2nd_peak.add(f1.getChiSquare())
     }
-
 
     return h1
   }
