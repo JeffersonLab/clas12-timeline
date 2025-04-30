@@ -285,7 +285,7 @@ fi
 
 # output detector subdirectories
 detDirs=(
-  # alert
+  alert
   band
   bmtbst
   central

@@ -71,7 +71,7 @@ public class ALERT {
         order = 1;
       }
 
-      TDC[index] = new H1F(String.format("TDC_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC sector%d layer%d component%d order%d", sector, layer, component, order), 200, 350.0, 550.0);
+      TDC[index] = new H1F(String.format("TDC_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC sector%d layer%d component%d order%d", sector, layer, component, order), 550, 0.0, 550.0);
       TDC[index].setTitleX("TDC (ns)");
       TDC[index].setTitleY("Counts");
       TDC[index].setFillColor(4);
