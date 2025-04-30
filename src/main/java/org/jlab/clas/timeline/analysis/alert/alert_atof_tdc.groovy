@@ -24,14 +24,6 @@ def has_data = new AtomicBoolean(false)
       if (component <= 10) file_index = String.format('sector%d_layer%d_component%d_order0', sector, layer, component)
       else file_index = String.format('sector%d_layer%d_component%d_order1', sector, layer, component-1)
       def h1 = dir.getObject(String.format('/ALERT/TDC_%s', file_index))
-<<<<<<< HEAD
-      data[run].put(String.format('atof_tdc_%s', file_index),  h1)
-      def f1 = ALERTFitter.tdcfitter(h1)
-      data[run].put(String.format('fit_atof_tdc_%s', file_index),  f1)
-      data[run].put(String.format('peak_location_atof_tdc_%s', file_index),  f1.getParameter(1))
-      data[run].put(String.format('sigma_atof_tdc_%s', file_index),  Math.abs(f1.getParameter(2)))
-      data[run].put(String.format('integral_normalized_to_trigger_atof_tdc_%s', file_index),  Math.sqrt(2*3.141597f) * Math.abs(f1.getParameter(0) * f1.getParameter(2))/trigger.getBinContent(reference_trigger_bit) )
-=======
       if(h1!=null && h1.getEntries()>10) {
         data[run].put(String.format('atof_tdc_%s', file_index),  h1)
         def f1 = ALERTFitter.tdcfitter(h1)
@@ -41,7 +33,6 @@ def has_data = new AtomicBoolean(false)
         data[run].put(String.format('integral_normalized_to_trigger_atof_tdc_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
         has_data.set(true)
       }
->>>>>>> 263744c8552219b349d73e324efd4f37fc81c1c4
     }
   }
 
