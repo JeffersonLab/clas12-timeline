@@ -65,9 +65,11 @@ def has_data = new AtomicBoolean(false)
             data.sort{it.key}.each{run,it->
               out.mkdir('/'+it.run)
               out.cd('/'+it.run)
-              out.addDataSet(it[name])
-              out.addDataSet(it['fit_'+name])
-              gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
+              if (it.containsKey(name)){
+                out.addDataSet(it[name])
+                out.addDataSet(it['fit_'+name])
+                gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
+              }
             }
             out.cd('/timelines')
             out.addDataSet(gr)
