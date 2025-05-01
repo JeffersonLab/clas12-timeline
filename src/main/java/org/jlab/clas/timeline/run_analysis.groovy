@@ -3,8 +3,8 @@ package org.jlab.clas.timeline.analysis
 import org.jlab.groot.data.TDirectory
 
 def engines = [
-  // out_ALERT: [new alert_atof_tdc(),
-  // ],
+   out_ALERT: [new alert_atof_tdc(),
+   ],
   out_BAND: [new band_adccor(),
     new band_lasertime(),
     new band_meantimeadc(),
