@@ -194,8 +194,8 @@ fnames.sort().each{ fname ->
     println("debug: "+engine.getClass().getSimpleName()+" started $fname")
 
     // get run number from directory name
-    def fname = fname.split('/')[-2]
-    def m = fname =~ /\d+/
+    def dname = fname.split('/')[-2]
+    def m = dname =~ /\d+/
     def run = m[0].toInteger()
 
     // exclude certain run ranges from certain timelines
