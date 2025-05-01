@@ -11,6 +11,7 @@ import org.jlab.clas.physics.Vector3;
 import org.jlab.clas.physics.LorentzVector;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
+import org.jlab.clas.timeline.util.RunDependentCut;
 
 /**
  * General Monitoring histograms (a.k.a. General Monolith)
@@ -43,11 +44,12 @@ public class GeneralMon {
    */
   boolean testTriggerSector(int sector) {
     // FIXME:  move to CCDB
-    if (runNum > 18300 && runNum <= 19131) {
+
+    if (RunDependentCut.runIsInRange(runNum, 18301, 19131, true)) {
       // RG-D:   used three different primary electron triggers (0/7/14):
       return testTriggerSector(TriggerWord, sector, 0x4081);
     }
-    if (runNum > 16043 && runNum < 16078) {
+    if (RunDependentCut.runIsInRange(runNum, 16043, 16078, false)) {
       // RG-C 2.2 GeV:  non-standard primary electron trigger:
       return testTriggerSector(TriggerWord, sector, 0x4081);
     }
@@ -2517,7 +2519,7 @@ public class GeneralMon {
 
     for (int kk = 0; kk < 3; kk++) {
       tbit = kk + 7;
-      if (runNum <= 6296) {
+      if (RunDependentCut.runIsBefore(runNum, 6296, true)) {
         if (trigger_bits[tbit]) {
           if ((sectorp[kk] + sectorn[kk]) >= 1 && (sectorp[kk + 3] + sectorn[kk + 3]) >= 1) {
             H_trig_sector_muon.fill(kk + 1);
@@ -2527,7 +2529,7 @@ public class GeneralMon {
             Ntrackspair[kk] = sectorp[kk] + sectorn[kk + 3];
           }
         }
-      } else if (runNum > 6296 && runNum < 11000) {
+      } else if (RunDependentCut.runIsInRange(runNum, 6296, 11000, false)) {
         if (trigger_bits[tbit] || trigger_bits[tbit + 3]) {
           if ((sectorp[kk] + sectorn[kk]) >= 1 && (sectorp[kk + 3] + sectorn[kk + 3]) >= 1) {
             H_trig_sector_muon.fill(kk + 1);
@@ -2537,7 +2539,7 @@ public class GeneralMon {
             Ntrackspair[kk] = sectorp[kk] + sectorn[kk + 3];
           }
         }
-      } else if (runNum >= 11000) {
+      } else if (RunDependentCut.runIsAfter(runNum, 11000, true)) {
         if (trigger_bits[tbit] || trigger_bits[tbit + 3]) {
           if ((sectorp[kk] >= 1 && (sectorn[kk + 3]) >= 1) || (sectorn[kk] >= 1 && (sectorp[kk + 3]) >= 1)) {
             H_trig_sector_muon.fill(kk + 1);
@@ -3303,13 +3305,13 @@ public class GeneralMon {
     }
 
     if(trigger_bits[31])H_rand_trig_sector_count.fill(7);
-    if (runNum <= 6296) {
+    if (RunDependentCut.runIsBefore(runNum, 6296, true)) {
       if(trigger_bits[7]||trigger_bits[8]||trigger_bits[9])Nmuontrigs++;
       if(trigger_bits[7])H_muon_trig_sector_count.fill(1);
       if(trigger_bits[8])H_muon_trig_sector_count.fill(2);
       if(trigger_bits[9])H_muon_trig_sector_count.fill(3);
     }
-    else if (runNum > 6296) {
+    else if (RunDependentCut.runIsAfter(runNum, 6296, false)) {
       if(trigger_bits[7]||trigger_bits[8]||trigger_bits[9] || trigger_bits[10] || trigger_bits[11] || trigger_bits[12]) Nmuontrigs++;
       if(trigger_bits[7] || trigger_bits[10])H_muon_trig_sector_count.fill(1);
       if(trigger_bits[8] || trigger_bits[11])H_muon_trig_sector_count.fill(2);

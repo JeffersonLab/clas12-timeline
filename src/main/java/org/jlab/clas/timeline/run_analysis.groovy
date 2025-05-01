@@ -1,4 +1,5 @@
 package org.jlab.clas.timeline.analysis
+import org.jlab.clas.timeline.util.RunDependentCut
 
 import org.jlab.groot.data.TDirectory
 
@@ -165,7 +166,7 @@ if(eng) {
       def run = m[0].toInteger()
 
       // allow / disallow certain timelines, based on run number
-      if(run < 21317) { // before RG-L
+      if(RunDependentCut.runIsBefore(run, 21317, false)) { // before RG-L
         if(args[0] == "alert_atof_tdc") { allow_timeline = false }
       }
 
