@@ -39,7 +39,7 @@ def processRun(dir, run) {
 
     def usefitBimodal = false
     def f1
-    if (RunDependentCut.runIsInRange(run, 18305, 19131, true)) {
+    if (RunDependentCut.runIsInRange(run, 18305, 19131, true)) { // RG-D: some data have 2 vertices
       if (is_RGD_LD2(run)) {
         f1 = ForwardFitter.fit(h1)
       }
@@ -52,7 +52,11 @@ def processRun(dir, run) {
         }
         usefitBimodal = true
       }
-    } else {
+    }
+    else if (RunDependentCut.runIsAfter(run, 21317, true)) { // RG-L: narrow vertex over broad background
+      f1 = ForwardFitter.fit(h1, rms: 0.5)
+    }
+    else { // all other run groups: use default one-peak fit
       f1 = ForwardFitter.fit(h1)
     }
 
