@@ -1,5 +1,8 @@
 # Procedure for Timeline Production
 
+> [!NOTE]
+> Chefs should follow the [chef's guide](/doc/chef_guide.md), since some of the timeline procedure is integrated in the chef cooking workflow.
+
 The main script for running timelines is `qtl`:
 ```bash
 qtl --help
@@ -17,19 +20,19 @@ Both of these timeline types are produced in the following steps (🟢) .
 
 ## 🟢 Step 1: Histogramming
 
-This step reads input HIPO files (_e.g._, DST or `mon` files) and produces histograms and auxiliary files, which are then consumed by Step 2 to produce the timelines. Since many input files are read, it is recommended to use a computing cluster.
-
-This step can either be run during the usual data cooking procedure, using [`clas12-workflow`](https://github.com/baltzell/clas12-workflow) (see its usage guide), or it may be run separately on already-cooked data using:
+This step reads input HIPO files (_e.g._, DST or `mon` files) and produces histograms and auxiliary files, which are then consumed by Step 2 to produce the timelines. Run:
 ```bash
 qtl histogram
 ```
 Running it with no arguments will print the usage guide; use the `--help` option for more detailed guidance.
 
 > [!NOTE]
+> This step is integrated in the chef's cooking workflow; see the [chef's guide](/doc/chef_guide.md) for more information.
+
+> [!NOTE]
 > If you are performing physics QA for QADB, consider using [**prescaled trains**](/qa-physics/prescaler) (and `qtl histogram` will need the `--flatdir` argument)
 
 ### Example
-If using `clas12-workflow`, see it's documentation; otherwise if using `qtl histogram`:
 ```bash
 qtl histogram -d rga_sp19_v5 /volatile/clas12/rg-a/production/pass0/sp19/v5/mon
 ```
@@ -64,11 +67,11 @@ qtl physics   # for physics timelines (will eventually be combined with 'qtl ana
 > - use the scripts' `-o` option to set the output locations
 
 ### Example
-**If** you used `clas12-workflow` for Step 1, the script arguments should be
+**If** you used the chef's cooking workflow for Step 1, the script arguments should be
 ```bash
 qtl analysis -i /path/to/output/files -p some/publish/directory/rga_sp19_v5
 ```
-- the output from `clas12-workflow` is `/path/to/output/files`; its subdirectories should be run numbers
+- the output from the cooking workflow is `/path/to/output/files`; its subdirectories should be run numbers
 - the publishing directory given by `-p` is a subdirectory of the web server; see `qtl analysis` usage guide
 
 **Otherwise**, you may omit the `-i /path/to/output/files` option (unless you customized it from Step 1)

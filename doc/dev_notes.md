@@ -119,12 +119,12 @@ outfiles
 
 # Notes on SWIF Workflows
 
-For [CLAS12 `swif` workflow](https://github.com/baltzell/clas12-workflow) integration, the `bin/qtl histogram` command (which normally generates `slurm` jobs) has a specific mode `--swifjob`:
+For chef cooking workflow integration, the `bin/qtl histogram` command (which normally generates `slurm` jobs) has a specific mode `--swifjob`:
 ```bash
 qtl histogram --swifjob --focus-detectors   # generate files for detector timelines
 qtl histogram --swifjob --focus-physics     # generate files for physics QA timelines
 ```
-Either or both of these commands is _all_ that needs to be executed on a runner node, within [`clas12-workflow`](https://github.com/baltzell/clas12-workflow); calling one of these will automatically run the wrapped code, with the following assumptions and conventions:
+Either or both of these commands is _all_ that needs to be executed on a runner node, within the cooking workflow; calling one of these will automatically run the wrapped code, with the following assumptions and conventions:
 - input HIPO files are at `./` and only a single run will be processed
 - run number is obtained by `RUN::config` from one of the HIPO files; all HIPO files are assumed to belong to the same run
 - all output files will be in `./outfiles` (no `$dataset` subdirectory as above)
