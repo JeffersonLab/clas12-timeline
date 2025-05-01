@@ -3,14 +3,19 @@ import org.jlab.clas.timeline.util.RunDependentCut
 
 import org.jlab.groot.data.TDirectory
 
+// define timeline engines
 def engines = [
-  // out_ALERT: [new alert_atof_tdc(),
+  // out_ALERT: [
+  //   new alert_atof_tdc(),
   // ],
-  out_BAND: [new band_adccor(),
+  out_BAND: [
+    new band_adccor(),
     new band_lasertime(),
     new band_meantimeadc(),
-    new band_meantimetdc()],
-  out_monitor: [new bmt_Occupancy(),
+    new band_meantimetdc(),
+  ],
+  out_monitor: [
+    new bmt_Occupancy(),
     new bmt_OnTrkLayers(),
     new bst_Occupancy(),
     new bst_OnTrkLayers(),
@@ -69,29 +74,40 @@ def engines = [
     new rftime_prot_FD(),
     new rftime_prot_CD(),
     new epics_xy(),
-    new epics_hall_weather()],
-  out_CND: [new cnd_MIPS_dE_dz(),
+    new epics_hall_weather(),
+  ],
+  out_CND: [
+    new cnd_MIPS_dE_dz(),
     new cnd_time_neg_vtP(),
-    new cnd_zdiff()],
-  out_CTOF: [new ctof_edep(),
+    new cnd_zdiff(),
+  ],
+  out_CTOF: [
+    new ctof_edep(),
     new ctof_time(),
     new ctof_tdcadc(),
   ],
-  out_FT: [new ftc_pi0_mass(),
+  out_FT: [
+    new ftc_pi0_mass(),
     new ftc_time_charged(),
     new ftc_time_neutral(),
     new fth_MIPS_energy(),
     new fth_MIPS_time(),
     new fth_MIPS_energy_board(),
-    new fth_MIPS_time_board()],
-  out_HTCC: [new htcc_nphe_ring_sector(),
+    new fth_MIPS_time_board()
+  ],
+  out_HTCC: [
+    new htcc_nphe_ring_sector(),
     new htcc_nphe_sector(),
     new htcc_vtimediff(),
     new htcc_vtimediff_sector(),
     new htcc_vtimediff_sector_ring(),
-    new htcc_npheAll()],
-  out_LTCC: [new ltcc_had_nphe_sector()],
-  out_TOF: [new ftof_edep_p1a_smallangles(),
+    new htcc_npheAll(),
+  ],
+  out_LTCC: [
+    new ltcc_had_nphe_sector(),
+  ],
+  out_TOF: [
+    new ftof_edep_p1a_smallangles(),
     new ftof_edep_p1a_midangles(),
     new ftof_edep_p1a_largeangles(),
     new ftof_edep_p1b_smallangles(),
@@ -112,90 +128,112 @@ def engines = [
     new dc_t0_sec_sl(),
     new dc_t0_even_sec_sl(),
     new dc_t0_odd_sec_sl(),
-    new dc_tmax_sec_sl()],
-  out_RICH: [new rich_dt_m(),
-       new rich_trk_m(),
-       new rich_etac_dir_m(),
-       new rich_etac_plan_m(),
-       new rich_etac_sphe_m(),
-       new rich_npho_dir_m(),
-       new rich_npho_plan_m(),
-       new rich_npho_sphe_m(),
-       new rich_npim_m(),
-       new rich_npip_m(),
-       new rich_nkm_m(),
-       new rich_nkp_m(),
-       new rich_npro_m(),
-       new rich_npbar_m()],
-  out_HELICITY: [new helicity()],
-  out_TRIGGER: [new trigger()],
+    new dc_tmax_sec_sl(),
+  ],
+  out_RICH: [
+    new rich_dt_m(),
+    new rich_trk_m(),
+    new rich_etac_dir_m(),
+    new rich_etac_plan_m(),
+    new rich_etac_sphe_m(),
+    new rich_npho_dir_m(),
+    new rich_npho_plan_m(),
+    new rich_npho_sphe_m(),
+    new rich_npim_m(),
+    new rich_npip_m(),
+    new rich_nkm_m(),
+    new rich_nkp_m(),
+    new rich_npro_m(),
+    new rich_npbar_m(),
+  ],
+  out_HELICITY: [
+    new helicity(),
+  ],
+  out_TRIGGER: [
+    new trigger(),
+  ],
 ]
 
 
+// parse arguments
 if(args.any{it=="--timelines"}) {
   engines.values().flatten().each{
     println(it.getClass().getSimpleName())
   }
   System.exit(0)
 }
+if(args.length != 2) {
+  System.err.println "ARGUMENTS: [timeline] [input_dir]"
+  System.err.println "use --timelines for a list of available timelines"
+  System.exit(101)
+}
+def (timelineArg, inputDirArg) = args
 
+// check the timeline argument
 def eng = engines.collectMany{key,engs->engs.collect{[key,it]}}
-  .find{name,eng->eng.getClass().getSimpleName()==args[0]}
-
-if(eng) {
-  def (name,engine) = eng
-  def input = new File(args[1])
-  def allow_timeline = true
-  println([name,args[0],engine.getClass().getSimpleName(),input])
-  def fnames = []
-  input.traverse {
-    if(it.name.endsWith('.hipo') && it.name.contains(name))
-      fnames.add(it.absolutePath)
-  }
-
-  fnames.sort().each{arg->
-    try{
-      println("debug: "+engine.getClass().getSimpleName()+" started $arg")
-
-      TDirectory dir = new TDirectory()
-      dir.readFile(arg)
-
-      // get run number from directory name
-      def fname = arg.split('/')[-2]
-      def m = fname =~ /\d+/
-      def run = m[0].toInteger()
-
-      // allow / disallow certain timelines, based on run number
-      if(RunDependentCut.runIsBefore(run, 21317, false)) { // before RG-L
-        if(args[0] == "alert_atof_tdc") { allow_timeline = false }
-      }
-
-      // run the analysis for this run
-      if(allow_timeline) {
-        engine.processRun(dir, run)
-        println("debug: "+engine.getClass().getSimpleName()+" finished $arg")
-      }
-      else {
-        println("debug: "+engine.getClass().getSimpleName()+" is not allowed for run $run")
-      }
-
-    } catch(Exception ex) {
-      System.err.println("error: "+engine.getClass().getSimpleName()+" didn't process $arg, due to exception:")
-      ex.printStackTrace()
-      System.exit(100)
-    }
-  }
-
-  // write the timeline HIPO file
-  if(allow_timeline) {
-    engine.write()
-    println("debug: "+engine.getClass().getSimpleName()+" ended")
-  }
-  else {
-    println("debug: "+engine.getClass().getSimpleName()+" was not produced, since not allowed for these data")
-  }
-
-} else {
-  System.err.println("error: "+args[0]+" not found")
+  .find{name,eng->eng.getClass().getSimpleName()==timelineArg}
+if(eng == null) {
+  System.err.println("error: timeline '$timelineArg' is not defined")
   System.exit(100)
+}
+
+// get list of input HIPO histogram files
+def (name,engine) = eng
+def inputDir = new File(inputDirArg)
+println([name,timelineArg,engine.getClass().getSimpleName(),inputDir])
+def fnames = []
+inputDir.traverse {
+  if(it.name.endsWith('.hipo') && it.name.contains(name))
+    fnames.add(it.absolutePath)
+}
+
+// loop over input HIPO histogram files
+def allow_timeline = false
+fnames.sort().each{ fname ->
+  try{
+    println("debug: "+engine.getClass().getSimpleName()+" started $fname")
+
+    // get run number from directory name
+    def fname = fname.split('/')[-2]
+    def m = fname =~ /\d+/
+    def run = m[0].toInteger()
+
+    // exclude certain run ranges from certain timelines
+    def allow_run = true
+    if(RunDependentCut.runIsBefore(run, 21317, false)) { // before RG-L
+      if(timelineArg == "alert_atof_tdc") { allow_run = false }
+    }
+    if(RunDependentCut.runIsAfter(run, 21317, true)) { // RG-L FIXME: needs upper bound when RG-L completes
+      if( timelineArg ==~ /^bmt.*/ ||
+          timelineArg ==~ /^bst.*/ ||
+          timelineArg ==~ /^cen.*/ ||
+          timelineArg ==~ /^cvt.*/ ) { allow_run = false }
+    }
+
+    // run the analysis for this run
+    if(allow_run) {
+      allow_timeline = true // allow the timeline if at least one run is allowed
+      TDirectory dir = new TDirectory()
+      dir.readFile(fname)
+      engine.processRun(dir, run)
+      println("debug: "+engine.getClass().getSimpleName()+" finished $fname")
+    }
+    else {
+      println("debug: "+engine.getClass().getSimpleName()+" excludes run $run")
+    }
+
+  } catch(Exception ex) {
+    System.err.println("error: "+engine.getClass().getSimpleName()+" didn't process $fname, due to exception:")
+    ex.printStackTrace()
+    System.exit(100)
+  }
+}
+
+// write the timeline HIPO file
+if(allow_timeline) {
+  engine.write()
+  println("debug: "+engine.getClass().getSimpleName()+" ended")
+}
+else {
+  println("debug: "+engine.getClass().getSimpleName()+" was not produced, since all runs were excluded")
 }
