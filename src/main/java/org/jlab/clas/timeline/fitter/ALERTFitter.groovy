@@ -28,8 +28,14 @@ class ALERTFitter{
 		f1.setParLimits(3, 0.0, 0.1*maxz);
 
 		double hMean, hRMS
-
+                def originalOut = System.out
+                System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
+                
+                // Code that prints to System.out
 		DataFitter.fit(f1, h1, "");
+
+                System.setOut(originalOut)  // Restore the original output
+
 
 //		def makefit = {func->
 //			hMean = func.getParameter(1)
