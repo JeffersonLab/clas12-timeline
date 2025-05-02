@@ -26,7 +26,7 @@ public class ALERT {
   public int rf_large_integer;
 
   //Hodoscope
-  public H1F[] TDC, TDC_wrt_start_time, TOT;; //ATOF
+  public H1F[] TDC, TDC_minus_start_time, TOT;; //ATOF
   public H1F[] ADC;//AHDC
   private H1F bits;
 
@@ -56,7 +56,7 @@ public class ALERT {
 
     //ATOF TDC Histograms
     TDC = new H1F[720];
-    TDC_wrt_start_time = new H1F[720];
+    TDC_minus_start_time = new H1F[720];
     TOT = new H1F[720];
 
     for (int index = 0; index < 720; index++) {
@@ -77,10 +77,10 @@ public class ALERT {
       TDC[index].setTitleX("TDC (ns)");
       TDC[index].setTitleY("Counts");
       TDC[index].setFillColor(4);
-      TDC_wrt_start_time[index] = new H1F(String.format("TDC_wrt_start_time_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC - start time sector%d layer%d component%d order%d", sector, layer, component, order), 550, 0.0, 550.0);
-      TDC_wrt_start_time[index].setTitleX("TDC - start time (ns)");
-      TDC_wrt_start_time[index].setTitleY("Counts");
-      TDC_wrt_start_time[index].setFillColor(4);
+      TDC_minus_start_time[index] = new H1F(String.format("TDC_minus_start_time_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC - start time sector%d layer%d component%d order%d", sector, layer, component, order), 550, 0.0, 550.0);
+      TDC_minus_start_time[index].setTitleX("TDC - start time (ns)");
+      TDC_minus_start_time[index].setTitleY("Counts");
+      TDC_minus_start_time[index].setFillColor(4);
       TOT[index] = new H1F(String.format("TOT_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TOT sector%d layer%d component%d order%d", sector, layer, component, order), 500, 0.0, 50000.0);
       TOT[index].setTitleX("TOT (ns)");
       TOT[index].setTitleY("Counts");
@@ -119,7 +119,7 @@ public class ALERT {
       int index     = sector * 48 + layer * 12 + component + order;
 
       TDC[index].fill(tdc*tdc_bin_time);
-      if (startTime!=-1000.0 && triggerPID == 11) TDC_wrt_start_time[index].fill(tdc*tdc_bin_time - startTime);
+      if (startTime!=-1000.0 && triggerPID == 11) TDC_minus_start_time[index].fill(tdc*tdc_bin_time - startTime);
       TOT[index].fill(tot*tdc_bin_time);
     }
   }
@@ -180,7 +180,7 @@ public class ALERT {
     dirout.mkdir("/ALERT/");
     dirout.cd("/ALERT/");
     for (int index = 0; index < 720; index++) {
-      dirout.addDataSet(TDC[index], TDC_wrt_start_time[index], TOT[index]);//atof histograms
+      dirout.addDataSet(TDC[index], TDC_minus_start_time[index], TOT[index]);//atof histograms
     }
     dirout.mkdir("/TRIGGER/");
     dirout.cd("/TRIGGER/");
