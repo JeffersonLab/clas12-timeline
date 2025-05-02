@@ -24,7 +24,7 @@ def has_data = new AtomicBoolean(false)
       if (component <= 10) file_index = String.format('sector%d_layer%d_component%d_order0', sector, layer, component)
       else file_index = String.format('sector%d_layer%d_component%d_order1', sector, layer, component-1)
       def h1 = dir.getObject(String.format('/ALERT/TDC_%s', file_index))
-      if(h1!=null && h1.getEntries()>10) {
+      if(h1!=null && h1.getEntries()>300) {
         data[run].put(String.format('atof_tdc_%s', file_index),  h1)
         def f1 = ALERTFitter.tdcfitter(h1)
         data[run].put(String.format('fit_atof_tdc_%s', file_index),  f1)
@@ -70,6 +70,7 @@ def has_data = new AtomicBoolean(false)
                 out.addDataSet(it['fit_'+name])
                 gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
               }
+             else if (variable=="sigma") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
             }
             out.cd('/timelines')
             out.addDataSet(gr)
