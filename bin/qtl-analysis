@@ -143,11 +143,18 @@ fi
 # main executable for detector timelines
 run_analysis_script="org.jlab.clas.timeline.analysis.run_analysis"
 
+# grep which exits zero when no match is found
+grep_zero() { grep $1 || true; }
+
 # build list of timelines
 if ${modes['skip-mya']}; then
-  timelineList=$(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep $match)
+  timelineList=($(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep_zero $match))
 else
-  timelineList=$(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | sort | grep $match)
+  timelineList=($(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | sort | grep_zero $match))
+fi
+if [ ${#timelineList[@]} -eq 0 ]; then
+  printError "empty 'timelineList'; most likely your argument '-m $match' does not match any timelines; try '--list' to see the list of all available timelines"
+  exit 100
 fi
 
 # list detector timelines, if requested
@@ -155,7 +162,7 @@ if ${modes['list']}; then
   echo $sep
   echo "LIST OF TIMELINES"
   echo $sep
-  echo $timelineList | sed 's; ;\n;g'
+  echo ${timelineList[@]} | sed 's; ;\n;g'
   exit $?
 fi
 
@@ -370,7 +377,7 @@ if $enableAna; then
   # produce timelines, multithreaded
   job_ids=()
   job_names=()
-  for timelineObj in $timelineList; do
+  for timelineObj in ${timelineList[@]}; do
     logFile=$logDir/$timelineObj
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
     echo ">>> producing timeline '$timelineObj' ..."
