@@ -1,2 +1,0 @@
-ltcc ltcc_elec_nphe_sec          11     14     counts sec3
-ltcc ltcc_elec_nphe_sec          11     14     counts sec5
