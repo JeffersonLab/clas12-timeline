@@ -15,7 +15,7 @@ import org.jlab.detector.calib.utils.ConstantsManager;
 public class ALERT {
 
   boolean userTimeBased;
-  public int runNum, trigger;
+  public int runNum, triggerPID;
   public long trigger_word;
   public String outputDir;
 
@@ -26,7 +26,8 @@ public class ALERT {
   public int rf_large_integer;
 
   //Hodoscope
-  public H1F[] TDC;
+  public H1F[] TDC, TDC_wrt_start_time, TOT;; //ATOF
+  public H1F[] ADC;//AHDC
   private H1F bits;
 
   public IndexedTable rfTable;
@@ -41,7 +42,7 @@ public class ALERT {
 
     startTime = -1000;
     rfTime = -1000;
-    trigger = 0;
+    triggerPID = 0;
 
     rfPeriod = 4.008;
     ccdb = new ConstantsManager();
@@ -53,8 +54,10 @@ public class ALERT {
     }
     rf_large_integer = 1000;
 
-    //Hodoscope Histograms
+    //ATOF TDC Histograms
     TDC = new H1F[720];
+    TDC_wrt_start_time = new H1F[720];
+    TOT = new H1F[720];
 
     for (int index = 0; index < 720; index++) {
       int sector    = 0;
@@ -70,12 +73,29 @@ public class ALERT {
         component = 10;
         order = 1;
       }
-
       TDC[index] = new H1F(String.format("TDC_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC sector%d layer%d component%d order%d", sector, layer, component, order), 550, 0.0, 550.0);
       TDC[index].setTitleX("TDC (ns)");
       TDC[index].setTitleY("Counts");
       TDC[index].setFillColor(4);
+      TDC_wrt_start_time[index] = new H1F(String.format("TDC_wrt_start_time_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC - start time sector%d layer%d component%d order%d", sector, layer, component, order), 550, 0.0, 550.0);
+      TDC_wrt_start_time[index].setTitleX("TDC - start time (ns)");
+      TDC_wrt_start_time[index].setTitleY("Counts");
+      TDC_wrt_start_time[index].setFillColor(4);
+      TOT[index] = new H1F(String.format("TOT_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TOT sector%d layer%d component%d order%d", sector, layer, component, order), 500, 0.0, 50000.0);
+      TOT[index].setTitleX("TOT (ns)");
+      TOT[index].setTitleY("Counts");
+      TOT[index].setFillColor(4);
     }
+
+    // //AHDC ADC Histograms
+    // ADC = new H1F[576];
+
+    // for (int index = 0; index<576; index++) {
+    //   int layer = 0;
+
+    // }
+
+    // Trigger bits
     bits = new H1F("bits", "bits",65,0,65);
     bits.getDataX(0);
     bits.getEntries();
@@ -84,7 +104,7 @@ public class ALERT {
 
   }
 
-  // public void fillAHDC(DataBank HodoHits) {
+  // public void fillAHDC(DataBank atof_adc) {
   // }
 
   public void fillATOF(DataBank atof_tdc) {
@@ -95,9 +115,12 @@ public class ALERT {
       int component = atof_tdc.getInt("component", loop);
       int order     = atof_tdc.getInt("order", loop);
       int tdc       = atof_tdc.getInt("TDC", loop);
+      int tot       = atof_tdc.getInt("ToT", loop);
       int index     = sector * 48 + layer * 12 + component + order;
 
       TDC[index].fill(tdc*tdc_bin_time);
+      if (startTime!=-1000.0 && triggerPID == 11) TDC_wrt_start_time[index].fill(tdc*tdc_bin_time - startTime);
+      TOT[index].fill(tot*tdc_bin_time);
     }
   }
 
@@ -107,6 +130,7 @@ public class ALERT {
     DataBank recEvenEB = null;
     DataBank runConfig = null;
     DataBank atof_tdc = null;
+    DataBank ahdc_adc = null;
 
     if (event.hasBank("REC::Particle")) {
       recBankEB = event.getBank("REC::Particle");
@@ -138,7 +162,7 @@ public class ALERT {
 
     //Get trigger particle
     if (recBankEB != null) {
-      trigger = recBankEB.getInt("pid", 0);
+      triggerPID = recBankEB.getInt("pid", 0);
     }
 
     if (atof_tdc != null) {
@@ -152,7 +176,7 @@ public class ALERT {
     dirout.mkdir("/ALERT/");
     dirout.cd("/ALERT/");
     for (int index = 0; index < 720; index++) {
-      dirout.addDataSet(TDC[index]);
+      dirout.addDataSet(TDC[index], TDC_wrt_start_time[index], TOT[index]);//atof histograms
     }
     dirout.mkdir("/TRIGGER/");
     dirout.cd("/TRIGGER/");
