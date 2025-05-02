@@ -145,6 +145,10 @@ public class ALERT {
       atof_tdc = event.getBank("ATOF::tdc");
     }
 
+    if (event.hasBank("AHDC::adc")) {
+      ahdc_adc = event.getBank("AHDC::adc");
+    }
+
     if (runConfig!= null){
       trigger_word = runConfig.getLong("trigger", 0);
       bits.fill(64);
