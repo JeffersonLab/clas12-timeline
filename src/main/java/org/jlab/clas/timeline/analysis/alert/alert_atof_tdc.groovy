@@ -59,8 +59,8 @@ def has_data = new AtomicBoolean(false)
           }
           names.each{ name ->
             def gr = new GraphErrors(name)
-            gr.setTitle("ATOF "  + name + " " + variable.replace('_', ' '))
-            gr.setTitleY("ATOF " + name + " " + variable.replace('_', ' ') + " (ns)")
+            gr.setTitle(  name.substring(0, name.length()-17).replace('_', ' ').replace('atof', 'ATOF').replace('tdc', 'TDC') + variable.replace('_', ' '))
+            gr.setTitleY( name.substring(0, name.length()-17).replace('_', ' ').replace('atof', 'ATOF').replace('tdc', 'TDC') + variable.replace('_', ' ') + " (ns)")
             gr.setTitleX("run number")
             data.sort{it.key}.each{run,it->
               out.mkdir('/'+it.run)
