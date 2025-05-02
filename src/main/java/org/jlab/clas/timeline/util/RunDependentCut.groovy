@@ -47,4 +47,23 @@ class RunDependentCut {
       return check_run > cut_run;
   }
 
+  /// @param check_runs the run number(s) to check
+  /// @returns the dataset name that contains this run
+  static String findDataset(int... check_runs) {
+    def datasets = check_runs.collect{ check_run ->
+      if(runIsInRange(check_run, 5032, 5419, true))
+        return 'rga_fa18_inbending'
+      if(runIsInRange(check_run, 5423, 5666, true))
+        return 'rga_fa18_outbending'
+      if(runIsInRange(check_run, 16042, 16772, true))
+        return 'rgc_su22'
+      return 'unknown'
+    }.toUnique()
+    if(datasets.size() > 1) {
+      System.err.println "WARNING: RunDependentCut.findDataset run list spans more than one dataset: $datasets; returning the first one;"
+      System.err.println "WARNING:   runs: $check_runs"
+    }
+    return datasets[0]
+  }
+
 }
