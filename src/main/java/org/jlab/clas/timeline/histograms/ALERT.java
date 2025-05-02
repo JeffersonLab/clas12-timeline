@@ -81,7 +81,7 @@ public class ALERT {
       TDC_minus_start_time[index].setTitleX("TDC - start time (ns)");
       TDC_minus_start_time[index].setTitleY("Counts");
       TDC_minus_start_time[index].setFillColor(4);
-      TOT[index] = new H1F(String.format("TOT_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TOT sector%d layer%d component%d order%d", sector, layer, component, order), 500, 0.0, 50000.0);
+      TOT[index] = new H1F(String.format("TOT_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TOT sector%d layer%d component%d order%d", sector, layer, component, order), 50, 0, 500);
       TOT[index].setTitleX("TOT (ns)");
       TOT[index].setTitleY("Counts");
       TOT[index].setFillColor(4);
