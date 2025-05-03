@@ -28,12 +28,16 @@ class QA {
     ]
       .collect{ val, color ->
         if(val==null) return null;
-        new GraphErrors([
+        def cut_line = new GraphErrors([
           'plotLine',
           'horizontal',
           val,
           color ?: 'black',
         ].join(':'));
+        cut_line.setTitle(input_graphs[0].getTitle());
+        cut_line.setTitleX(input_graphs[0].getTitleX());
+        cut_line.setTitleY(input_graphs[0].getTitleY());
+        cut_line
       }
       .findAll{it != null};
     // define QA criteria
