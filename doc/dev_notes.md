@@ -14,8 +14,8 @@ To create new timelines for some detectors, follow these steps (_e.g._, <https:/
 1. Create the `DETECTOR_NAME.java`, in [`src/main/java/org/jlab/clas/timeline/histograms`](/src/main/java/org/jlab/clas/timeline/histograms). The easiest way is to copy and edit the existing java scripts.
 2. Add three lines to [`src/main/java/org/jlab/clas/timeline/run_histograms.java`](/src/main/java/org/jlab/clas/timeline/run_histograms.java). For example, search for `ana_mon` to find out what these three lines are.
 3. Create a `detector_name` directory in [`src/main/java/org/jlab/clas/timeline/analysis`](/src/main/java/org/jlab/clas/timeline/analysis).
-4. Create a `detector_name_variable.groovy` script. One script for one variable is the norm. A script can store multiple timelines (e.g. [`src/main/java/org/jlab/clas/timeline/analysis/ft/ftc_time_neutral.groovy`](/src/main/java/org/jlab/clas/timeline/analysis/ft/ftc_time_neutral.groovy)).
-5. Add the `detector_name` inside `detDirs` of [`bin/qtl-analysis`](bin/qtl-analysis).
+4. Create a `detector_name_variable.groovy` script. One script for one variable is the norm. A script can store multiple timelines (_e.g._ [`src/main/java/org/jlab/clas/timeline/analysis/ft/ftc_time_neutral.groovy`](/src/main/java/org/jlab/clas/timeline/analysis/ft/ftc_time_neutral.groovy)).
+5. Add the `detector_name` inside `detDirs` of [`bin/qtl-analysis`](/bin/qtl-analysis).
 
 # Flowchart
 Here is a flowchart illustrating the data and steps for timeline production. See the next section for details on output file organization.
