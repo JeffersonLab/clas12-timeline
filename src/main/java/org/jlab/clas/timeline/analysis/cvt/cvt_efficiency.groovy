@@ -37,7 +37,7 @@ class cvt_efficiency {
         def counts_all     = hist.getBinContent(0);
         def counts_matched = hist.getBinContent(1);
         if(counts_all > 0) {
-          gr.addPoint(run, (double) counts_matched / counts_all);
+          gr.addPoint(run, (double) counts_matched / counts_all, 0, 0);
         }
         out.cd("/$run");
         out.addDataSet(hist);
