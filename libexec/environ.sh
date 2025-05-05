@@ -24,7 +24,7 @@ fi
 timeline_java_opts=(
   -cp "$TIMELINESRC/target/*:$TIMELINESRC/target/dependency/*"
   -Djava.util.logging.config.file=$TIMELINESRC/data/logging/$log_config.properties
-  -Xms1024m
+  -Xmx1536m
   -XX:+UseSerialGC
   -Djava.awt.headless=true
 )
