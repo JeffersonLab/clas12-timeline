@@ -81,6 +81,9 @@ def engines = [
     new cnd_time_neg_vtP(),
     new cnd_zdiff(),
   ],
+  out_CVT: [
+    new cvt_efficiency(),
+  ],
   out_CTOF: [
     new ctof_edep(),
     new ctof_time(),
