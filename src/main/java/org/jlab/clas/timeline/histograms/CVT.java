@@ -67,8 +67,8 @@ public class CVT {
       // port hipo5 -> hipo4 of `getIntArray(9, "Cross1_ID", 0)`
       int ids_size = 9;
       int[] ids = new int[ids_size];
-      for(int i = 1; i <= ids_size; i++)
-        ids[i] = bank_cvt_tracks.getInt("Cross"+i+"_ID", 0);
+      for(int i = 0; i < ids_size; i++)
+        ids[i] = bank_cvt_tracks.getInt(String.format("Cross%d_ID", i+1), 0);
       // check if `ids` isValid
       for(int i = 0; i < 3; i++) {
         if(ids[i] <= 0)
