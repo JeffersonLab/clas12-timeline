@@ -159,7 +159,7 @@ Separate `--focus-detectors` and `--focus-physics` options are preferred, since:
 
 There are a few cases where a developer may want to make some updates to the script.
 
-We strongly encourage you to work on this in the different branches from `main'.
+We strongly encourage you to work on this in the different branches from `main` and send pull requests.
 
 To add more analysis scripts for step 2 (see [the Chefs' documentation wiki](https://clasweb.jlab.org/wiki/index.php/CLAS12_Chef_Documentation) for details), create corresponding scripts in https://github.com/JeffersonLab/clas12-timeline/tree/main/src/main/java/org/jlab/clas/timeline/analysis.
 The histogram (`H1F`) and graph (`GraphErrors`) objects should be included in the output `TDirectory` object. Not all, but most, timeline variables are fit results. We maintain the fitters in https://github.com/JeffersonLab/clas12-timeline/tree/main/src/main/java/org/jlab/clas/timeline/fitter .
