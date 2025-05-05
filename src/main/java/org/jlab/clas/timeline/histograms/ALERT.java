@@ -73,15 +73,19 @@ public class ALERT {
         component = 10;
         order = 1;
       }
-      TDC[index] = new H1F(String.format("TDC_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC sector%d layer%d component%d order%d", sector, layer, component, order), 550, 0.0, 550.0);
+
+      float tdc_offset = 0.0;
+      if (reqrunNum<21339) tdc_offset = 250;
+
+      TDC[index] = new H1F(String.format("TDC_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC sector%d layer%d component%d order%d", sector, layer, component, order), 400, tdc_offset + 100.0, tdc_offset+ 300.0);
       TDC[index].setTitleX("TDC (ns)");
       TDC[index].setTitleY("Counts");
       TDC[index].setFillColor(4);
-      TDC_minus_start_time[index] = new H1F(String.format("TDC_minus_start_time_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC - start time sector%d layer%d component%d order%d", sector, layer, component, order), 550, 0.0, 550.0);
+      TDC_minus_start_time[index] = new H1F(String.format("TDC_minus_start_time_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC - start time sector%d layer%d component%d order%d", sector, layer, component, order), 400, tdc_offset + 0.0, tdc_offset + 200.0);
       TDC_minus_start_time[index].setTitleX("TDC - start time (ns)");
       TDC_minus_start_time[index].setTitleY("Counts");
       TDC_minus_start_time[index].setFillColor(4);
-      TOT[index] = new H1F(String.format("TOT_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TOT sector%d layer%d component%d order%d", sector, layer, component, order), 50, 0, 500);
+      TOT[index] = new H1F(String.format("TOT_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TOT sector%d layer%d component%d order%d", sector, layer, component, order), 400, 0.0, 50.0);
       TOT[index].setTitleX("TOT (ns)");
       TOT[index].setTitleY("Counts");
       TOT[index].setFillColor(4);
