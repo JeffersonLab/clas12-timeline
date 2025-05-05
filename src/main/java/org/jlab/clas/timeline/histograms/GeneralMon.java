@@ -45,7 +45,7 @@ public class GeneralMon {
   boolean testTriggerSector(int sector) {
     // FIXME:  move to CCDB
 
-    if (RunDependentCut.runIsInRange(runNum, 18301, 19131, true)) {
+    if (RunDependentCut.findDataset(runNum) == "rgd") {
       // RG-D:   used three different primary electron triggers (0/7/14):
       return testTriggerSector(TriggerWord, sector, 0x4081);
     }

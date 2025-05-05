@@ -52,18 +52,22 @@ class RunDependentCut {
   static String findDataset(int... check_runs) {
     def datasets = check_runs.collect{ check_run ->
       if(runIsInRange(check_run, 5032, 5419, true))
-        return 'rga_fa18_inbending'
+        return 'rga_fa18_inbending';
       if(runIsInRange(check_run, 5423, 5666, true))
-        return 'rga_fa18_outbending'
+        return 'rga_fa18_outbending';
       if(runIsInRange(check_run, 16042, 16772, true))
-        return 'rgc_su22'
-      return 'unknown'
-    }.toUnique()
+        return 'rgc_su22';
+      if(runIsInRange(check_run, 18301, 19131, true))
+        return 'rgd';
+      if(runIsAfter(check_run, 21317, true)) // RG-L FIXME: needs upper bound when RG-L completes <https://github.com/JeffersonLab/clas12-timeline/issues/325>
+        return 'rgl';
+      return 'unknown';
+    }.toUnique();
     if(datasets.size() > 1) {
-      System.err.println "WARNING: RunDependentCut.findDataset run list spans more than one dataset: $datasets; returning the first one;"
-      System.err.println "WARNING:   runs: $check_runs"
+      System.err.println "WARNING: RunDependentCut.findDataset run list spans more than one dataset: $datasets; returning the first one;";
+      System.err.println "WARNING:   runs: $check_runs";
     }
-    return datasets[0]
+    return datasets[0];
   }
 
 }

@@ -200,14 +200,15 @@ fnames.sort().each{ fname ->
 
     // exclude certain run ranges from certain timelines
     def allow_run = true
-    if(RunDependentCut.runIsBefore(run, 21317, false)) { // before RG-L
-      if(timelineArg ==~ /^alert.*/) { allow_run = false }
-    }
-    if(RunDependentCut.runIsAfter(run, 21317, true)) { // RG-L FIXME: needs upper bound when RG-L completes
+    def dataset = RunDependentCut.findDataset(run)
+    if(dataset == 'rgl') {
       if( timelineArg ==~ /^bmt.*/ ||
           timelineArg ==~ /^bst.*/ ||
           timelineArg ==~ /^cen.*/ ||
           timelineArg ==~ /^cvt.*/ ) { allow_run = false }
+    }
+    else { // not RG-L
+      if(timelineArg ==~ /^alert.*/) { allow_run = false }
     }
 
     // run the analysis for this run

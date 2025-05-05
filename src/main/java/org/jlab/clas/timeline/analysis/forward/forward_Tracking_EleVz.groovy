@@ -40,7 +40,7 @@ def processRun(dir, run) {
 
     def usefitBimodal = false
     def f1
-    if (RunDependentCut.runIsInRange(run, 18305, 19131, true)) {
+    if (RunDependentCut.findDataset(run) == 'rgd') {
       if (is_RGD_LD2(run)) {
         f1 = ForwardFitter.fit(h1)
       }
