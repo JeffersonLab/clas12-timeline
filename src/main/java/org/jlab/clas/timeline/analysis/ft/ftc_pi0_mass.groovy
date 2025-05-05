@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.FTFitter
+import org.jlab.clas.timeline.util.QA
 
 class ftc_pi0_mass {
 
@@ -38,8 +39,8 @@ def write() {
 
     out.mkdir('/timelines')
     out.cd('/timelines')
-    out.addDataSet(grtl)
-    out.writeFile('ftc_pi0_mass_'+name+'.hipo')
+    QA.cutGraphsMeanSigma(name, grtl, mean_lb: 134, mean_ub: 136, sigma_ub: 5, out: out)
+    out.writeFile("ftc_pi0_mass_${name}_QA.hipo")
   }
 }
 }

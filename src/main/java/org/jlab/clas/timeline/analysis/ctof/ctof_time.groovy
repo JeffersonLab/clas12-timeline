@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.CTOFFitter;
+import org.jlab.clas.timeline.util.QA
 
 class ctof_time {
 
@@ -39,8 +40,8 @@ def write() {
 
     out.mkdir('/timelines')
     out.cd('/timelines')
-    out.addDataSet(grtl)
-    out.writeFile('ctof_time_'+name+'.hipo')
+    QA.cutGraphsMeanSigma(name, grtl, mean_lb: -0.020, mean_ub: 0.020, sigma_ub: 0.115, out: out)
+    out.writeFile("ctof_time_${name}_QA.hipo")
   }
 }
 }
