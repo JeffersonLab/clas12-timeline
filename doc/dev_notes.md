@@ -153,4 +153,22 @@ Separate `--focus-detectors` and `--focus-physics` options are preferred, since:
 - often we will run one and not the other: `--focus-detectors` needs `mon` schema, whereas `--focus-physics` prefers high statistics
 
 
+# Notes on Writing the Analysis Scripts
 
+There are a few cases where a developer may want to make some updates to the script.
+
+We strongly encourage you to work on this in the different branches from `main` and send pull requests.
+
+To add more analysis scripts for step 2, create corresponding scripts in [`src/main/java/org/jlab/clas/timeline/analysis`](/src/main/java/org/jlab/clas/timeline/analysis).
+The histogram (`H1F`) and graph (`GraphErrors`) objects should be included in the output `TDirectory` object. Not all, but most, timeline variables are fit results. We maintain the fitters in https://github.com/JeffersonLab/clas12-timeline/tree/main/src/main/java/org/jlab/clas/timeline/fitter .
+To display the fit results on the clas12mon website, the javascript rendering the fit function needs the name of `F1D` to be "fit: " + the name of `H1F` (see /group/clas/www/clas12mon/html/timeline/index.js in the ifarm.)
+
+If the `H1F` objects do not exist in the monitoring output, the java codes in https://github.com/JeffersonLab/clas12-timeline/tree/main/src/main/java/org/jlab/clas/timeline/histograms need to be updated for step 1.
+
+
+To create new timelines for some detectors, follow these steps (ex) https://github.com/JeffersonLab/clas12-timeline/pull/304)
+1. Create the `DETECTOR_NAME.java`, in https://github.com/JeffersonLab/clas12-timeline/tree/main/src/main/java/org/jlab/clas/timeline/histograms. The easiest way is to copy and edit the existing java scripts.
+2. Add three lines to https://github.com/JeffersonLab/clas12-timeline/blob/main/src/main/java/org/jlab/clas/timeline/run_histograms.java . For example, search for `ana_mon` to find out what these three lines are.
+3. Create a `detector_name` directory in https://github.com/JeffersonLab/clas12-timeline/tree/main/src/main/java/org/jlab/clas/timeline/analysis.
+4. Create a `detector_name_variable.groovy` script. One script for one variable is the norm. A script can store multiple timelines (e.g. https://github.com/JeffersonLab/clas12-timeline/blob/main/src/main/java/org/jlab/clas/timeline/analysis/ft/ftc_time_neutral.groovy ).
+5. Add the `detector_name` inside `detDirs` of https://github.com/JeffersonLab/clas12-timeline/blob/main/bin/qtl-analysis
