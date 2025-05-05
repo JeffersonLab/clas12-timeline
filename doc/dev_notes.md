@@ -165,7 +165,7 @@ To add more analysis scripts for step 2, create corresponding scripts in [`src/m
 The histogram (`H1F`) and graph (`GraphErrors`) objects should be included in the output `TDirectory` object. Not all, but most, timeline variables are fit results. We maintain the fitters in https://github.com/JeffersonLab/clas12-timeline/tree/main/src/main/java/org/jlab/clas/timeline/fitter .
 To display the fit results on the clas12mon website, the javascript rendering the fit function needs the name of `F1D` to be "fit: " + the name of `H1F` (see /group/clas/www/clas12mon/html/timeline/index.js in the ifarm.)
 
-If the `H1F` objects do not exist in the monitoring output, the java codes in https://github.com/JeffersonLab/clas12-timeline/tree/main/src/main/java/org/jlab/clas/timeline/histograms need to be updated for step 1 (see [the Chefs' documentation wiki](https://clasweb.jlab.org/wiki/index.php/CLAS12_Chef_Documentation) for details).
+If the `H1F` objects do not exist in the monitoring output, the java codes in https://github.com/JeffersonLab/clas12-timeline/tree/main/src/main/java/org/jlab/clas/timeline/histograms need to be updated for step 1.
 
 
 To create new timelines for some detectors, follow these steps (ex) https://github.com/JeffersonLab/clas12-timeline/pull/304)
