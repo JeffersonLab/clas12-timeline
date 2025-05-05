@@ -57,7 +57,7 @@ class RunDependentCut {
         return 'rga_fa18_outbending';
       if(runIsInRange(check_run, 16042, 16772, true))
         return 'rgc_su22';
-      if(runIsInRange(runNum, 18301, 19131, true))
+      if(runIsInRange(check_run, 18301, 19131, true))
         return 'rgd';
       if(runIsAfter(check_run, 21317, true)) // RG-L FIXME: needs upper bound when RG-L completes <https://github.com/JeffersonLab/clas12-timeline/issues/325>
         return 'rgl';
