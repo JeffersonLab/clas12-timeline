@@ -5,13 +5,13 @@ import org.rcdb.*
 
 // arguments
 if(args.length<1) {
-  System.err.println "USAGE: groovy ${this.class.getSimpleName()}.groovy [RUN_NUMBER]"
+  System.err.println "USAGE: groovy ${this.class.getSimpleName()}.groovy [RUN_NUMBERS]..."
   System.out.println ''
   System.exit(101)
 }
-def runnum
+def runnums
 try {
-  runnum = args[0].toInteger()
+  runnums = args.collect{it.toInteger()}
 }
 catch(Exception e) {
   System.err.println "ERROR: run number argument is not an integer"
@@ -34,11 +34,13 @@ catch(Exception e) {
 }
 
 // get the run number
-result = rcdbProvider.getCondition(runnum, 'beam_energy')
-if(result==null) {
-  System.err.println "ERROR: cannot find run $runnum in RCDB, thus cannot get beam energy"
-  System.out.println ''
-  System.exit(100)
+runnums.each{ runnum ->
+  result = rcdbProvider.getCondition(runnum, 'beam_energy')
+  if(result==null) {
+    System.err.println "ERROR: cannot find run $runnum in RCDB, thus cannot get beam energy"
+    System.out.println ''
+    System.exit(100)
+  }
+  beamEn = result.toDouble() / 1e3 // [MeV] -> [GeV]
+  System.out.println "$runnum $beamEn"
 }
-beamEn = result.toDouble() / 1e3 // [MeV] -> [GeV]
-System.out.println beamEn
