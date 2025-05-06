@@ -40,20 +40,25 @@ def processRun(dir, run) {
 
     def usefitBimodal = false
     def f1
-    if (RunDependentCut.findDataset(run) == 'rgd') {
+    def dataset = RunDependentCut.findDataset(run)
+    if (dataset == 'rgd') {
       if (is_RGD_LD2(run)) {
         f1 = ForwardFitter.fit(h1)
       }
       else {
         if (RunDependentCut.runIsOneOf(run, 18399)) {
-          f1 = ForwardFitter.fitBimodal(h1, -17.5, -13, 1, 1, -19, -10)
+          f1 = ForwardFitter.fitRGDbimodal(h1, -17.5, -13, 1, 1, -19, -10)
         }
         else {
-          f1 = ForwardFitter.fitBimodal(h1, -8, -3, 0.8, 0.8, -10, 0)
+          f1 = ForwardFitter.fitRGDbimodal(h1, -8, -3, 0.8, 0.8, -10, 0)
         }
         usefitBimodal = true
       }
-    } else {
+    }
+    else if (dataset == 'rgl') {
+      f1 = ForwardFitter.fitRGL(h1)
+    }
+    else {
       f1 = ForwardFitter.fit(h1)
     }
 
