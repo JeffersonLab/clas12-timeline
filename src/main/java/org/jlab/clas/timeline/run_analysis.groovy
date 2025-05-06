@@ -187,7 +187,7 @@ if(eng) {
       }
 
     } catch(Exception ex) {
-      System.err.println("error: "+engine.getClass().getSimpleName()+" didn't process $arg, due to exception:")
+      System.err.println("run " + run + ", " + error: "+engine.getClass().getSimpleName()+" didn't process $arg, due to exception:")
       ex.printStackTrace()
       System.exit(100)
     }
