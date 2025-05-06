@@ -30,17 +30,17 @@ class ALERTFitter{
 
 		double hMean, hRMS
 		def originalOut = System.out
-		System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
+		// System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
                 
                 // Code that prints to System.out
 		try{
 			DataFitter.fit(f1, h1, "");
 		} catch(Exception e1){
-			System.err.println(run+": "+h1.getName()+", "+e1);
+			System.out.println("find this line for the ALERT!" + run+": "+h1.getName()+", "+e1);
 			e1.printStackTrace()
 		}
 
-		System.setOut(originalOut)  // Restore the original output
+		// System.setOut(originalOut)  // Restore the original output
 
 		return f1
 	}
