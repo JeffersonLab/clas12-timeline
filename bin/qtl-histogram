@@ -2,6 +2,7 @@
 
 set -e
 set -u
+set -o pipefail
 source $(dirname $0)/../libexec/environ.sh
 
 # constants ############################################################
@@ -280,8 +281,6 @@ echo $dataset | grep -q "/" && printError "dataset name must not contain '/' " &
 slurmJobName=clas12-timeline--$dataset
 
 # start job lists
-echo """
-Generating job scripts..."""
 slurmDir=./slurm
 mkdir -p $slurmDir/scripts
 jobkeys=()
@@ -319,40 +318,40 @@ for rdir in ${rdirs[@]}; do
   runnum=$((10#$runnum))
   runnumHash[$rdir]=$runnum
 done
+echo "RUN NUMBERS = {"
+for rdir in "${!runnumHash[@]}"; do echo "  $rdir => ${runnumHash[$rdir]},"; done
+echo "}"
+echo $sep
 
 # get beam energy for each run number
 echo "Retrieving beam energy from RCDB..."
 declare -A ebeamHash  # run number -> beam energy
-ebeamList=$($TIMELINESRC/libexec/get-beam-energy.sh "${!runnumHash[@]}")
-while IFS=' ' read -r runnum ebeam; do
+while read -r runnum ebeam; do
   ebeamHash[$runnum]=$ebeam
-done < <(echo $ebeamList)
+done < <($TIMELINESRC/libexec/get-beam-energy.sh "${runnumHash[@]}")
+echo "BEAM ENERGY = {"
 # override beam energy, for cases where RCDB is incorrect
-# - currently only needed for RG-F
-for runnum in "${!runnumHash[@]}"; do # loop over run numbers
-  ebeamOverride=`python -c """
-beamlist = [
-  (11620, 11657, 2.182),
-  (12389, 12443, 2.182),
-  (12444, 12951, 10.389),
-]
-for r0,r1,eb in beamlist:
-  if $runnum>=r0 and $runnum<=r1:
-    print(eb)
-  """`
+for runnum in "${!ebeamHash[@]}"; do # loop over run numbers
+  ebeamOverride=""
+  if [ $runnum -ge 11620 -a $runnum -le 11657 ]; then ebeamOverride=2.182 # RG-F
+  elif [ $runnum -ge 12389 -a $runnum -le 12443 ]; then ebeamOverride=2.182 # RG-F
+  elif [ $runnum -ge 12444 -a $runnum -le 12951 ]; then ebeamOverride=10.389 # RG-F
+  fi
   if [ -n "$ebeamOverride" ]; then
-    printWarning "overriding RCDB beam energy $ebeam to be $ebeamOverride, for run $runnum"
+    printWarning "overriding RCDB beam energy for run $runnum: ${ebeamHash[$runnum]} -> $ebeamOverride"
     ebeamHash[$runnum]=$ebeamOverride
   fi
-  echo """$rdir
-  run number:  $runnum
-  beam energy: $ebeam GeV"""
+  echo "  $runnum => ${ebeamHash[$runnum]} GeV,"
 done
+echo "}"
+echo $sep
 
 # define backup directory (used only if the output files already exist; not used `if ${modes['swifjob']}`)
 backupDir=$(pwd -P)/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
 
 # loop over input directories, building the job lists
+echo """
+Generating job scripts..."""
 for rdir in ${rdirs[@]}; do
 
   echo "processing '$rdir'..."
