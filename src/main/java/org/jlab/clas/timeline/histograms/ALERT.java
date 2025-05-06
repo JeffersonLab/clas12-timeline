@@ -75,7 +75,7 @@ public class ALERT {
       }
 
       float tdc_offset = 0.0f;
-      if (reqrunNum<21331) tdc_offset = 250;
+      if (reqrunNum<21331) tdc_offset = 250.0f;
 
       TDC[index] = new H1F(String.format("TDC_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC sector%d layer%d component%d order%d", sector, layer, component, order), 400, tdc_offset + 100.0, tdc_offset+ 300.0);
       TDC[index].setTitleX("TDC (ns)");
