@@ -28,7 +28,7 @@ def has_data = new AtomicBoolean(false)
       if (run<21331) tdc_offset = 350.0f
       if(h1!=null && h1.getEntries()>300) {
         data[run].put(String.format('atof_tdc_%s', file_index),  h1)
-        def f1 = ALERTFitter.tdcfitter(h1, tdc_offset)
+        def f1 = ALERTFitter.tdcfitter(h1, tdc_offset, run)
         data[run].put(String.format('fit_atof_tdc_%s', file_index),  f1)
         data[run].put(String.format('peak_location_atof_tdc_%s', file_index),  f1.getParameter(1))
         data[run].put(String.format('sigma_atof_tdc_%s', file_index),  f1.getParameter(2))

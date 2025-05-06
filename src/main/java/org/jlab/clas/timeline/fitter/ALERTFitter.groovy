@@ -13,7 +13,7 @@ import org.jlab.groot.math.F1D
 
 class ALERTFitter{
 
-	static F1D tdcfitter(H1F h1, float tdc_offset){
+	static F1D tdcfitter(H1F h1, float tdc_offset, int run){
 		def f1 =new F1D("fit:"+h1.getName(),"[amp]*gaus(x,[mean],[sigma])+[cst]", -5.0, 5.0);
 		f1.setLineColor(33);
 		f1.setLineWidth(10);
@@ -33,7 +33,11 @@ class ALERTFitter{
 		System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
                 
                 // Code that prints to System.out
-		DataFitter.fit(f1, h1, "");
+		try{
+			DataFitter.fit(f1, h1, "");
+		} catch(ExceptionName e1){
+			println(run+": "+h1.getName()+", "+e1);
+		}
 
 		System.setOut(originalOut)  // Restore the original output
 
