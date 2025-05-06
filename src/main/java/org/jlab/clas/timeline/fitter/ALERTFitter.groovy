@@ -35,7 +35,7 @@ class ALERTFitter{
                 // Code that prints to System.out
 		try{
 			DataFitter.fit(f1, h1, "");
-		} catch(ExceptionName e1){
+		} catch(Exception e1){
 			println(run+": "+h1.getName()+", "+e1);
 		}
 
