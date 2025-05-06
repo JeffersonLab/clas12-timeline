@@ -36,7 +36,8 @@ class ALERTFitter{
 		try{
 			DataFitter.fit(f1, h1, "");
 		} catch(Exception e1){
-			println(run+": "+h1.getName()+", "+e1);
+			System.err.println(run+": "+h1.getName()+", "+e1);
+			e1.printStackTrace()
 		}
 
 		System.setOut(originalOut)  // Restore the original output
