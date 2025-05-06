@@ -20,9 +20,9 @@ public class CVT {
 
     public H1F h_counts;
 
-    private int      sector = 1;
-    private int      layer  = 1;
-    private double[] cuts   = new double[]{0.5, 2.0};
+    private int sector = 1;
+    private int layer  = 1;
+    private final double[] cuts = new double[]{0.5, 2.0};
 
     public Efficiency(int s, int l) {
       if (l < 1 || l > 6)
@@ -64,8 +64,8 @@ public class CVT {
     }
 
     public void process(DataBank bank_cvt_tracks, DataBank bank_cvt_trajectory, DataBank bank_bmt_clusters) {
-      // port hipo5 -> hipo4 of `getIntArray(9, "Cross1_ID", 0)`
-      int ids_size = 9;
+      // get IDs from `Cross1_ID`, `Cross2_ID`, etc.
+      final int ids_size = 9;
       int[] ids = new int[ids_size];
       for(int i = 0; i < ids_size; i++)
         ids[i] = bank_cvt_tracks.getInt(String.format("Cross%d_ID", i+1), 0);
