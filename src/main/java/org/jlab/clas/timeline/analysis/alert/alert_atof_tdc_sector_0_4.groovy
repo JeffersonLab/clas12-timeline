@@ -35,6 +35,7 @@ def has_data = new AtomicBoolean(false)
           data[run].put(String.format('sigma_atof_tdc_%s', file_index),  f1.getParameter(2))
           data[run].put(String.format('integral_normalized_to_trigger_atof_tdc_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
           has_data.set(true)
+        }
       }
     }
   }
