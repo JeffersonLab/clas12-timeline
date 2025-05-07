@@ -25,16 +25,17 @@ def has_data = new AtomicBoolean(false)
       else file_index = String.format('sector%d_layer%d_component%d_order1', sector, layer, component-1)
       def h1 = dir.getObject(String.format('/ALERT/TOT_%s', file_index))
       float peak_location = 0
-      if(h1!=null && h1.getEntries()>300) {
-        data[run].put(String.format('atof_tot_%s', file_index),  h1)
+      if(h1!=null) {
+        if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
+          data[run].put(String.format('atof_tot_%s', file_index),  h1)
 
-        peak_location = 0.125*(h1.getMaximumBin() + 0.5)
-        // def f1 = ALERTFitter.totfitter(h1)
-        // data[run].put(String.format('fit_atof_tot_%s', file_index),  f1)
-        data[run].put(String.format('peak_location_atof_tot_%s', file_index),  peak_location)
-        // data[run].put(String.format('sigma_atof_tot_%s', file_index),  f1.getParameter(2))
-        // data[run].put(String.format('integral_normalized_to_trigger_atof_tot_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
-        has_data.set(true)
+          peak_location = 0.125*(h1.getMaximumBin() + 0.5)
+          // def f1 = ALERTFitter.totfitter(h1)
+          // data[run].put(String.format('fit_atof_tot_%s', file_index),  f1)
+          data[run].put(String.format('peak_location_atof_tot_%s', file_index),  peak_location)
+          // data[run].put(String.format('sigma_atof_tot_%s', file_index),  f1.getParameter(2))
+          // data[run].put(String.format('integral_normalized_to_trigger_atof_tot_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
+          has_data.set(true)
       }
     }
   }

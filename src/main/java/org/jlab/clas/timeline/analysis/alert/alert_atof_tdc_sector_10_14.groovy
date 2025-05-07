@@ -26,14 +26,15 @@ def has_data = new AtomicBoolean(false)
       def h1 = dir.getObject(String.format('/ALERT/TDC_%s', file_index))
       float tdc_offset = 100.0f
       if (run<21331) tdc_offset = 350.0f
-      if(h1!=null && h1.getEntries()>300) {
-        data[run].put(String.format('atof_tdc_%s', file_index),  h1)
-        def f1 = ALERTFitter.tdcfitter(h1, tdc_offset, run)
-        data[run].put(String.format('fit_atof_tdc_%s', file_index),  f1)
-        data[run].put(String.format('peak_location_atof_tdc_%s', file_index),  f1.getParameter(1))
-        data[run].put(String.format('sigma_atof_tdc_%s', file_index),  f1.getParameter(2))
-        data[run].put(String.format('integral_normalized_to_trigger_atof_tdc_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
-        has_data.set(true)
+      if(h1!=null) {
+        if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
+          data[run].put(String.format('atof_tdc_%s', file_index),  h1)
+          def f1 = ALERTFitter.tdcfitter(h1, tdc_offset, run)
+          data[run].put(String.format('fit_atof_tdc_%s', file_index),  f1)
+          data[run].put(String.format('peak_location_atof_tdc_%s', file_index),  f1.getParameter(1))
+          data[run].put(String.format('sigma_atof_tdc_%s', file_index),  f1.getParameter(2))
+          data[run].put(String.format('integral_normalized_to_trigger_atof_tdc_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
+          has_data.set(true)
       }
     }
   }
