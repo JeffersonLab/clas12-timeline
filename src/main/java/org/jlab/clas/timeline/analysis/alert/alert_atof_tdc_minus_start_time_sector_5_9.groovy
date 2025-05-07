@@ -36,6 +36,8 @@ def has_data = new AtomicBoolean(false)
         }
       }
     }
+    def start_time = dir.getObject('/ALERT/START_TIME')
+    data[run].put('start time', start_time)
   }
 
 
@@ -61,8 +63,8 @@ def has_data = new AtomicBoolean(false)
           }
           names.each{ name ->
             def gr = new GraphErrors(name)
-            gr.setTitle(  name.substring(0, name.length()-17).replace('_', ' ').replace('atof', 'ATOF').replace('tdc', 'TDC') + variable.replace('_', ' '))
-            gr.setTitleY( name.substring(0, name.length()-17).replace('_', ' ').replace('atof', 'ATOF').replace('tdc', 'TDC') + variable.replace('_', ' ') + " (ns)")
+            gr.setTitle(  String.format("ATOF TDC - Start Time %s sector %d layer %d", variable.replace('_', ' '), sector, layer))
+            gr.setTitleY( String.format("ATOF TDC - Start Time %s sector %d layer %d (ns)", variable.replace('_', ' '), sector, layer))
             gr.setTitleX("run number")
             data.sort{it.key}.each{run,it->
               out.mkdir('/'+it.run)
@@ -76,6 +78,19 @@ def has_data = new AtomicBoolean(false)
             }
             out.cd('/timelines')
             out.addDataSet(gr)
+          }
+          // start time
+          def gr = new GraphErrors("start time")
+          gr.setTitle(  String.format("ATOF TDC - Start Time %s sector %d layer %d", variable.replace('_', ' '), sector, layer))
+          gr.setTitleY( String.format("ATOF TDC - Start Time %s sector %d layer %d (ns)", variable.replace('_', ' '), sector, layer))
+          gr.setTitleX("run number")
+          data.sort{it.key}.each{run,it->
+            out.mkdir('/'+it.run)
+            out.cd('/'+it.run)
+            if (it.containsKey("start time")){
+              out.addDataSet(it["start time"])
+              gr.addPoint(it.run, it["start time"].getBinContent(it["start time"].getMaximumBin()), 0, 0)
+            }
           }
           out.writeFile(String.format('alert_atof_tdc_minus_start_time_%s_sector%d_layer%d.hipo', variable, sector, layer))
         }
