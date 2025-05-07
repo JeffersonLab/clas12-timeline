@@ -24,12 +24,10 @@ def has_data = new AtomicBoolean(false)
       if (component <= 10) file_index = String.format('sector%d_layer%d_component%d_order0', sector, layer, component)
       else file_index = String.format('sector%d_layer%d_component%d_order1', sector, layer, component-1)
       def h1 = dir.getObject(String.format('/ALERT/TDC_%s', file_index))
-      float tdc_offset = 100.0f
-      if (run<21331) tdc_offset = 350.0f
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
           data[run].put(String.format('atof_tdc_%s', file_index),  h1)
-          def f1 = ALERTFitter.tdcfitter(h1, tdc_offset, run)
+          def f1 = ALERTFitter.tdcfitter(h1, run)
           data[run].put(String.format('fit_atof_tdc_%s', file_index),  f1)
           data[run].put(String.format('peak_location_atof_tdc_%s', file_index),  f1.getParameter(1))
           data[run].put(String.format('sigma_atof_tdc_%s', file_index),  f1.getParameter(2))
