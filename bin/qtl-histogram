@@ -9,7 +9,7 @@ source $(dirname $0)/../libexec/environ.sh
 # max number of events for detector histogramming timelines
 MAX_NUM_EVENTS=100000000
 # slurm settings
-SLURM_MEMORY=1600 # must be more than max heap size in $TIMELINE_JAVA_OPTS
+SLURM_MEMORY=2000 # must be more than max heap size in $TIMELINE_JAVA_OPTS
 SLURM_TIME=10:00:00
 SLURM_LOG=/farm_out/%u/%x-%A_%a
 ########################################################################
