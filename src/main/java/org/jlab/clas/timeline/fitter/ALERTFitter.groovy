@@ -13,15 +13,13 @@ import org.jlab.groot.math.F1D
 
 class ALERTFitter{
 
-	static F1D tdcfitter(H1F h1, int run){
-		float tdc_offset = 100.0f
-		if (run<21331) tdc_offset = 350.0f
+	static F1D tdcfitter(H1F h1){
 		def f1 =new F1D("fit:"+h1.getName(),"[amp]*gaus(x,[mean],[sigma])+[cst]", -5.0, 5.0);
 		f1.setLineColor(33);
 		f1.setLineWidth(10);
 		f1.setOptStat("1111");
 		double maxz = h1.getBinContent(h1.getMaximumBin());
-		double peak_location = 0.5*(h1.getMaximumBin() + 0.5) + tdc_offset;
+		double peak_location = h1.getAxis().getBinCenter(h1.getMaximumBin());
 		f1.setRange(peak_location - 50, peak_location + 50);
 		f1.setParameter(0,maxz-h1.getBinContent(0));
 		f1.setParameter(1, peak_location);
@@ -42,15 +40,13 @@ class ALERTFitter{
 		return f1
 	}
 
-	static F1D tdc_minus_start_time_fitter(H1F h1, int run){
-		float tdc_offset = 0.0f
-		if (run<21331) tdc_offset = 250.0f
+	static F1D tdc_minus_start_time_fitter(H1F h1){
 		def f1 =new F1D("fit:"+h1.getName(),"[amp]*gaus(x,[mean],[sigma])+[cst]", -5.0, 5.0);
 		f1.setLineColor(33);
 		f1.setLineWidth(10);
 		f1.setOptStat("1111");
 		double maxz = h1.getBinContent(h1.getMaximumBin());
-		double peak_location = 0.5*(h1.getMaximumBin() + 0.5) + tdc_offset;
+		double peak_location = h1.getAxis().getBinCenter(h1.getMaximumBin());
 		f1.setRange(peak_location - 50, peak_location + 10);
 		f1.setParameter(0,maxz-h1.getBinContent(0));
 		f1.setParameter(1, peak_location);

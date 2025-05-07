@@ -27,7 +27,7 @@ def has_data = new AtomicBoolean(false)
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
           data[run].put(String.format('atof_tdc_minus_start_time_%s', file_index),  h1)
-          def f1 = ALERTFitter.tdc_minus_start_time_fitter(h1, run)
+          def f1 = ALERTFitter.tdc_minus_start_time_fitter(h1)
           data[run].put(String.format('fit_atof_tdc_minus_start_time_%s', file_index),  f1)
           data[run].put(String.format('peak_location_atof_tdc_minus_start_time_%s', file_index),  f1.getParameter(1))
           data[run].put(String.format('sigma_atof_tdc_minus_start_time_%s', file_index),  f1.getParameter(2))
