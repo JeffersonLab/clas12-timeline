@@ -92,7 +92,7 @@ public class ALERT {
       TOT[index].setFillColor(4);
     }
 
-    START_TIME = new H1F("start time","start time", 200, 0, 200);
+    START_TIME = new H1F("start time","start time", 80, 80.0, 120.0);
     START_TIME.setTitle("Event start time when the start time is defined and the trigger particle is an electron");
     START_TIME.setTitleX("start time (ns)");
 
