@@ -36,8 +36,8 @@ def has_data = new AtomicBoolean(false)
         }
       }
     }
-    def start_time = dir.getObject('/ALERT/START_TIME')
-    data[run].put('start time', start_time)
+    def start_time = dir.getObject('/ALERT/start time')
+    if (start_time!=null) data[run].put('start time', start_time)
   }
 
 
@@ -92,6 +92,8 @@ def has_data = new AtomicBoolean(false)
               gr.addPoint(it.run, it["start time"].getBinContent(it["start time"].getMaximumBin()), 0, 0)
             }
           }
+          out.cd('/timelines')
+          out.addDataSet(gr)
           out.writeFile(String.format('alert_atof_tdc_minus_start_time_%s_sector%d_layer%d.hipo', variable, sector, layer))
         }
       }
