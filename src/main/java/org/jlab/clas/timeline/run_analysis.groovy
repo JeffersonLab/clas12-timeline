@@ -3,7 +3,15 @@ package org.jlab.clas.timeline.analysis
 import org.jlab.groot.data.TDirectory
 
 def engines = [
-  out_ALERT: [new alert_atof_tdc(),
+  out_ALERT: [new alert_atof_tdc_sector_0_4(),
+   new alert_atof_tdc_sector_5_9(),
+   new alert_atof_tdc_sector_10_14(),
+   new alert_atof_tdc_minus_start_time_sector_0_4(),
+   new alert_atof_tdc_minus_start_time_sector_5_9(),
+   new alert_atof_tdc_minus_start_time_sector_10_14(),
+   new alert_atof_tot_sector_0_4(),
+   new alert_atof_tot_sector_5_9(),
+   new alert_atof_tot_sector_10_14(),
    ],
 //  out_BAND: [new band_adccor(),
 //    new band_lasertime(),
