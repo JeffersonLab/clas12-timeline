@@ -26,8 +26,9 @@ public class ALERT {
   public int rf_large_integer;
 
   //Hodoscope
-  public H1F[] TDC, TDC_minus_start_time, TOT;; //ATOF
-  public H1F[] ADC;//AHDC
+  public H1F[] TDC, TDC_minus_start_time, TOT; //ATOF-related histograms
+  public H1F START_TIME;//ATOF-related histogram
+  public H1F[] ADC;//AHDC-related-histograms
   private H1F bits;
 
   public IndexedTable rfTable;
@@ -74,8 +75,8 @@ public class ALERT {
         order = 1;
       }
 
-      float tdc_offset = 0.0;
-      if (reqrunNum<21339) tdc_offset = 250;
+      float tdc_offset = 0.0f;
+      if (reqrunNum<21331) tdc_offset = 250.0f;
 
       TDC[index] = new H1F(String.format("TDC_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC sector%d layer%d component%d order%d", sector, layer, component, order), 400, tdc_offset + 100.0, tdc_offset+ 300.0);
       TDC[index].setTitleX("TDC (ns)");
@@ -90,6 +91,10 @@ public class ALERT {
       TOT[index].setTitleY("Counts");
       TOT[index].setFillColor(4);
     }
+
+    START_TIME = new H1F("start time","start time", 80, 80.0, 120.0);
+    START_TIME.setTitle("Event start time when the start time is defined and the trigger particle is an electron");
+    START_TIME.setTitleX("start time (ns)");
 
     // //AHDC ADC Histograms
     // ADC = new H1F[576];
@@ -123,7 +128,10 @@ public class ALERT {
       int index     = sector * 48 + layer * 12 + component + order;
 
       TDC[index].fill(tdc*tdc_bin_time);
-      if (startTime!=-1000.0 && triggerPID == 11) TDC_minus_start_time[index].fill(tdc*tdc_bin_time - startTime);
+      if (startTime!=-1000.0 && triggerPID == 11){
+        START_TIME.fill(startTime);
+        TDC_minus_start_time[index].fill(tdc*tdc_bin_time - startTime);
+      }
       TOT[index].fill(tot*tdc_bin_time);
     }
   }
@@ -186,6 +194,7 @@ public class ALERT {
     for (int index = 0; index < 720; index++) {
       dirout.addDataSet(TDC[index], TDC_minus_start_time[index], TOT[index]);//atof histograms
     }
+    dirout.addDataSet(START_TIME);
     dirout.mkdir("/TRIGGER/");
     dirout.cd("/TRIGGER/");
     dirout.addDataSet(bits);
