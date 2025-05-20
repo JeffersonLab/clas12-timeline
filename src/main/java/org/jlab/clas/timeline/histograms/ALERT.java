@@ -145,7 +145,7 @@ public class ALERT {
       int index = 0;
 
       int layer_number = Arrays.asList(boxed_encoding).indexOf(layer) + 1;
-      index = component - 1 - layer_wires_cumulative[layer_number - 1];
+      index = component - 1 + layer_wires_cumulative[layer_number - 1];
 
       ADC[index].fill(adc);
     }
