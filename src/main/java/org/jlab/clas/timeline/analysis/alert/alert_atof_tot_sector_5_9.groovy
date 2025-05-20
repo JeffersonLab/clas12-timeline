@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ALERTFitter
+import org.apache.commons.lang3.ArrayUtils;
 
 class alert_atof_tot_sector_5_9 {
 
@@ -29,7 +30,7 @@ def has_data = new AtomicBoolean(false)
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
           data[run].put(String.format('atof_tot_%s', file_index),  h1)
 
-          peak_location = 0.125*(h1.getMaximumBin() + 0.5)
+          peak_location = h1.getBinCenter(h1.getMaximumBin())
           // def f1 = ALERTFitter.totfitter(h1)
           // data[run].put(String.format('fit_atof_tot_%s', file_index),  f1)
           data[run].put(String.format('peak_location_atof_tot_%s', file_index),  peak_location)

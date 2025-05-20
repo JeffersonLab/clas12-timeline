@@ -29,15 +29,13 @@ def has_data = new AtomicBoolean(false)
           data[run].put(String.format('atof_tdc_minus_start_time_%s', file_index),  h1)
           def f1 = ALERTFitter.tdc_minus_start_time_fitter(h1)
           data[run].put(String.format('fit_atof_tdc_minus_start_time_%s', file_index),  f1)
-          data[run].put(String.format('peak_location_atof_tdc_minus_start_time_%s', file_index),  f1.getParameter(1))
-          data[run].put(String.format('sigma_atof_tdc_minus_start_time_%s', file_index),  f1.getParameter(2))
-          data[run].put(String.format('integral_normalized_to_trigger_atof_tdc_minus_start_time_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
+          data[run].put(String.format('peak_location_atof_tdc_minus_start_time_%s', file_index),  f1.getParameter(1).abs())
+          data[run].put(String.format('sigma_atof_tdc_minus_start_time_%s', file_index),  f1.getParameter(2).abs())
+          data[run].put(String.format('integral_normalized_to_trigger_atof_tdc_minus_start_time_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0).abs() * f1.getParameter(2).abs()/trigger.getBinContent(reference_trigger_bit) )
           has_data.set(true)
         }
       }
     }
-    def start_time = dir.getObject('/ALERT/start time')
-    if (start_time!=null) data[run].put('start time', start_time)
   }
 
 
@@ -79,21 +77,6 @@ def has_data = new AtomicBoolean(false)
             out.cd('/timelines')
             out.addDataSet(gr)
           }
-          // start time
-          def gr = new GraphErrors("start time")
-          gr.setTitle(  String.format("ATOF TDC - Start Time %s sector %d layer %d", variable.replace('_', ' '), sector, layer))
-          gr.setTitleY( String.format("ATOF TDC - Start Time %s sector %d layer %d (ns)", variable.replace('_', ' '), sector, layer))
-          gr.setTitleX("run number")
-          data.sort{it.key}.each{run,it->
-            out.mkdir('/'+it.run)
-            out.cd('/'+it.run)
-            if (it.containsKey("start time")){
-              out.addDataSet(it["start time"])
-              gr.addPoint(it.run, it["start time"].getBinContent(it["start time"].getMaximumBin()), 0, 0)
-            }
-          }
-          out.cd('/timelines')
-          out.addDataSet(gr)
           out.writeFile(String.format('alert_atof_tdc_minus_start_time_%s_sector%d_layer%d.hipo', variable, sector, layer))
         }
       }
