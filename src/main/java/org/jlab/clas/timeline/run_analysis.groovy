@@ -12,6 +12,7 @@ def engines = [
    new alert_atof_tot_sector_0_4(),
    new alert_atof_tot_sector_5_9(),
    new alert_atof_tot_sector_10_14(),
+   new alert_start_time()
    ],
 //  out_BAND: [new band_adccor(),
 //    new band_lasertime(),
