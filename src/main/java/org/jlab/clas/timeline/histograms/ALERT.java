@@ -85,20 +85,20 @@ public class ALERT {
       float tdc_offset = 0.0f;
       if (reqrunNum<21331) tdc_offset = 250.0f;
 
-      TDC[index] = new H1F(String.format("TDC_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC sector%d layer%d component%d order%d", sector, layer, component, order), 400, tdc_offset + 100.0, tdc_offset+ 300.0);
+      TDC[index] = new H1F(String.format("TDC_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC sector%d layer%d component%d order%d", sector, layer, component, order), 200, tdc_offset + 150.0, tdc_offset+ 250.0);
       TDC[index].setTitleX("TDC (ns)");
       TDC[index].setTitleY("Counts");
       TDC[index].setFillColor(4);
-      TDC_minus_start_time[index] = new H1F(String.format("TDC_minus_start_time_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC - start time sector%d layer%d component%d order%d", sector, layer, component, order), 400, tdc_offset + 0.0, tdc_offset + 200.0);
+      TDC_minus_start_time[index] = new H1F(String.format("TDC_minus_start_time_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC - start time sector%d layer%d component%d order%d", sector, layer, component, order), 200, tdc_offset + 50.0, tdc_offset + 150.0);
       TDC_minus_start_time[index].setTitleX("TDC - start time (ns)");
       TDC_minus_start_time[index].setTitleY("Counts");
       TDC_minus_start_time[index].setFillColor(4);
-      TOT[index] = new H1F(String.format("TOT_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TOT sector%d layer%d component%d order%d", sector, layer, component, order), 1000, 0.0, 100.0);
+      TOT[index] = new H1F(String.format("TOT_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TOT sector%d layer%d component%d order%d", sector, layer, component, order), 700, 0.0, 70.0);
       TOT[index].setTitleX("TOT (ns)");
       TOT[index].setTitleY("Counts");
       TOT[index].setFillColor(4);
-      TOT[index] = new H1F(String.format("TOT_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TOT sector%d layer%d component%d order%d", sector, layer, component, order), 1000, 0.0, 100.0);
-      TOT_vs_TDC_minus_start_time[index] = new H2F(String.format("TOT_vs_TDC_minus_start_time_sector%d_layer%d_component_%d_order_%d", sector, layer, component, order), String.format("TOT_vs_TDC_minus_start_time_sector%d_layer%d_component_%d_order_%d", sector, layer, component, order), 100, 0.0, 100.0, 50, tdc_offset + 75.0, tdc_offset + 125.0);
+      TOT[index] = new H1F(String.format("TOT_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TOT sector%d layer%d component%d order%d", sector, layer, component, order), 700, 0.0, 70.0);
+      TOT_vs_TDC_minus_start_time[index] = new H2F(String.format("TOT_vs_TDC_minus_start_time_sector%d_layer%d_component_%d_order_%d", sector, layer, component, order), String.format("TOT_vs_TDC_minus_start_time_sector%d_layer%d_component_%d_order_%d", sector, layer, component, order), 70, 0.0, 70.0, 40, tdc_offset + 80.0, tdc_offset + 120.0);
       TOT_vs_TDC_minus_start_time[index].setTitleX("TOT (ns)");
       TOT_vs_TDC_minus_start_time[index].setTitleY("TDC - start time (ns)");
     }
