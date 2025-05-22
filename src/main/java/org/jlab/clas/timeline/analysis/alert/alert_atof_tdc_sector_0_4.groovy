@@ -29,9 +29,9 @@ def has_data = new AtomicBoolean(false)
           data[run].put(String.format('atof_tdc_%s', file_index),  h1)
           def f1 = ALERTFitter.tdcfitter(h1)
           data[run].put(String.format('fit_atof_tdc_%s', file_index),  f1)
-          data[run].put(String.format('peak_location_atof_tdc_%s', file_index),  f1.getParameter(1))
-          data[run].put(String.format('sigma_atof_tdc_%s', file_index),  f1.getParameter(2))
-          data[run].put(String.format('integral_normalized_to_trigger_atof_tdc_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
+          data[run].put(String.format('peak_location_atof_tdc_%s', file_index),  f1.getParameter(1).abs())
+          data[run].put(String.format('sigma_atof_tdc_%s', file_index),  f1.getParameter(2).abs())
+          data[run].put(String.format('integral_normalized_to_trigger_atof_tdc_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0).abs() * f1.getParameter(2).abs()/trigger.getBinContent(reference_trigger_bit) )
           has_data.set(true)
         }
       }
@@ -72,7 +72,7 @@ def has_data = new AtomicBoolean(false)
                 out.addDataSet(it['fit_'+name])
                 gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
               }
-             else if (variable=="peak_location") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
+              else if (variable=="peak_location") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
             }
             out.cd('/timelines')
             out.addDataSet(gr)
