@@ -27,6 +27,8 @@ def has_data = new AtomicBoolean(false)
       System.err.println "WARNING: no data for this timeline, not producing"
       return
     }
+    TDirectory out = new TDirectory()
+    out.mkdir('/timelines')
 
     // start time
     def gr = new GraphErrors("start time")

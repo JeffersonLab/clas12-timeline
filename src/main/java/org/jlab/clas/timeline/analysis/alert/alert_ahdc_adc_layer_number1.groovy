@@ -34,7 +34,7 @@ int number_of_wires_per_timeline = 15;
           // data[run].put(String.format('fit_adc_layer%d_wire_number%d', layer, wire_number),  f1)
           // data[run].put(String.format('peak_location_ahdc_adc_layer%d_wire_number%d', layer, wire_number),  peak_location)
           // data[run].put(String.format('sigma_adc_layer%d_wire_number%d', layer, wire_number),  f1.getParameter(2).abs())
-          data[run].put(String.format('integral_normalized_to_trigger_adc_layer%d_wire_number%d', layer, wire_number),  integral/trigger.getBinContent(reference_trigger_bit) )
+          data[run].put(String.format('integral_normalized_to_trigger_ahdc_adc_layer%d_wire_number%d', layer, wire_number),  integral/trigger.getBinContent(reference_trigger_bit) )
           has_data.set(true)
         }
       }
