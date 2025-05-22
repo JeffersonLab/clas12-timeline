@@ -21,8 +21,6 @@ def has_data = new AtomicBoolean(false)
     }
   }
 
-
-
   def write() {
 
     if(!has_data.get()) {
@@ -32,8 +30,8 @@ def has_data = new AtomicBoolean(false)
 
     // start time
     def gr = new GraphErrors("start time")
-    gr.setTitle(  String.format("Start Time", variable.replace('_', ' '), sector, layer))
-    gr.setTitleY( String.format("Start Time of Electron Trigger Events(ns)", variable.replace('_', ' '), sector, layer))
+    gr.setTitle(  String.format("Start Time"))
+    gr.setTitleY( String.format("Start Time of Electron Trigger Events(ns)"))
     gr.setTitleX("run number")
     data.sort{it.key}.each{run,it->
       out.mkdir('/'+it.run)

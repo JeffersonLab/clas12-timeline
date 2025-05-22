@@ -25,7 +25,7 @@ int number_of_wires_per_timeline = 15;
     // data[run].put('bits',  trigger)
     float integral = 0;
     (1..number_of_wires_this_layer).collect{wire_number->
-      def h1 = dir.getObject(String.format('/ALERT/ADC layer%d wire number%d', layer, wire_number))
+      def h1 = dir.getObject(String.format('/ALERT/ADC_layer%d_wire_number%d', layer, wire_number))
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
           data[run].put(String.format('ahdc_adc_layer%d_wire_number%d', layer, wire_number),  h1)
