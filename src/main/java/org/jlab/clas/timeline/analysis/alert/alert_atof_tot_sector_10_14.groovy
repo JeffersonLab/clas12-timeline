@@ -64,8 +64,8 @@ def has_data = new AtomicBoolean(false)
           }
           names.each{ name ->
             def gr = new GraphErrors(name)
-            gr.setTitle(  name.substring(0, name.length()-17).replace('_', ' ').replace('atof', 'ATOF').replace('tot', 'TOT') + variable.replace('_', ' '))
-            gr.setTitleY( name.substring(0, name.length()-17).replace('_', ' ').replace('atof', 'ATOF').replace('tot', 'TOT') + variable.replace('_', ' ') + " (ns)")
+          gr.setTitle(  String.format("ATOF TOT %s sector %d layer %d", variable.replace('_', ' '), sector, layer))
+          gr.setTitleY( String.format("ATOF TOT %s sector %d layer %d (ns)", variable.replace('_', ' '), sector, layer))
             gr.setTitleX("run number")
             data.sort{it.key}.each{run,it->
               out.mkdir('/'+it.run)
@@ -75,7 +75,7 @@ def has_data = new AtomicBoolean(false)
                 // out.addDataSet(it['fit_'+name])
                 gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
               }
-             else if (variable=="peak_location") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
+              else if (variable=="peak_location") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
             }
             out.cd('/timelines')
             out.addDataSet(gr)

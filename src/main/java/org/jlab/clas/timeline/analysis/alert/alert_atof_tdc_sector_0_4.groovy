@@ -72,7 +72,7 @@ def has_data = new AtomicBoolean(false)
                 out.addDataSet(it['fit_'+name])
                 gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
               }
-             else if (variable=="peak_location") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
+              else if (variable=="peak_location") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
             }
             out.cd('/timelines')
             out.addDataSet(gr)
