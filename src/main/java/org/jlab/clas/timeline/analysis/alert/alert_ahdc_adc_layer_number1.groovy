@@ -57,7 +57,7 @@ int number_of_wires_per_timeline = 15;
         TDirectory out = new TDirectory()
         out.mkdir('/timelines')
         def number_of_wires_this_timeline = number_of_wires_per_timeline
-        if (layer_number == 1 && timeline_index == timeline_index_max) number_of_wires_this_timeline = number_of_wires_per_timeline + number_of_wires_this_layer%number_of_wires_per_timeline
+        if (layer_number == 1 && timeline_index == timeline_index_max - 1) number_of_wires_this_timeline = number_of_wires_per_timeline + number_of_wires_this_layer%number_of_wires_per_timeline
         (1..number_of_wires_this_timeline).collect{wire_index->
           def wire_number = wire_index + 15* timeline_index
           if (wire_number <= number_of_wires_this_layer){
