@@ -22,8 +22,8 @@ def has_data = new AtomicBoolean(false)
       int layer     = (index % (12 * 4)) / 12;
       int component = index % 12;
       def file_index = '';
-      if (component <= 10) file_index = String.format('sector%d_layer%d_component%d_order0', sector, layer, component)
-      else file_index = String.format('sector%d_layer%d_component%d_order1', sector, layer, component-1)
+      if (component <= 10) file_index = String.format('sector%d_layer%d_component_%d_order_0', sector, layer, component)
+      else file_index = String.format('sector%d_layer%d_component_%d_order_1', sector, layer, component-1)
       def h2 = dir.getObject(String.format('/ALERT/TDC_minus_start_time_vs_TOT_%s', file_index))
       if(h2!=null) {
         if (h2.getEntries()>300){
@@ -76,8 +76,8 @@ def has_data = new AtomicBoolean(false)
           out.mkdir('/timelines')
           (0..<12).collect{component->
             def file_index = ''
-            if (component <= 10) file_index = String.format('sector%d_layer%d_component%d_order0', sector, layer, component)
-            else file_index = String.format('sector%d_layer%d_component%d_order1', sector, layer, component-1)
+            if (component <= 10) file_index = String.format('sector%d_layer%d_component_%d_order_0', sector, layer, component)
+            else file_index = String.format('sector%d_layer%d_component_%d_order_1', sector, layer, component-1)
             names << String.format('atof_tdc_minus_start_time_vs_tot_%s', file_index)
           }
           names.each{ name ->
