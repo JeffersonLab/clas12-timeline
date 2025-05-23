@@ -28,9 +28,9 @@ def has_data = new AtomicBoolean(false)
       if(h2!=null) {
         if (h2.getEntries()>300){
           data[run].put(String.format('atof_tdc_minus_start_time_vs_tot_%s', file_index),  h2)
-          def binx_when_20 = h2.getXaxis().getBin(20);
-          def binx_when_40 = h2.getXaxis().getBin(40);
-          def binx_max     = h2.getXaxis().getNBins();
+          def binx_when_20 = h2.getXAxis().getBin(20);
+          def binx_when_40 = h2.getXAxis().getBin(40);
+          def binx_max     = h2.getXAxis().getNBins();
           ArrayList<H1F> h2_slices_by_X = h2.getSlicesX();
 
           def h1_1 = h2_slices_by_X.get(0)
