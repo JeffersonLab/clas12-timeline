@@ -33,6 +33,10 @@ def has_data = new AtomicBoolean(false)
           def binx_max     = h2.getXAxis().getNBins();
           ArrayList<H1F> h2_slices_by_X = h2.getSlicesX();
 
+          println(binx_when_20)
+          println(binx_when_40)
+          println(binx_max)
+
           def h1_1 = h2_slices_by_X.get(0)
           def h1_2 = h2_slices_by_X.get(binx_when_20);
           def h1_3 = h2_slices_by_X.get(binx_when_40);
