@@ -28,7 +28,7 @@ public class ALERT {
 
   //Hodoscope
   public H1F[] TDC, TDC_minus_start_time, TOT; //ATOF-related histograms
-  public H2F[] TOT_vs_TDC_minus_start_time;
+  public H2F[] TDC_minus_start_time_vs_TOT;
   public H1F START_TIME;//ATOF-related histogram
   public H1F[] ADC;//AHDC-related-histograms
   private H1F bits;
@@ -65,7 +65,7 @@ public class ALERT {
     TDC = new H1F[720];
     TDC_minus_start_time = new H1F[720];
     TOT = new H1F[720];
-    TOT_vs_TDC_minus_start_time = new H2F[720];
+    TDC_minus_start_time_vs_TOT = new H2F[720];
 
     for (int index = 0; index < 720; index++) {
       int sector    = 0;
@@ -98,9 +98,9 @@ public class ALERT {
       TOT[index].setTitleY("Counts");
       TOT[index].setFillColor(4);
       TOT[index] = new H1F(String.format("TOT_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TOT sector%d layer%d component%d order%d", sector, layer, component, order), 700, 0.0, 70.0);
-      TOT_vs_TDC_minus_start_time[index] = new H2F(String.format("TOT_vs_TDC_minus_start_time_sector%d_layer%d_component_%d_order_%d", sector, layer, component, order), String.format("TOT_vs_TDC_minus_start_time_sector%d_layer%d_component_%d_order_%d", sector, layer, component, order), 70, 0.0, 70.0, 40, tdc_offset + 80.0, tdc_offset + 120.0);
-      TOT_vs_TDC_minus_start_time[index].setTitleX("TOT (ns)");
-      TOT_vs_TDC_minus_start_time[index].setTitleY("TDC - start time (ns)");
+      TDC_minus_start_time_vs_TOT[index] = new H2F(String.format("TDC_minus_start_time_vs_TOT_sector%d_layer%d_component_%d_order_%d", sector, layer, component, order), String.format("TDC minus start time vs TOT sector%d layer%d component%d order%d", sector, layer, component, order), 70, 0.0, 70.0, 40, tdc_offset + 80.0, tdc_offset + 120.0);
+      TDC_minus_start_time_vs_TOT[index].setTitleX("TOT (ns)");
+      TDC_minus_start_time_vs_TOT[index].setTitleY("TDC - start time (ns)");
     }
 
     START_TIME = new H1F("start time","start time", 80, 80.0, 120.0);
@@ -166,7 +166,7 @@ public class ALERT {
       if (startTime!=-1000.0 && triggerPID == 11){
         START_TIME.fill(startTime);
         TDC_minus_start_time[index].fill(tdc*tdc_bin_time - startTime);
-        TOT_vs_TDC_minus_start_time[index].fill(tot*tdc_bin_time, tdc*tdc_bin_time - startTime);
+        TDC_minus_start_time_vs_TOT[index].fill(tot*tdc_bin_time, tdc*tdc_bin_time - startTime);
       }
       TOT[index].fill(tot*tdc_bin_time);
     }
@@ -232,7 +232,7 @@ public class ALERT {
     dirout.mkdir("/ALERT/");
     dirout.cd("/ALERT/");
     for (int index = 0; index < 720; index++) {
-      dirout.addDataSet(TDC[index], TDC_minus_start_time[index], TOT[index], TOT_vs_TDC_minus_start_time[index]);//atof histograms
+      dirout.addDataSet(TDC[index], TDC_minus_start_time[index], TOT[index], TDC_minus_start_time_vs_TOT[index]);//atof histograms
     }
     for (int index = 0; index < 576; index++) {
       dirout.addDataSet(ADC[index]);
