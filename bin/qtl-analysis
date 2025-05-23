@@ -143,11 +143,18 @@ fi
 # main executable for detector timelines
 run_analysis_script="org.jlab.clas.timeline.analysis.run_analysis"
 
+# grep which exits zero when no match is found
+grep_zero() { grep $1 || true; }
+
 # build list of timelines
 if ${modes['skip-mya']}; then
-  timelineList=$(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep $match)
+  timelineList=($(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep_zero $match))
 else
-  timelineList=$(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | sort | grep $match)
+  timelineList=($(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | sort | grep_zero $match))
+fi
+if [ ${#timelineList[@]} -eq 0 ]; then
+  printError "empty 'timelineList'; most likely your argument '-m $match' does not match any timelines; try '--list' to see the list of all available timelines"
+  exit 100
 fi
 
 # list detector timelines, if requested
@@ -155,7 +162,7 @@ if ${modes['list']}; then
   echo $sep
   echo "LIST OF TIMELINES"
   echo $sep
-  echo $timelineList | sed 's; ;\n;g'
+  echo ${timelineList[@]} | sed 's; ;\n;g'
   exit $?
 fi
 
@@ -260,7 +267,6 @@ inputDir=$(realpath $inputDir)
 [ -z "$outputDir" ] && outputDir=$(realpath $(pwd -P)/outfiles/$dataset) || outputDir=$(realpath $outputDir)
 
 # set subdirectories
-finalDirPreQA=$outputDir/timeline_web_preQA
 finalDir=$outputDir/timeline_web
 logDir=$outputDir/log
 
@@ -272,7 +278,6 @@ $sep
 INPUT_DIR       = $inputDir
 DATASET_NAME    = $dataset
 OUTPUT_DIR      = $outputDir
-FINAL_DIR_PREQA = $finalDirPreQA
 FINAL_DIR       = $finalDir
 LOG_DIR         = $logDir
 PUBLISH_DIR     = $publishDir
@@ -309,9 +314,9 @@ detDirs=(
 
 # cleanup output directories
 if $enableAna; then
-  if [ -d $finalDirPreQA ]; then
-    printWarning "removing output directory $finalDirPreQA"
-    rm -r $finalDirPreQA
+  if [ -d $finalDir ]; then
+    printWarning "removing output directory $finalDir"
+    rm -r $finalDir
   fi
   if [ -d $logDir ]; then
     printWarning "removing log directory $logDir"
@@ -320,7 +325,7 @@ if $enableAna; then
 fi
 
 # make output directories
-mkdir -p $logDir $finalDirPreQA $finalDir
+mkdir -p $logDir $finalDir
 
 
 ##################################################################################
@@ -359,7 +364,7 @@ if $enableAna; then
   }
 
   # change working directory to output directory
-  pushd $finalDirPreQA
+  pushd $finalDir
 
   # make detector subdirectories
   for detDir in ${detDirs[@]}; do
@@ -369,7 +374,7 @@ if $enableAna; then
   # produce timelines, multithreaded
   job_ids=()
   job_names=()
-  for timelineObj in $timelineList; do
+  for timelineObj in ${timelineList[@]}; do
     logFile=$logDir/$timelineObj
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
     echo ">>> producing timeline '$timelineObj' ..."
@@ -431,26 +436,6 @@ if $enableAna; then
   echo ">>> done producing timelines..."
   popd
 fi
-
-######################################
-# run QA
-######################################
-
-if $enableAna; then
-  # first, copy the timelines to the final timeline directory
-  echo ">>> copy timelines to final directory..."
-  cp -rL $finalDirPreQA/* $finalDir/
-  # then add the QA lines
-  echo ">>> add QA lines..."
-  logFile=$logDir/qa
-  $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
-  outputFiles=$(find $finalDir -name "*_QA.hipo")
-  logFile=$logDir/qa_hipo-check
-  if [ -n "$outputFiles" ]; then
-    $TIMELINESRC/libexec/hipo-check.sh $outputFiles > $logFile.out 2> $logFile.err || touch $logFile.fail
-  fi
-fi
-
 
 
 ######################################

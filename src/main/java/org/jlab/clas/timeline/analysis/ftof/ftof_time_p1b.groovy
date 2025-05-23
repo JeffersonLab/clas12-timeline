@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.FTOFFitter
+import org.jlab.clas.timeline.util.QA
 
 class ftof_time_p1b {
 
@@ -37,7 +38,7 @@ def write() {
   ['mean', 'sigma'].each{ name ->
     TDirectory out = new TDirectory()
     out.mkdir('/timelines')
-    (0..<6).each{ sec->
+    def grtlList = (0..<6).collect{ sec->
       def grtl = new GraphErrors('sec'+(sec+1))
       grtl.setTitle("p1b Vertex-time difference FTOF_vtime-RFT for e-, e+, pi-, and pi+ (" + name + ")")
       grtl.setTitleY("p1b Vertex-time difference FTOF_vtime-RFT for e-, e+, pi-, and pi+ (" + name + ") (ns)")
@@ -52,11 +53,11 @@ def write() {
         out.addDataSet(it.flist[sec])
         grtl.addPoint(it.run, it[name][sec], 0, 0)
       }
-      out.cd('/timelines')
-      out.addDataSet(grtl)
+      grtl
     }
-
-    out.writeFile('ftof_time_p1b_' + name + '.hipo')
+    out.cd('/timelines')
+    QA.cutGraphsMeanSigma(name, *grtlList, mean_lb: -0.020, mean_ub: 0.020, sigma_ub: 0.075, out: out)
+    out.writeFile("ftof_time_p1b_${name}_QA.hipo")
   }
 }
 }
