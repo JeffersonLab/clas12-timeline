@@ -96,7 +96,7 @@ def has_data = new AtomicBoolean(false)
               if (it.containsKey(name)){
                 out.addDataSet(it[name])
                 // out.addDataSet(it['fit_'+name])
-                gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
+                if (it.containsKey(variable + '_' + name)) gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
               }
               else if (variable=="mean_tdc-start_time_(tot_0_to_20)") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
             }
