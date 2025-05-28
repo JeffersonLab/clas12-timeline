@@ -47,16 +47,19 @@ def has_data = new AtomicBoolean(false)
             h1_3.add( h2_slices_by_X.get(it))
           }
           if (h1_1.getBinContent(h1_1.getMaximumBin()) > 10 && h1_1.getEntries() > 100 ){
-            data[run].put(String.format('mean_tdc-start_time_(tot_0_to_20)_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_1.getMean())
-            data[run].put(String.format('rms_tdc-start_time_(tot_0_to_20)_atof_tdc_minus_start_time_vs_tot_%s', file_index),   h1_1.getRMS())
+            data[run].put(String.format('mean_tot_range1_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_1.getMean())
+            data[run].put(String.format('rms_tot_range1_atof_tdc_minus_start_time_vs_tot_%s', file_index),   h1_1.getRMS())
+            h1_1.setTitle("tdc - start time (0 ns < TOT < 20 ns) (ns)")
           }
           if (h1_2.getBinContent(h1_2.getMaximumBin()) > 10 && h1_2.getEntries() > 100 ){
-            data[run].put(String.format('mean_tdc-start_time_(tot_20_to_40)_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_2.getMean())
-            data[run].put(String.format('rms_tdc-start_time_(tot_20_to_40)_atof_tdc_minus_start_time_vs_tot_%s', file_index),   h1_2.getRMS())
+            data[run].put(String.format('mean_tot_range2_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_2.getMean())
+            data[run].put(String.format('rms_tot_range2_atof_tdc_minus_start_time_vs_tot_%s', file_index),   h1_2.getRMS())
+            h1_2.setTitle("tdc - start time (20 ns < TOT < 40 ns) (ns)")
           }
           if (h1_3.getBinContent(h1_3.getMaximumBin()) > 10 && h1_3.getEntries() > 100 ){
-            data[run].put(String.format('mean_tdc-start_time_(tot_above_40)_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_3.getMean())
-            data[run].put(String.format('rms_tdc-start_time_(tot_above_40)_tdc_minus_start_time_vs_tot_%s', file_index),        h1_3.getRMS())
+            data[run].put(String.format('mean_tot_range3_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_3.getMean())
+            data[run].put(String.format('rms_tot_range3_tdc_minus_start_time_vs_tot_%s', file_index),        h1_3.getRMS())
+            h1_3.setTitle("tdc - start time (40 ns < TOT < 70 ns) (ns)")
           }
           has_data.set(true)
         }
@@ -73,7 +76,7 @@ def has_data = new AtomicBoolean(false)
       return
     }
 
-    ['mean_tdc-start_time_(tot_0_to_20)', 'rms_tdc-start_time_(tot_0_to_20)', 'mean_tdc-start_time_(tot_20_to_40)', 'rms_tdc-start_time_(tot_20_to_40)', 'mean_tdc-start_time_(tot_above_40)', 'rms_tdc-start_time_(tot_above_40)'].each{variable->
+    ['mean_tot_range1', 'rms_tot_range1', 'mean_tot_range2', 'rms_tot_range2', 'mean_tot_range3', 'rms_tot_range3'].each{variable->
       (0..0).collect{sector->
         (0..<4).collect{layer->
           def names = []
@@ -98,7 +101,7 @@ def has_data = new AtomicBoolean(false)
                 // out.addDataSet(it['fit_'+name])
                 if (it.containsKey(variable + '_' + name)) gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
               }
-              else if (variable=="mean_tdc-start_time_(tot_0_to_20)") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
+              else if (variable=="mean_tot_range1") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
             }
             out.cd('/timelines')
             out.addDataSet(gr)
