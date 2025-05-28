@@ -41,24 +41,15 @@ def has_data = new AtomicBoolean(false)
           def h1_2 = h2_slices_by_X.get(binx_when_20);
           def h1_3 = h2_slices_by_X.get(binx_when_40);
 
-          (0..<binx_max).each{it ->
-            def new_hist = h2_slices_by_X.get(it)
-            if (new_hist!= null) h1_1 = h1_1.add(new_hist)
-            else println(it + "   " + run)
+          (1..<binx_when_20).each{it ->
+            h1_1.add( h2_slices_by_X.get(it))
           }
-
-          // (1..<binx_when_20).each{it ->
-          //   def new_hist = h2_slices_by_X.get(it)
-          //   if (new_hist!= null) h1_1 = h1_1.add(new_hist)
-          // }
-          // (binx_when_20+1..<binx_when_40).each{it ->
-          //   def new_hist = h2_slices_by_X.get(it)
-          //   if (new_hist!= null) h1_1 = h1_2.add(new_hist)
-          // }
-          // (binx_when_40+1..<binx_max).each{it ->
-          //   def new_hist = h2_slices_by_X.get(it)
-          //   if (new_hist!= null) h1_1 = h1_3.add(new_hist)
-          // }
+          (binx_when_20+1..<binx_when_40).each{it ->
+            h1_2.add( h2_slices_by_X.get(it))
+          }
+          (binx_when_40+1..<binx_max).each{it ->
+            h1_3.add( h2_slices_by_X.get(it))
+          }
           data[run].put(String.format('mean_tdc-start_time_(tot_0_to_20)_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_1.getMean())
           data[run].put(String.format('rms_tdc-start_time_(tot_0_to_20)_atof_tdc_minus_start_time_vs_tot_%s', file_index),   h1_1.getRMS())
           data[run].put(String.format('mean_tdc-start_time_(tot_20_to_40)_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_2.getMean())
