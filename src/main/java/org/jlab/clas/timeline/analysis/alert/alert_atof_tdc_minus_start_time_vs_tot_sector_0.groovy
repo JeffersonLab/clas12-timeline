@@ -47,24 +47,17 @@ def has_data = new AtomicBoolean(false)
             h1_3.add( h2_slices_by_X.get(it))
           }
 
-          println(h1_1.getBinContent(h1_1.getMaximumBin()))
-          println(h1_1.getEntries())
-          println(h1_2.getBinContent(h1_2.getMaximumBin()))
-          println(h1_2.getEntries())
-          println(h1_3.getBinContent(h1_3.getMaximumBin()))
-          println(h1_3.getEntries())
-
-          if (h1_1.getBinContent(h1_1.getMaximumBin()) > 10 && h1_1.getEntries() > 100 ){
+          if (h1_1.getBinContent(h1_1.getMaximumBin()) > 10){
             data[run].put(String.format('mean_tot_range1_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_1.getMean())
             data[run].put(String.format('rms_tot_range1_atof_tdc_minus_start_time_vs_tot_%s', file_index),   h1_1.getRMS())
             h1_1.setTitle("tdc - start time (0 ns < TOT < 20 ns) (ns)")
           }
-          if (h1_2.getBinContent(h1_2.getMaximumBin()) > 10 && h1_2.getEntries() > 100 ){
+          if (h1_2.getBinContent(h1_2.getMaximumBin()) > 10){
             data[run].put(String.format('mean_tot_range2_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_2.getMean())
             data[run].put(String.format('rms_tot_range2_atof_tdc_minus_start_time_vs_tot_%s', file_index),   h1_2.getRMS())
             h1_2.setTitle("tdc - start time (20 ns < TOT < 40 ns) (ns)")
           }
-          if (h1_3.getBinContent(h1_3.getMaximumBin()) > 10 && h1_3.getEntries() > 100 ){
+          if (h1_3.getBinContent(h1_3.getMaximumBin()) > 10){
             data[run].put(String.format('mean_tot_range3_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_3.getMean())
             data[run].put(String.format('rms_tot_range3_tdc_minus_start_time_vs_tot_%s', file_index),        h1_3.getRMS())
             h1_3.setTitle("tdc - start time (40 ns < TOT < 70 ns) (ns)")
