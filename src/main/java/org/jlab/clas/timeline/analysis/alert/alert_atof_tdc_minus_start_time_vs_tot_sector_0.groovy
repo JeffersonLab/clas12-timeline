@@ -46,6 +46,14 @@ def has_data = new AtomicBoolean(false)
           (binx_when_40+1..<binx_max).each{it ->
             h1_3.add( h2_slices_by_X.get(it))
           }
+
+          println(h1_1.getBinContent(h1_1.getMaximumBin()))
+          println(h1_1.getEntries())
+          println(h1_2.getBinContent(h1_2.getMaximumBin()))
+          println(h1_2.getEntries())
+          println(h1_3.getBinContent(h1_3.getMaximumBin()))
+          println(h1_3.getEntries())
+
           if (h1_1.getBinContent(h1_1.getMaximumBin()) > 10 && h1_1.getEntries() > 100 ){
             data[run].put(String.format('mean_tot_range1_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_1.getMean())
             data[run].put(String.format('rms_tot_range1_atof_tdc_minus_start_time_vs_tot_%s', file_index),   h1_1.getRMS())
@@ -99,8 +107,6 @@ def has_data = new AtomicBoolean(false)
               if (it.containsKey(name)){
                 out.addDataSet(it[name])
                 // out.addDataSet(it['fit_'+name])
-                println(it*.key)
-                println(variable + '_' + name)
                 if (it.containsKey(variable + '_' + name)) gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
               }
               else if (variable=="mean_tot_range1") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
