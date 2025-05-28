@@ -46,13 +46,18 @@ def has_data = new AtomicBoolean(false)
           (binx_when_40+1..<binx_max).each{it ->
             h1_3.add( h2_slices_by_X.get(it))
           }
-          data[run].put(String.format('mean_tdc-start_time_(tot_0_to_20)_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_1.getMean())
-          data[run].put(String.format('rms_tdc-start_time_(tot_0_to_20)_atof_tdc_minus_start_time_vs_tot_%s', file_index),   h1_1.getRMS())
-          data[run].put(String.format('mean_tdc-start_time_(tot_20_to_40)_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_2.getMean())
-          data[run].put(String.format('rms_tdc-start_time_(tot_20_to_40)_atof_tdc_minus_start_time_vs_tot_%s', file_index),   h1_2.getRMS())
-          data[run].put(String.format('mean_tdc-start_time_(tot_above_40)_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_3.getMean())
-          data[run].put(String.format('rms_tdc-start_time_(tot_above_40)_tdc_minus_start_time_vs_tot_%s', file_index),   h1_3.getRMS())
-
+          if (h1_1.getBinContent(h1_1.getMaximumBin()) > 10 && h1_1.getEntries() > 100 ){
+            data[run].put(String.format('mean_tdc-start_time_(tot_0_to_20)_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_1.getMean())
+            data[run].put(String.format('rms_tdc-start_time_(tot_0_to_20)_atof_tdc_minus_start_time_vs_tot_%s', file_index),   h1_1.getRMS())
+          }
+          if (h1_2.getBinContent(h1_2.getMaximumBin()) > 10 && h1_2.getEntries() > 100 ){
+            data[run].put(String.format('mean_tdc-start_time_(tot_20_to_40)_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_2.getMean())
+            data[run].put(String.format('rms_tdc-start_time_(tot_20_to_40)_atof_tdc_minus_start_time_vs_tot_%s', file_index),   h1_2.getRMS())
+          }
+          if (h1_3.getBinContent(h1_3.getMaximumBin()) > 10 && h1_3.getEntries() > 100 ){
+            data[run].put(String.format('mean_tdc-start_time_(tot_above_40)_atof_tdc_minus_start_time_vs_tot_%s', file_index),  h1_3.getMean())
+            data[run].put(String.format('rms_tdc-start_time_(tot_above_40)_tdc_minus_start_time_vs_tot_%s', file_index),        h1_3.getRMS())
+          }
           has_data.set(true)
         }
       }
