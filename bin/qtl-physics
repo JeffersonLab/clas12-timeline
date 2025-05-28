@@ -171,6 +171,7 @@ $TIMELINESRC/bin/qtl analysis \
   -i $inputDir \
   -o $outputDir \
   --just-pub \
+  --overwrite \
   -p $publishDir $customPubArg
 
 if $hasErrorPrintouts; then
