@@ -6,7 +6,7 @@ import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ALERTFitter
 import org.jlab.groot.data.H1F;
 
-class alert_atof_tdc_minus_start_time_vs_tot_sector_0 {
+class alert_atof_tdc_minus_start_time_vs_tot_sector_13 {
 
 def data = new ConcurrentHashMap()
 def has_data = new AtomicBoolean(false)
