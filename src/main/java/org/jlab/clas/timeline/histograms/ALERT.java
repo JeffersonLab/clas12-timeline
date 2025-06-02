@@ -22,6 +22,7 @@ public class ALERT {
 
   public boolean hasRF;
   public double startTime, rfTime;
+  public double ahdc_residual, ahdc_time;
 
   public double rfPeriod;
   public int rf_large_integer;
@@ -30,7 +31,7 @@ public class ALERT {
   public H1F[] TDC, TDC_minus_start_time, TOT; //ATOF-related histograms
   public H2F[] TDC_minus_start_time_vs_TOT;
   public H1F START_TIME;//ATOF-related histogram
-  public H1F[] ADC;//AHDC-related-histograms
+  public H1F[] ADC, AHDC_RESIDUAL, AHDC_TIME;//AHDC-related-histograms
   private H1F bits;
 
   public IndexedTable rfTable;
@@ -108,7 +109,9 @@ public class ALERT {
     START_TIME.setTitleX("start time (ns)");
 
     //AHDC ADC Histograms
-    ADC = new H1F[576];
+    ADC           = new H1F[576];
+    AHDC_RESIDUAL = new H1F[8];
+    AHDC_TIME     = new H1F[8];
 
     for (int index = 0; index<576; index++) {
       int layer = 0;
@@ -125,6 +128,18 @@ public class ALERT {
       ADC[index].setTitleX("ADC");
       ADC[index].setTitleY("Counts");
       ADC[index].setFillColor(4);
+    }
+
+    for (int layer=0; layer<8; layer++){
+      AHDC_RESIDUAL[layer] = new H1F(String.format("AHDC_RESIDUAL_layer%%d", layer), String.format("AHDC_RESIDUAL layer%d", layer), 610, -6, 0.1);
+      AHDC_RESIDUAL[layer].setTitleX("AHDC_RESIDUAL");
+      AHDC_RESIDUAL[layer].setTitleY("Counts");
+      AHDC_RESIDUAL[layer].setFillColor(4);
+
+      AHDC_TIME[layer] = new H1F(String.format("AHDC_TIME_layer%%d", layer), String.format("AHDC_TIME layer%d", layer), 450, -400, 50.0);
+      AHDC_TIME[layer].setTitleX("AHDC_TIME");
+      AHDC_TIME[layer].setTitleY("Counts");
+      AHDC_TIME[layer].setFillColor(4);
     }
 
     // Trigger bits
@@ -150,6 +165,23 @@ public class ALERT {
       ADC[index].fill(adc);
     }
   }
+
+  public void fillAHDC_hits(DataBank ahdc_hits) {
+    int rows = ahdc_hits.rows();
+    for (int loop = 0; loop < rows; loop++) {
+      int layer       = ahdc_hits.getInt("layer", loop);
+      int superlayer  = ahdc_hits.getInt("superlayer", loop);
+      float time      = ahdc_hits.getFloat("time", loop);
+      float residual  = ahdc_hits.getFloat("residual", loop);
+
+      layer = superlayer * 10 + layer;
+      int layer_number = Arrays.asList(boxed_encoding).indexOf(layer);
+
+      AHDC_RESIDUAL[layer_number].fill(residual);
+      AHDC_TIME[layer_number].fill(time);
+    }
+  }
+
 
   public void fillATOF(DataBank atof_tdc) {
     int rows = atof_tdc.rows();
@@ -177,8 +209,9 @@ public class ALERT {
     DataBank recBankEB = null;
     DataBank recEvenEB = null;
     DataBank runConfig = null;
-    DataBank atof_tdc = null;
-    DataBank ahdc_adc = null;
+    DataBank atof_tdc  = null;
+    DataBank ahdc_adc  = null;
+    DataBank ahdc_hits = null;
 
     if (event.hasBank("REC::Particle")) {
       recBankEB = event.getBank("REC::Particle");
@@ -195,6 +228,10 @@ public class ALERT {
 
     if (event.hasBank("AHDC::adc")) {
       ahdc_adc = event.getBank("AHDC::adc");
+    }
+
+    if (event.hasBank("AHDC::hits")){
+      ahdc_hits = event.getBank("AHDC::hits");
     }
 
     if (runConfig!= null){
@@ -225,6 +262,10 @@ public class ALERT {
       fillAHDC(ahdc_adc);
     }
 
+    if (ahdc_hits != null) {
+      fillAHDC_hits(ahdc_hits);
+    }
+
   }
 
   public void write() {
@@ -236,6 +277,9 @@ public class ALERT {
     }
     for (int index = 0; index < 576; index++) {
       dirout.addDataSet(ADC[index]);
+    }
+    for (int index = 0; index< 8; index++){
+      dirout.addDataSet(AHDC_RESIDUAL[index], AHDC_TIME[index]);
     }
 
     dirout.addDataSet(START_TIME);
