@@ -9,8 +9,8 @@ We will use the `sidisdvcs` train.
 
 We will combine the targets' data into a single dataset named `rgc_fa22_prescaled`.
 ```bash
-qtl histogram --check-cache -d rgc_fa22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/fall22/pass1/*/*/dst/train/sidisdvcs)
-qtl histogram -d rgc_fa22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/fall22/pass1/*/*/dst/train/sidisdvcs)
+qtl histogram --check-cache -d rgc_fa22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/fall22/pass1/*/dst/train/sidisdvcs/)
+qtl histogram -d rgc_fa22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/fall22/pass1/*/dst/train/sidisdvcs/)
 ```
 
 ## Double check that we have all the runs
