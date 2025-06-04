@@ -59,6 +59,9 @@ bin/qtl physics -d rgc_su22_prescaled -p rgc/Summer2022/qa-physics
 bin/qtl physics -d rgc_su22_sidisdvcs -p rgc/Summer2022/qa-physics
 ```
 
+> [!WARNING]
+> You may not have permission to publish to this directory; if not, publish to another place and ask the chef to copy the files
+
 # List of Runs
 Together with targets and beam energies
 ```
