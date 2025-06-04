@@ -26,6 +26,9 @@ Make the timelines:
 bin/qtl physics -d rgc_sp23_sidisdvcs -p rgc/Spring2023/qa-physics/pass1-sidisdvcs
 ```
 
+> [!WARNING]
+> You may not have permission to publish to this directory; if not, publish to another place and ask the chef to copy the files
+
 # List of Runs
 ```
 17482 ET

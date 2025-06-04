@@ -26,6 +26,9 @@ Make the timelines:
 bin/qtl physics -d rgc_fa22_sidisdvcs -p rgc/Fall2022/qa-physics/pass1-sidisdvcs
 ```
 
+> [!WARNING]
+> You may not have permission to publish to this directory; if not, publish to another place and ask the chef to copy the files
+
 # List of Runs
 ```
 16843 C
