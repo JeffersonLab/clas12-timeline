@@ -23,7 +23,7 @@ qtl histogram -d rgc_sp23_sidisdvcs --flatdir --focus-physics $(ls -d /cache/cla
 
 Make the timelines:
 ```bash
-bin/qtl physics -d rgc_sp23_sidisdvcs -p rgc/Spring2023/qa-physics/pass1-sidisdvcs
+bin/qtl physics -d rgc_sp23_sidisdvcs -p rgc/Spring2023/qa-physics/pass1-sidisdvcs -s rgc_sp23
 ```
 
 > [!WARNING]
