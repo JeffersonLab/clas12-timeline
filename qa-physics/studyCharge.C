@@ -1,7 +1,7 @@
 // study differences between charge calculated from RUN::scaler bank, via:
 //   1. fcupgated
 //   2. <livetime>*fcup
-// input: tree.root, produced by mkTree.sh
+// input: tree.root, produced by draw_epochs.sh
 // see monitorRead.groovy, `FCmode` setting, to know which charge is used
 
 void studyCharge(TString infileN="tree.root") {

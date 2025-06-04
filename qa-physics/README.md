@@ -67,8 +67,8 @@ For run-group specific notes, including the commands used to perform the QA, see
     * Each line should contain two numbers: the first run of the epoch, and the last run
       of the epoch
     * If you do not need epochs, you do not need to do this
-  * To help determine where to draw the epoch boundaries, execute `mkTree.sh $dataset`
-    * this script, in conjunction with `readTree.C`, will build a `ROOT` tree and draw
+  * To help determine where to draw the epoch boundaries, execute `draw_epochs.sh`
+    * this script, in conjunction with `draw_epochs.C`, will build a `ROOT` tree and draw
       N/F vs. file index, along with the current epoch boundary lines (if defined)
       * other plots will be drawn, including N/F vs. run number (as a 2d histogram),
         along with plots for the Faraday Cup
