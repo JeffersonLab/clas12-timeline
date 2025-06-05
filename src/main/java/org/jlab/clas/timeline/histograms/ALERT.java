@@ -22,7 +22,7 @@ public class ALERT {
 
   public boolean hasRF;
   public double startTime, rfTime;
-  public double ahdc_residual, ahdc_time;
+  public float ahdc_residual, ahdc_time;
 
   public double rfPeriod;
   public int rf_large_integer;
