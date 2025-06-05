@@ -176,7 +176,7 @@ public class ALERT {
       layer = superlayer * 10 + layer;
       int layer_number = Arrays.asList(boxed_encoding).indexOf(layer);
 
-      AHDC_RESIDUAL[layer_number].fill(residual);
+      if (residual != 0) AHDC_RESIDUAL[layer_number].fill(residual);
       AHDC_TIME[layer_number].fill(time);
     }
   }
