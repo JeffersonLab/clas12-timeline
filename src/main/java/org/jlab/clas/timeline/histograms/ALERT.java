@@ -130,12 +130,12 @@ public class ALERT {
     }
 
     for (int k=0; k<8; k++){
-      AHDC_RESIDUAL[k] = new H1F(String.format("AHDC_RESIDUAL_layer%%d", k), String.format("AHDC Residual layer%d", k), 61, -6, 0.1);
+      AHDC_RESIDUAL[k] = new H1F(String.format("AHDC_RESIDUAL_layer%d", k), String.format("AHDC Residual layer%d", k), 61, -6, 0.1);
       AHDC_RESIDUAL[k].setTitleX("AHDC RESIDUAL");
       AHDC_RESIDUAL[k].setTitleY("Counts");
       AHDC_RESIDUAL[k].setFillColor(4);
 
-      AHDC_TIME[k] = new H1F(String.format("AHDC_TIME_layer%%d", k), String.format("AHDC Time layer%d", k), 450, -400, 50.0);
+      AHDC_TIME[k] = new H1F(String.format("AHDC_TIME_layer%d", k), String.format("AHDC Time layer%d", k), 450, -400, 50.0);
       AHDC_TIME[k].setTitleX("AHDC TIME");
       AHDC_TIME[k].setTitleY("Counts");
       AHDC_TIME[k].setFillColor(4);
@@ -277,7 +277,7 @@ public class ALERT {
     for (int index = 0; index < 576; index++) {
       dirout.addDataSet(ADC[index]);
     }
-    for (int index = 0; index< 8; index++){
+    for (int index = 0; index < 8; index++){
       dirout.addDataSet(AHDC_RESIDUAL[index], AHDC_TIME[index]);
     }
 
