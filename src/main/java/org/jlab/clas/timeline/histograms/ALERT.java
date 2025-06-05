@@ -130,16 +130,16 @@ public class ALERT {
       ADC[index].setFillColor(4);
     }
 
-    for (int layer=0; layer<8; layer++){
-      AHDC_RESIDUAL[layer] = new H1F(String.format("AHDC_RESIDUAL_layer%%d", layer), String.format("AHDC_RESIDUAL layer%d", layer), 61, -6, 0.1);
-      AHDC_RESIDUAL[layer].setTitleX("AHDC_RESIDUAL");
-      AHDC_RESIDUAL[layer].setTitleY("Counts");
-      AHDC_RESIDUAL[layer].setFillColor(4);
+    for (int k=0; k<8; k++){
+      AHDC_RESIDUAL[k] = new H1F(String.format("AHDC_RESIDUAL_layer%%d", k), String.format("AHDC Residual layer%d", k), 61, -6, 0.1);
+      AHDC_RESIDUAL[k].setTitleX("AHDC_RESIDUAL");
+      AHDC_RESIDUAL[k].setTitleY("Counts");
+      AHDC_RESIDUAL[k].setFillColor(4);
 
-      AHDC_TIME[layer] = new H1F(String.format("AHDC_TIME_layer%%d", layer), String.format("AHDC_TIME layer%d", layer), 450, -400, 50.0);
-      AHDC_TIME[layer].setTitleX("AHDC_TIME");
-      AHDC_TIME[layer].setTitleY("Counts");
-      AHDC_TIME[layer].setFillColor(4);
+      AHDC_TIME[k] = new H1F(String.format("AHDC_TIME_layer%%d", k), String.format("AHDC Time layer%d", k), 450, -400, 50.0);
+      AHDC_TIME[k].setTitleX("AHDC_TIME");
+      AHDC_TIME[k].setTitleY("Counts");
+      AHDC_TIME[k].setFillColor(4);
     }
 
     // Trigger bits
@@ -171,14 +171,14 @@ public class ALERT {
     for (int loop = 0; loop < rows; loop++) {
       int layer       = ahdc_hits.getInt("layer", loop);
       int superlayer  = ahdc_hits.getInt("superlayer", loop);
-      float time      = ahdc_hits.getFloat("time", loop);
+      float time_      = ahdc_hits.getFloat("time", loop);
       float residual  = ahdc_hits.getFloat("residual", loop);
 
       layer = superlayer * 10 + layer;
       int layer_number = Arrays.asList(boxed_encoding).indexOf(layer);
 
       AHDC_RESIDUAL[layer_number].fill(residual);
-      AHDC_TIME[layer_number].fill(time);
+      AHDC_TIME[layer_number].fill(time_);
     }
   }
 
