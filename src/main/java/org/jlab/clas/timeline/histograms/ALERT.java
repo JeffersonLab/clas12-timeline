@@ -9,6 +9,7 @@ import org.jlab.io.base.DataEvent;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
+import java.lang.Math.signum;
 /**
  *
  * @author sangbaek
@@ -176,7 +177,7 @@ public class ALERT {
       layer = superlayer * 10 + layer;
       int layer_number = Arrays.asList(boxed_encoding).indexOf(layer);
 
-      if (residual != 0) AHDC_RESIDUAL[layer_number].fill(residual);
+      if (Math.signum(residual) != 0) AHDC_RESIDUAL[layer_number].fill(residual);
       AHDC_TIME[layer_number].fill(time);
     }
   }
