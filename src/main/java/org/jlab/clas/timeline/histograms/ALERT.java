@@ -22,7 +22,6 @@ public class ALERT {
 
   public boolean hasRF;
   public double startTime, rfTime;
-  public float ahdc_residual, ahdc_time;
 
   public double rfPeriod;
   public int rf_large_integer;
@@ -169,16 +168,16 @@ public class ALERT {
   public void fillAHDC_hits(DataBank ahdc_hits) {
     int rows = ahdc_hits.rows();
     for (int loop = 0; loop < rows; loop++) {
-      int layer       = ahdc_hits.getInt("layer", loop);
-      int superlayer  = ahdc_hits.getInt("superlayer", loop);
-      float time_      = ahdc_hits.getFloat("time", loop);
-      float residual  = ahdc_hits.getFloat("residual", loop);
+      int layer       = ahdc_hits.getByte("layer", loop);
+      int superlayer  = ahdc_hits.getByte("superlayer", loop);
+      float time      = (float) ahdc_hits.getDouble("time", loop);
+      float residual  = (float) ahdc_hits.getDouble("residual", loop);
 
       layer = superlayer * 10 + layer;
       int layer_number = Arrays.asList(boxed_encoding).indexOf(layer);
 
       AHDC_RESIDUAL[layer_number].fill(residual);
-      AHDC_TIME[layer_number].fill(time_);
+      AHDC_TIME[layer_number].fill(time);
     }
   }
 
