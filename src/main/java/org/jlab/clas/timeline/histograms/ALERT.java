@@ -9,7 +9,6 @@ import org.jlab.io.base.DataEvent;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
-import java.lang.Math.signum;
 /**
  *
  * @author sangbaek
@@ -131,7 +130,7 @@ public class ALERT {
     }
 
     for (int k=0; k<8; k++){
-      AHDC_RESIDUAL[k] = new H1F(String.format("AHDC_RESIDUAL_layer%d", k), String.format("AHDC Residual layer%d", k), 61, -6, 0.1);
+      AHDC_RESIDUAL[k] = new H1F(String.format("AHDC_RESIDUAL_layer%d", k), String.format("AHDC Residual layer%d", k), 151, -15, 0.1);
       AHDC_RESIDUAL[k].setTitleX("AHDC RESIDUAL");
       AHDC_RESIDUAL[k].setTitleY("Counts");
       AHDC_RESIDUAL[k].setFillColor(4);
@@ -177,7 +176,7 @@ public class ALERT {
       layer = superlayer * 10 + layer;
       int layer_number = Arrays.asList(boxed_encoding).indexOf(layer);
 
-      if (Math.signum(residual) != 0) AHDC_RESIDUAL[layer_number].fill(residual);
+      AHDC_RESIDUAL[layer_number].fill(residual);
       AHDC_TIME[layer_number].fill(time);
     }
   }
