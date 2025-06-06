@@ -38,7 +38,7 @@ class QA {
     def tag1_events = [];
     hipo_files.each { hipo_file -> // loop over HIPO files
 
-      def hipo_file_handle = new File(runstrg);
+      def hipo_file_handle = new File(hipo_file);
       if(!hipo_file_handle.exists()) {
         System.err.println("ERROR: FILE DOES NOT EXIST: $hipo_file");
         return;
