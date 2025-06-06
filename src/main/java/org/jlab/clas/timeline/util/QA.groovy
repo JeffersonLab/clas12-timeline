@@ -32,7 +32,7 @@ class QA {
   /// @brief define the QA bins; initializes `bin_data`
   /// @param hipo_files list of HIPO files
   /// @param bad_scaler if true, handle the case where FC charge from scalers was bad (RG-D)
-  public void defineBins(List<String> hipo_files) {
+  public void defineBins(List<String> hipo_files, boolean bad_scaler=false) {
 
     // for each tag1 event, get its event number and timestamp
     def tag1_events = [];
