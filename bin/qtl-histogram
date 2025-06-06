@@ -6,8 +6,6 @@ set -o pipefail
 source $(dirname $0)/../libexec/environ.sh
 
 # constants ############################################################
-# max number of events for detector histogramming timelines
-MAX_NUM_EVENTS=100000000
 # slurm settings
 SLURM_MEMORY=2000 # must be more than max heap size in $TIMELINE_JAVA_OPTS
 SLURM_TIME=10:00:00
@@ -407,7 +405,6 @@ java $TIMELINE_JAVA_OPTS \\
     $runnum \\
     $outputSubDir \\
     $inputListFile \\
-    $MAX_NUM_EVENTS \\
     $ebeam
 
 # check output HIPO files
