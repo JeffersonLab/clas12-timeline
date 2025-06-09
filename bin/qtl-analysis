@@ -264,7 +264,9 @@ fi
 [ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_detectors
 [ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100
 inputDir=$(realpath $inputDir)
-[ -z "$outputDir" ] && outputDir=$(realpath $(pwd -P)/outfiles/$dataset) || outputDir=$(realpath $outputDir)
+[ -z "$outputDir" ] && outputDir=$(pwd -P)/outfiles/$dataset
+mkdir -p $outputDir
+outputDir=$(realpath $outputDir)
 
 # set subdirectories
 finalDir=$outputDir/timeline_web
