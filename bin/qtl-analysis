@@ -261,12 +261,12 @@ if [ -z "$dataset" ]; then
 fi
 
 # set input and output directories
-[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_detectors
+[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_detectors # set default `inputDir`
 [ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100
-inputDir=$(realpath $inputDir)
-[ -z "$outputDir" ] && outputDir=$(pwd -P)/outfiles/$dataset
+inputDir=$(realpath $inputDir) # sanitize CLI argument's `intputDir`
+[ -z "$outputDir" ] && outputDir=$(pwd -P)/outfiles/$dataset # set default `outputDir`
 mkdir -p $outputDir
-outputDir=$(realpath $outputDir)
+outputDir=$(realpath $outputDir) # sanitize CLI argument's `outputDir`
 
 # set subdirectories
 finalDir=$outputDir/timeline_web
