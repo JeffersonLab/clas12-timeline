@@ -64,7 +64,7 @@ class QA {
     }
 
     // sort the events by event number
-    tag1_evnum_list = tag1_events.sort(false){it[0]}.collect{it[0]};
+    def tag1_evnum_list = tag1_events.sort(false){it[0]}.collect{it[0]};
 
     // check that we would get the same result, if we instead sorted by timestamp
     if(!bad_scaler && tag1_evnum_list != tag1_events.sort(false){it[1]}.collect{it[0]}) {
@@ -112,6 +112,38 @@ class QA {
         LTlist:       [],
       ];
     };
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////
+
+  /// @brief print QA bins
+  public void printBins() {
+    System.out.println "QA BINS ==============================";
+    System.out.println "@ " + [
+      'runnum/I',
+      'binnum/I',
+      'number_of_bins/I',
+      'evnum_min/L',
+      'evnum_max/L',
+      'timestamp_min/L',
+      'timestamp_max/L',
+      'num_events/L',
+    ].join(':');
+    timeBins.each{ binNum, timeBin ->
+      def num_events = timeBin.eventNumMax - timeBin.eventNumMin;
+      if(binNum==0) num_events++; // since first bin has no lower bound
+      System.out.println "@ " + [
+        "${runnum}",
+        "${binNum}",
+        "${timeBins.size()}",
+        "${timeBin.eventNumMin}",
+        "${timeBin.eventNumMax}",
+        "${timeBin.timestampMin}",
+        "${timeBin.timestampMax}",
+        "${num_events}",
+      ].join(' ');
+    }
+    System.out.println "QA BINS ==========================";
   }
 
   //////////////////////////////////////////////////////////////////////////////////

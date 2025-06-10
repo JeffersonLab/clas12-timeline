@@ -84,6 +84,7 @@ public class run_histograms {
 //
     QA qa = new QA();
     qa.defineBins(toProcessFileNames);
+    qa.printBins();
 /////////////////////////////////////////
 
     for (String runstrg : toProcessFileNames) {
