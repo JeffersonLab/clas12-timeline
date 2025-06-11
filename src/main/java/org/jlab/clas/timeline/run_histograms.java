@@ -85,6 +85,8 @@ public class run_histograms {
     QA qa = new QA();
     qa.defineBins(toProcessFileNames);
     qa.printBins();
+    System.out.println("DEBUG - stopping now");
+    System.exit(0);
 /////////////////////////////////////////
 
     for (String runstrg : toProcessFileNames) {
