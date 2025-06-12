@@ -149,6 +149,16 @@ class QA {
       ];
     };
 
+    //
+    //
+    //
+    // FIXME: we could use `coatjava`'s common-tools/clas-detector/src/main/java/org/jlab/detector/scalers/DaqScalersSequence
+    // instead of rolling our own 'scaler interval' thing here; we need to add a parameter `downsample` which changes the
+    // interval size from being 1 subsequent scaler readout to 2000 subsequent scaler readouts
+    //
+    //
+    //
+
     // add information for each bin
     hipo_files.each { hipo_file -> // loop over tag 1 events again, now that we have established bin boundaries
       def hipo_reader = new HipoDataSource();
