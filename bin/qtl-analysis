@@ -286,25 +286,25 @@ fi
 # output detector subdirectories
 detDirs=(
   alert
-  #band
-  #bmtbst
-  #central
-  #cnd
-  #ctof
-  #cvt
-  #dc
-  #ec
-  #epics
-  #forward
-  #ft
-  #ftof
-  #helicity
-  #htcc
-  #ltcc
-  ## m2_ctof_ftof
-  #rf
-  #rich
-  #trigger
+  band
+  bmtbst
+  central
+  cnd
+  ctof
+  cvt
+  dc
+  ec
+  epics
+  forward
+  ft
+  ftof
+  helicity
+  htcc
+  ltcc
+  # m2_ctof_ftof
+  rf
+  rich
+  trigger
 )
 
 # cleanup output directories
