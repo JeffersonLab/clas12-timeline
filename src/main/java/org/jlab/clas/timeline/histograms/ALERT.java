@@ -130,17 +130,13 @@ public class ALERT {
     }
 
     for (int k=0; k<8; k++){
-      float ahdc_residual_offset = 0.0f;
-      if (reqrunNum >= 21422) ahdc_residual_offset = 10.0f;
-      float ahdc_time_offset = 0.0f;
-      if (reqrunNum >= 21422) ahdc_time_offset = 250.0f;
 
-      AHDC_RESIDUAL[k] = new H1F(String.format("AHDC_RESIDUAL_layer%d", layer_encoding[k]), String.format("AHDC Residual layer%d", layer_encoding[k]), 160, -15 + ahdc_residual_offset, 1 + ahdc_residual_offset);
+      AHDC_RESIDUAL[k] = new H1F(String.format("AHDC_RESIDUAL_layer%d", layer_encoding[k]), String.format("AHDC Residual layer%d", layer_encoding[k]), 160, -5.0f, 11.0f);
       AHDC_RESIDUAL[k].setTitleX("AHDC RESIDUAL");
       AHDC_RESIDUAL[k].setTitleY("Counts");
       AHDC_RESIDUAL[k].setFillColor(4);
 
-      AHDC_TIME[k] = new H1F(String.format("AHDC_TIME_layer%d", layer_encoding[k]), String.format("AHDC Time layer%d", layer_encoding[k]), 450, -400 + ahdc_time_offset, 50.0 + ahdc_time_offset);
+      AHDC_TIME[k] = new H1F(String.format("AHDC_TIME_layer%d", layer_encoding[k]), String.format("AHDC Time layer%d", layer_encoding[k]), 450, -150.f, 300.0f);
       AHDC_TIME[k].setTitleX("AHDC TIME");
       AHDC_TIME[k].setTitleY("Counts");
       AHDC_TIME[k].setFillColor(4);
