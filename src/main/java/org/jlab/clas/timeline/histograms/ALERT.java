@@ -131,7 +131,7 @@ public class ALERT {
 
     for (int k=0; k<8; k++){
 
-      AHDC_RESIDUAL[k] = new H1F(String.format("AHDC_RESIDUAL_layer%d", layer_encoding[k]), String.format("AHDC Residual layer%d", layer_encoding[k]), 160, -5.0f, 11.0f);
+      AHDC_RESIDUAL[k] = new H1F(String.format("AHDC_RESIDUAL_layer%d", layer_encoding[k]), String.format("AHDC Residual layer%d", layer_encoding[k]), 300, -20.0f, 10.0f);
       AHDC_RESIDUAL[k].setTitleX("AHDC RESIDUAL");
       AHDC_RESIDUAL[k].setTitleY("Counts");
       AHDC_RESIDUAL[k].setFillColor(4);
