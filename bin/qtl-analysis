@@ -24,7 +24,7 @@ numThreads=8
 singleTimeline=""
 # modes, set by CLI long opts (--$key)
 declare -A modes
-for key in list just-pub just-ana skip-mya debug overwrite custom-pub help; do
+for key in list just-pub just-ana skip-mya debug overwrite clobber custom-pub help; do
   modes[$key]=false
 done
 
@@ -83,22 +83,24 @@ usageVerbose() {
 
     --list              dump the list of timelines and exit
 
-    --just-ana          just do the analysis and do not attempt to publish
-                        - follow up with '--just-pub' and '-p' to publish
-
-    --just-pub          just publish analyzed timelines from [OUTPUT_DIR]
-
-    --overwrite         allow publishing to overwrite the target directory
-
-    --custom-pub        interpret [PUBLISH_DIR] as a fully custom directory,
-                        rather than as a subdirectory of the web server
-
     --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
 
     --debug             enable debug mode: run a single timeline with stderr and stdout printed to screen;
                         use this with the '-t' option to debug specific timeline issues
 
-    -h, --help          print this usage guide
+  PUBLISHING OPTIONS
+
+    --just-ana          just do the analysis and do not attempt to publish
+                        - follow up with '--just-pub' and '-p' to publish
+
+    --just-pub          just publish analyzed timelines from [OUTPUT_DIR]
+
+    --overwrite         remove the target publishing directory, then recreate it
+
+    --clobber           clobber the target publishing directory
+
+    --custom-pub        interpret [PUBLISH_DIR] as a fully custom directory,
+                        rather than as a subdirectory of the web server
   """ >&2
 }
 if [ $# -eq 0 ]; then
@@ -225,8 +227,12 @@ if $enablePub; then
       printWarning "Press 'Ctrl-C' NOW if this is not what you want! Otherwise, just wait..."
       sleep 5
       rm -rv $publishDir
+    elif ${modes['clobber']}; then
+      printWarning "Publishing directory already exists! Timelines will be clobbered!"
+      printWarning "Press 'Ctrl-C' NOW if this is not what you want! Otherwise, just wait..."
+      sleep 5
     else
-      printError "Publishing directory already exists! Either choose another directory, or re-run with '--overwrite' option to overwrite (be careful...)"
+      printError "Publishing directory already exists! Either choose another directory, or re-run with the '--overwrite' or '--clobber' option to overwrite (be careful...); use '--help' for more guidance"
       exit 100
     fi
   fi
