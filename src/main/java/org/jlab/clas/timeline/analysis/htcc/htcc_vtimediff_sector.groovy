@@ -4,6 +4,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.HTCCFitter
+import org.jlab.clas.timeline.util.QA
 
 class htcc_vtimediff_sector {
 
@@ -32,7 +33,7 @@ class htcc_vtimediff_sector {
       TDirectory out = new TDirectory()
       out.mkdir('/timelines')
 
-      data.sort{it.key}.each{ttl, runs->
+      def grtlList = data.sort{it.key}.collect{ttl, runs->
 
         def grtl = new GraphErrors(ttl)
         grtl.setTitle("HTCC vtime - STT, electrons")
@@ -47,11 +48,12 @@ class htcc_vtimediff_sector {
 
           grtl.addPoint(it.run, it[name], 0, 0)
         }
-
-        out.cd('/timelines')
-        out.addDataSet(grtl)
+        grtl
       }
-      out.writeFile("htcc_vtimediff_sector_${name}.hipo")
+
+      out.cd('/timelines')
+      QA.cutGraphsMeanSigma(name, *grtlList, mean_lb: -1, mean_ub: 1, sigma_ub: 1, out: out)
+      out.writeFile("htcc_vtimediff_sector_${name}_QA.hipo")
     }
   }
 

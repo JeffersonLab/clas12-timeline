@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.CNDFitter
+import org.jlab.clas.timeline.util.QA
 
 class cnd_MIPS_dE_dz {
 
@@ -45,7 +46,7 @@ def write() {
   ['mean','sigma'].each{name ->
     TDirectory out = new TDirectory()
     out.mkdir('/timelines')
-    ['layer1','layer2','layer3'].eachWithIndex{layer, lindex ->
+    def grtlList = ['layer1','layer2','layer3'].withIndex().collect{layer, lindex ->
       def grtl = new GraphErrors(layer+' '+name)
       grtl.setTitle("MIPS dE/dz, "+ name)
       grtl.setTitleY("MIPS dE/dz, " + name + " (MeV/cm)")
@@ -59,10 +60,11 @@ def write() {
         out.addDataSet(it.flist[lindex])
         grtl.addPoint(it.run, it[name][lindex], 0, 0)
       }
-      out.cd('/timelines')
-      out.addDataSet(grtl)
+      grtl
     }
-    out.writeFile('cnd_dEdz_'+name+'.hipo')
+    out.cd('/timelines')
+    QA.cutGraphsMeanSigma(name, *grtlList, mean_lb: 1.75, mean_ub: 2.25, sigma_ub: 0.300, out: out)
+    out.writeFile("cnd_dEdz_${name}_QA.hipo")
   }
 }
 }
