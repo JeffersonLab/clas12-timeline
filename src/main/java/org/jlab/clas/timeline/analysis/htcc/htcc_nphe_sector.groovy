@@ -2,6 +2,7 @@ package org.jlab.clas.timeline.analysis
 import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
+import org.jlab.clas.timeline.util.QA
 
 class htcc_nphe_sector {
   def data = new ConcurrentHashMap()
@@ -31,7 +32,7 @@ class htcc_nphe_sector {
       TDirectory out = new TDirectory()
       out.mkdir('/timelines')
 
-      data.each { sec, runs ->
+      def graphList = data.collect { sec, runs ->
         GraphErrors graph
 
         if (plotType == 'npheMean') {
@@ -57,11 +58,15 @@ class htcc_nphe_sector {
             graph.addPoint(it.run, it.correctionFactor, 0, 0)
           }
         }
-
-        out.cd('/timelines')
-        out.addDataSet(graph)
+        graph
       }
-      out.writeFile("htcc_nphe_sec_${plotType}.hipo")
+
+      out.cd('/timelines')
+      if(plotType == 'npheMean')
+        QA.cutGraphs(*graphList, lb: 12.5, out: out)
+      else if(plotType == 'normFactor')
+        QA.cutGraphs(*graphList, lb: 0.9, ub: 1.1, out: out)
+      out.writeFile("htcc_nphe_sec_${plotType}_QA.hipo")
     }
   }
 

@@ -40,7 +40,7 @@ case $cmd in
   ph*) exec $TIMELINESRC/bin/qtl-physics "$@" ;;
   er*) exec $TIMELINESRC/bin/qtl-error "$@" ;;
   -v|--version)
-    echo $(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec -f $TIMELINESRC/pom.xml || echo "UNKNOWN")
+    echo $(mvn -q help:evaluate -Dexpression=project.version -DforceStdout -f $TIMELINESRC/pom.xml || echo "UNKNOWN")
     exit 0
     ;;
   -h|--help)
