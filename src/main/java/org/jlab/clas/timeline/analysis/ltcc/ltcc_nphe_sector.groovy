@@ -29,7 +29,7 @@ def write() {
     System.exit(100)
   }
 
-  def dataset = RunDependentCut.findDataset(*data.keySet().toList())
+  def dataset = RunDependentCut.findDataset(data.keySet().toList())
   def qa_cuts = [:]
   if(dataset == 'rga_fa18_inbending' || dataset == 'rga_fa18_outbending') {
     qa_cuts[3] = [7, 9]

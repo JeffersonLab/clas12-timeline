@@ -7,10 +7,17 @@ package org.jlab.clas.timeline.util
 class RunDependentCut {
 
   /// @param check_run the run number to check
-  /// @param cut_run the preferred run number
+  /// @param cut_runs the preferred run numbers
   /// @returns true if `check_run` matches any of `cut_runs`
-  static boolean runIsOneOf(int check_run, int... cut_runs) {
+  static boolean runIsOneOf(int check_run, List<Integer> cut_runs) {
     return cut_runs.find{ it == check_run } != null;
+  }
+
+  /// @param check_run the run number to check
+  /// @param cut_run the preferred run number
+  /// @returns true if `check_run` matches `cut_run`
+  static boolean runIsOneOf(int check_run, int cut_run) {
+    return runIsOneOf(check_run, [cut_run]);
   }
 
   /// @param check_run the run number to check
@@ -47,9 +54,9 @@ class RunDependentCut {
       return check_run > cut_run;
   }
 
-  /// @param check_runs the run number(s) to check
+  /// @param check_runs the run numbers to check
   /// @returns the dataset name that contains this run
-  static String findDataset(int... check_runs) {
+  static String findDataset(List<Integer> check_runs) {
     def datasets = check_runs.collect{ check_run ->
       if(runIsInRange(check_run, 5032, 5419, true))
         return 'rga_fa18_inbending';
@@ -68,6 +75,12 @@ class RunDependentCut {
       System.err.println "WARNING:   runs: $check_runs";
     }
     return datasets[0];
+  }
+
+  /// @param check_run the run number to check
+  /// @returns the dataset name that contains this run
+  static String findDataset(int check_run) {
+    return findDataset([check_run]);
   }
 
 }
