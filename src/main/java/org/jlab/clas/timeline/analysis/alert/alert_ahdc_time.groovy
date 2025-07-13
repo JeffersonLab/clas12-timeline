@@ -22,7 +22,7 @@ def has_data = new AtomicBoolean(false)
       def h1 = dir.getObject(String.format("AHDC_TIME_layer%d", layer_number))
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
-          data[run].put(String.format("/ALERTAHDC_TIME_layer%d", layer_number),  h1)
+          data[run].put(String.format("/ALERT/AHDC_TIME_layer%d", layer_number),  h1)
           def f1 = ALERTFitter.time_fitter_rising(h1)
           def f2 = ALERTFitter.time_fitter_falling(h1)
           def t0, tmax
