@@ -5,7 +5,14 @@ Please report _any_ issues to the software maintainers, such as warnings or erro
 
 ## :green_circle: Step 1: Fill Timeline Histograms
 
-Use the "qtl" model as part of your usual cooking workflow; see [the Chefs' documentation wiki](https://clasweb.jlab.org/wiki/index.php/CLAS12_Chef_Documentation). Output files will appear in your chosen output directory, within `hist/detectors/`.
+This step is integrated in the cooking workflow using the "qtl" model; see [the Chefs' documentation wiki for details](https://clasweb.jlab.org/wiki/index.php/CLAS12_Chef_Documentation). Output files will appear in your chosen output directory, within `hist/detectors/`.
+
+<details>
+<summary>If you are not using the cooking workflow...</summary>
+
+> See [the detailed procedure's Step 1](/doc/procedure.md) instead. The cooking workflow's "qtl" model just runs `qtl histogram` with the appropriate arguments.
+
+</details>
 
 <details>
 <summary>For physics QA timelines...</summary>
@@ -44,5 +51,5 @@ A URL will be printed upon success, and a link will appear in [`clas12mon`](http
 
 ---
 
-For more details, such as producing physics QA timelines, see other guides in
+For more details, see other guides in
 [the table of contents](/README.md) or reach out to the software maintainers.

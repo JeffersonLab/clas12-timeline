@@ -2,13 +2,14 @@
 
 set -e
 set -u
+set -o pipefail
 source $(dirname $0)/../libexec/environ.sh
 
 # constants ############################################################
 # max number of events for detector histogramming timelines
 MAX_NUM_EVENTS=100000000
 # slurm settings
-SLURM_MEMORY=1600 # must be more than max heap size in $TIMELINE_JAVA_OPTS
+SLURM_MEMORY=2000 # must be more than max heap size in $TIMELINE_JAVA_OPTS
 SLURM_TIME=10:00:00
 SLURM_LOG=/farm_out/%u/%x-%A_%a
 ########################################################################
@@ -280,8 +281,6 @@ echo $dataset | grep -q "/" && printError "dataset name must not contain '/' " &
 slurmJobName=clas12-timeline--$dataset
 
 # start job lists
-echo """
-Generating job scripts..."""
 slurmDir=./slurm
 mkdir -p $slurmDir/scripts
 jobkeys=()
@@ -296,12 +295,10 @@ for key in ${jobkeys[@]}; do
   > ${joblists[$key]}
 done
 
-# define backup directory (used only if the output files already exist; not used `if ${modes['swifjob']}`)
-backupDir=$(pwd -P)/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
-
-# loop over input directories, building the job lists
+# get run numbers for each input
+echo "Determining run number list..."
+declare -A runnumHash # `rdirs` element -> run number
 for rdir in ${rdirs[@]}; do
-
   # get the run number, either from `rdir` basename (fast), or from `RUN::config` (slow)
   [[ ! -e $rdir ]] && printError "the run file/directory '$rdir' does not exist" && continue
   runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory (or file) basename
@@ -319,7 +316,49 @@ for rdir in ${rdirs[@]}; do
   fi
   [ -z "$runnum" -o $runnum -eq 0 ] && printError "unknown run number for '$rdir'; ignoring it!" && continue
   runnum=$((10#$runnum))
-  echo "run directory/file '$rdir' has run number $runnum"
+  runnumHash[$rdir]=$runnum
+done
+echo "RUN NUMBERS = {"
+for rdir in "${!runnumHash[@]}"; do echo "  $rdir => ${runnumHash[$rdir]},"; done
+echo "}"
+echo $sep
+
+# get beam energy for each run number
+echo "Retrieving beam energy from RCDB..."
+declare -A ebeamHash  # run number -> beam energy
+while read -r runnum ebeam; do
+  ebeamHash[$runnum]=$ebeam
+done < <($TIMELINESRC/libexec/get-beam-energy.sh "${runnumHash[@]}")
+echo "BEAM ENERGY = {"
+# override beam energy, for cases where RCDB is incorrect
+for runnum in "${!ebeamHash[@]}"; do # loop over run numbers
+  ebeamOverride=""
+  if [ $runnum -ge 11620 -a $runnum -le 11657 ]; then ebeamOverride=2.182 # RG-F
+  elif [ $runnum -ge 12389 -a $runnum -le 12443 ]; then ebeamOverride=2.182 # RG-F
+  elif [ $runnum -ge 12444 -a $runnum -le 12951 ]; then ebeamOverride=10.389 # RG-F
+  fi
+  if [ -n "$ebeamOverride" ]; then
+    printWarning "overriding RCDB beam energy for run $runnum: ${ebeamHash[$runnum]} -> $ebeamOverride"
+    ebeamHash[$runnum]=$ebeamOverride
+  fi
+  echo "  $runnum => ${ebeamHash[$runnum]} GeV,"
+done
+echo "}"
+echo $sep
+
+# define backup directory (used only if the output files already exist; not used `if ${modes['swifjob']}`)
+backupDir=$(pwd -P)/tmp/backup.$dataset.$(date +%s) # use unixtime for uniqueness
+
+# loop over input directories, building the job lists
+echo """
+Generating job scripts..."""
+for rdir in ${rdirs[@]}; do
+
+  echo "processing '$rdir'..."
+  runnum=${runnumHash[$rdir]:-unknown}
+  [ "$runnum" = "unknown" ] && printError "unknown run number, skipping!" && continue
+  ebeam=${ebeamHash[$runnum]:-unknown}
+  [ "$ebeam" = "unknown" ] && printError "unknown beam energy, skipping!" && continue
 
   # get list of input files, and append prefix for SWIF
   echo "..... getting its input files ....."
@@ -347,33 +386,6 @@ for rdir in ${rdirs[@]}; do
     fi
     mkdir -p $outputSubDir
 
-    # get beam energy from RCDB
-    echo "Retrieving beam energy from RCDB..."
-    beam_energy=$($TIMELINESRC/libexec/get-beam-energy.sh $runnum | tail -n1)
-    # override beam energy, for cases where RCDB is incorrect
-    # - currently only needed for RG-F
-    beam_energy_override=`python -c """
-beamlist = [
-  (11620, 11657, 2.182),
-  (12389, 12443, 2.182),
-  (12444, 12951, 10.389),
-]
-for r0,r1,eb in beamlist:
-  if $runnum>=r0 and $runnum<=r1:
-    print(eb)
-    """`
-    if [ -n "$beam_energy_override" ]; then
-      if [ -n "$beam_energy" ]; then
-        printWarning "overriding RCDB beam energy $beam_energy to be $beam_energy_override, for run $runnum"
-      fi
-      beam_energy=$beam_energy_override
-    fi
-    if [ -z "$beam_energy" ]; then
-      printError "Unknown beam energy for run $runnum, since RCDB query failed and no overriding beam energy was provided"
-      exit 100
-    fi
-    echo "Beam energy = $beam_energy"
-
     # make job scripts for each $key
     jobscript=$slurmDir/scripts/$key.$dataset.$runnum.sh
     case $key in
@@ -396,7 +408,7 @@ java $TIMELINE_JAVA_OPTS \\
     $outputSubDir \\
     $inputListFile \\
     $MAX_NUM_EVENTS \\
-    $beam_energy
+    $ebeam
 
 # check output HIPO files
 $TIMELINESRC/libexec/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
@@ -426,7 +438,7 @@ $TIMELINESRC/libexec/run-groovy-timeline.sh \\
     $outputSubDir \\
     $monitorReadType \\
     $runnum \\
-    $beam_energy
+    $ebeam
 
 # check output HIPO files
 $TIMELINESRC/libexec/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
