@@ -26,8 +26,8 @@ def has_data = new AtomicBoolean(false)
           def f1 = ALERTFitter.residual_fitter(h1)
           data[run].put(String.format("fit_AHDC_RESIDUAL_layer%d", layer_number),  f1)
           data[run].put(String.format("peak_location_AHDC_RESIDUAL_layer%d", layer_number),  f1.getParameter(1))
-          data[run].put(String.format("sigma_location_AHDC_RESIDUAL_layer%d", layer_number),  np.abs(f1.getParameter(2)))
-          data[run].put(String.format("integral_normalized_to_trigger_AHDC_RESIDUAL_layer%d", layer_number),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
+          data[run].put(String.format("sigma_location_AHDC_RESIDUAL_layer%d", layer_number),  f1.getParameter(2).abs())
+          data[run].put(String.format("integral_normalized_to_trigger_AHDC_RESIDUAL_layer%d", layer_number),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2).abs()/trigger.getBinContent(reference_trigger_bit) )
           has_data.set(true)
         }
       }
