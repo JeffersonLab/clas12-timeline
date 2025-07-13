@@ -19,7 +19,7 @@ def has_data = new AtomicBoolean(false)
     // data[run].put('bits',  trigger)
     (0..<8).collect{layer->
       int layer_number = int (layer_encoding[layer])
-      def h1 = dir.getObject(String.format("AHDC_RESIDUAL_layer%d", layer_number)
+      def h1 = dir.getObject(String.format("AHDC_RESIDUAL_layer%d", layer_number))
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
           data[run].put(String.format("AHDC_RESIDUAL_layer%d", layer_number,  h1)
