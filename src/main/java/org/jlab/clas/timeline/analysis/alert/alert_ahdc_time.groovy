@@ -56,8 +56,8 @@ def has_data = new AtomicBoolean(false)
         out.mkdir('/timelines')
         names.each{ name ->
           def gr = new GraphErrors(name)
-          gr.setTitle(  String.format("AHDC %s layer %d", variable.replace('_', ' '), layer))
-          gr.setTitleY( String.format("AHDC %s layer %d (ns)", variable.replace('_', ' '), layer))
+          gr.setTitle(  String.format("AHDC TIME %s layer %d", variable.replace('_', ' '), layer))
+          gr.setTitleY( String.format("AHDC TIME %s layer %d (ns)", variable.replace('_', ' '), layer))
           gr.setTitleX("run number")
           data.sort{it.key}.each{run,it->
             out.mkdir('/'+it.run)
@@ -72,7 +72,7 @@ def has_data = new AtomicBoolean(false)
           out.cd('/timelines')
           out.addDataSet(gr)
         }
-        out.writeFile(String.format('alert_ahdc_time_layer%d.hipo', variable, layer))
+        out.writeFile(String.format('alert_ahdc_time_%s_layer%d.hipo', variable, layer))
       }
     }
   }

@@ -66,7 +66,7 @@ def has_data = new AtomicBoolean(false)
             out.cd('/timelines')
             out.addDataSet(gr)
         }
-        out.writeFile(String.format('alert_ahdc_residual_layer%d.hipo', variable, layer))
+        out.writeFile(String.format('alert_ahdc_residual_%s_layer%d.hipo', variable, layer))
       }
     }
   }
