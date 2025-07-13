@@ -26,7 +26,7 @@ def layer_encoding          = [11, 21, 22, 31, 32, 41, 42, 51];
           def f1 = ALERTFitter.residual_fitter(h1)
           data[run].put(String.format("fit_AHDC_RESIDUAL_layer%d", layer_number),  f1)
           data[run].put(String.format("peak_location_AHDC_RESIDUAL_layer%d", layer_number),  f1.getParameter(1))
-          data[run].put(String.format("sigma_location_AHDC_RESIDUAL_layer%d", layer_number),  f1.getParameter(2).abs())
+          data[run].put(String.format("sigma_AHDC_RESIDUAL_layer%d", layer_number),  f1.getParameter(2).abs())
           data[run].put(String.format("integral_normalized_to_trigger_AHDC_RESIDUAL_layer%d", layer_number),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2).abs()/trigger.getBinContent(reference_trigger_bit) )
           has_data.set(true)
         }
@@ -52,19 +52,19 @@ def layer_encoding          = [11, 21, 22, 31, 32, 41, 42, 51];
         def gr = new GraphErrors(name)
         gr.setTitle(  String.format("AHDC_RESIDUAL %s layer %d", variable.replace('_', ' '), layer))
         gr.setTitleY( String.format("AHDC_RESIDUAL %s layer %d (ns)", variable.replace('_', ' '), layer))
-          gr.setTitleX("run number")
-          data.sort{it.key}.each{run,it->
-            out.mkdir('/'+it.run)
-            out.cd('/'+it.run)
-            if (it.containsKey(name)){
-              out.addDataSet(it[name])
-              out.addDataSet(it['fit_'+name])
-              gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
-            }
-            else if (variable=="peak_location") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
+        gr.setTitleX("run number")
+        data.sort{it.key}.each{run,it->
+          out.mkdir('/'+it.run)
+          out.cd('/'+it.run)
+          if (it.containsKey(name)){
+            out.addDataSet(it[name])
+            out.addDataSet(it['fit_'+name])
+            gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
           }
-          out.cd('/timelines')
-          out.addDataSet(gr)
+          else if (variable=="peak_location") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
+        }
+        out.cd('/timelines')
+        out.addDataSet(gr)
         out.writeFile(String.format('alert_ahdc_residual_%s_layer%d.hipo', variable, layer))
       }
     }
