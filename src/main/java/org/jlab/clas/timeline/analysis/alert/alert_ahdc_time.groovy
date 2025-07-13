@@ -69,9 +69,9 @@ def layer_encoding          = [11, 21, 22, 31, 32, 41, 42, 51];
           }
           else if (variable=="peak_location") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
         }
+        out.cd('/timelines')
+        out.addDataSet(gr)
       }
-      out.cd('/timelines')
-      out.addDataSet(gr)
       out.writeFile(String.format('alert_ahdc_time_%s.hipo', variable))
     }
   }
