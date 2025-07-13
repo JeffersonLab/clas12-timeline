@@ -50,8 +50,8 @@ def layer_encoding          = [11, 21, 22, 31, 32, 41, 42, 51];
         TDirectory out = new TDirectory()
         out.mkdir('/timelines')
         def gr = new GraphErrors(name)
-        gr.setTitle(  String.format("AHDC_RESIDUAL_layer %d", variable.replace('_', ' '), layer))
-        gr.setTitleY( String.format("AHDC_RESIDUAL_layer %d (ns)", variable.replace('_', ' '), layer))
+        gr.setTitle(  String.format("AHDC_RESIDUAL %s layer %d", variable.replace('_', ' '), layer))
+        gr.setTitleY( String.format("AHDC_RESIDUAL %s layer %d (ns)", variable.replace('_', ' '), layer))
           gr.setTitleX("run number")
           data.sort{it.key}.each{run,it->
             out.mkdir('/'+it.run)
