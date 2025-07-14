@@ -176,10 +176,10 @@ public class ALERT {
       int index = 0;
 
       layer = superlayer * 10 + layer;
-      int layer_number = Arrays.asList(boxed_encoding).indexOf(layer);
+      int layer_number = Arrays.asList(boxed_encoding).indexOf(layer) + 1;
       index = component - 1 + layer_wires_cumulative[layer_number - 1];
 
-      if (Math.signum(residual) != 0) AHDC_RESIDUAL[layer_number].fill(residual);
+      if (Math.signum(residual) != 0) AHDC_RESIDUAL[layer_number - 1].fill(residual);
       AHDC_TIME[index].fill(time);
     }
   }

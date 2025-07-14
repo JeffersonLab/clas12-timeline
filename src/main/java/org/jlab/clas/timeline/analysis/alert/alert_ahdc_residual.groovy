@@ -18,16 +18,16 @@ def layer_encoding          = [11, 21, 22, 31, 32, 41, 42, 51];
     def reference_trigger_bit = 0
     // data[run].put('bits',  trigger)
     (0..<8).collect{layer->
-      int layer_number = layer_encoding[layer]
-      def h1 = dir.getObject(String.format("/ALERT/AHDC_RESIDUAL_layer%d", layer_number))
+      int layer_code = layer_encoding[layer]
+      def h1 = dir.getObject(String.format("/ALERT/AHDC_RESIDUAL_layer%d", layer_code))
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
-          data[run].put(String.format("AHDC_RESIDUAL_layer%d", layer_number),  h1)
+          data[run].put(String.format("AHDC_RESIDUAL_layer%d", layer_code),  h1)
           def f1 = ALERTFitter.residual_fitter(h1)
-          data[run].put(String.format("fit_AHDC_RESIDUAL_layer%d", layer_number),  f1)
-          data[run].put(String.format("peak_location_AHDC_RESIDUAL_layer%d", layer_number),  f1.getParameter(1))
-          data[run].put(String.format("sigma_AHDC_RESIDUAL_layer%d", layer_number),  f1.getParameter(2).abs())
-          data[run].put(String.format("integral_normalized_to_trigger_AHDC_RESIDUAL_layer%d", layer_number),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2).abs()/trigger.getBinContent(reference_trigger_bit) )
+          data[run].put(String.format("fit_AHDC_RESIDUAL_layer%d", layer_code),  f1)
+          data[run].put(String.format("peak_location_AHDC_RESIDUAL_layer%d", layer_code),  f1.getParameter(1))
+          data[run].put(String.format("sigma_AHDC_RESIDUAL_layer%d", layer_code),  f1.getParameter(2).abs())
+          data[run].put(String.format("integral_normalized_to_trigger_AHDC_RESIDUAL_layer%d", layer_code),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2).abs()/trigger.getBinContent(reference_trigger_bit) )
           has_data.set(true)
         }
       }
@@ -47,10 +47,10 @@ def layer_encoding          = [11, 21, 22, 31, 32, 41, 42, 51];
       TDirectory out = new TDirectory()
       out.mkdir('/timelines')
       (0..<8).collect{layer->
-        int layer_number = layer_encoding[layer]
-        def name = String.format("AHDC_RESIDUAL_layer%d", layer_number)
+        int layer_code = layer_encoding[layer]
+        def name = String.format("AHDC_RESIDUAL_layer%d", layer_code)
         def gr = new GraphErrors(name)
-        gr.setTitle(  String.format("AHDC RESIDUAL %s layer%d", variable.replace('_', ' '), layer_number))
+        gr.setTitle(  String.format("AHDC RESIDUAL %s layer%d", variable.replace('_', ' '), layer_code))
         gr.setTitleY( String.format("AHDC RESIDUAL %s (ns)", variable.replace('_', ' ')))
         gr.setTitleX("run number")
         data.sort{it.key}.each{run,it->
