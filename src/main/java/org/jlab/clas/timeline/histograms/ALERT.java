@@ -127,7 +127,7 @@ public class ALERT {
       ADC[index].setTitleX("ADC");
       ADC[index].setTitleY("Counts");
       ADC[index].setFillColor(4);
-      AHDC_TIME[index] = new H1F(String.format("AHDC_TIME_layer%d_wire_number%d", layer, wire_number), String.format("AHDC Time layer %d wire_number%d", layer, wire_number), 450, -150.f, 300.0f);
+      AHDC_TIME[index] = new H1F(String.format("AHDC_TIME_layer%d_wire_number%d", layer, wire_number), String.format("AHDC Time layer %d wire number%d", layer, wire_number), 450, -150.f, 300.0f);
       AHDC_TIME[index].setTitleX("AHDC TIME");
       AHDC_TIME[index].setTitleY("Counts");
       AHDC_TIME[index].setFillColor(4);
