@@ -173,6 +173,7 @@ public class ALERT {
       int component   = ahdc_hits.getInt("wire", loop);
       float time      = (float) ahdc_hits.getDouble("time", loop);
       float residual  = (float) ahdc_hits.getDouble("residual", loop);
+      int index = 0;
 
       layer = superlayer * 10 + layer;
       int layer_number = Arrays.asList(boxed_encoding).indexOf(layer);
@@ -277,7 +278,7 @@ public class ALERT {
       dirout.addDataSet(TDC[index], TDC_minus_start_time[index], TOT[index], TDC_minus_start_time_vs_TOT[index]);//atof histograms
     }
     for (int index = 0; index < 576; index++) {
-      dirout.addDataSet(ADC[index], , AHDC_TIME[index]);
+      dirout.addDataSet(ADC[index], AHDC_TIME[index]);
     }
     for (int index = 0; index < 8; index++){
       dirout.addDataSet(AHDC_RESIDUAL[index]);
