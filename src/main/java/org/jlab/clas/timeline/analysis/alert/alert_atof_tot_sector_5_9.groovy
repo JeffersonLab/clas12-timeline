@@ -31,8 +31,8 @@ def has_data = new AtomicBoolean(false)
           data[run].put(String.format('atof_tot_%s', file_index),  h1)
 
           peak_location = h1.getAxis().getBinCenter(h1.getMaximumBin())
-          // def f1 = ALERTFitter.totfitter(h1)
-          // data[run].put(String.format('fit_atof_tot_%s', file_index),  f1)
+          def f1 = ALERTFitter.totfitter(h1)
+          data[run].put(String.format('fit_atof_tot_%s', file_index),  f1)
           data[run].put(String.format('peak_location_atof_tot_%s', file_index),  peak_location)
           // data[run].put(String.format('sigma_atof_tot_%s', file_index),  f1.getParameter(2))
           // data[run].put(String.format('integral_normalized_to_trigger_atof_tot_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
@@ -65,15 +65,15 @@ def has_data = new AtomicBoolean(false)
           }
           names.each{ name ->
             def gr = new GraphErrors(name)
-          gr.setTitle(  String.format("ATOF TOT %s sector %d layer %d", variable.replace('_', ' '), sector, layer))
-          gr.setTitleY( String.format("ATOF TOT %s sector %d layer %d (ns)", variable.replace('_', ' '), sector, layer))
+            gr.setTitle(  String.format("ATOF TOT %s sector %d layer %d", variable.replace('_', ' '), sector, layer))
+            gr.setTitleY( String.format("ATOF TOT %s sector %d layer %d (ns)", variable.replace('_', ' '), sector, layer))
             gr.setTitleX("run number")
             data.sort{it.key}.each{run,it->
               out.mkdir('/'+it.run)
               out.cd('/'+it.run)
               if (it.containsKey(name)){
                 out.addDataSet(it[name])
-                // out.addDataSet(it['fit_'+name])
+                out.addDataSet(it['fit_'+name])
                 gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
               }
               else if (variable=="peak_location") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))

@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.FTFitter
+import org.jlab.clas.timeline.util.QA
 
 class fth_MIPS_energy {
 
@@ -51,8 +52,11 @@ def write() {
       grtl.addPoint(it.run, it.mean[lindex], 0, 0)
     }
     out.cd('/timelines')
-    out.addDataSet(grtl)
+    if(layer == 'layer1')
+      QA.cutGraphs(grtl, lb: 0.9, ub: 1.9, lb_color: 'red', ub_color: 'red', out: out)
+    else if(layer == 'layer2')
+      QA.cutGraphs(grtl, lb: 2.3, ub: 3.3, lb_color: 'blue', ub_color: 'blue', out: out)
   }
-  out.writeFile('fth_MIPS_energy.hipo')
+  out.writeFile('fth_MIPS_energy_QA.hipo')
 }
 }

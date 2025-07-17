@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.FTFitter
+import org.jlab.clas.timeline.util.QA
 
 class fth_MIPS_time {
 
@@ -51,9 +52,12 @@ def write() {
         grtl.addPoint(it.run, it[name][lindex], 0, 0)
       }
       out.cd('/timelines')
-      out.addDataSet(grtl)
+      if(layer == 'layer1') // mean_ub and mean_lb are the same for the 2 layers, so color is black, whereas sigma differs, so color is red/blue
+        QA.cutGraphsMeanSigma(name, grtl, mean_lb: -0.5, mean_ub: 0.5, sigma_ub: 1.4, mean_lb_color: 'black', mean_ub_color: 'black', sigma_ub_color: 'red', out: out)
+      else if(layer == 'layer2')
+        QA.cutGraphsMeanSigma(name, grtl, mean_lb: -0.5, mean_ub: 0.5, sigma_ub: 1.2, mean_lb_color: 'black', mean_ub_color: 'black', sigma_ub_color: 'blue', out: out)
     }
-    out.writeFile('fth_MIPS_time_' + name + '.hipo')
+    out.writeFile("fth_MIPS_time_${name}_QA.hipo")
   }
 }
 }

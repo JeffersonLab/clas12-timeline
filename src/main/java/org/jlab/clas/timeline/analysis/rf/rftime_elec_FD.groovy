@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.RFFitter;
+import org.jlab.clas.timeline.util.QA
 
 class rftime_elec_FD {
 
@@ -50,8 +51,8 @@ def write() {
 
     out.mkdir('/timelines')
     out.cd('/timelines')
-    grtl.each{ out.addDataSet(it) }
-    out.writeFile('rftime_electron_FD_'+name+'.hipo')
+    QA.cutGraphsMeanSigma(name, *grtl, mean_lb: -0.010, mean_ub: 0.010, sigma_ub: 0.070, out: out)
+    out.writeFile("rftime_electron_FD_${name}_QA.hipo")
   }
 
 }

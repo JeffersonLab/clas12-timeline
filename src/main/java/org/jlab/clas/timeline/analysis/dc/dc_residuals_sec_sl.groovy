@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.DCFitter
+import org.jlab.clas.timeline.util.QA
 
 class dc_residuals_sec_sl {
 
@@ -38,25 +39,38 @@ def write() {
     TDirectory out = new TDirectory()
     out.mkdir('/timelines')
     (0..<6).each{ sec->
-      (0..<6).each{sl->
-        def grtl = new GraphErrors('sec'+(sec+1)+' sl'+(sl+1))
-        grtl.setTitle("DC residuals (" + name + ") per sector per superlayer (with basic DC4gui cuts)")
-        grtl.setTitleY("DC residuals (" + name + ") per sector per superlayer (with basic DC4gui cuts) (cm)")
-        grtl.setTitleX("run number")
+      [ 1: [0,1], 2: [2,3], 3: [4,5] ].each{ region, slList ->
+        def grtlList = slList.collect{ sl ->
+          def grtl = new GraphErrors('sec'+(sec+1)+' sl'+(sl+1))
+          grtl.setTitle("DC residuals (" + name + ") per sector per superlayer (with basic DC4gui cuts)")
+          grtl.setTitleY("DC residuals (" + name + ") per sector per superlayer (with basic DC4gui cuts) (cm)")
+          grtl.setTitleX("run number")
 
-        data.sort{it.key}.each{run,it->
-          if (sec==0 && sl==0) out.mkdir('/'+it.run)
-          out.cd('/'+it.run)
-          out.addDataSet(it.hlist[sec][sl])
-          out.addDataSet(it.flist[sec][sl])
-          grtl.addPoint(it.run, it[name][sec][sl], 0, 0)
+          data.sort{it.key}.each{run,it->
+            if (sec==0 && sl==0) out.mkdir('/'+it.run)
+            out.cd('/'+it.run)
+            out.addDataSet(it.hlist[sec][sl])
+            out.addDataSet(it.flist[sec][sl])
+            grtl.addPoint(it.run, it[name][sec][sl], 0, 0)
+          }
+          grtl
         }
         out.cd('/timelines')
-        out.addDataSet(grtl)
+        switch(region) {
+          case 1:
+            QA.cutGraphsMeanSigma(name, *grtlList, mean_lb: -0.010, mean_ub: 0.010, sigma_ub: 0.04, out: out)
+            break
+          case 2:
+            QA.cutGraphsMeanSigma(name, *grtlList, mean_lb: -0.010, mean_ub: 0.010, sigma_ub: 0.04, out: out)
+            break
+          case 3:
+            QA.cutGraphsMeanSigma(name, *grtlList, mean_lb: -0.010, mean_ub: 0.010, sigma_ub: 0.04, out: out)
+            break
+        }
       }
     }
 
-    out.writeFile('dc_residuals_sec_sl_'+name+'.hipo')
+    out.writeFile("dc_residuals_sec_sl_${name}_QA.hipo")
   }
 }
 }

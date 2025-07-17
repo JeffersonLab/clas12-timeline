@@ -928,16 +928,17 @@ timeBins.each{ itBinNum, itBin ->
   def fcStop  = 0
   def aveLivetime = itBin.LTlist.size()>0 ? itBin.LTlist.sum() / itBin.LTlist.size() : 0
   if(itBinNum+1<timeBins.size()) { // unknown for last time bin, just let the charge be "zero"
-    if(FCmode==0) {
-      fcStart = ufcStart * aveLivetime // workaround method
-      fcStop  = ufcStop  * aveLivetime // workaround method
-    } else if(FCmode==1 || FCmode==2 || FCmode==3) {
-      if(!itBin.fcRange.contains("init")) {
-        fcStart = itBin.fcRange[0]
-        fcStop  = itBin.fcRange[1]
-      } else {
-        System.err.println "ERROR: no gated FC charge for run ${runnum} time bin ${itBinNum}"
-      }
+    if(FCmode==0) { // workaround method: gated charge = <livetime> * ungated charge
+      itBin.fcRange[0]  = itBin.ufcRange[0]  * aveLivetime
+      itBin.fcRange[1]  = itBin.ufcRange[1]  * aveLivetime
+      itBin.fcMinMax[0] = itBin.ufcMinMax[0] * aveLivetime
+      itBin.fcMinMax[1] = itBin.ufcMinMax[1] * aveLivetime
+    }
+    if(!itBin.fcRange.contains("init")) {
+      fcStart = itBin.fcRange[0]
+      fcStop  = itBin.fcRange[1]
+    } else {
+      System.err.println "ERROR: no gated FC charge for run ${runnum} time bin ${itBinNum}"
     }
     if(fcStart>fcStop || ufcStart>ufcStop) {
       System.err.println "ERROR: faraday cup start > stop for run ${runnum} time bin ${itBinNum}"
