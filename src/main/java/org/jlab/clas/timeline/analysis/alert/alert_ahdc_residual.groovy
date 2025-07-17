@@ -22,6 +22,7 @@ def layer_encoding          = [11, 21, 22, 31, 32, 41, 42, 51];
       def h1 = dir.getObject(String.format("/ALERT/AHDC_RESIDUAL_layer%d", layer_code))
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
+          h1.setTitleX("AHDC RESIDUAL (mm)");//remove this later.
           data[run].put(String.format("AHDC_RESIDUAL_layer%d", layer_code),  h1)
           def f1 = ALERTFitter.residual_fitter(h1)
           data[run].put(String.format("fit_AHDC_RESIDUAL_layer%d", layer_code),  f1)
@@ -51,7 +52,7 @@ def layer_encoding          = [11, 21, 22, 31, 32, 41, 42, 51];
         def name = String.format("AHDC_RESIDUAL_layer%d", layer_code)
         def gr = new GraphErrors(name)
         gr.setTitle(  String.format("AHDC RESIDUAL %s layer%d", variable.replace('_', ' '), layer_code))
-        gr.setTitleY( String.format("AHDC RESIDUAL %s (ns)", variable.replace('_', ' ')))
+        gr.setTitleY( String.format("AHDC RESIDUAL %s (mm)", variable.replace('_', ' ')))
         gr.setTitleX("run number")
         data.sort{it.key}.each{run,it->
           out.mkdir('/'+it.run)

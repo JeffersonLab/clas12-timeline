@@ -22,6 +22,7 @@ def layer_encoding          = [11, 21, 22, 31, 32, 41, 42, 51];
       def h1 = dir.getObject(String.format("AHDC_TIME_layer%d", layer_number))
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
+          h1.setTitleX("AHDC Time (ns)");
           data[run].put(String.format("/ALERT/AHDC_TIME_layer%d", layer_number),  h1)
           def f1 = ALERTFitter.time_fitter_rising(h1)
           def f2 = ALERTFitter.time_fitter_falling(h1)
