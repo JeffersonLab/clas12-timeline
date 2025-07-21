@@ -95,10 +95,10 @@ def qaTree = slurper.parse(jsonFile)
 def defStr = []
 qaTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
   run, runTree ->
-  
+
   // Loop condition list and append db entries
-  def head = "\nRUN: $run\n"
-  for (cnd in cnds) { 
+  def head = ["RUN: $run"]
+  for (cnd in cnds) {
     def condition = db.getCondition(Long.valueOf(run),cnd)
     entry = ""
     val = "String"
@@ -109,17 +109,21 @@ qaTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
       case "String":  entry = condition.toString();  break
       case "Long":    entry = condition.toLong();    break
       case "Boolean": entry = condition.toBoolean(); break
-      default:        entry = condition.toString();  break    
+      default:        entry = condition.toString();  break
     }
-    head += "  "+cnd+": "+entry+"\n" 
+    head += ["  ${cnd}: ${entry}"]
   }
-  outfileW << head
- 
+  outfileW << """
+==================================================================================
+${head.join("\n")}
+----------------------------------------------------------------------------------
+"""
+
   runTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
     itBin, binTree ->
     def defect = binTree.defect
     //defStr=[run,itBin,defect,Integer.toBinaryString(defect)]
-    defStr = [run,itBin]
+    defStr = [run, itBin.padRight(5)]
     def getSecList = { bitNum ->
       def secList = []
       binTree.sectorDefects.each{
@@ -133,9 +137,9 @@ qaTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
 
     if(defect>0) {
       T.bitNames.eachWithIndex { str,i ->
-        if(defect >> i & 0x1) defStr += " ${i}-" + str + getSecList(i)
+        if(defect >> i & 0x1) defStr += "${i}-${str}[${getSecList(i).join()}]".padLeft(28)
       }
-    } else defStr += " GOLDEN"
+    } else defStr += "|"
     if(binTree.comment!=null) {
       if(binTree.comment.length()>0) defStr += " :: " + binTree.comment
     }
