@@ -122,8 +122,10 @@ ${head.join("\n")}
   runTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
     itBin, binTree ->
     def defect = binTree.defect
-    //defStr=[run,itBin,defect,Integer.toBinaryString(defect)]
     defStr = [run, itBin.padRight(5)]
+    if(binTree.comment!=null) {
+      if(binTree.comment.length()>0) defStr += ":: ${binTree.comment} ::"
+    }
     def getSecList = { bitNum ->
       def secList = []
       binTree.sectorDefects.each{
@@ -140,9 +142,6 @@ ${head.join("\n")}
         if(defect >> i & 0x1) defStr += "${i}-${str}[${getSecList(i).join()}]".padLeft(28)
       }
     } else defStr += "|"
-    if(binTree.comment!=null) {
-      if(binTree.comment.length()>0) defStr += " :: " + binTree.comment
-    }
     outfileW << defStr.join(' ') << "\n"
     //outfileW << binTree.sectorDefects << "\n"
   }
