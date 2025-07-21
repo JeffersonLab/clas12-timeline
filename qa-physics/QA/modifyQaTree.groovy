@@ -237,7 +237,7 @@ else if(cmd=="nobeam") {
   }
 }
 
-else if(cmd=="misc") {
+else if(cmd=="misc" || cmd == "m") {
   def rnum,bnumL,bnumR
   def secList = []
   if(args.length>1) {
