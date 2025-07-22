@@ -205,9 +205,6 @@ the timelines and recording features not identified by the automatic QA in
 * open `qa/qaTable.dat` in another window; this is the human-readable version of
   the imported `qaTree.json`
 * now scan through `qaTable.dat`, inspecting each run:
-  * tip: if using `vim`, type `:LogiPat !"GOLDEN"` to search for files that are
-    not `GOLDEN`, i.e., for defects; then use `n` and `N` to skip to the next
-    and previous non-golden files, respectively
   * Use `modify.sh` if you need to make revisions to `qaTree.json` and `qaTable.dat`
     * this script allows for easy revision of the imported `qaTree.json`; it will also
       update `qaTable.dat`, so it is useful to have `qaTable.dat` open in a window
@@ -245,6 +242,9 @@ the timelines and recording features not identified by the automatic QA in
       indicate a problem; so far in all cases we have checked and there are no
       issues with the reported beam spin asymmetry, but it is useful to
       document these cases with the Misc defect bit
+  * if you are producing QADB for a _re-cooked_ dataset, _i.e._ Pass 2 or greater, cross
+    check the QA results with the previous Pass(es), paying special attention to the
+    `Misc` defect bit
 * after scanning through `qaTable.dat` and revising `qaTree.json`, return to the parent
 directory and call `exeQAtimelines.sh` to produce the updated QA timelines
   * it copies the revised`qaTree.json` (`QA/qa.${dataset}/qaTree.json`) to
