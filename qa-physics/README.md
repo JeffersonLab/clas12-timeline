@@ -245,6 +245,8 @@ the timelines and recording features not identified by the automatic QA in
   * if you are producing QADB for a _re-cooked_ dataset, _i.e._ Pass 2 or greater, cross
     check the QA results with the previous Pass(es), paying special attention to the
     `Misc` defect bit
+  * if the run group provides a table of runs with comments, _e.g._, a table of "good" or
+    "golden" runs, cross check that table with the QADB
 * after scanning through `qaTable.dat` and revising `qaTree.json`, return to the parent
 directory and call `exeQAtimelines.sh` to produce the updated QA timelines
   * it copies the revised`qaTree.json` (`QA/qa.${dataset}/qaTree.json`) to
