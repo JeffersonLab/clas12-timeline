@@ -1,6 +1,6 @@
-// called by mkTree.sh
+// called by draw_epochs.sh
 //
-void readTree(TString dataset, TString datfile, TString epochsfile) {
+void draw_epochs(TString dataset, TString datfile, TString epochsfile) {
 
   /////////////////////////////
   // SETTINGS
@@ -104,17 +104,15 @@ void readTree(TString dataset, TString datfile, TString epochsfile) {
     cN = hN+"canv";
     c[s] = new TCanvas(cN,cN,800,800);
 
-    ///*
     c[s]->SetGrid(1,1);
     tr->Project(hN,rundrawNF,cut);
     h[s]->Draw("colz");
-    hp[s] = h[s]->ProfileX();
-    hp[s]->SetLineColor(kRed);
-    hp[s]->SetLineWidth(5);
-    hp[s]->Draw("same");
+    // hp[s] = h[s]->ProfileX();
+    // hp[s]->SetLineColor(kRed);
+    // hp[s]->SetLineWidth(5);
+    // hp[s]->Draw("same");
     for(int k=0; k<n; k++) for(int j=0; j<2; j++) eLine[j][k]->Draw("same");
     //c[s]->SetLogz();
-    //*/
 
     /*
     c[s]->Divide(2,2);
