@@ -234,6 +234,8 @@ the timelines and recording features not identified by the automatic QA in
       * mark all files in a run with `Misc` bit for special cases which are best
         summarized in a comment; use `modify.sh addBit ...` to set the `Misc` bit
         (it will prompt you for a comment)
+      * some automatic QA defect bit assignments may be incorrect for some edge cases;
+        you may need to correct these using `modify.sh` bit commands (`addbit`, `delbit`, _etc._)
   * you should also look through each timeline for any issues that may have slipped under
     the radar; revise `qaTree.json` using `modify.sh` as needed
     * check `stddev` timelines; usually a high standard deviation indicates a
