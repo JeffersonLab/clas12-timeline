@@ -27,9 +27,11 @@ Physics QA features:
 
 For run-group specific notes, including the commands used to perform the QA, see
 
-- [Notes and Procedures](notes)
+- [Notes and Procedures](notes) <!-- FIXME: relative link, since notes/ was moved to ../qadb/ -->
 
 # Procedure for Automatic QA
+
+## Details
 * prepare run-group dependent settings in `monitorRead.groovy` (**WARNING: this step will be deprecated soon**)
   * obtain the beam energies from the `RCDB`; CAUTION: sometimes the `RCDB` is 
     wrong, and it is good to ask for the correct beam energy from the run group
