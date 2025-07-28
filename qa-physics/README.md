@@ -63,38 +63,8 @@ For run-group specific notes, including the commands used to perform the QA, see
   * if any of these scripts throw errors, they will be redirected and printed at the end
     * if you see any errors for a particular script, you may re-run it individually
       to diagnose the problem (the full command for each script is printed in the output)
-    * you may get warnings about using default epochs or cut definitions (`cutdefs`) files; we will fix those in the next steps
 * Determine epoch lines
-  * You need to write `epochs/epochs.${dataset}.txt`, which is a list epoch boundary lines
-    * Each line should contain two numbers: the first run of the epoch, and the last run
-      of the epoch
-    * If you do not need epochs, you do not need to do this
-  * To help determine where to draw the epoch boundaries, execute `draw_epochs.sh`
-    * this script, in conjunction with `draw_epochs.C`, will build a `ROOT` tree and draw
-      N/F vs. file index, along with the current epoch boundary lines (if defined)
-      * other plots will be drawn, including N/F vs. run number (as a 2d histogram),
-        along with plots for the Faraday Cup
-      * the N/F plots are helpful in determining where to put the epoch boundary lines
-      * look at N/F and identify where the average value "jumps": this typically
-        occurs at the same time for all 6 sectors, but you should check all 6 regardless
-  * After defining epochs and producing new timelines with `qtl physics`, see
-    the QA timeline "epoch view" in the extra (expert) timelines
-    * this is a timeline used to evaluate how the QA cuts look overall, for each epoch
-    * the timeline is just a list of the 6 sectors; clicking on one of them will show
-      plots of N/F, N, F, and livetime, for each epoch
-      * the horizontal axis of these plots is a file index, defined as the run
-        number plus a small offset (<1) proportional to the time bin
-    * the N/F plots include the cut lines: here you can zoom in and see how
-      well-defined the cut lines are for each epoch
-      * if there are any significant 'jumps' in the N/F value, the cut lines may be
-        appear to be too wide: this indicates an epoch boundary line needs to be drawn
-        at the step in N/F
 * Decide cut definitions
-  * add the file `cutdefs/${dataset}.yaml`; you may copy one of the existing ones, most likely
-    the default one
-  * after generating the automatic QA, check to make sure the results look reasonable; if they
-    do not, tune the settings in this file (see `qaCut.groovy` to see how the numbers are used)
-  * rerun `qtl physics` to check the results
 * take a look at the "time bin analysis" plots by running `timebin_analysis/timebin_plot.C`
 * integrity check: check if all available data were analyzed (must be done AFTER
   `../bin/qtl physics`)

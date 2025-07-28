@@ -32,7 +32,6 @@ def jPrint = { name,object -> new File(name).write(JsonOutput.toJson(object)) }
 // read cutDefs yaml file into a tree
 def cutDefsFile = new File("cutdefs/${dataset}.yaml")
 if(!(cutDefsFile.exists())) {
-  System.err.println "WARNING: using cutdefs/default.yaml"
   cutDefsFile = new File("cutdefs/default.yaml")
 }
 def cutDefsParser = new Yaml()
@@ -55,7 +54,6 @@ def cutDef = { path, required=true ->
 // read epochs list file
 def epochFile = new File("epochs/epochs.${dataset}.txt")
 if(!(epochFile.exists())) {
-  System.err.println "WARNING: using epochs/epochs.default.txt"
   epochFile = new File("epochs/epochs.default.txt")
 }
 
