@@ -138,7 +138,7 @@ First step is to read DST or Skim files, producing HIPO files and data tables
       * `grT*`: livetime vs. time bin
 
 * `qaCut.groovy`
-  * reads `monitorElec.hipo`, along with `epochs/epochs.${dataset}.txt`, to build
+  * reads `monitorElec.hipo`, along with `../qadb/epochs/epochs.${dataset}.txt`, to build
     timelines for the online monitor
   * if `$useFT` is set, it will use FT electrons instead
   * the runs are organized into epochs, wherein each:

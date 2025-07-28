@@ -4,7 +4,7 @@
 // input: tree.root, produced by draw_epochs.sh
 // see monitorRead.groovy, `FCmode` setting, to know which charge is used
 
-void studyCharge(TString infileN="tree.root") {
+void study_charge(TString infileN="tree.root") {
 
   // open tree.root
   TFile * infile = new TFile(infileN,"READ");

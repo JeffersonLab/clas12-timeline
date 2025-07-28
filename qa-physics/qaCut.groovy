@@ -29,10 +29,17 @@ def sec = { int i -> i+1 }
 // subroutine to write JSON
 def jPrint = { name,object -> new File(name).write(JsonOutput.toJson(object)) }
 
+// read env vars
+def TIMELINESRC = System.getenv("TIMELINESRC")
+if(TIMELINESRC == null) {
+  System.err.println "ERROR: \$TIMELINESRC is not set"
+  System.exit(100)
+}
+
 // read cutDefs yaml file into a tree
-def cutDefsFile = new File("cutdefs/${dataset}.yaml")
+def cutDefsFile = new File("${TIMELINESRC}/qadb/cutdefs/${dataset}.yaml")
 if(!(cutDefsFile.exists())) {
-  cutDefsFile = new File("cutdefs/default.yaml")
+  cutDefsFile = new File("${TIMELINESRC}/qadb/cutdefs/default.yaml")
 }
 def cutDefsParser = new Yaml()
 def cutDefsTree = cutDefsParser.load(cutDefsFile.text)
@@ -52,9 +59,9 @@ def cutDef = { path, required=true ->
 }
 
 // read epochs list file
-def epochFile = new File("epochs/epochs.${dataset}.txt")
+def epochFile = new File("${TIMELINESRC}/qadb/epochs/epochs.${dataset}.txt")
 if(!(epochFile.exists())) {
-  epochFile = new File("epochs/epochs.default.txt")
+  epochFile = new File("${TIMELINESRC}/qadb/epochs/epochs.default.txt")
 }
 
 // get the epoch number for a given run `r` and sector `s`

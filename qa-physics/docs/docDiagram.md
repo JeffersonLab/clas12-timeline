@@ -53,7 +53,7 @@ flowchart TB
 
       qaPlot[qaPlot.groovy]:::auto
       outdatFiles --> draw_epochs[draw_epochs.sh<br />draw_epochs.C]:::manual
-      draw_epochs --> createEpochs[create or edit<br>epochs/epochs.$dataset.txt]:::manual
+      draw_epochs --> createEpochs[create or edit<br>qadb/epochs/epochs.$dataset.txt]:::manual
       monitorElec{{$qa_dir/outmon/monitorElec.hipo}}:::data
       outdatFiles --> qaPlot
       qaPlot --> monitorElec
