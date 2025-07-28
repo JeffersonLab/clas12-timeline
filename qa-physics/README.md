@@ -184,13 +184,3 @@ directory and call `exeQAtimelines.sh` to produce the updated QA timelines
     [`clas12-qadb` repository](https://github.com/JeffersonLab/clas12-qadb)
     and should be copied there, along with `chargeTree.json`
 
-### Melding: combining `qaTree.json` file versions
-* This more advanced procedure is used if you need to combine two `qaTree.json` files
-  * you must read the script carefully and edit it for your use case
-  * for each run, the script will "combine" QA info from each of the
-    `qaTree.json` files; the script must know what to do with each case
-    * be careful if your `qaTree.json` files have different/overlapping sets of runs
-  * this procedure is useful if, _e.g_, you change bit definitions and want to
-    update a `qaTree.json` file, with full control of each defect bit's
-    behavior
-  * see [`qadb/meld/README.md`](/qadb/meld/README.md)
