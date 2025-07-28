@@ -13,7 +13,7 @@ The following **checklists** must be followed for any QADB production.
 - you may copy and paste the checklist elsewhere, so you may keep track of your progress
 - click each item to expand the details
 
-## :zap: Automatic QA
+## :zap: Automatic QA :zap:
 
 The [timeline code](..) produces an initial QADB as a byproduct. This initial version automatically assigns several defect bits,
 therefore this procedure is called the "automatic QA".
@@ -164,7 +164,7 @@ therefore this procedure is called the "automatic QA".
 - send the above _initial_ version of the QADB file, `qaTree.json`, to the cross checker
 </details>
 
-## :clipboard: Manual QA
+## :clipboard: Manual QA :clipboard:
 
 This procedure follows up on the "automatic QA" above, further refining the QADB; substantial
 user interaction is required, along with careful checks of the timelines and logbook, therefore
@@ -332,7 +332,7 @@ After two people have independently finished all steps in the manual QA checklis
 - the two people should meet and go through the differences, resolving any conflicts with `modify.sh`
 - afterward, make sure the final QADB file `qaTree.json` is backed up
 
-## :sailboat: Deployment
+## :sailboat: Deployment :sailboat:
 
 The final step is to _deploy_ the new QADB to the [QADB repository](https://github.com/JeffersonLab/clas12-qadb).
 Most of the steps in the following checklist are performed within that repository, on the branch associated
