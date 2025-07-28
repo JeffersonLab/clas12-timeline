@@ -12,7 +12,7 @@ if [ $# -ne 2 ]; then
   - run this script from \`$TIMELINESRC/qa-physics\`
   - [INPUT_DIR] is the location of the output timeline files from Step 2
     (likely \`outfiles/[DATASET]\`)
-  - the \`qaTree.json\` file used will be \`QA/qa.[DATASET]/qaTree.json\`
+  - the \`qaTree.json\` file used will be \`qadb/qa.[DATASET]/qaTree.json\`
   """ >&2
   exit 101
 fi
@@ -70,7 +70,7 @@ for bit in ${defect_bits_FT[@]}; do
   mv -v $qa ${qaDir}/$(echo $qa | sed 's/^.*_QA_//g')
 done
 
-cp QA/qa.${dataset}/qaTree.json $qaDir
+cp $TIMELINESRC/qadb/qa.${dataset}/qaTree.json $qaDir
 echo ""
 cat $tlDir/outdat/passFractions.dat
 

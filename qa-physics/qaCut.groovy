@@ -335,7 +335,7 @@ def qaTreeSlurper
 def jsonFile
 if(qaBit>=0) {
   qaTreeSlurper = new JsonSlurper()
-  jsonFile = new File("QA/qa.${dataset}/qaTree.json")
+  jsonFile = new File("${TIMELINESRC}/qadb/qa.${dataset}/qaTree.json")
   qaTree = qaTreeSlurper.parse(jsonFile)
 }
 else qaTree = [:]

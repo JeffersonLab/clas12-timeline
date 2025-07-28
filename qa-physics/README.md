@@ -178,7 +178,7 @@ the timelines and recording features not identified by the automatic QA in
     "golden" runs, cross check that table with the QADB
 * after scanning through `qaTable.dat` and revising `qaTree.json`, return to the parent
 directory and call `exeQAtimelines.sh` to produce the updated QA timelines
-  * it copies the revised`qaTree.json` (`QA/qa.${dataset}/qaTree.json`) to
+  * it copies the revised`qaTree.json` (`qa.${dataset}/qaTree.json`) to
     the new QA timeline directory, which can then be deployed to the web servers
   * this final `qaTree.json` is stored in the 
     [`clas12-qadb` repository](https://github.com/JeffersonLab/clas12-qadb)
@@ -193,4 +193,4 @@ directory and call `exeQAtimelines.sh` to produce the updated QA timelines
   * this procedure is useful if, _e.g_, you change bit definitions and want to
     update a `qaTree.json` file, with full control of each defect bit's
     behavior
-  * see [`QA/meld/README.md`](QA/meld/README.md)
+  * see [`qadb/meld/README.md`](/qadb/meld/README.md)

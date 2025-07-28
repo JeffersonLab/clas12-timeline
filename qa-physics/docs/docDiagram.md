@@ -83,7 +83,7 @@ flowchart TB
       timelineFiles --> stage0
     end
 
-    subgraph "Manual QA, in QA subdirectory"
+    subgraph "Manual QA, in qadb subdirectory"
       import[import.sh]:::manual
       qaLoc([qa/ -> qa.$dataset/<br>qa/qaTree.json]):::json
       parse[parseQAtree.groovy<br>called automatically<br>whenever needed]:::auto
@@ -118,7 +118,7 @@ flowchart TB
       qaTL --> stage1
     end
 
-    qaTree --> cd0[cd QA]:::manual
+    qaTree --> cd0[cd qadb]:::manual
     cd0 --> import
     edit -->|no|cd1[cd ..]:::manual
     cd1 --> exeQAtimelines

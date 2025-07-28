@@ -18,7 +18,6 @@ slurm
 tmp
 outfiles
 
-# physics timelines
-qa-physics/QA/qa
+# QADB files
 qaTree*.json*
 chargeTree*.json*
