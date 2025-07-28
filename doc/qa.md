@@ -90,13 +90,6 @@ therefore this procedure is called the "automatic QA".
 </details>
 
 <details>
-<summary>double check one more time that all the runs were analyzed</summary>
-
-- cross check the output directory (likely `outfiles/$dataset`) with data on `/mss`
-- the QADB should print warnings if an analyzer tries to use the QADB on data that are not available in the QADB, but we do not want that to happen
-</details>
-
-<details>
 <summary>produce initial timelines (step 2)</summary>
 
 - this is "step 2" of the [timeline-production procedure](procedure.md)
@@ -154,6 +147,13 @@ therefore this procedure is called the "automatic QA".
     - you may use this pull request to push additional changes to the QADB, as the manual QA procedure
       proceeds, but _this version_ is the one that we want to use to initiate the independent cross check
       of the manual QA
+</details>
+
+<details>
+<summary>double check one more time that all the runs were analyzed</summary>
+
+- cross check QADB's runs with data on `/mss`
+- the QADB should print warnings if an analyzer tries to use the QADB on data that are not available in the QADB, but we do not want that to happen
 </details>
 
 <details>
