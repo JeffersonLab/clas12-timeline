@@ -7,13 +7,13 @@
 - include any other information specific to these data
 - keep it up-to-date as the automatic _and_ manual QA proceeds
 - suggestion: copy one of the others, and start from there
-</summary>
+</details>
 
 <details>
 <summary>choose input data files</summary>
 - full DSTs or trains?
 - need to combine data from various targets (see, _e.g._, RG-C notes)?
-</summary>
+</details>
 
 ---
 
