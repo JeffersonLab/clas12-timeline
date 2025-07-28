@@ -1,13 +1,22 @@
 # Automatic QA
 
-- [ ] start a new note file in [`qadb/notes`] for this dataset
-    - must contain _explicit_ commands used, for reproducibility purposes
-    - include any other information specific to these data
-    - keep it up-to-date as the automatic _and_ manual QA proceeds
-    - suggestion: copy one of the others, and start from there
-- [ ] decide on input data:
-    - full DSTs or trains?
-    - need to combine data from various targets (see, _e.g._, RG-C notes)?
+<details>
+<summary>start a new notes file for this dataset</summary>
+- the file must be in  [`qadb/notes`] for this dataset
+- must contain _explicit_ commands used, for reproducibility purposes
+- include any other information specific to these data
+- keep it up-to-date as the automatic _and_ manual QA proceeds
+- suggestion: copy one of the others, and start from there
+</summary>
+
+<details>
+<summary>choose input data files</summary>
+- full DSTs or trains?
+- need to combine data from various targets (see, _e.g._, RG-C notes)?
+</summary>
+
+---
+
 - [ ] make sure all data are cached, _i.e._, on `/cache`
     - use `qtl histogram --check-cache`
     - if not all data are on `/cache`, this will fail, and a `jcache` script will be generated
