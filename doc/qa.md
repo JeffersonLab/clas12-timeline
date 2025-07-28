@@ -7,13 +7,18 @@ The QADB (Quality Assurance Database) for a dataset is produced as an additional
 > [!IMPORTANT]
 > See the [QADB Ground rules](https://github.com/JeffersonLab/clas12-qadb), which must be strictly followed for the QA procedure.
 
-# Checklists
+# Procedures and Checklists
 
 The following **checklists** must be followed for any QADB production.
 - you may copy and paste the checklist elsewhere, so you may keep track of your progress
 - click each item to expand the details
 
-## Automatic QA Checklist
+## Automatic QA
+
+The [timeline code](..) produces an initial QADB as a byproduct. This initial version automatically assigns several defect bits,
+therefore this procedure is called the "automatic QA".
+
+### Checklist
 
 <details>
 <summary>start a new notes file for this dataset</summary>
@@ -151,30 +156,217 @@ The following **checklists** must be followed for any QADB production.
       of the manual QA
 </details>
 
-## Manual QA Checklist
-
 <details>
 <summary>send the QADB to the cross checker</summary>
 
-- we require a cross check of the manual QA results, for all fully cooked datasets
+- we require a cross check of the manual QA results, for all fully cooked datasets; the procedure
+  is in the next section
 - send the above _initial_ version of the QADB file, `qaTree.json`, to the cross checker
 </details>
+
+## Manual QA
+
+This procedure follows up on the "automatic QA" above, further refining the QADB; substantial
+user interaction is required, along with careful checks of the timelines and logbook, therefore
+we call this procedure the "manual QA".
+
+Two people must perform this procedure, independently, and the results must be cross checked.
+
+All steps this procedure should be performed with in the [`qadb/`](/qadb) subdirectory;
+there is [additional documentation](/qadb/README.md) within `qadb/`, for more detailed guidance.
+
+### Checklist
 
 <details>
 <summary>import the initial QADB</summary>
 
-- all steps of the manual QA procedure will be performed with in the [`qadb/`](/qadb) subdirectory
-    - there is [additional documentation](/qadb/README.md) within `qadb/`, for more detailed guidance
-- use `import.sh` with:
+- run `./import.sh` with:
+    - first with no arguments, for usage guidance, then:
     - the dataset name should be `$dataset` (the same as from the automatic QA procedure)
-    - the `qaTree.json` file from the automatic QA procedure (should be stored in the QADB repository,
-      on a separate `git` branch); if you are a cross checker, you likely have been given this file directly
+    - the `qaTree.json` file from the automatic QA procedure
+        - if you are a cross checker, you likely have been given this file directly
 </details>
+
+<details>
+<summary>open the table file in another window or text editor</summary>
+
+- the file `qa/qaTree.json.table` is a human-readable version of the QADB
+- open it in a separate window or text editor
+    - tip: use a text editor that automatically updates the file view, since the next steps
+      will _modify_ the file
+    - do _not_ edit this file, since it will be _overwritten_ as the QA proceeds
+</details>
+
+<details>
+<summary>open the QA timelines in your browser</summary>
+
+- the QA timelines (produced by the above automatic QA procedure), should also be open on your computer
+- clicking on a run's point(s) will:
+    - draw several plots below
+        - some plots will have cut lines shown
+        - some points on those plots are colored red, since they have defects identified by the automatic QA
+    - add the run to a small table (under the main timeline)
+        - the columns come from the [`clas12mon` run table](https://clas12mon.jlab.org/rga/runs/table/)
+        - clicking on a row of that table will take you to the electronic log book, with
+            - a plot of the beam current versus time
+            - shift summary log entries, with this run highlighted (sometimes you may have to go to the
+              actual logbook and dig around, to find more information about a run)
+</details>
+
+<details>
+<summary>scan the table file for non-standard running conditions</summary>
+
+- warning: this step takes a _significant_ amount of time and is rather _tedious_
+    - you need attention to detail
+    - take frequent breaks, if you have to
+- the following scripts are used here:
+    - `./modify.sh` to modify the QADB, usually to assign defect bits
+    - `./undo.sh` to undo a `./modify.sh` call, in case you make a mistake
+- scroll through this file, looking at each run and its QA bins; here are some things to look for:
+    - check the `user_comment`, which is the Shift Expert's comment (entered at the beginning
+      and/or end of each DAQ run)
+        - most normal runs say something like "production"
+        - non-production runs, or runs with issues, are often identified by this comment,
+          but _not always_
+        - check the log book as well
+        - sometimes this comment is _wrong_, or refers to the previous run
+    - if you find a region of several outliers, and the `PossiblyNoBeam` defect is also not set
+      for this region:
+        - take a look at the timelines and log book, to find out what's wrong
+        - sporadic outliers here and there are normal
+        - many consecutive outliers, which happen when there is beam (_i.e._, `PossiblyNoBeam` is not set), is
+          not normal and typically indicates either an issue or a non-standard run (_e.g._, low luminosity or
+          empty target)
+        - in some cases, a single sector will have several consecutive outliers for the remainder of a run; this
+          is called a "sector loss" and we typically manually assign the `SectorLoss` defect bit by using
+          `./modify.sh sectorloss`
+    - if you find a short run (_i.e._, not many QA bins), take a look at the log book to find out why
+        - sometimes short runs had issues
+        - other times, the accelerator had a problem and the run was ended since significant downtime was expected,
+          that is, the data are fine
+    - sometimes you may find the automatic assignment of certain defect bits is "wrong"
+        - in this case, you are permitted to _correct_ the assignment manually
+        - for example, if the beam was _not available_ for most of a run, you may find `ChargeHigh` assigned to the
+          "good" part of the run, since indeed the "good" charge is an "outlier" compared to the majority of the
+          run where the charge was (nearly) zero
+        - if you find _frequent_ mistakes from the automatic QA assignment, stop doing the manual QA and fix
+          the problem upstream (if you are the cross checker, ask the QADB maintainer(s) to do this)
+    - we recommend you take a look at every run in the log book, just to be safe
+- for _anything_ that you observe, whether it is an issue or a non-standard (non-production) run, please assign
+  the `Misc` defect bit
+    - use `./modify.sh misc` to do this
+    - be sure to only assign it to the relevant bins
+        - typically we assign `Misc` to entire runs, but not always
+        - in some cases, we also restrict `Misc` to specific FD sectors
+    - be sure to include a comment about _why_ you assigned the `Misc` bit
+        - the default comment just copies the `user_comment` (Shift Expert's comment), for convenience
+        - you may need to _correct_ the `user_comment`, or provide more details from what you find in the logbook
+    - if you make any mistake, use `./undo.sh` to revert your previous `./modify.sh` run
+- once you are done this long procedure, please make a backup of your `qaTree.json` file
+</details>
+
+<details>
+<summary>scan the timelines for anything else you may have missed</summary>
+
+- this step is much faster than scanning through the table file, but still requires careful attention to detail
+- this step shifts the focus to the _timeline_ plots, rather than the _table_ file, to see if anything slipped under the radar
+- as before, use `./modify.sh` to make changes
+- in particular:
+    - check standard-deviation-type timelines
+        - usually a high standard deviation indicates a step or change in the data, or merely a short, low statistics run
+        - sometimes it indicates a problem (that you likely already caught while scanning through the table file)
+    - check the beam spin asymmetry
+        - the automatic QA typically handles this timeline pretty well, but it is wise to take a look at this timeline anyway
+        - the $\pi^+$ beam spin asymmetry "amplitude" is expected to be around +2%
+            - if the sign is wrong, the helicity sign is wrong, and the automatic QA should have assigned the `BSAWrong` defect bit
+            - the $\pi^-$ asymmetry is too small, so we focus on the $\pi^+$
+        - the asymmetry "offset" is included in the fit, for cases when the target was polarized
+            - jumps in the offset often happen when the target type or polarization changes
+            - we typically do _not_ use this for QA purposes, but the parameter is needed in the asymmetry fit to correctly get the "amplitude"
+    - check fraction of events with defined helicity
+        - if it's relatively low, it could indicate a problem; please assign the `Misc` bit
+        - typically this fraction is around 99%
+        - check the beam spin asymmetry for such cases
+        - so far in all cases we have checked and there are no issues with the reported beam spin asymmetry,
+          but it is useful to document these cases with the `Misc` defect bit anyway
+    - kinematics distributions
+        - average kinematics should be relatively constant, but they may change sometimes
+        - for example, the pion average $\phi_h$ may change if the solenoid polarity changes
+        - if you see something suspicious, either assign the `Misc` defect bit, check the logbook, or ask the Run Group for more information
+</details>
+
+<details>
+<summary>if these data are a "Pass 2" or higher, cross check with the previous Pass's QADB</summary>
+
+- to remain unbiased, you should have _not_ looked at the previous Pass's QADB yet; in any case, cross check
+  your new QADB with the old QADB, in case you missed anything
+    - pay close attention to the `Misc` defect bit assignments and comments
+- use `./modify.sh` to make corrections as needed
+- do not modify the old Pass's QADB
+    - we do not want to "suddenly" change analyzer's results
+    - if you _must_ change the old Pass's QADB, be sure this change will be announced to the Run Group
+</details>
+
+<details>
+<summary>if the Run Group provides a table of runs and notes about them, cross check it with the QADB</summary>
+
+- some Run Groups produce a table (spreadsheet) of runs and notes about each of them
+- cross check the QADB, and make changes as necessary
+- consider also updating the Run Group's table, though that is the responsibility of the Run Group, not of the QADB maintainers
+</details>
+
+<details>
+<summary>backup your final version of the QADB</summary>
+
+- make sure your final `qa/qaTree.json` file is duplicated somewhere on another device
+- if you are the author of the QADB pull request (see last steps of the automatic QA checklist), this pull request is the
+  ideal place for such a backup
+</details>
+
+### Cross Check
+
+After two people have independently finished all steps in the manual QA checklist, you are ready for the cross check.
+
+- use `import.sh` to import both versions of the `qaTree.json` file
+- open the two `qaTree.json.table` files in a text editor which shows their differences (_e.g._, `vimdiff`)
+- the two people should meet and go through the differences, resolving any conflicts with `modify.sh`
+- afterward, make sure the final QADB file `qaTree.json` is backed up
 
 ## Deployment Checklist
 
-This checklist is for the QADB repository.
+The final step is to _deploy_ the new QADB to the [QADB repository](https://github.com/JeffersonLab/clas12-qadb).
+Most of the steps in the following checklist are performed within that repository, on the branch associated
+with the pull request you opened earlier.
 
-- [ ] update the tables in `README.md`
-- [ ] update any internal spreadsheets, tracking QADB progress (they are not in this repository)
-- [ ] make sure the symbolic link in `qadb/latest` points to the new QADB directory
+### Checklist
+
+<details>
+<summary>copy the final QA timelines to the Run Group's directory</summary>
+
+- you may need to ask the chef to do this
+</details>
+
+<details>
+<summary>update the tables in `README.md`</summary>
+
+- link to the timelines
+- fill out all the other fields
+- if you are deploying a Pass 2 or higher, make sure the previous Passes' status symbols are updated appropriately
+</details>
+
+<details>
+<summary>make sure the symbolic link in `qadb/latest` points to the new QADB directory</summary>
+
+- you already did this, but check to make sure
+</details>
+
+<details>
+<summary>review the pull request, merge, tag a new version, and deploy</summary>
+
+- review the pull request
+- merge it
+- update the version number in `bin/qadb-info`
+- tag a new version and create a new release
+    - be sure to install it, _e.g._, on `ifarm` (with a new module file)
+    - be sure to announce the new release, especially to the Run Group
+</details>
