@@ -133,8 +133,43 @@ The following **checklists** must be followed for any QADB production.
 - re-produce timelines again (re-run step 2) and check the results
 </details>
 
+<details>
+<summary>start a pull request in the QADB repository</summary>
+
+- create a new `git` branch in [the QADB repository](https://github.com/JeffersonLab/clas12-qadb)
+- make a new QADB dataset directory in `qadb/pass[N]/`, where `[N]` is the pass number
+- make or update the symbolic in `qadb/latest/`, to point to the new dataset directory
+- copy the relevant QADB files to this directory
+    - the automatic QA procedure above produced these files to an "output" directory; by default
+      it is `outfiles/$dataset`
+    - QADB files are within this output directory, in `timeline_physics_qa/outdat/qaTree.json`
+    - copy the files `qaTree.json` and `chargeTree.json` to the new QADB repository directory
+- commit and push the changes, and start a draft pull request
+    - this _preserves_ the initial version of the repository, before we start making changes
+    - you may use this pull request to push additional changes to the QADB, as the manual QA procedure
+      proceeds, but _this version_ is the one that we want to use to initiate the independent cross check
+      of the manual QA
+</details>
+
 ## Manual QA Checklist
 
+<details>
+<summary>send the QADB to the cross checker</summary>
+
+- we require a cross check of the manual QA results, for all fully cooked datasets
+- send the above _initial_ version of the QADB file, `qaTree.json`, to the cross checker
+</details>
+
+<details>
+<summary>import the initial QADB</summary>
+
+- all steps of the manual QA procedure will be performed with in the [`qadb/`](/qadb) subdirectory
+    - there is [additional documentation](/qadb/README.md) within `qadb/`, for more detailed guidance
+- use `import.sh` with:
+    - the dataset name should be `$dataset` (the same as from the automatic QA procedure)
+    - the `qaTree.json` file from the automatic QA procedure (should be stored in the QADB repository,
+      on a separate `git` branch); if you are a cross checker, you likely have been given this file directly
+</details>
 
 ## Deployment Checklist
 
@@ -142,5 +177,4 @@ This checklist is for the QADB repository.
 
 - [ ] update the tables in `README.md`
 - [ ] update any internal spreadsheets, tracking QADB progress (they are not in this repository)
-- [ ] make a new dataset directory in `qadb/pass[N]/`, where `[N]` is the pass number
-- [ ] make or update the symbolic in `qadb/latest/`, to point to the new dataset directory
+- [ ] make sure the symbolic link in `qadb/latest` points to the new QADB directory

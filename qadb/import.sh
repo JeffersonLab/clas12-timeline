@@ -9,10 +9,16 @@ if [ $# -lt 2 ]; then
 
   USAGE: $0 [dataset] [path to qaTree.json] [optional: parseQaTree options]
 
-  - to see parseQaTree options: $0 [dataset] -h
-                           and: $0 [dataset] -l
+    [dataset]               may be any unique name, such as 'rga_fa18'
 
-  - for manual QA: $0 [dataset] -cnds=user_comment
+    [path to qaTree.json]   the path to a qaTree.json file
+
+            note: if you have done an automatic QA, it will be in (by default)
+                   'outfiles/\$dataset/timeline_physics_qa/outdat/qaTree.json'
+
+    [parseQaTree options]   run the following to see these options:
+                              $0 [dataset] -h
+                              $0 [dataset] -l
   """ >&2
   exit 101
 fi

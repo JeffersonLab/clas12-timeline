@@ -1,13 +1,12 @@
 # Physics QA Timeline Production
 
-
 * See [flowchart documentation](docs/docDiagram.md) for a visual 
   representation of the scripts, input, and output
 
+* See [QADB documentation](/doc/qa.md) for how to produce a QADB
 
-# Procedure for Automatic QA
+# Automatic QA Details
 
-## Details
 * `../bin/qtl physics $dataset`, which does the following:
   * runs `datasetOrganize.sh`
   * runs `qaPlot.groovy` (on FD and FT)
@@ -21,13 +20,6 @@
       to diagnose the problem (the full command for each script is printed in the output)
 
 * take a look at the "time bin analysis" plots by running `timebin_analysis/timebin_plot.C`
-* integrity check: check if all available data were analyzed (must be done AFTER
-  `../bin/qtl physics`)
-  * `getListOfDSTs.sh [dataset]` (takes some time to run)
-  * `integrityCheck.sh [dataset]`
-* if you are running on a _fully_ cooked dataset, perform the manual QA (see QA procedure below)
-
-## Automatic QA Details
 
 ### Input files
 * DST or skim files
@@ -66,7 +58,6 @@ First step is to read DST or Skim files, producing HIPO files and data tables
 * use the script `datasetOrganize.sh`
   * this will concatenate `dat` files from the input directory into a single file
   * it will also generate symlinks to the relevant monitoring HIPO files
-
 
 ### Plotting Scripts
 * `monitorPlot.groovy`
