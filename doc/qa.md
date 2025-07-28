@@ -1,4 +1,19 @@
-# Automatic QA
+# QADB Production
+
+The QADB (Quality Assurance Database) for a dataset is produced as an additional product of the timelines
+- final versions of the QADB files are stored in the [QADB Repository](https://github.com/JeffersonLab/clas12-qadb)
+- the [`qadb` directory in this timeline repository](/qadb) contains tools for producing and refining QADB files
+
+> [!IMPORTANT]
+> See the [QADB Ground rules](https://github.com/JeffersonLab/clas12-qadb), which must be strictly followed for the QA procedure.
+
+# Checklists
+
+The following **checklists** must be followed for any QADB production.
+- you may copy and paste the checklist elsewhere, so you may keep track of your progress
+- click each item to expand the details
+
+## Automatic QA Checklist
 
 <details>
 <summary>start a new notes file for this dataset</summary>
@@ -17,14 +32,17 @@
 - decide whether to analyze full DSTs or specific train(s)
 - do you need to combine data from various targets?
     - if so, you can combine them into your `$dataset` using "step 1" (`qtl histogram`); see RG-C notes files for examples
+- alternatively, create a "prescaled" train
+    - this is **deprecated**, but here if you need it
+    - use the scripts in the [`prescaler/` directory](/qadb/prescaler)
 </details>
-
 
 <details>
 <summary>make sure all data are cached</summary>
 
 - all data files _must_ be on `/cache`
 - use `qtl histogram` with the `--check-cache` option (see [timeline-production procedure](procedure.md) for details of `qtl`)
+    - use the `--flatdir` option if you are analyzing trains (most likely)
     - this will cross check the list of files on `/cache` with the list of stub files on `/mss`
     - if not all data are on `/cache`, this command will generate a `jcache` script
       - run it and wait
@@ -33,15 +51,37 @@
 </details>
 
 <details>
+<summary>verify run-dependent settings are correct for these data</summary>
+
+- the script [`monitorRead.groovy`](/qa-physics/monitorRead.groovy) contains some run-dependent settings
+- make sure they are correct for these data
+- you may need to produce timelines first, and come back to this step after making changes, for example, if the Faraday Cup (FC) charge is incorrect
+- in particular:
+    - set `FCmode`, to specify how to calculate the FC charge
+        - for example, this depends on whether the data needed to be cooked with the recharge option ON or OFF (see `README.json`, typically included with the cooked data)
+        - note that the `FCmode` is NOT determined from the recharge setting, but instead from which charge values in the data we can use
+        - if you find that the DAQ-gated FC charge is larger than the ungated charge, you may have assumed here that the recharge option was ON, when actually it was OFF and needs to be ON
+        - additional `FCmode` settings are used for certain special cases; see the `monitorRead.groovy` script comments for more information
+</details>
+
+<details>
 <summary>produce histogram files (step 1)</summary>
 
 - this is "step 1" of the [timeline-production procedure](procedure.md)
     - see also other [notes files](/qadb/notes) for examples
 - use the same `qtl histogram` command, but without the `--check-cache` argument
+    - use the `--flatdir` option if you are analyzing trains (most likely)
 - the jobs will run on Slurm
-    - be sure to monitor the output log and error files, in case something goes wrong
+    - be sure to monitor the output log and error files, in case something goes wrong; you may use `qtl error` to help with this
     - any warnings or errors should _not_ be ignored
     - all of the data must be analyzed _successfully_
+</details>
+
+<details>
+<summary>make sure the beam energy from step 1 was correct</summary>
+
+- we have had cases in the past where the beam energy from RCDB was incorrect
+- either have RCDB corrected (preferred), or correct the beam energy yourself (not preferred)
 </details>
 
 <details>
@@ -93,10 +133,10 @@
 - re-produce timelines again (re-run step 2) and check the results
 </details>
 
-# Manual QA
+## Manual QA Checklist
 
 
-# Deployment
+## Deployment Checklist
 
 This checklist is for the QADB repository.
 

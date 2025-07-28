@@ -1,57 +1,13 @@
 # Physics QA Timeline Production
 
-Data monitoring tools for CLAS12 physics-level QA and [QADB](https://github.com/JeffersonLab/clas12-qadb) production.
-The QADB is produced by the physics timeline QA, typically only for a fully
-cooked dataset. The QADB is automatically produced from the physics QA, but it is
-_highly recommended_ to perform a "manual QA" afterward, by looking at the
-automatic QA results, cross checking with the experimental log book, and
-modifying the QADB accordingly.
 
-Physics QA features:
-
-* Tracks the electron trigger count, normalized by the Faraday cup charge
-* Monitors semi-inclusive spin asymmetries
-* Accepts DST or skim files
 * See [flowchart documentation](docs/docDiagram.md) for a visual 
   representation of the scripts, input, and output
-* The variable `${dataset}` will be used throughout as a name specifying the data set to
-  be analyzed; this name is for organization purposes, for those who want to
-  monitor several different sets of data
 
-# QA Ground Rules
-
-> [!IMPORTANT]
-> See the [QADB Ground rules](https://github.com/JeffersonLab/clas12-qadb), which must be strictly followed for the QA procedure.
-
-# Notes
-
-For run-group specific notes, including the commands used to perform the QA, see
-
-- [Notes and Procedures](notes) <!-- FIXME: relative link, since notes/ was moved to ../qadb/ -->
 
 # Procedure for Automatic QA
 
 ## Details
-* prepare run-group dependent settings in `monitorRead.groovy` (**WARNING: this step will be deprecated soon**)
-  * obtain the beam energies from the `RCDB`; CAUTION: sometimes the `RCDB` is 
-    wrong, and it is good to ask for the correct beam energy from the run group
-  * set `FCmode`, to specify how to calculate the FC charge
-    * this depends on whether the data needed to be cooked with the recharge
-      option ON or OFF (see `README.json`, typically included with the cooked
-      data)
-      * note that the `FCmode` is NOT determined from the recharge setting, but
-        instead from which charge values in the data we can use
-      * see `monitorRead.groovy` for more details
-    * if you find that the DAQ-gated FC charge is larger than the ungated
-      charge, you may have assumed here that the recharge option was ON, when
-      actually it was OFF and needs to be ON
-* `qtl histogram`: runs `monitorRead.groovy` on DSTs using `slurm`
-  * **IMPORTANT**: call this first with the `--check-cache` option to make sure that ALL required DST files are cached; if all files are on `/cache`, you may proceed, removing the `--check-cache` option
-  * **IMPORTANT**: if you do **NOT** want to analyze full DSTs, and prefer to analyze trains:
-    * use the option `--flatdir`, since likely all the HIPO files are in a single directory
-    * use the scripts in the [`prescaler/` directory](prescaler) if you want to create a random "prescale" train
-  * wait for `slurm` jobs to finish
-  * inspect error logs (_e.g._, `qtl error`) to make sure all jobs ran successfully
 * `../bin/qtl physics $dataset`, which does the following:
   * runs `datasetOrganize.sh`
   * runs `qaPlot.groovy` (on FD and FT)
@@ -63,8 +19,7 @@ For run-group specific notes, including the commands used to perform the QA, see
   * if any of these scripts throw errors, they will be redirected and printed at the end
     * if you see any errors for a particular script, you may re-run it individually
       to diagnose the problem (the full command for each script is printed in the output)
-* Determine epoch lines
-* Decide cut definitions
+
 * take a look at the "time bin analysis" plots by running `timebin_analysis/timebin_plot.C`
 * integrity check: check if all available data were analyzed (must be done AFTER
   `../bin/qtl physics`)
