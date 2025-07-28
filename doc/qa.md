@@ -327,10 +327,14 @@ there is [additional documentation](/qadb/README.md) within `qadb/`, for more de
 
 After two people have independently finished all steps in the manual QA checklist, you are ready for the cross check.
 
+<details>
+<summary>click here for the procedure</summary>
+
 - use `import.sh` to import both versions of the `qaTree.json` file
 - open the two `qaTree.json.table` files in a text editor which shows their differences (_e.g._, `vimdiff`)
 - the two people should meet and go through the differences, resolving any conflicts with `modify.sh`
 - afterward, make sure the final QADB file `qaTree.json` is backed up
+</details>
 
 ## :sailboat: Deployment :sailboat:
 
@@ -347,7 +351,7 @@ with the pull request you opened earlier.
 </details>
 
 <details>
-<summary>update the tables in `README.md`</summary>
+<summary>update the tables in 'README.md'</summary>
 
 - link to the timelines
 - fill out all the other fields
@@ -355,7 +359,7 @@ with the pull request you opened earlier.
 </details>
 
 <details>
-<summary>make sure the symbolic link in `qadb/latest` points to the new QADB directory</summary>
+<summary>make sure the symbolic link in 'qadb/latest' points to the new QADB directory</summary>
 
 - you already did this, but check to make sure
 </details>
