@@ -13,12 +13,12 @@ The following **checklists** must be followed for any QADB production.
 - you may copy and paste the checklist elsewhere, so you may keep track of your progress
 - click each item to expand the details
 
-## Automatic QA
+## :zap: Automatic QA
 
 The [timeline code](..) produces an initial QADB as a byproduct. This initial version automatically assigns several defect bits,
 therefore this procedure is called the "automatic QA".
 
-### Checklist
+### :ballot_box_with_check: Checklist
 
 <details>
 <summary>start a new notes file for this dataset</summary>
@@ -164,7 +164,7 @@ therefore this procedure is called the "automatic QA".
 - send the above _initial_ version of the QADB file, `qaTree.json`, to the cross checker
 </details>
 
-## Manual QA
+## :clipboard: Manual QA
 
 This procedure follows up on the "automatic QA" above, further refining the QADB; substantial
 user interaction is required, along with careful checks of the timelines and logbook, therefore
@@ -175,7 +175,7 @@ Two people must perform this procedure, independently, and the results must be c
 All steps this procedure should be performed with in the [`qadb/`](/qadb) subdirectory;
 there is [additional documentation](/qadb/README.md) within `qadb/`, for more detailed guidance.
 
-### Checklist
+### :ballot_box_with_check: Checklist
 
 <details>
 <summary>import the initial QADB</summary>
@@ -323,7 +323,7 @@ there is [additional documentation](/qadb/README.md) within `qadb/`, for more de
   ideal place for such a backup
 </details>
 
-### Cross Check
+### :warning: Cross Check
 
 After two people have independently finished all steps in the manual QA checklist, you are ready for the cross check.
 
@@ -332,13 +332,13 @@ After two people have independently finished all steps in the manual QA checklis
 - the two people should meet and go through the differences, resolving any conflicts with `modify.sh`
 - afterward, make sure the final QADB file `qaTree.json` is backed up
 
-## Deployment Checklist
+## :sailboat: Deployment
 
 The final step is to _deploy_ the new QADB to the [QADB repository](https://github.com/JeffersonLab/clas12-qadb).
 Most of the steps in the following checklist are performed within that repository, on the branch associated
 with the pull request you opened earlier.
 
-### Checklist
+### :ballot_box_with_check: Checklist
 
 <details>
 <summary>copy the final QA timelines to the Run Group's directory</summary>
