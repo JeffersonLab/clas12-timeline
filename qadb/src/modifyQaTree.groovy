@@ -28,7 +28,9 @@ if(args.length>=1) cmd = args[0].toLowerCase()
 else {
   System.err.println(
   """
-  SYNTAX: ${exe} [command] [arguments]\n
+Modify the QADB in 'qa/'
+
+USAGE: ${exe} [command] [arguments]\n
 List of Commands:
   """)
   usage.each{ key, value -> printf("%20s     %s\n", key, value) }

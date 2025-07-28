@@ -5,6 +5,8 @@ if [ -z "$TIMELINESRC" ]; then source `dirname $0`/../libexec/environ.sh; fi
 # copy qaTree.json, so we can start the QA
 if [ $# -lt 2 ]; then
   echo """
+  Import a QADB file (qaTree.json) for use with these QADB tools.
+
   USAGE: $0 [dataset] [path to qaTree.json] [optional: parseQaTree options]
 
   - to see parseQaTree options: $0 [dataset] -h
