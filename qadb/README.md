@@ -47,7 +47,8 @@ bit_number-defect_name[list_of_sectors]
 The list of sectors is not delimited, _e.g._, `125` means sectors 1, 2, and 5;
 the word `all` is used in place of `123456`.
 
-> [!TIP] We recommend opening this file and watching its changes while you run other scripts in this directory; this file
+> [!TIP]
+> We recommend opening this file and watching its changes while you run other scripts in this directory; this file
 > will be overwritten, so do not edit it yourself.
 
 ### Modification
