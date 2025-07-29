@@ -7,11 +7,14 @@ In this README, we describe the _code_.
 - see [QADB documentation](/doc/qa.md) for the full QADB production procedure
 - see [the top-level documentation](/README.md) for how to run the timeline code in general
 
+The following sections explain what the [two steps of timeline production](/doc/procedure.md) do in detail;
+below that is a flowchart for a visual guide.
+
 ## Step 1 (`qtl histogram`)
-First step is to read DST or Skim files, producing HIPO files and data tables
+First step is to read DST or Skim files, producing HIPO files and data tables. This is
+automated by `qtl histogram`.
 
 * `monitorRead.groovy`
-  * this is called by `qtl histogram`, for the "physics" timelines
   * run with no arguments for usage guide
   * It is better to run this using `slurm`, but this can be run on a single skim file or
     directory of one run's DST files
@@ -59,9 +62,10 @@ First step is to read DST or Skim files, producing HIPO files and data tables
       * `uq`: upper quartile, the median N/F above `mq`
     * QA cut lines are set using an interquartile range (IQR) rule: `cutFactor` * IQR,
       where `cutFactor` adjusts the overall width of the cuts
+      * the `cutFactor` is adjustable in cut definition YAML files (`../qadb/cutdefs`)
       * this is done for each sector individually
       * results are stored in `qaTree.json`
-      * timelines HIPO files are also generated (which can be uploaded to the web server):
+      * timelines HIPO files are also generated (which can be uploaded to the web server)
 * `mergeFTandFD.groovy` to combine FD and FT results
 * `monitorPlot.groovy`
   * this will read monitoring HIPO files and produce several timelines
@@ -77,9 +81,6 @@ First step is to read DST or Skim files, producing HIPO files and data tables
         * distribution of the average value of X, with one entry per time bin
         * graph of the average value of X versus time bin number
 * copies timelines to output timeline directory using `stageTimelines.sh`
-* if any of these scripts throw errors, they will be redirected and printed at the end
-  * if you see any errors for a particular script, you may re-run it individually
-    to diagnose the problem (the full command for each script is printed in the output)
 
 > [!NOTE]
 > take a look at the "time bin analysis" plots by running `timebin_analysis/timebin_plot.C`
