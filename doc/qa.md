@@ -375,7 +375,7 @@ with the pull request you opened earlier.
 ### :ballot_box_with_check: Checklist
 
 <details>
-<summary>- [ ] review and merge the pull request in this timeline repository</summary>
+<summary>- [ ] timeline repository: review and merge the pull request in this timeline repository</summary>
 
 - this is the pull request that contains the QA configuration files, such as notes, epochs lines, and cut configurations
 - don't forget to merge it, to preserve _how_ the QADB was produced
@@ -389,7 +389,7 @@ with the pull request you opened earlier.
 </details>
 
 <details>
-<summary>- [ ] update the tables in the 'README.md' of the QADB repository</summary>
+<summary>- [ ] QADB repository: update the tables in the 'README.md' of the QADB repository</summary>
 
 - link to the timelines
 - fill out all the other fields
@@ -397,13 +397,13 @@ with the pull request you opened earlier.
 </details>
 
 <details>
-<summary>- [ ] make sure the symbolic link in 'qadb/latest' points to the new QADB directory</summary>
+<summary>- [ ] QADB repository: make sure the symbolic link in 'qadb/latest' points to the new QADB directory</summary>
 
 - you already did this, but check to make sure
 </details>
 
 <details>
-<summary>- [ ] review the QADB pull request, merge, tag a new version, and deploy</summary>
+<summary>- [ ] QADB repository: review the QADB pull request, merge, tag a new version, and deploy</summary>
 
 - review the pull request
 - merge it
