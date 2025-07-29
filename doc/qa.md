@@ -1,7 +1,7 @@
 # QADB Production
 
 The QADB (Quality Assurance Database) for a dataset is produced as an additional product of the timelines.
-This document contains the **full procedure** for QADB production; all checklists must be followed.
+This document contains the **full procedure** for QADB production.
 
 > [!NOTE]
 > - Final versions of the QADB files are stored in the [QADB Repository](https://github.com/JeffersonLab/clas12-qadb)
@@ -9,9 +9,10 @@ This document contains the **full procedure** for QADB production; all checklist
 
 # Procedures and Checklists
 
-The following **checklists** must be followed for any QADB production.
-- you may copy and paste the checklist elsewhere, so you may keep track of your progress
-- click each item to expand the details
+The following **checklists** must be followed for any QADB production; click each checklist item to expand details.
+
+> [!TIP]
+> Before expanding checklist items, copy and paste the checklist elsewhere, so you may keep track of your progress.
 
 ## :zap: Automatic QA :zap:
 
