@@ -93,10 +93,5 @@ initial QADB. These directories contain configuration files for each dataset we 
 > Use `draw_epochs.sh` to help establish epochs.
 
 ## Melding: combining `qaTree.json` file versions
-This more advanced procedure is used if you need to combine two `qaTree.json` files
-
-- you must read the script carefully and edit it for your use case
-- for each run, the script will "combine" QA info from each of the `qaTree.json` files; the script must know what to do with each case
-    - be careful if your `qaTree.json` files have different/overlapping sets of runs
-- this procedure is useful if, _e.g_, you change bit definitions and want to update a `qaTree.json` file, with full control of each defect bit's behavior
-- see [`meld/README.md`](meld/README.md)
+This more advanced procedure is used if you need to combine two `qaTree.json` files; this is only needed under special
+circumstances; see [`meld/README.md`](meld/README.md) for more information.
