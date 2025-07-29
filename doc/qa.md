@@ -363,6 +363,13 @@ with the pull request you opened earlier.
 ### :ballot_box_with_check: Checklist
 
 <details>
+<summary>- [ ] review and merge the pull request in this timeline repository</summary>
+
+- this is the pull request that contains the QA configuration files, such as notes, epochs lines, and cut configurations
+- don't forget to merge it, to preserve _how_ the QADB was produced
+</details>
+
+<details>
 <summary>- [ ] copy the final QA timelines to the Run Group's directory</summary>
 
 - you may need to ask the chef to do this
@@ -383,7 +390,7 @@ with the pull request you opened earlier.
 </details>
 
 <details>
-<summary>- [ ] review the pull request, merge, tag a new version, and deploy</summary>
+<summary>- [ ] review the QADB pull request, merge, tag a new version, and deploy</summary>
 
 - review the pull request
 - merge it
