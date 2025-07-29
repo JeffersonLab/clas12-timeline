@@ -3,11 +3,18 @@
 ## Legend
 ```mermaid
 flowchart TB
+    classDef data fill:#ff8,color:black
+    classDef auto fill:#8f8,color:black
+    classDef manual fill:#fbb,color:black
+    classDef timeline fill:#8af,color:black
+    classDef json fill:#d5d,color:black
+
     data{{Data files}}:::data
     timeline{{Timeline<br/>HIPO files}}:::timeline
     subgraph "Wrapper Script"
       auto[Automated step,<br/>by specified Wrapper Script]:::auto
     end
+
     manual[Manual step,<br/>not automated]:::manual
     json([JSON file]):::json
     data --> auto
@@ -15,12 +22,6 @@ flowchart TB
     auto --> timeline
     manual --> timeline
     auto --> json
-
-    classDef data fill:#ff8,color:black
-    classDef auto fill:#8f8,color:black
-    classDef manual fill:#fbb,color:black
-    classDef timeline fill:#8af,color:black
-    classDef json fill:#d5d,color:black
 ```
 
 ## Flowchart
@@ -29,6 +30,12 @@ Note: output directories `$output_dir` and `$qa_dir` are typically set by wrappe
 
 ```mermaid
 flowchart TB
+
+    classDef data fill:#ff8,color:black
+    classDef auto fill:#8f8,color:black
+    classDef manual fill:#fbb,color:black
+    classDef timeline fill:#8af,color:black
+    classDef json fill:#d5d,color:black
 
     subgraph "Automated by qtl histogram"
       dst{{DSTs}}:::data
@@ -83,49 +90,16 @@ flowchart TB
       timelineFiles --> stage0
     end
 
-    subgraph "Manual QA, in qadb subdirectory"
-      import[import.sh]:::manual
-      qaLoc([qa/ -> qa.$dataset/<br>qa/qaTree.json]):::json
-      parse[parseQAtree.groovy<br>called automatically<br>whenever needed]:::auto
-      qaTable{{qa/qaTable.dat}}:::data
-
-      qaTree --> import
-      import --> qaLoc
-      qaLoc --> parse
-      parse --> qaTable
-
-      inspect[manual inspection<br>- view qaTable.dat<br>- view online monitor]:::manual
-      qaTable --> inspect
-      inspect --> edit{edit?}
-
-      modify[modify.sh]:::manual
-      qaBak([qa.$dataset/qaTree.json.*.bak]):::json
-      undo[if needed, revert<br>modification with<br>undo.sh]:::manual
-      edit -->|yes|modify
-      modify --> qaLoc
-      modify --> qaBak
-      qaBak --> undo
-    end
-
-    subgraph "Finalize"
+    subgraph "Finalize (deprecated)"
+      manualQA[perform the manual QA]:::manual
       exeQAtimelines[exeQAtimelines.sh]:::manual
       qaTreeUpdated([$qa_dir/outdat/qaTree.json]):::json
       qaTL{{$qa_dir/outmon.qa/$timeline.hipo}}:::timeline
       stage1[stageTimelines.sh]:::manual
-      qaLoc --> exeQAtimelines
+      qaTree --> manualQA
+      manualQA --> exeQAtimelines
       exeQAtimelines --> qaTL
       exeQAtimelines -->|updates|qaTreeUpdated
       qaTL --> stage1
     end
-
-    qaTree --> cd0[cd qadb]:::manual
-    cd0 --> import
-    edit -->|no|cd1[cd ..]:::manual
-    cd1 --> exeQAtimelines
-
-    classDef data fill:#ff8,color:black
-    classDef auto fill:#8f8,color:black
-    classDef manual fill:#fbb,color:black
-    classDef timeline fill:#8af,color:black
-    classDef json fill:#d5d,color:black
 ```
