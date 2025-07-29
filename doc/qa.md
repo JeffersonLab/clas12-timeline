@@ -388,7 +388,7 @@ with the pull request you opened earlier.
 </details>
 
 <details>
-<summary>- [ ] update the tables in 'README.md'</summary>
+<summary>- [ ] update the tables in the 'README.md' of the QADB repository</summary>
 
 - link to the timelines
 - fill out all the other fields
