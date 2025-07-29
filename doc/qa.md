@@ -1,11 +1,11 @@
 # QADB Production
 
-The QADB (Quality Assurance Database) for a dataset is produced as an additional product of the timelines
-- final versions of the QADB files are stored in the [QADB Repository](https://github.com/JeffersonLab/clas12-qadb)
-- the [`qadb` directory in this timeline repository](/qadb) contains tools for producing and refining QADB files
+The QADB (Quality Assurance Database) for a dataset is produced as an additional product of the timelines.
+This document contains the **full procedure** for QADB production; all checklists must be followed.
 
-> [!IMPORTANT]
-> See the [QADB Ground rules](https://github.com/JeffersonLab/clas12-qadb), which must be strictly followed for the QA procedure.
+> [!NOTE]
+> - Final versions of the QADB files are stored in the [QADB Repository](https://github.com/JeffersonLab/clas12-qadb)
+> - The [`qadb` directory in this timeline repository](/qadb) contains tools for producing and refining QADB files
 
 # Procedures and Checklists
 

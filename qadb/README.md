@@ -1,10 +1,11 @@
 # QADB Tools
 
+This directory contains tools for modifying and refining the QADB.
+
 The initial QADB is produced by the timeline code; see [QADB Production Documentation](/doc/qa.md) for more information,
 including the _full_ procedure how to produce a QADB.
 
-This directory contains tools for modifying and refining the QADB. We recommend you work _within_ this
-current directory, that is
+We recommend you work _within_ this current directory, that is
 - have your _own_ copy of this repository (`git clone`)
 - make sure the code is built and installed locally (see [setup guide](/doc/setup.md))
 - `cd` to _this_ directory (`cd qadb`)
