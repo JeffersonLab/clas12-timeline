@@ -384,6 +384,7 @@ with the pull request you opened earlier.
 <details>
 <summary>- [ ] copy the final QA timelines to the Run Group's directory</summary>
 
+- they should be in the appropriate Run Group area on <https://clas12mon.jlab.org/>
 - you may need to ask the chef to do this
 </details>
 
