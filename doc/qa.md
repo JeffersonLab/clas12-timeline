@@ -87,11 +87,13 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
     - be sure to monitor the output log and error files, in case something goes wrong; you may use `qtl error` to help with this
     - any warnings or errors should _not_ be ignored
     - all of the data must be analyzed _successfully_
+- watch the beam energy in the output of `qtl histogram`; see next checklist item
 </details>
 
 <details>
 <summary>- [ ] make sure the beam energy from step 1 was correct</summary>
 
+- the beam energy that was used is printed when you run `qtl histogram`; it comes from RCDB
 - we have had cases in the past where the beam energy from RCDB was incorrect
 - either have RCDB corrected (preferred), or correct the beam energy yourself (not preferred)
 </details>
