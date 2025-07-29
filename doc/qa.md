@@ -201,12 +201,11 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 <details>
 <summary>- [ ] import the initial QADB</summary>
 
-- run `./import.sh` with:
-    - first with no arguments, for usage guidance
-    - the dataset name can be any unique name, such as `rga_fa18_pass2`
-        - if you did the automatic QA checklist above, you could just use the same dataset name
-    - the `qaTree.json` file from the automatic QA procedure
-        - if you are a cross checker, you likely have been given this file directly
+- run `./import.sh` with the following arguments:
+    - the dataset name can be any unique name, such as `rga_fa18_pass2`;
+      if you did the automatic QA checklist above, you could just use the same dataset name
+    - the `qaTree.json` file from the automatic QA procedure;
+      if you are a cross checker, you likely have been given this file directly
 - you will now have a symbolic link `qa` pointing to the directory `qa.$dataset`, where `$dataset`
   is the dataset name
     - `qa/qaTree.json` is a _copy_ of the original `qaTree.json` file
