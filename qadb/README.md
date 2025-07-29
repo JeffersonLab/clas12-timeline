@@ -26,9 +26,14 @@ named `qa` will point to this directory, and we will refer to this directory as 
 ### Table File
 
 Within the `qa` directory, the additional `qaTree.json.table` file will be
-produced, which is a human-readable "table file" version of `qaTree.json`. Each
-run begins with the keyword `RUN:`; lines below are for each of that run's QA
-bins and their QA results, with the following syntax:
+produced, which is a human-readable "table file" version of `qaTree.json`.
+
+Each run begins with the keyword `RUN:`. The `user_comment` is the comment
+entered into the DAQ control software, from the Shift Expert when a run is
+started and/or stopped.
+
+The remaining lines below are for each of that run's QA bins and their QA
+results, with the following syntax:
 ```
 run_number  bin_number  defect_bits...
 ```
