@@ -98,9 +98,10 @@ flowchart TB
       qaTreeUpdated([$qa_dir/outdat/qaTree.json]):::json
       qaTL{{$qa_dir/outmon.qa/$timeline.hipo}}:::timeline
       stage1[stageTimelines.sh]:::manual
-      manualQA --> exeQAtimelines
       exeQAtimelines --> qaTL
       exeQAtimelines -->|updates|qaTreeUpdated
       qaTL --> stage1
     end
+
+    manualQA --> exeQAtimelines
 ```
