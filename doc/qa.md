@@ -159,6 +159,15 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
+<summary>- [ ] start a pull request in this timeline repository too</summary>
+
+- since you should have added the following files, make a pull request here in this repository too:
+    - notes files
+    - epochs files
+    - `cutdefs` files
+</details>
+
+<details>
 <summary>- [ ] double check one more time that all the runs were analyzed</summary>
 
 - cross check QADB's runs with data on `/mss`
