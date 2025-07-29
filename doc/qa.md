@@ -22,7 +22,7 @@ therefore this procedure is called the "automatic QA".
 ### :ballot_box_with_check: Checklist
 
 <details>
-<summary>start a new notes file for this dataset</summary>
+<summary>- [ ] start a new notes file for this dataset</summary>
 
 - notes files are stored in the [`qadb/notes/` directory](/qadb/notes)
 - must contain _explicit_ commands used, for reproducibility purposes
@@ -33,7 +33,7 @@ therefore this procedure is called the "automatic QA".
 </details>
 
 <details>
-<summary>choose input data files</summary>
+<summary>- [ ] choose input data files</summary>
 
 - decide whether to analyze full DSTs or specific train(s)
 - do you need to combine data from various targets?
@@ -44,7 +44,7 @@ therefore this procedure is called the "automatic QA".
 </details>
 
 <details>
-<summary>make sure all data are cached</summary>
+<summary>- [ ] make sure all data are cached</summary>
 
 - all data files _must_ be on `/cache`
 - use `qtl histogram` with the `--check-cache` option (see [timeline-production procedure](procedure.md) for details of `qtl`)
@@ -57,7 +57,7 @@ therefore this procedure is called the "automatic QA".
 </details>
 
 <details>
-<summary>verify run-dependent settings are correct for these data</summary>
+<summary>- [ ] verify run-dependent settings are correct for these data</summary>
 
 - the script [`monitorRead.groovy`](/qa-physics/monitorRead.groovy) contains some run-dependent settings
 - make sure they are correct for these data
@@ -71,7 +71,7 @@ therefore this procedure is called the "automatic QA".
 </details>
 
 <details>
-<summary>produce histogram files (step 1)</summary>
+<summary>- [ ] produce histogram files (step 1)</summary>
 
 - this is "step 1" of the [timeline-production procedure](procedure.md)
     - see also other [notes files](/qadb/notes) for examples
@@ -84,14 +84,14 @@ therefore this procedure is called the "automatic QA".
 </details>
 
 <details>
-<summary>make sure the beam energy from step 1 was correct</summary>
+<summary>- [ ] make sure the beam energy from step 1 was correct</summary>
 
 - we have had cases in the past where the beam energy from RCDB was incorrect
 - either have RCDB corrected (preferred), or correct the beam energy yourself (not preferred)
 </details>
 
 <details>
-<summary>produce initial timelines (step 2)</summary>
+<summary>- [ ] produce initial timelines (step 2)</summary>
 
 - this is "step 2" of the [timeline-production procedure](procedure.md)
     - see also other [notes files](/qadb/notes) for examples
@@ -101,7 +101,7 @@ therefore this procedure is called the "automatic QA".
 </details>
 
 <details>
-<summary>QA cut tuning 1: choose the epochs</summary>
+<summary>- [ ] QA cut tuning 1: choose the epochs</summary>
 
 - the average normalized electron yields (N/F) will jump occasionally in a dataset; for example, we often have jumps when:
     - trigger configuration changes
@@ -123,7 +123,7 @@ therefore this procedure is called the "automatic QA".
 </details>
 
 <details>
-<summary>QA cut tuning 2: tune cut definitions and overrides</summary>
+<summary>- [ ] QA cut tuning 2: tune cut definitions and overrides</summary>
 
 - add the file `${dataset}.yaml` in the [`qadb/cutdefs`](/qadb/cutdefs) directory
     - you may copy one of the existing ones, most likely the default one
@@ -133,7 +133,7 @@ therefore this procedure is called the "automatic QA".
 </details>
 
 <details>
-<summary>start a pull request in the QADB repository</summary>
+<summary>- [ ] start a pull request in the QADB repository</summary>
 
 - create a new `git` branch in [the QADB repository](https://github.com/JeffersonLab/clas12-qadb)
 - make a new QADB dataset directory in `qadb/pass[N]/`, where `[N]` is the pass number
@@ -151,14 +151,14 @@ therefore this procedure is called the "automatic QA".
 </details>
 
 <details>
-<summary>double check one more time that all the runs were analyzed</summary>
+<summary>- [ ] double check one more time that all the runs were analyzed</summary>
 
 - cross check QADB's runs with data on `/mss`
 - the QADB should print warnings if an analyzer tries to use the QADB on data that are not available in the QADB, but we do not want that to happen
 </details>
 
 <details>
-<summary>send the QADB to the cross checker</summary>
+<summary>- [ ] send the QADB to the cross checker</summary>
 
 - we require a cross check of the manual QA results, for all fully cooked datasets; the procedure
   is in the next section
@@ -179,7 +179,7 @@ there is [additional documentation](/qadb/README.md) within `qadb/`, for more de
 ### :ballot_box_with_check: Checklist
 
 <details>
-<summary>import the initial QADB</summary>
+<summary>- [ ] import the initial QADB</summary>
 
 - run `./import.sh` with:
     - first with no arguments, for usage guidance, then:
@@ -189,7 +189,7 @@ there is [additional documentation](/qadb/README.md) within `qadb/`, for more de
 </details>
 
 <details>
-<summary>open the table file in another window or text editor</summary>
+<summary>- [ ] open the table file in another window or text editor</summary>
 
 - the file `qa/qaTree.json.table` is a human-readable version of the QADB
 - open it in a separate window or text editor
@@ -199,7 +199,7 @@ there is [additional documentation](/qadb/README.md) within `qadb/`, for more de
 </details>
 
 <details>
-<summary>open the QA timelines in your browser</summary>
+<summary>- [ ] open the QA timelines in your browser</summary>
 
 - the QA timelines (produced by the above automatic QA procedure), should also be open on your computer
 - clicking on a run's point(s) will:
@@ -215,7 +215,7 @@ there is [additional documentation](/qadb/README.md) within `qadb/`, for more de
 </details>
 
 <details>
-<summary>scan the table file for non-standard running conditions</summary>
+<summary>- [ ] scan the table file for non-standard running conditions</summary>
 
 - warning: this step takes a _significant_ amount of time and is rather _tedious_
     - you need attention to detail
@@ -267,7 +267,7 @@ there is [additional documentation](/qadb/README.md) within `qadb/`, for more de
 </details>
 
 <details>
-<summary>scan the timelines for anything else you may have missed</summary>
+<summary>- [ ] scan the timelines for anything else you may have missed</summary>
 
 - this step is much faster than scanning through the table file, but still requires careful attention to detail
 - this step shifts the focus to the _timeline_ plots, rather than the _table_ file, to see if anything slipped under the radar
@@ -297,7 +297,7 @@ there is [additional documentation](/qadb/README.md) within `qadb/`, for more de
 </details>
 
 <details>
-<summary>if these data are a "Pass 2" or higher, cross check with the previous Pass's QADB</summary>
+<summary>- [ ] if these data are a "Pass 2" or higher, cross check with the previous Pass's QADB</summary>
 
 - to remain unbiased, you should have _not_ looked at the previous Pass's QADB yet; in any case, cross check
   your new QADB with the old QADB, in case you missed anything
@@ -309,7 +309,7 @@ there is [additional documentation](/qadb/README.md) within `qadb/`, for more de
 </details>
 
 <details>
-<summary>if the Run Group provides a table of runs and notes about them, cross check it with the QADB</summary>
+<summary>- [ ] if the Run Group provides a table of runs and notes about them, cross check it with the QADB</summary>
 
 - some Run Groups produce a table (spreadsheet) of runs and notes about each of them
 - cross check the QADB, and make changes as necessary
@@ -317,7 +317,7 @@ there is [additional documentation](/qadb/README.md) within `qadb/`, for more de
 </details>
 
 <details>
-<summary>backup your final version of the QADB</summary>
+<summary>- [ ] backup your final version of the QADB</summary>
 
 - make sure your final `qa/qaTree.json` file is duplicated somewhere on another device
 - if you are the author of the QADB pull request (see last steps of the automatic QA checklist), this pull request is the
@@ -329,7 +329,7 @@ there is [additional documentation](/qadb/README.md) within `qadb/`, for more de
 After two people have independently finished all steps in the manual QA checklist, you are ready for the cross check.
 
 <details>
-<summary>click here for the procedure</summary>
+<summary>- [ ] click here for the procedure</summary>
 
 - use `import.sh` to import both versions of the `qaTree.json` file
 - open the two `qaTree.json.table` files in a text editor which shows their differences (_e.g._, `vimdiff`)
@@ -346,13 +346,13 @@ with the pull request you opened earlier.
 ### :ballot_box_with_check: Checklist
 
 <details>
-<summary>copy the final QA timelines to the Run Group's directory</summary>
+<summary>- [ ] copy the final QA timelines to the Run Group's directory</summary>
 
 - you may need to ask the chef to do this
 </details>
 
 <details>
-<summary>update the tables in 'README.md'</summary>
+<summary>- [ ] update the tables in 'README.md'</summary>
 
 - link to the timelines
 - fill out all the other fields
@@ -360,13 +360,13 @@ with the pull request you opened earlier.
 </details>
 
 <details>
-<summary>make sure the symbolic link in 'qadb/latest' points to the new QADB directory</summary>
+<summary>- [ ] make sure the symbolic link in 'qadb/latest' points to the new QADB directory</summary>
 
 - you already did this, but check to make sure
 </details>
 
 <details>
-<summary>review the pull request, merge, tag a new version, and deploy</summary>
+<summary>- [ ] review the pull request, merge, tag a new version, and deploy</summary>
 
 - review the pull request
 - merge it
