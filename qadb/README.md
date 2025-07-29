@@ -36,6 +36,8 @@ and to undo that modification, use
 ./undo.sh
 ```
 
+See [QADB Production Documentation](/doc/qa.md) for the step-by-step procedure for using `modify.sh` to perform a manual QA.
+
 ### Flowchart
 
 Here is a visual representation of the manual QA procedure:
