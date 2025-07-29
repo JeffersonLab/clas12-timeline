@@ -125,7 +125,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
     - now check the QA timeline "epoch view" in the extra (expert) timelines
         - this is a timeline used to evaluate how the QA cuts look overall, for each epoch
         - the timeline itself is just a list of the 6 sectors; clicking on one of them will show plots of N/F, N, F, and livetime, for each epoch
-        - the horizontal axis of these plots is an index, defined as the run number plus a small offset (<1) proportional to the QA bin
+        - the horizontal axis of these plots is an index, defined as the run number plus a small offset (<1) proportional to the QA bin number
         - the N/F plots include the cut lines: here you can zoom in and see how well-defined the cut lines are for each epoch
             - if there are any significant 'jumps' in the N/F value, the cut lines may be appear to be too wide: this indicates an epoch boundary line needs to be drawn at the step in N/F, or the cut definitions need some adjustments (the next step)
 </details>
@@ -149,7 +149,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 - copy the relevant QADB files to this directory
     - the automatic QA procedure above produced these files to an "output" directory; by default
       it is `outfiles/$dataset`
-    - QADB files are within this output directory, in `timeline_physics_qa/outdat/qaTree.json`
+    - QADB files are _within_ this output directory, in `timeline_physics_qa/outdat/`
     - copy the files `qaTree.json` and `chargeTree.json` to the new QADB repository directory
 - commit and push the changes, and start a draft pull request
     - this _preserves_ the initial version of the repository, before we start making changes
