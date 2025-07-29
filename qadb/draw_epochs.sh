@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # build root tree
 
+set -e
+set -u
+source $(dirname $0)/../libexec/environ.sh
+
 if [ $# -eq 2 ]; then
   inDir=$1
   dataset=$2
@@ -8,13 +12,13 @@ else
   echo """
   USAGE: $0 [INPUT_DIR] [DATASET]
   - [INPUT_DIR] is a dataset's output dir from ../bin/qtl physics
-  - [DATASET] is needed by draw_epochs.C to draw the epoch lines
+  - [DATASET] is the dataset's name
   """ >&2
   exit 101
 fi
 
 datfile="$inDir/timeline_physics_qa/outdat/data_table.dat"
-cat "epochs/epochs.$dataset.txt" | sed 's;#.*;;g' > epochs.tmp # strip comments
+cat "$TIMELINESRC/qadb/epochs/epochs.$dataset.txt" | sed 's;#.*;;g' > epochs.tmp # strip comments
 
-root -l draw_epochs.C'("'$dataset'","'$datfile'","epochs.tmp")'
+root -l $TIMELINESRC/qadb/src/draw_epochs.C'("'$dataset'","'$datfile'","epochs.tmp")'
 rm epochs.tmp

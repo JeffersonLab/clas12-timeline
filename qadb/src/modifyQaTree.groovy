@@ -28,7 +28,9 @@ if(args.length>=1) cmd = args[0].toLowerCase()
 else {
   System.err.println(
   """
-  SYNTAX: ${exe} [command] [arguments]\n
+Modify the QADB in 'qa/'
+
+USAGE: ${exe} [command] [arguments]\n
 List of Commands:
   """)
   usage.each{ key, value -> printf("%20s     %s\n", key, value) }
@@ -36,6 +38,12 @@ List of Commands:
   System.exit(101)
 }
 
+// read env vars
+def TIMELINESRC = System.getenv("TIMELINESRC")
+if(TIMELINESRC == null) {
+  System.err.println "ERROR: \$TIMELINESRC is not set"
+  System.exit(100)
+}
 
 // backup qaTree.json
 def D = new Date()
@@ -458,4 +466,5 @@ else { System.err.println("ERROR: unknown command!"); System.exit(100) }
 
 // update qaTree.json
 new File("qa/qaTree.json").write(JsonOutput.toJson(qaTree))
-["${System.getenv('TIMELINESRC')}/libexec/run-groovy-timeline.sh", "parseQaTree.groovy"].execute().waitFor()
+
+["${TIMELINESRC}/libexec/run-groovy-timeline.sh", "${TIMELINESRC}/qadb/src/parseQaTree.groovy"].execute().waitFor()
