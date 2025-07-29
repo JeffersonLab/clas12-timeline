@@ -37,6 +37,8 @@ and to undo that modification, use
 
 ### Flowchart
 
+Here is a visual representation of the manual QA procedure:
+
 ```mermaid
 flowchart TB
 
@@ -44,12 +46,12 @@ flowchart TB
     classDef auto fill:#8f8,color:black
     classDef manual fill:#fbb,color:black
 
-    qaTreeInit{{qaTree.json from QA timelines}}:::data
+    qaTreeInit{{qaTree.json<br>from QA timelines}}:::data
     import[import.sh]:::manual
     parse["src/parseQaTree.groovy<br>(called automatically)"]:::auto
-    symlink{{symlink qa/ -> qa.$dataset}}:::data
-    qaTree{{qa/qaTree.json}}:::data
-    qaTable{{qa/qaTree.json.table}}:::data
+    symlink{{symbolic link<br>qa -> qa.$dataset}}:::data
+    qaTree{{QADB<br>qa/qaTree.json}}:::data
+    qaTable{{QADB Table File<br>qa/qaTree.json.table}}:::data
 
     qaTreeInit --> import --> symlink --> qaTree --> parse --> qaTable
 
