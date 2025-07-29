@@ -81,7 +81,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 
 - this is "step 1" of the [timeline-production procedure](procedure.md)
     - see also other [notes files](/qadb/notes) for examples
-- use the same `qtl histogram` command, but without the `--check-cache` argument
+- use the same `qtl histogram` command you used above, but without the `--check-cache` argument
     - use the `--flatdir` option if you are analyzing trains (most likely)
 - the jobs will run on Slurm
     - be sure to monitor the output log and error files, in case something goes wrong; you may use `qtl error` to help with this
