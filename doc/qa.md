@@ -360,7 +360,7 @@ After two people have independently finished all steps in the manual QA checklis
 <details>
 <summary>- [ ] click here for the procedure</summary>
 
-- use `import.sh` to import both versions of the `qaTree.json` file
+- use `import.sh` to import both versions of the `qaTree.json` file, using separate dataset names
 - open the two `qaTree.json.table` files in a text editor which shows their differences (_e.g._, `vimdiff`)
 - the two people should meet and go through the differences, resolving any conflicts with `modify.sh`
 - afterward, make sure the final QADB file `qaTree.json` is backed up
