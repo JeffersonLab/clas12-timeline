@@ -106,28 +106,24 @@ class ALERTFitter{
 	}
 	static F1D time_fitter_rising(H1F h1, float t0){
 		def f1 =new F1D("fit:"+h1.getName(),"[cst]", -5.0, 5.0);
-		def t0_location = h1.getAxis().getBinCenter(h1.getBin(t0))
 		def maxz = h1.getBinContent(h1.getMaximumBin());
-		f1.setRange(t0_location - 1, t0_location + 1);
+		f1.setRange(t0 - 1, t0 + 1);
 		f1.setParameter(0, 0.8*maxz);
 
 		return f1
 	}
 	static F1D time_fitter_falling(H1F h1, float tmax){
 		def f1 =new F1D("fit:"+h1.getName(),"[cst]", -5.0, 5.0);
-		def tmax_location = h1.getAxis().getBinCenter(h1.getBin(tmax))
 		def maxz = h1.getBinContent(h1.getMaximumBin());
-		f1.setRange(tmax_location - 1, tmax_location + 1);
+		f1.setRange(tmax - 1, tmax + 1);
 		f1.setParameter(0, 0.8*maxz);
 
 		return f1
 	}
 	static F1D time_fitter_width(H1F h1, float t0, float tmax){
 		def f1 =new F1D("fit:"+h1.getName(),"[cst]", -5.0, 5.0);
-		def t0_location = h1.getAxis().getBinCenter(h1.getBin(t0))
-		def tmax_location = h1.getAxis().getBinCenter(h1.getBin(tmax))
 		def maxz = h1.getBinContent(h1.getMaximumBin());
-		f1.setRange(t0_location, tmax_location);
+		f1.setRange(t0, tmax);
 		f1.setParameter(0, 0.8*maxz);
 
 		return f1
