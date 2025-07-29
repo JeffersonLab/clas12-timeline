@@ -93,5 +93,5 @@ initial QADB. These directories contain configuration files for each dataset we 
 > Use `draw_epochs.sh` to help establish epochs.
 
 ## Melding: combining `qaTree.json` file versions
-This more advanced procedure is used if you need to combine two `qaTree.json` files; this is only needed under special
-circumstances; see [`meld/README.md`](meld/README.md) for more information.
+This more advanced procedure is used if you need to combine two `qaTree.json` files, which is only needed under special
+circumstances; see [the `meld` directory](meld) for more information.
