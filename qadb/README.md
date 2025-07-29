@@ -51,25 +51,19 @@ flowchart TB
     qaTree{{qa/qaTree.json}}:::data
     qaTable{{qa/qaTree.json.table}}:::data
 
-    qaTreeInit --> import
-    import --> symlink
-    import --> qaTree
-    import --> parse
-    parse --> qaTable
+    qaTreeInit --> import --> symlink --> qaTree --> parse --> qaTable
 
     inspect[manual inspection of:<br>- qa/qaTree.json.table<br>- online timelines<br>- logbook]:::manual
     edit{edit?}
     modify[modify.sh]:::manual
-    qaBak{{qa/qaTree.json.*.bak}}:::data
+    qaTreeBak{{qa/qaTree.json.*.bak}}:::data
     undo[if needed, revert<br>modification with<br>undo.sh]:::manual
 
-    qaTable --> inspect
-    inspect --> edit
+    qaTable --> inspect --> edit
 
-    edit -->|yes|modify --> parse
-    qaTree --> modify
-    modify --> qaBak
-    qaBak --> undo
+    edit -->|yes|modify --> qaTree
+    modify --> qaTreeBak
+    qaTreeBak --> undo
 
     edit -->|no|done{{done manual QA,<br>with final QADB<br>qa/qaTree.json}}:::data
 ```
