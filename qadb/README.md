@@ -12,7 +12,7 @@ We recommend you work _within_ this current directory, that is
 
 ## General Procedure for Manual QA
 
-To run any tool, first **import** a QADB file (typically named `qaTree.json`); run the following for usage:
+To run any tool, first **import** a QADB file (typically named `qaTree.json`); run:
 ```bash
 ./import.sh    # run with no arguments for usage guide
 ```
