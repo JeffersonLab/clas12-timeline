@@ -190,8 +190,11 @@ we call this procedure the "manual QA".
 
 Two people must perform this procedure, independently, and the results must be cross checked.
 
-All steps this procedure should be performed with in the [`qadb/`](/qadb) subdirectory;
-there is [additional documentation](/qadb/README.md) within `qadb/`, for more detailed guidance.
+All steps this procedure use the QADB Tools, from within the [`qadb/` directory](/qadb).
+Read the [QADB Tools Documentation](/qadb/README.md) first, if you
+are not familiar, or if you just want more details.
+
+The [`qadb/` directory](/qadb) should be your current-working directory.
 
 ### :ballot_box_with_check: Checklist
 
