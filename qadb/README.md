@@ -43,14 +43,12 @@ flowchart TB
     classDef data fill:#ff8,color:black
     classDef auto fill:#8f8,color:black
     classDef manual fill:#fbb,color:black
-    classDef timeline fill:#8af,color:black
-    classDef json fill:#d5d,color:black
 
-    qaTreeInit([qaTree.json from QA timelines]):::json
+    qaTreeInit{{qaTree.json from QA timelines}}:::data
     import[import.sh]:::manual
-    parse[src/parseQaTree.groovy]:::auto
+    parse["src/parseQaTree.groovy<br>(called automatically)"]:::auto
     symlink{{symlink qa/ -> qa.$dataset}}:::data
-    qaTree([qa/qaTree.json]):::json
+    qaTree{{qa/qaTree.json}}:::data
     qaTable{{qa/qaTree.json.table}}:::data
 
     qaTreeInit --> import
@@ -62,7 +60,7 @@ flowchart TB
     inspect[manual inspection of:<br>- qa/qaTree.json.table<br>- online timelines<br>- logbook]:::manual
     edit{edit?}
     modify[modify.sh]:::manual
-    qaBak([qa/qaTree.json.*.bak]):::json
+    qaBak{{qa/qaTree.json.*.bak}}:::data
     undo[if needed, revert<br>modification with<br>undo.sh]:::manual
 
     qaTable --> inspect
@@ -73,7 +71,7 @@ flowchart TB
     modify --> qaBak
     qaBak --> undo
 
-    edit -->|no|done[done manual QA]:::manual
+    edit -->|no|done{{done manual QA,<br>with final QADB<br>qa/qaTree.json}}:::data
 ```
 
 
