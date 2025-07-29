@@ -19,6 +19,8 @@ The following **checklists** must be followed for any QADB production; click eac
 The [timeline code](..) produces an initial QADB as a byproduct. This initial version automatically assigns several defect bits,
 therefore this procedure is called the "automatic QA".
 
+If you are performing a manual QA as part of a cross check, skip to the next section.
+
 ### :ballot_box_with_check: Checklist
 
 <details>
