@@ -33,10 +33,10 @@ int number_of_wires_per_timeline = 15;
           def t0 = (0..<h1.getMaximumBin()).find {
             h1.getBinContent(it) >= 0.8*maxz
           }
-          def tmax = (h1.getMaximumBin()..<h1.getAxis().getNBins()).find {
-            h1.getBinContent(it) >= 0.8*maxz
+          def tmax = (h1.getAxis().getNBins() - 1..h1.getMaximumBin()).find {
+              h1.getBinContent(it) >= 0.8 * maxz
           }
-          def width = tmax - tmin
+          def width = tmax - t0
           data[run].put(String.format('t0_ahdc_time_layer%d_wire_number%d', layer, wire_number),  t0)
           data[run].put(String.format('tmin_ahdc_time_layer%d_wire_number%d', layer, wire_number),  tmax)
           data[run].put(String.format('width_ahdc_time_layer%d_wire_number%d', layer, wire_number),  width)
