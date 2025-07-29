@@ -35,6 +35,48 @@ and to undo that modification, use
 ./undo.sh
 ```
 
+### Flowchart
+
+```mermaid
+flowchart TB
+
+    classDef data fill:#ff8,color:black
+    classDef auto fill:#8f8,color:black
+    classDef manual fill:#fbb,color:black
+    classDef timeline fill:#8af,color:black
+    classDef json fill:#d5d,color:black
+
+    qaTreeInit([qaTree.json from QA timelines]):::json
+    import[import.sh]:::manual
+    parse[src/parseQaTree.groovy]:::auto
+    symlink{{symlink qa/ -> qa.$dataset}}:::data
+    qaTree([qa/qaTree.json]):::json
+    qaTable{{qa/qaTree.json.table}}:::data
+
+    qaTreeInit --> import
+    import --> symlink
+    import --> qaTree
+    import --> parse
+    parse --> qaTable
+
+    inspect[manual inspection of:<br>- qa/qaTree.json.table<br>- online timelines<br>- logbook]:::manual
+    edit{edit?}
+    modify[modify.sh]:::manual
+    qaBak([qa/qaTree.json.*.bak]):::json
+    undo[if needed, revert<br>modification with<br>undo.sh]:::manual
+
+    qaTable --> inspect
+    inspect --> edit
+
+    edit -->|yes|modify --> parse
+    qaTree --> modify
+    modify --> qaBak
+    qaBak --> undo
+
+    edit -->|no|done[done manual QA]:::manual
+```
+
+
 ## Automatic QA Configuration
 
 Some tools for automatic QA are included here too; the automatic QA precedes
