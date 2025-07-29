@@ -59,7 +59,7 @@ flowchart TB
     qaTreeInit --> import --> symlink --> qaTree --> parse --> qaTable
 
     manualQA[manual QA: look at QADB table file, timelines, logbook, etc.]:::manual
-    edit{edit?}
+    edit{edit QADB?}
     modify[modify.sh]:::manual
     qaTreeBak{{qa/qaTree.json.*.bak}}:::data
     undo[if needed, revert<br>modification with<br>undo.sh]:::manual
