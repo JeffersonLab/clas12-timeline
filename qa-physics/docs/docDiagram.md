@@ -90,9 +90,6 @@ flowchart TB
       timelineFiles --> stage0
     end
 
-    manualQA[perform the manual QA]:::manual
-    qaTree --> manualQA
-
     subgraph "Finalize (deprecated)"
       exeQAtimelines[exeQAtimelines.sh]:::manual
       qaTreeUpdated([$qa_dir/outdat/qaTree.json]):::json
@@ -103,5 +100,7 @@ flowchart TB
       qaTL --> stage1
     end
 
+    manualQA[perform the manual QA]:::manual
+    qaTree --> manualQA
     manualQA --> exeQAtimelines
 ```
