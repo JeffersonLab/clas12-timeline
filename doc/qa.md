@@ -77,7 +77,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] produce histogram files (step 1)</summary>
+<summary>- [ ] timeline production step 1: produce histogram files</summary>
 
 - this is "step 1" of the [timeline-production procedure](procedure.md)
     - see also other [notes files](/qadb/notes) for examples
@@ -99,7 +99,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] produce initial timelines (step 2)</summary>
+<summary>- [ ] timeline production step 2: produce initial timelines</summary>
 
 - this is "step 2" of the [timeline-production procedure](procedure.md)
     - see also other [notes files](/qadb/notes) for examples
