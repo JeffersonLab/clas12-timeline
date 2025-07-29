@@ -340,7 +340,9 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 
 - some Run Groups produce a table (spreadsheet) of runs and notes about each of them
 - cross check the QADB, and make changes as necessary
-- consider also updating the Run Group's table, if necessary, though that is the responsibility of the Run Group, not of the QADB maintainers
+- consider also updating the Run Group's table, if necessary
+    - although this table is the responsibility of the Run Group, not of the QADB maintainers, the Run Group should
+      at least be made aware of any updates that should be made
 </details>
 
 <details>
