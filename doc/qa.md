@@ -38,6 +38,10 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 <summary>- [ ] choose input data files</summary>
 
 - decide whether to analyze full DSTs or specific train(s)
+    - a train is preferred, in particular, a SIDIS-type train
+    - full DSTs take up quite a bit of space on `/cache`, and may not be fully available on `/cache`, whereas
+      trains are supposed to _always_ be available for analysis
+    - this choice will need to be coordinated with the Run Group
 - do you need to combine data from various targets?
     - if so, you can combine them into your `$dataset` using "step 1" (`qtl histogram`); see RG-C notes files for examples
 - alternatively, create a "prescaled" train
