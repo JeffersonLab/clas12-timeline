@@ -228,6 +228,7 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 <summary>- [ ] open the QA timelines in your browser</summary>
 
 - the QA timelines (produced by the above automatic QA procedure), should also be open on your computer
+    - if you are a cross checker, you should have also been given a link to these timelines
 - clicking on a run's point(s) will:
     - draw several plots below
         - some plots will have cut lines shown
