@@ -42,9 +42,9 @@ int number_of_wires_per_timeline = 15;
           data[run].put(String.format('t0_ahdc_time_layer%d_wire_number%d', layer, wire_number),  t0)
           data[run].put(String.format('tmin_ahdc_time_layer%d_wire_number%d', layer, wire_number),  tmax)
           data[run].put(String.format('width_ahdc_time_layer%d_wire_number%d', layer, wire_number),  width)
-          data[run].put(String.format('fit_t0_ahdc_time_layer%d_wire_number%d', layer, wire_number),  time_fitter_rising(h1, t0))
-          data[run].put(String.format('fit_tmin_ahdc_time_layer%d_wire_number%d', layer, wire_number),  time_fitter_falling(h1, tmax))
-          data[run].put(String.format('fit_width_ahdc_time_layer%d_wire_number%d', layer, wire_number),  time_fitter_width(h1, t0, tmax))
+          data[run].put(String.format('fit_t0_ahdc_time_layer%d_wire_number%d', layer, wire_number),  ALERTFitter.time_fitter_rising(h1, t0))
+          data[run].put(String.format('fit_tmin_ahdc_time_layer%d_wire_number%d', layer, wire_number),  ALERTFitter.time_fitter_falling(h1, tmax))
+          data[run].put(String.format('fit_width_ahdc_time_layer%d_wire_number%d', layer, wire_number),  ALERTFitter.time_fitter_width(h1, t0, tmax))
           has_data.set(true)
         }
       }
