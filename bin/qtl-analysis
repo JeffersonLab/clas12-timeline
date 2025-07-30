@@ -24,7 +24,7 @@ numThreads=8
 singleTimeline=""
 # modes, set by CLI long opts (--$key)
 declare -A modes
-for key in list just-pub just-ana skip-mya debug overwrite custom-pub help; do
+for key in list just-pub just-ana skip-mya debug overwrite clobber custom-pub help; do
   modes[$key]=false
 done
 
@@ -83,22 +83,24 @@ usageVerbose() {
 
     --list              dump the list of timelines and exit
 
-    --just-ana          just do the analysis and do not attempt to publish
-                        - follow up with '--just-pub' and '-p' to publish
-
-    --just-pub          just publish analyzed timelines from [OUTPUT_DIR]
-
-    --overwrite         allow publishing to overwrite the target directory
-
-    --custom-pub        interpret [PUBLISH_DIR] as a fully custom directory,
-                        rather than as a subdirectory of the web server
-
     --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
 
     --debug             enable debug mode: run a single timeline with stderr and stdout printed to screen;
                         use this with the '-t' option to debug specific timeline issues
 
-    -h, --help          print this usage guide
+  PUBLISHING OPTIONS
+
+    --just-ana          just do the analysis and do not attempt to publish
+                        - follow up with '--just-pub' and '-p' to publish
+
+    --just-pub          just publish analyzed timelines from [OUTPUT_DIR]
+
+    --overwrite         remove the target publishing directory, then recreate it
+
+    --clobber           clobber the target publishing directory
+
+    --custom-pub        interpret [PUBLISH_DIR] as a fully custom directory,
+                        rather than as a subdirectory of the web server
   """ >&2
 }
 if [ $# -eq 0 ]; then
@@ -143,11 +145,18 @@ fi
 # main executable for detector timelines
 run_analysis_script="org.jlab.clas.timeline.analysis.run_analysis"
 
+# grep which exits zero when no match is found
+grep_zero() { grep $1 || true; }
+
 # build list of timelines
 if ${modes['skip-mya']}; then
-  timelineList=$(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep $match)
+  timelineList=($(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep_zero $match))
 else
-  timelineList=$(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | sort | grep $match)
+  timelineList=($(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | sort | grep_zero $match))
+fi
+if [ ${#timelineList[@]} -eq 0 ]; then
+  printError "empty 'timelineList'; most likely your argument '-m $match' does not match any timelines; try '--list' to see the list of all available timelines"
+  exit 100
 fi
 
 # list detector timelines, if requested
@@ -155,7 +164,7 @@ if ${modes['list']}; then
   echo $sep
   echo "LIST OF TIMELINES"
   echo $sep
-  echo $timelineList | sed 's; ;\n;g'
+  echo ${timelineList[@]} | sed 's; ;\n;g'
   exit $?
 fi
 
@@ -218,8 +227,12 @@ if $enablePub; then
       printWarning "Press 'Ctrl-C' NOW if this is not what you want! Otherwise, just wait..."
       sleep 5
       rm -rv $publishDir
+    elif ${modes['clobber']}; then
+      printWarning "Publishing directory already exists! Timelines will be clobbered!"
+      printWarning "Press 'Ctrl-C' NOW if this is not what you want! Otherwise, just wait..."
+      sleep 5
     else
-      printError "Publishing directory already exists! Either choose another directory, or re-run with '--overwrite' option to overwrite (be careful...)"
+      printError "Publishing directory already exists! Either choose another directory, or re-run with the '--overwrite' or '--clobber' option to overwrite (be careful...); use '--help' for more guidance"
       exit 100
     fi
   fi
@@ -254,13 +267,14 @@ if [ -z "$dataset" ]; then
 fi
 
 # set input and output directories
-[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_detectors
+[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_detectors # set default `inputDir`
 [ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100
-inputDir=$(realpath $inputDir)
-[ -z "$outputDir" ] && outputDir=$(realpath $(pwd -P)/outfiles/$dataset) || outputDir=$(realpath $outputDir)
+inputDir=$(realpath $inputDir) # sanitize CLI argument's `intputDir`
+[ -z "$outputDir" ] && outputDir=$(pwd -P)/outfiles/$dataset # set default `outputDir`
+mkdir -p $outputDir
+outputDir=$(realpath $outputDir) # sanitize CLI argument's `outputDir`
 
 # set subdirectories
-finalDirPreQA=$outputDir/timeline_web_preQA
 finalDir=$outputDir/timeline_web
 logDir=$outputDir/log
 
@@ -272,7 +286,6 @@ $sep
 INPUT_DIR       = $inputDir
 DATASET_NAME    = $dataset
 OUTPUT_DIR      = $outputDir
-FINAL_DIR_PREQA = $finalDirPreQA
 FINAL_DIR       = $finalDir
 LOG_DIR         = $logDir
 PUBLISH_DIR     = $publishDir
@@ -309,9 +322,9 @@ detDirs=(
 
 # cleanup output directories
 if $enableAna; then
-  if [ -d $finalDirPreQA ]; then
-    printWarning "removing output directory $finalDirPreQA"
-    rm -r $finalDirPreQA
+  if [ -d $finalDir ]; then
+    printWarning "removing output directory $finalDir"
+    rm -r $finalDir
   fi
   if [ -d $logDir ]; then
     printWarning "removing log directory $logDir"
@@ -320,7 +333,7 @@ if $enableAna; then
 fi
 
 # make output directories
-mkdir -p $logDir $finalDirPreQA $finalDir
+mkdir -p $logDir $finalDir
 
 
 ##################################################################################
@@ -359,7 +372,7 @@ if $enableAna; then
   }
 
   # change working directory to output directory
-  pushd $finalDirPreQA
+  pushd $finalDir
 
   # make detector subdirectories
   for detDir in ${detDirs[@]}; do
@@ -369,7 +382,7 @@ if $enableAna; then
   # produce timelines, multithreaded
   job_ids=()
   job_names=()
-  for timelineObj in $timelineList; do
+  for timelineObj in ${timelineList[@]}; do
     logFile=$logDir/$timelineObj
     [ -n "$singleTimeline" -a "$timelineObj" != "$singleTimeline" ] && continue
     echo ">>> producing timeline '$timelineObj' ..."
@@ -431,26 +444,6 @@ if $enableAna; then
   echo ">>> done producing timelines..."
   popd
 fi
-
-######################################
-# run QA
-######################################
-
-if $enableAna; then
-  # first, copy the timelines to the final timeline directory
-  echo ">>> copy timelines to final directory..."
-  cp -rL $finalDirPreQA/* $finalDir/
-  # then add the QA lines
-  echo ">>> add QA lines..."
-  logFile=$logDir/qa
-  $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-detectors/util/applyBounds.groovy $finalDirPreQA $finalDir > $logFile.out 2> $logFile.err || touch $logFile.fail
-  outputFiles=$(find $finalDir -name "*_QA.hipo")
-  logFile=$logDir/qa_hipo-check
-  if [ -n "$outputFiles" ]; then
-    $TIMELINESRC/libexec/hipo-check.sh $outputFiles > $logFile.out 2> $logFile.err || touch $logFile.fail
-  fi
-fi
-
 
 
 ######################################

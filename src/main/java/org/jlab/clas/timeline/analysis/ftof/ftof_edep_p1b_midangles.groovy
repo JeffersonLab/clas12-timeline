@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.FTOFFitter
+import org.jlab.clas.timeline.util.QA
 
 class ftof_edep_p1b_midangles {
 
@@ -32,7 +33,7 @@ def write() {
 
   TDirectory out = new TDirectory()
   out.mkdir('/timelines')
-  (0..<6).each{ sec->
+  def grtlList = (0..<6).collect{ sec->
     def grtl = new GraphErrors('sec'+(sec+1))
     grtl.setTitle("p1b Path-length Corrected Edep for e-, e+, pi-, and pi+, mid. angles (11, 23 deg)")
     grtl.setTitleY("p1b Path-length Corrected Edep for e-, e+, pi-, and pi+, mid. angles (11, 23 deg) (MeV)")
@@ -47,10 +48,10 @@ def write() {
       out.addDataSet(it.flist[sec])
       grtl.addPoint(it.run, it.mean[sec], 0, 0)
     }
-    out.cd('/timelines')
-    out.addDataSet(grtl)
+    grtl
   }
-
-  out.writeFile('ftof_edep_p1b_midangles.hipo')
+  out.cd('/timelines')
+  QA.cutGraphs(*grtlList, lb: 10.5, ub: 12.5, out: out)
+  out.writeFile('ftof_edep_p1b_midangles_QA.hipo')
 }
 }

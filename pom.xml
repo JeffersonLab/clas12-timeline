@@ -4,7 +4,7 @@
 
   <groupId>org.jlab.clas.timeline</groupId>
   <artifactId>clas12-timeline</artifactId>
-  <version>3.0.1</version>
+  <version>3.2.1</version>
   <name>clas12-timeline</name>
   <url>http://www.github.com/JeffersonLab/clas12-timeline</url>
 
@@ -36,21 +36,21 @@
     <dependency>
       <groupId>org.jlab.coat</groupId>
       <artifactId>coat-libs</artifactId>
-      <version>10.0.8-SNAPSHOT</version>
+      <version>13.0.2</version>
       <type>jar</type>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-all -->
     <dependency>
       <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>4.0.26</version>
+      <version>4.0.27</version>
       <type>pom</type>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-dateutil -->
     <dependency>
       <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-dateutil</artifactId>
-      <version>4.0.26</version>
+      <version>4.0.27</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.codehaus.gpars/gpars -->
     <dependency>
@@ -82,7 +82,7 @@
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-batch</artifactId>
-            <version>4.0.26-01</version>
+            <version>4.0.27-01</version>
           </dependency>
         </dependencies>
       </plugin>

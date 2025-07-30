@@ -3,6 +3,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ECFitter
+import org.jlab.clas.timeline.util.QA
 
 class ec_ecin_time {
 
@@ -28,7 +29,7 @@ def data = new ConcurrentHashMap()
       TDirectory out = new TDirectory()
       out.mkdir('/timelines')
 
-      data.sort{it.key}.each{ttl, runs->
+      def grtlList = data.sort{it.key}.collect{ttl, runs->
 
         def grtl = new GraphErrors(ttl)
         grtl.setTitle("e- time - start time, ${name}")
@@ -45,10 +46,13 @@ def data = new ConcurrentHashMap()
           grtl.addPoint(it.run, it[name], 0, 0)
         }
 
-        out.cd('/timelines')
-        out.addDataSet(grtl)
-       }
-       out.writeFile("ec_elec_ecin_time_${name}.hipo")
+        grtl
+      }
+
+      out.cd('/timelines')
+      QA.cutGraphsMeanSigma(name, *grtlList, mean_lb: -0.15, mean_ub: 0.15, sigma_ub: 0.6, out: out)
+      out.writeFile("ec_elec_ecin_time_${name}_QA.hipo")
+
     }
   }
 }

@@ -39,6 +39,7 @@ public class run_histograms {
     LTCC       ana_ltc     = new LTCC(runNum,outputDir,EB,useTB);
     RICH       ana_rich    = new RICH(runNum,outputDir,EB,useTB);
     CND        ana_cnd     = new CND(runNum,outputDir,useTB);
+    CVT        ana_cvt     = new CVT();
     FT         ana_ft      = new FT(runNum,outputDir,useTB);
     BAND       ana_band    = new BAND(runNum,outputDir,EB,useTB);
     ALERT      ana_alert   = new ALERT(runNum,outputDir,EB,useTB);
@@ -87,6 +88,7 @@ public class run_histograms {
         ana_htc.processEvent(event);
         ana_ltc.processEvent(event);
         ana_cnd.processEvent(event);
+        ana_cvt.processEvent(event);
         ana_ft.processEvent(event);
         ana_band.processEvent(event);
         ana_alert.processEvent(event);
@@ -117,6 +119,7 @@ public class run_histograms {
     ana_htc.write();
     ana_ltc.write();
     ana_cnd.write();
+    ana_cvt.write(outputDir, runNum);
     ana_ft.write();
     ana_band.write();
     ana_alert.write();

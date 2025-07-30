@@ -1,3 +1,22 @@
+# How to Add a New Timeline
+
+There are a few cases where a developer may want to make some updates to the script.
+
+We strongly encourage you to work on this in the different branches from `main` and send pull requests.
+
+To add more analysis scripts for step 2, create corresponding scripts in [`src/main/java/org/jlab/clas/timeline/analysis`](/src/main/java/org/jlab/clas/timeline/analysis).
+The histogram (`H1F`) and graph (`GraphErrors`) objects should be included in the output `TDirectory` object. Not all, but most, timeline variables are fit results. We maintain the fitters in [`src/main/java/org/jlab/clas/timeline/fitter`](/src/main/java/org/jlab/clas/timeline/fitter).
+To display the fit results on the `clas12mon` website, the `javascript` rendering the fit function needs the name of `F1D` to be "fit: " + the name of `H1F` (see `/group/clas/www/clas12mon/html/timeline/index.js` on `ifarm`.)
+
+If the `H1F` objects do not exist in the monitoring output, the java codes in [`src/main/java/org/jlab/clas/timeline/histograms`](/src/main/java/org/jlab/clas/timeline/histograms) need to be updated for step 1.
+
+To create new timelines for some detectors, follow these steps (_e.g._, <https://github.com/JeffersonLab/clas12-timeline/pull/304>)
+1. Create the `DETECTOR_NAME.java`, in [`src/main/java/org/jlab/clas/timeline/histograms`](/src/main/java/org/jlab/clas/timeline/histograms). The easiest way is to copy and edit the existing java scripts.
+2. Add three lines to [`src/main/java/org/jlab/clas/timeline/run_histograms.java`](/src/main/java/org/jlab/clas/timeline/run_histograms.java). For example, search for `ana_mon` to find out what these three lines are.
+3. Create a `detector_name` directory in [`src/main/java/org/jlab/clas/timeline/analysis`](/src/main/java/org/jlab/clas/timeline/analysis).
+4. Create a `detector_name_variable.groovy` script. One script for one variable is the norm. A script can store multiple timelines (_e.g._ [`src/main/java/org/jlab/clas/timeline/analysis/ft/ftc_time_neutral.groovy`](/src/main/java/org/jlab/clas/timeline/analysis/ft/ftc_time_neutral.groovy)).
+5. Add the `detector_name` inside `detDirs` of [`bin/qtl-analysis`](/bin/qtl-analysis).
+
 # Flowchart
 Here is a flowchart illustrating the data and steps for timeline production. See the next section for details on output file organization.
 
@@ -28,9 +47,7 @@ flowchart TB
 
     subgraph Step 2: Timeline Analysis
         subgraph "<strong>bin/qtl analysis</strong>"
-            timelineDetectorsPreQA["<strong>Make detector timelines</strong><br/>org.jlab.clas.timeline.analysis.run_analysis"]:::proc
-            outTimelineDetectorsPreQA{{outfiles/$dataset/timeline_web_preQA/$detector/*.hipo}}:::timeline
-            timelineDetectors["<strong>Draw QA lines</strong><br/>qa-detectors/: applyBounds.groovy"]:::proc
+            timelineDetectors["<strong>Make detector timelines</strong><br/>org.jlab.clas.timeline.analysis.run_analysis"]:::proc
             outTimelineDetectors{{outfiles/$dataset/timeline_web/$detector/*.hipo}}:::timeline
             deploy["<strong>Publishing</strong><br/>handled by qtl analysis"]:::proc
         end
@@ -41,7 +58,7 @@ flowchart TB
     end
     timelineDir{{timelines on web server}}:::timeline
 
-    outplots --> timelineDetectorsPreQA --> outTimelineDetectorsPreQA --> timelineDetectors --> outTimelineDetectors
+    outplots --> timelineDetectors --> outTimelineDetectors
     outdat   --> timelinePhysics
     outmon   --> timelinePhysics
     timelinePhysics --> outTimelinePhysics
@@ -119,12 +136,12 @@ outfiles
 
 # Notes on SWIF Workflows
 
-For [CLAS12 `swif` workflow](https://github.com/baltzell/clas12-workflow) integration, the `bin/qtl histogram` command (which normally generates `slurm` jobs) has a specific mode `--swifjob`:
+For chef cooking workflow integration, the `bin/qtl histogram` command (which normally generates `slurm` jobs) has a specific mode `--swifjob`:
 ```bash
 qtl histogram --swifjob --focus-detectors   # generate files for detector timelines
 qtl histogram --swifjob --focus-physics     # generate files for physics QA timelines
 ```
-Either or both of these commands is _all_ that needs to be executed on a runner node, within [`clas12-workflow`](https://github.com/baltzell/clas12-workflow); calling one of these will automatically run the wrapped code, with the following assumptions and conventions:
+Either or both of these commands is _all_ that needs to be executed on a runner node, within the cooking workflow; calling one of these will automatically run the wrapped code, with the following assumptions and conventions:
 - input HIPO files are at `./` and only a single run will be processed
 - run number is obtained by `RUN::config` from one of the HIPO files; all HIPO files are assumed to belong to the same run
 - all output files will be in `./outfiles` (no `$dataset` subdirectory as above)
@@ -153,6 +170,3 @@ For compatibility with the file tree expected by downstream `qtl analysis` (see 
 Separate `--focus-detectors` and `--focus-physics` options are preferred, since:
 - offers better organization of the contract data between `swif` jobs and downstream scripts
 - often we will run one and not the other: `--focus-detectors` needs `mon` schema, whereas `--focus-physics` prefers high statistics
-
-
-

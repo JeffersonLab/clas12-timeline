@@ -73,10 +73,13 @@ fi
 
 # set input and output directories
 [ -z "$dataset" ] && printError "data set not specified, use option '-d'" && exit 100
-[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_physics
+[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_physics # set default `inputDir`
 [ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100
-inputDir=$(realpath $inputDir)
-[ -z "$outputDir" ] && outputDir=$(realpath $(pwd -P)/outfiles/$dataset) || outputDir=$(realpath $outputDir)
+inputDir=$(realpath $inputDir) # sanitize CLI argument's `inputDir`
+[ -z "$outputDir" ] && outputDir=$(pwd -P)/outfiles/$dataset # set default `outputDir`
+mkdir -p $outputDir
+outputDir=$(realpath $outputDir) # sanitize CLI argument's `outputDir`
+
 [ -z "$publishDir" ] && printError "need publishing directory, option '-p'" && exit 100
 
 # set subdirectories
@@ -171,6 +174,7 @@ $TIMELINESRC/bin/qtl analysis \
   -i $inputDir \
   -o $outputDir \
   --just-pub \
+  --overwrite \
   -p $publishDir $customPubArg
 
 if $hasErrorPrintouts; then
