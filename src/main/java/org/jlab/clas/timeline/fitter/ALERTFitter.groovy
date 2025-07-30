@@ -107,16 +107,16 @@ class ALERTFitter{
 	static F1D time_fitter_rising(H1F h1, float t0){
 		def f1 =new F1D("fit:"+h1.getName(),"[cst]", -5.0, 5.0);
 		def maxz = h1.getBinContent(h1.getMaximumBin());
-		f1.setRange(t0 - 1, t0 + 1);
-		f1.setParameter(0, 0.8*maxz);
+		f1.setRange(t0 - 2, t0 + 2);
+		f1.setParameter(0, 0.25*maxz);
 
 		return f1
 	}
 	static F1D time_fitter_falling(H1F h1, float tmax){
 		def f1 =new F1D("fit:"+h1.getName(),"[cst]", -5.0, 5.0);
 		def maxz = h1.getBinContent(h1.getMaximumBin());
-		f1.setRange(tmax - 1, tmax + 1);
-		f1.setParameter(0, 0.8*maxz);
+		f1.setRange(tmax - 2, tmax + 2);
+		f1.setParameter(0, 0.25*maxz);
 
 		return f1
 	}
@@ -124,7 +124,7 @@ class ALERTFitter{
 		def f1 =new F1D("fit:"+h1.getName(),"[cst]", -5.0, 5.0);
 		def maxz = h1.getBinContent(h1.getMaximumBin());
 		f1.setRange(t0, tmax);
-		f1.setParameter(0, 0.8*maxz);
+		f1.setParameter(0, 0.25*maxz);
 
 		return f1
 	}
