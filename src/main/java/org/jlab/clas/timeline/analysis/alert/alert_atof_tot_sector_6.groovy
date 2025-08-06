@@ -19,7 +19,8 @@ int index_max = 48*sector + 48
     def reference_trigger_bit = 0
     // data[run].put('bits',  trigger)
     (index_min..<index_max).collect{index->
-      assert sector == index / (12 * 4);
+      int sector_ = index / (12 * 4);
+      assert sector == sector_;
       int layer     = (index % (12 * 4)) / 12;
       int component = index % 12;
       def file_index = '';
