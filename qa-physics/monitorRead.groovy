@@ -13,6 +13,7 @@ import org.jlab.clas.physics.LorentzVector
 import org.jlab.detector.base.DetectorType
 import java.lang.Math.*
 import org.jlab.clas.timeline.util.Tools
+import org.jlab.clas.timeline.util.QaBinSequence;
 import java.nio.file.Paths
 import groovy.json.JsonSlurper
 Tools T = new Tools()
@@ -495,8 +496,12 @@ def setMinMaxInTimeBin = { binNum, key, val ->
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// DEFINE TIME BINS
+// DEFINE QA BINS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+QaBinSequence qaBins = new QaBinSequence(inHipoList, MIN_NUM_SCALERS);
+qaBins.print();
+throw new RuntimeException("STOP");
 
 defineTimeBins = { // in its own closure, so giant data structures are garbage collected
   // get list of tag1 event numbers
