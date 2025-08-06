@@ -4,21 +4,22 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ALERTFitter
-import org.apache.commons.lang3.ArrayUtils;
 
-class alert_atof_tot_sector_5_9 {
+class alert_atof_tot_sector_6 {
 
 def data = new ConcurrentHashMap()
 def has_data = new AtomicBoolean(false)
-
+int sector = 6
+int index_min = 48*sector;
+int index_max = 48*sector + 48
   def processRun(dir, run) {
 
     data[run] = [run:run]
     def trigger = dir.getObject('/TRIGGER/bits')
     def reference_trigger_bit = 0
     // data[run].put('bits',  trigger)
-    (240..<480).collect{index->
-      int sector    = index / (12 * 4);
+    (index_min..<index_max).collect{index->
+      assert sector == index / (12 * 4);
       int layer     = (index % (12 * 4)) / 12;
       int component = index % 12;
       def file_index = '';
@@ -34,8 +35,8 @@ def has_data = new AtomicBoolean(false)
           def f1 = ALERTFitter.totfitter(h1)
           data[run].put(String.format('fit_atof_tot_%s', file_index),  f1)
           data[run].put(String.format('peak_location_atof_tot_%s', file_index),  peak_location)
-          // data[run].put(String.format('sigma_atof_tot_%s', file_index),  f1.getParameter(2))
-          // data[run].put(String.format('integral_normalized_to_trigger_atof_tot_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0) * f1.getParameter(2)/trigger.getBinContent(reference_trigger_bit) )
+          // data[run].put(String.format('sigma_atof_tot_%s', file_index),  f1.getParameter(2).abs())
+          // data[run].put(String.format('integral_normalized_to_trigger_atof_tot_%s', file_index),  Math.sqrt(2*3.141597f) * f1.getParameter(0).abs() * f1.getParameter(2).abs()/trigger.getBinContent(reference_trigger_bit) )
           has_data.set(true)
         }
       }
@@ -52,7 +53,6 @@ def has_data = new AtomicBoolean(false)
     }
 
     ['peak_location'].each{variable->
-      (5..<10).collect{sector->
         (0..<4).collect{layer->
           def names = []
           TDirectory out = new TDirectory()
@@ -83,7 +83,6 @@ def has_data = new AtomicBoolean(false)
           }
           out.writeFile(String.format('alert_atof_tot_%s_sector%d_layer%d.hipo', variable, sector, layer))
         }
-      }
     }
   }
 }

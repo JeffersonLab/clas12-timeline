@@ -5,19 +5,21 @@ import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ALERTFitter
 
-class alert_atof_tot_sector_0_4 {
+class alert_atof_tot_sector_5 {
 
 def data = new ConcurrentHashMap()
 def has_data = new AtomicBoolean(false)
-
+int sector = 5
+int index_min = 48*sector;
+int index_max = 48*sector + 48
   def processRun(dir, run) {
 
     data[run] = [run:run]
     def trigger = dir.getObject('/TRIGGER/bits')
     def reference_trigger_bit = 0
     // data[run].put('bits',  trigger)
-    (0..<240).collect{index->
-      int sector    = index / (12 * 4);
+    (index_min..<index_max).collect{index->
+      assert sector == index / (12 * 4);
       int layer     = (index % (12 * 4)) / 12;
       int component = index % 12;
       def file_index = '';
@@ -51,7 +53,6 @@ def has_data = new AtomicBoolean(false)
     }
 
     ['peak_location'].each{variable->
-      (0..<5).collect{sector->
         (0..<4).collect{layer->
           def names = []
           TDirectory out = new TDirectory()
@@ -82,7 +83,6 @@ def has_data = new AtomicBoolean(false)
           }
           out.writeFile(String.format('alert_atof_tot_%s_sector%d_layer%d.hipo', variable, sector, layer))
         }
-      }
     }
   }
 }
