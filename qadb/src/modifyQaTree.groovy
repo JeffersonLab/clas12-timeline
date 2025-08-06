@@ -419,9 +419,9 @@ else if( cmd=="custom") {
   //*/
 
   qaTree["$rnum"].each { k,v -> bnum = k.toInteger() // loop over bins
+    def secList = (1..6).collect{it}
 
     /* // remove outlier bits and add misc bit, to all sectors
-    def secList = (1..6).collect{it}
     secList.each{
       qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] += T.bit("Misc") // add bit
       //qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] = [T.bit("Misc")] // set bit
@@ -437,12 +437,19 @@ else if( cmd=="custom") {
     def cmt = "FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262"
     */
 
-    ///* // low helicity fraction
+    /* // low helicity fraction
     def secList = (1..6).collect{it}
     secList.each{
       qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] += T.bit("Misc")
     }
     def cmt = "fraction of events with defined helicity is low"
+    */
+
+    ///* // add misc bit with specific comment
+    secList.each{
+      qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] += T.bit("Misc")
+    }
+    def cmt = "N/F as a function of run number varies more than usual, but slowly, until the next target change"
     //*/
 
     if(!qaTree["$rnum"]["$bnum"].containsKey("comment")) {
