@@ -51,7 +51,7 @@ def layer_encoding          = [11, 21, 22, 31, 32, 41, 42, 51];
         int layer_code = layer_encoding[layer]
         def name = String.format("AHDC_RESIDUAL_layer%d", layer_code)
         def gr = new GraphErrors(name)
-        gr.setTitle(  String.format("AHDC RESIDUAL %s layer%d", variable.replace('_', ' '), layer_code))
+        gr.setTitle(  String.format("AHDC RESIDUAL %s", variable.replace('_', ' ')))
         gr.setTitleY( String.format("AHDC RESIDUAL %s (mm)", variable.replace('_', ' ')))
         gr.setTitleX("run number")
         data.sort{it.key}.each{run,it->
