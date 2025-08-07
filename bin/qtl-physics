@@ -175,7 +175,7 @@ $TIMELINESRC/bin/qtl analysis \
   -o $outputDir \
   --just-pub \
   --overwrite \
-  -p $publishDir $customPubArg
+  -p $publishDir $customPubArg $metaSettingsArg
 
 if $hasErrorPrintouts; then
   printWarning "At least one job complained; look above or in the log files to see what's wrong."

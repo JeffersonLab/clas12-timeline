@@ -407,7 +407,6 @@ java $TIMELINE_JAVA_OPTS \\
     $runnum \\
     $outputSubDir \\
     $inputListFile \\
-    $MAX_NUM_EVENTS \\
     $ebeam
 
 # check output HIPO files
