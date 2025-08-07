@@ -1,10 +1,11 @@
 package org.jlab.clas.timeline.util;
 
+import java.util.List;
+import org.jlab.detector.scalers.DaqScalers;
 import org.jlab.detector.scalers.DaqScalersSequence;
 
-public class QaBin {
+public class QaBin extends DaqScalersSequence {
 
-  private final DaqScalersSequence seq; /// scaler readout sequence
   private int evnumMin; /// event number minimum
   private int evnumMax; /// event number maximum
   private long timestampMin; /// timestamp minimum
@@ -13,14 +14,13 @@ public class QaBin {
   private long[] nElecFD = {0, 0, 0, 0, 0, 0}; /// number of FD electrons in each sector
   private long nElecFT = 0; /// number of electrons /// number of FT electrons
 
-  private double fc = 0; /// DAQ-gated FC charge
-  private double ufc = 0; /// full FC charge (ungated)
-
   /// constructor
-  public QaBin(DaqScalersSequence seq) {
-    this.seq = seq;
+  public QaBin(List<DaqScalers> inputScalers) {
+    super(inputScalers);
+    this.timestampMin = this.scalers.get(0).getTimestamp();
+    this.timestampMax = this.scalers.get(scalers.size()-1).getTimestamp();
+    this.evnumMin     = this.scalers.get(0).getEventNum();
+    this.evnumMax     = this.scalers.get(scalers.size()-1).getEventNum();
   }
-
-
 
 }
