@@ -20,16 +20,14 @@ public class run_histograms {
     int runNum = 0;
     String outputDir = "plots";
     String filelist = "list_of_files.txt";
-    int maxevents = 500000;
     float EB = 10.2f;
     boolean useTB=true;
     if(args.length>0)runNum=Integer.parseInt(args[0]);
     if(args.length>1)outputDir=args[1];
     if(args.length>2)filelist=args[2];
-    if(args.length>3)maxevents=Integer.parseInt(args[3]);
-    if(args.length>4)EB=Float.parseFloat(args[4]);
-    if(args.length>5)if(Integer.parseInt(args[5])==0)useTB=false;
-    System.out.println("will process run number "+runNum+" from list "+filelist+" looking for up to "+maxevents+" events, beam energy setting "+EB);
+    if(args.length>3)EB=Float.parseFloat(args[3]);
+    if(args.length>4)if(Integer.parseInt(args[4])==0)useTB=false;
+    System.out.println("will process run number "+runNum+" from list "+filelist+", beam energy setting "+EB);
 
     //// instantiate histogramming classes
     GeneralMon ana_mon     = new GeneralMon(runNum,outputDir,EB,useTB);
@@ -66,19 +64,24 @@ public class run_histograms {
       e.printStackTrace();
       System.exit(100);
     }
-    int progresscount=0;int filetot = toProcessFileNames.size();
+    int progresscount = 0;
+    int filetot = toProcessFileNames.size();
     long startTime = System.currentTimeMillis();
     long previousTime = System.currentTimeMillis();
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-    for (String runstrg : toProcessFileNames) if( count<maxevents ){
+
+    for (String runstrg : toProcessFileNames) {
       progresscount++;
       System.out.println(String.format(">>>>>>>>>>>>>>>> %s",runstrg));
       File varTmpDir = new File(runstrg);
-      if(!varTmpDir.exists()){System.err.println(String.format("ERROR: FILE DOES NOT EXIST: '%s'",runstrg));continue;}
+      if(!varTmpDir.exists()) {
+        System.err.println(String.format("ERROR: FILE DOES NOT EXIST: '%s'",runstrg));
+        continue;
+      }
       System.out.println("READING NOW "+runstrg);
       HipoDataSource reader = new HipoDataSource();
       reader.open(runstrg);
-      while(reader.hasEvent()&& count<maxevents ) {
+      while(reader.hasEvent()) {
         DataEvent event = reader.getNextEvent();
 
         //// call each histogramming class instance's `processEvent`
