@@ -4,7 +4,7 @@
 
   <groupId>org.jlab.clas.timeline</groupId>
   <artifactId>clas12-timeline</artifactId>
-  <version>3.2.1</version>
+  <version>3.2.2</version>
   <name>clas12-timeline</name>
   <url>http://www.github.com/JeffersonLab/clas12-timeline</url>
 
@@ -43,14 +43,14 @@
     <dependency>
       <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>4.0.27</version>
+      <version>4.0.28</version>
       <type>pom</type>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-dateutil -->
     <dependency>
       <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-dateutil</artifactId>
-      <version>4.0.27</version>
+      <version>4.0.28</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.codehaus.gpars/gpars -->
     <dependency>
