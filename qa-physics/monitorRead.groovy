@@ -256,7 +256,7 @@ if(AUXFILE) {
 
 // define shared variables
 def hipoEvent
-def timeBins = [:]
+def timeBins = [:] // RM THIS
 def pidList = []
 def particleBank
 def FTparticleBank

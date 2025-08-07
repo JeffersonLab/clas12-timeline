@@ -3,11 +3,13 @@ package org.jlab.clas.timeline.util;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.jlab.clas.timeline.util.QaBin;
 import org.jlab.detector.scalers.DaqScalersSequence;
 
 public class QaBinSequence extends DaqScalersSequence {
 
-  private final List<DaqScalersSequence> qaBins = new ArrayList<>();
+  /// sequence of QA bins
+  private final List<QaBin> qaBins = new ArrayList<>();
 
   /// @param filenames list of HIPO files to read
   /// @param binWidth the number of scaler readouts in each bin
@@ -22,7 +24,7 @@ public class QaBinSequence extends DaqScalersSequence {
     keep.add(0);
     for(int i=0; i<this.scalers.size(); i+=binWidth) {
       int end = Math.min(i+binWidth, this.scalers.size()-1); // the last sample may be smaller
-      qaBins.add(new DaqScalersSequence(this.scalers.subList(i, end)));
+      qaBins.add(new QaBin(new DaqScalersSequence(this.scalers.subList(i, end))));
       keep.add(end);
     }
     System.out.println("DEBUG: keep indices = " + keep); // FIXME: remove
