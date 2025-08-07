@@ -24,7 +24,7 @@ public class QaBinSequence extends DaqScalersSequence {
     keep.add(0);
     for(int i=0; i<this.scalers.size(); i+=binWidth) {
       int end = Math.min(i+binWidth, this.scalers.size()-1); // the last sample may be smaller
-      qaBins.add(new QaBin(new DaqScalersSequence(this.scalers.subList(i, end))));
+      qaBins.add(new QaBin(this.scalers.subList(i, end)));
       keep.add(end);
     }
     System.out.println("DEBUG: keep indices = " + keep); // FIXME: remove
