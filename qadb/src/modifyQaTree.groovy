@@ -28,7 +28,9 @@ if(args.length>=1) cmd = args[0].toLowerCase()
 else {
   System.err.println(
   """
-  SYNTAX: ${exe} [command] [arguments]\n
+Modify the QADB in 'qa/'
+
+USAGE: ${exe} [command] [arguments]\n
 List of Commands:
   """)
   usage.each{ key, value -> printf("%20s     %s\n", key, value) }
@@ -36,6 +38,12 @@ List of Commands:
   System.exit(101)
 }
 
+// read env vars
+def TIMELINESRC = System.getenv("TIMELINESRC")
+if(TIMELINESRC == null) {
+  System.err.println "ERROR: \$TIMELINESRC is not set"
+  System.exit(100)
+}
 
 // backup qaTree.json
 def D = new Date()
@@ -237,7 +245,7 @@ else if(cmd=="nobeam") {
   }
 }
 
-else if(cmd=="misc") {
+else if(cmd=="misc" || cmd == "m") {
   def rnum,bnumL,bnumR
   def secList = []
   if(args.length>1) {
@@ -411,9 +419,9 @@ else if( cmd=="custom") {
   //*/
 
   qaTree["$rnum"].each { k,v -> bnum = k.toInteger() // loop over bins
+    def secList = (1..6).collect{it}
 
     /* // remove outlier bits and add misc bit, to all sectors
-    def secList = (1..6).collect{it}
     secList.each{
       qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] += T.bit("Misc") // add bit
       //qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] = [T.bit("Misc")] // set bit
@@ -429,12 +437,19 @@ else if( cmd=="custom") {
     def cmt = "FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262"
     */
 
-    ///* // low helicity fraction
+    /* // low helicity fraction
     def secList = (1..6).collect{it}
     secList.each{
       qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] += T.bit("Misc")
     }
     def cmt = "fraction of events with defined helicity is low"
+    */
+
+    ///* // add misc bit with specific comment
+    secList.each{
+      qaTree["$rnum"]["$bnum"]["sectorDefects"]["$it"] += T.bit("Misc")
+    }
+    def cmt = "N/F as a function of run number varies more than usual, but slowly, until the next target change"
     //*/
 
     if(!qaTree["$rnum"]["$bnum"].containsKey("comment")) {
@@ -458,4 +473,5 @@ else { System.err.println("ERROR: unknown command!"); System.exit(100) }
 
 // update qaTree.json
 new File("qa/qaTree.json").write(JsonOutput.toJson(qaTree))
-["${System.getenv('TIMELINESRC')}/libexec/run-groovy-timeline.sh", "parseQaTree.groovy"].execute().waitFor()
+
+["${TIMELINESRC}/libexec/run-groovy-timeline.sh", "${TIMELINESRC}/qadb/src/parseQaTree.groovy"].execute().waitFor()

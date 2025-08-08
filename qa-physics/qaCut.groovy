@@ -29,11 +29,17 @@ def sec = { int i -> i+1 }
 // subroutine to write JSON
 def jPrint = { name,object -> new File(name).write(JsonOutput.toJson(object)) }
 
+// read env vars
+def TIMELINESRC = System.getenv("TIMELINESRC")
+if(TIMELINESRC == null) {
+  System.err.println "ERROR: \$TIMELINESRC is not set"
+  System.exit(100)
+}
+
 // read cutDefs yaml file into a tree
-def cutDefsFile = new File("cutdefs/${dataset}.yaml")
+def cutDefsFile = new File("${TIMELINESRC}/qadb/cutdefs/${dataset}.yaml")
 if(!(cutDefsFile.exists())) {
-  System.err.println "WARNING: using cutdefs/default.yaml"
-  cutDefsFile = new File("cutdefs/default.yaml")
+  cutDefsFile = new File("${TIMELINESRC}/qadb/cutdefs/default.yaml")
 }
 def cutDefsParser = new Yaml()
 def cutDefsTree = cutDefsParser.load(cutDefsFile.text)
@@ -53,10 +59,9 @@ def cutDef = { path, required=true ->
 }
 
 // read epochs list file
-def epochFile = new File("epochs/epochs.${dataset}.txt")
+def epochFile = new File("${TIMELINESRC}/qadb/epochs/epochs.${dataset}.txt")
 if(!(epochFile.exists())) {
-  System.err.println "WARNING: using epochs/epochs.default.txt"
-  epochFile = new File("epochs/epochs.default.txt")
+  epochFile = new File("${TIMELINESRC}/qadb/epochs/epochs.default.txt")
 }
 
 // get the epoch number for a given run `r` and sector `s`
@@ -195,6 +200,9 @@ sectors.each { s ->
       // filter out zero/negative N/F
       def ratioListForIQR = ratioList.findAll{it>0}
 
+      // check if FT was off (all N/F are zero, so `ratioListForIQR` is empty)
+      def ft_was_off = useFT && ratioListForIQR.size()==0
+
       // if the cutDef file says to "recalculate" the IQR, do so; this is used when there are too many outliers
       // for the IQR method to be robust
       if(cutDef(["RecalculateIQR"], false) != null) {
@@ -208,9 +216,20 @@ sectors.each { s ->
         }
       }
 
-      def mq = listMedian(ratioListForIQR, "epoch ${epochIt} ratioListForIQR") // middle quartile
-      def lq = listMedian(ratioListForIQR.findAll{it<mq}, "epoch ${epochIt} ratioListForIQR < median") // lower quartile
-      def uq = listMedian(ratioListForIQR.findAll{it>mq}, "epoch ${epochIt} ratioListForIQR > median") // upper quartile
+      // calculate the IQR
+      def mq
+      def lq
+      def uq
+      if(ft_was_off) { // if we are QA-ing FT data, but FT was off, just assign "quartiles" such that all N/F values will pass QA
+        mq = 0.0
+        lq = -1.0
+        uq = 1.0
+      }
+      else { // otherwise compute quartiles
+        mq = listMedian(ratioListForIQR, "epoch ${epochIt} ratioListForIQR") // middle quartile
+        lq = listMedian(ratioListForIQR.findAll{it<mq}, "epoch ${epochIt} ratioListForIQR < median") // lower quartile
+        uq = listMedian(ratioListForIQR.findAll{it>mq}, "epoch ${epochIt} ratioListForIQR > median") // upper quartile
+      }
       def iqr = uq - lq // interquartile range
       def cutLo = lq - cutFactor * iqr // lower QA cut boundary
       def cutHi = uq + cutFactor * iqr // upper QA cut boundary
@@ -316,7 +335,7 @@ def qaTreeSlurper
 def jsonFile
 if(qaBit>=0) {
   qaTreeSlurper = new JsonSlurper()
-  jsonFile = new File("QA/qa.${dataset}/qaTree.json")
+  jsonFile = new File("${TIMELINESRC}/qadb/qa.${dataset}/qaTree.json")
   qaTree = qaTreeSlurper.parse(jsonFile)
 }
 else qaTree = [:]

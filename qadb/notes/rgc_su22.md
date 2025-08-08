@@ -55,9 +55,12 @@ qtl histogram -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/cla
 
 Make the timelines:
 ```bash
-bin/qtl physics -d rgc_su22_prescaled -p rgc/Summer2022/qa-physics
-bin/qtl physics -d rgc_su22_sidisdvcs -p rgc/Summer2022/qa-physics
+bin/qtl physics -d rgc_su22_prescaled -p rgc/Summer2022/qa-physics -s rgc_su22
+bin/qtl physics -d rgc_su22_sidisdvcs -p rgc/Summer2022/qa-physics -s rgc_su22
 ```
+
+> [!WARNING]
+> You may not have permission to publish to this directory; if not, publish to another place and ask the chef to copy the files
 
 # List of Runs
 Together with targets and beam energies

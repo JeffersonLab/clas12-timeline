@@ -9,6 +9,7 @@ inputDir=""
 dataset=""
 outputDir=""
 publishDir=""
+metaSettings=""
 # modes, set by CLI long opts (--$key)
 declare -A modes
 for key in custom-pub help; do
@@ -39,6 +40,10 @@ usage() {
     -o [OUTPUT_DIR]     output directory
                         default = ./outfiles/[DATASET_NAME]
 
+    -s [SETTINGS]       apply run-group or dataset specific settings; one of:
+$(find $TIMELINESRC/data/metadata -name "*.json" -exec basename {} .json \; | sed 's;^;                           ;')
+                        - default: no custom settings
+
     -h, --help          print this usage guide
   """ >&2
 }
@@ -48,7 +53,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # parse options
-while getopts "d:i:p:o:h-:" opt; do
+while getopts "d:i:p:o:s:h-:" opt; do
   case $opt in
     d)
       echo $OPTARG | grep -q "/" && printError "dataset name must not contain '/' " && exit 100
@@ -57,6 +62,7 @@ while getopts "d:i:p:o:h-:" opt; do
     i) inputDir=$OPTARG ;;
     o) outputDir=$OPTARG ;;
     p) publishDir=$OPTARG ;;
+    s) metaSettings=$OPTARG ;;
     h) modes['help']=true ;;
     -)
       for key in "${!modes[@]}"; do
@@ -169,6 +175,7 @@ customPubArg=''
 if ${modes['custom-pub']}; then
   customPubArg=--custom-pub
 fi
+[ -z "$metaSettings" ] && metaSettingsArg='' || metaSettingsArg="-s $metaSettings"
 $TIMELINESRC/bin/qtl analysis \
   -d $dataset \
   -i $inputDir \
