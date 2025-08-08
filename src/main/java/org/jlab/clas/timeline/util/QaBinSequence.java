@@ -2,6 +2,7 @@ package org.jlab.clas.timeline.util;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.jlab.clas.timeline.util.QaBin;
 import org.jlab.detector.scalers.DaqScalersSequence;
@@ -24,7 +25,7 @@ public class QaBinSequence extends DaqScalersSequence {
     keep.add(0);
     for(int i=0; i<this.scalers.size(); i+=binWidth) {
       int end = Math.min(i+binWidth, this.scalers.size()-1); // the last sample may be smaller
-      qaBins.add(new QaBin(this.scalers.subList(i, end)));
+      this.qaBins.add(new QaBin(this.qaBins.size(), this.scalers.subList(i, end)));
       keep.add(end);
     }
     System.out.println("DEBUG: keep indices = " + keep); // FIXME: remove
@@ -36,19 +37,18 @@ public class QaBinSequence extends DaqScalersSequence {
     System.out.println("DEBUG: num qaBins = " + this.qaBins.size()); // FIXME: remove
   }
 
-
-  /// @brief print the QA bins
+  /// print the QA bins
   public void print() {
     System.out.println("QA BINS:");
-    int binnum = 0;
-    System.out.printf("%20s %20s %20s\n", "bin", "q_gated", "q_corrected");
-    for(var qaBin : qaBins) {
-      System.out.printf("%20d %20.5f %20.5f\n",
-          binnum++,
-          qaBin.getInterval().getBeamChargeGated(),
-          qaBin.getBeamChargeLivetimeWeighted()
-          );
-    }
+    for(var qaBin : this.qaBins)
+      qaBin.print();
+  }
+
+  /// @return the bin which contains the timestamp
+  /// @param timestamp the timestamp
+  public Optional<QaBin> find(long timestamp) {
+    var idx = this.findIndex(timestamp);
+    return Optional.ofNullable(this.qaBins.get(idx));
   }
 
 }
