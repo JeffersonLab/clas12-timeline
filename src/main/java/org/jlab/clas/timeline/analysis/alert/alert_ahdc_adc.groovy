@@ -5,17 +5,24 @@ import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ALERTFitter
 
-class alert_ahdc_adc_layer_number5 {
+class alert_ahdc_adc {
 
 def data = new ConcurrentHashMap()
 def has_data = new AtomicBoolean(false)
 
 def layer_encoding = [11, 21, 22, 31, 32, 41, 42, 51]
 def layer_wires    = [47, 56, 56, 72, 72, 87, 87, 99]
-int layer_number = 5;
-int layer        = layer_encoding[layer_number - 1];
-int number_of_wires_this_layer   = layer_wires[layer_number - 1]
-int number_of_wires_per_timeline = 15;
+int layer_number;
+int layer;
+int number_of_wires_this_layer;
+int number_of_wires_per_timeline;
+
+  alert_ahdc_adc(int ahdc_layer_number) {
+      this.layer_number                 = ahdc_layer_number
+      this.layer                        = layer_encoding[layer_number - 1];
+      this.number_of_wires_this_layer   = layer_wires[layer_number - 1]
+      this.number_of_wires_per_timeline = 15;
+  }
 
   def processRun(dir, run) {
 

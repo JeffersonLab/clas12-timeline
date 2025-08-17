@@ -6,19 +6,29 @@ import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ALERTFitter
 import org.jlab.groot.data.H1F;
 
-class alert_atof_tdc_minus_start_time_vs_tot_sector_1 {
+class alert_atof_tdc_minus_start_time_vs_tot {
 
 def data = new ConcurrentHashMap()
 def has_data = new AtomicBoolean(false)
+int sector;
+int min_index;
+int max_index;
 
+  alert_atof_tdc_minus_start_time_vs_tot(int atof_sector){ // atof_sector runs from 0 to 14.
+    this.sector    = atof_sector;
+    this.min_index = 48*(atof_sector); 
+    this.max_index = 48*(atof_sector+1); 
+  }
+  
   def processRun(dir, run) {
 
     data[run] = [run:run]
     def trigger = dir.getObject('/TRIGGER/bits')
     def reference_trigger_bit = 0
     // data[run].put('bits',  trigger)
-    (48..<96).collect{index->
-      int sector    = index / (12 * 4);
+    (min_index..<max_index).collect{index->
+      int atof_sector = index / (12 * 4);
+      assert sector == atof_sector // sanity-check. this should be the same.
       int layer     = (index % (12 * 4)) / 12;
       int component = index % 12;
       def file_index = '';
@@ -78,37 +88,35 @@ def has_data = new AtomicBoolean(false)
     }
 
     ['mean_tot_range1', 'rms_tot_range1', 'mean_tot_range2', 'rms_tot_range2', 'mean_tot_range3', 'rms_tot_range3'].each{variable->
-      (1..1).collect{sector->
-        (0..<4).collect{layer->
-          def names = []
-          TDirectory out = new TDirectory()
-          out.mkdir('/timelines')
-          (0..<12).collect{component->
-            def file_index = ''
-            if (component <= 10) file_index = String.format('sector%d_layer%d_component_%d_order_0', sector, layer, component)
-            else file_index = String.format('sector%d_layer%d_component_%d_order_1', sector, layer, component-1)
-            names << String.format('atof_tdc_minus_start_time_vs_tot_%s', file_index)
-          }
-          names.each{ name ->
-            def gr = new GraphErrors(name)
-            gr.setTitle(  String.format("%s sector %d layer %d", variable.replace('_', ' '), sector, layer))
-            gr.setTitleY( String.format("%s sector %d layer %d (ns)", variable.replace('_', ' '), sector, layer))
-            gr.setTitleX("run number")
-            data.sort{it.key}.each{run,it->
-              out.mkdir('/'+it.run)
-              out.cd('/'+it.run)
-              if (it.containsKey(name)){
-                out.addDataSet(it[name])
-                // out.addDataSet(it['fit_'+name])
-                if (it.containsKey(variable + '_' + name)) gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
-              }
-              else if (variable=="mean_tot_range1") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
-            }
-            out.cd('/timelines')
-            out.addDataSet(gr)
-          }
-          out.writeFile(String.format('alert_atof_tdc_minus_start_time_vs_tot_%s_sector%d_layer%d.hipo', variable, sector, layer))
+      (0..<4).collect{layer->
+        def names = []
+        TDirectory out = new TDirectory()
+        out.mkdir('/timelines')
+        (0..<12).collect{component->
+          def file_index = ''
+          if (component <= 10) file_index = String.format('sector%d_layer%d_component_%d_order_0', sector, layer, component)
+          else file_index = String.format('sector%d_layer%d_component_%d_order_1', sector, layer, component-1)
+          names << String.format('atof_tdc_minus_start_time_vs_tot_%s', file_index)
         }
+        names.each{ name ->
+          def gr = new GraphErrors(name)
+          gr.setTitle(  String.format("%s sector %d layer %d", variable.replace('_', ' '), sector, layer))
+          gr.setTitleY( String.format("%s sector %d layer %d (ns)", variable.replace('_', ' '), sector, layer))
+          gr.setTitleX("run number")
+          data.sort{it.key}.each{run,it->
+            out.mkdir('/'+it.run)
+            out.cd('/'+it.run)
+            if (it.containsKey(name)){
+              out.addDataSet(it[name])
+              // out.addDataSet(it['fit_'+name])
+              if (it.containsKey(variable + '_' + name)) gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
+            }
+            else if (variable=="mean_tot_range1") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
+          }
+          out.cd('/timelines')
+          out.addDataSet(gr)
+        }
+        out.writeFile(String.format('alert_atof_tdc_minus_start_time_vs_tot_%s_sector%d_layer%d.hipo', variable, sector, layer))
       }
     }
   }
