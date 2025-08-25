@@ -88,6 +88,14 @@ class HistoUtil {
       if (is_even) mid_count += 1 //NOTE: If you have an even length list there is no middle element and you will need to average the middle+1 and middle-1 elements.
       for (int i=0; i<cum_counts.size(); i++) {
         if (cum_counts[i]+1==mid_count && is_even) {
+          System.out.println("DEBUG: i=$i")
+          System.out.println("DEBUG: i+1=${i+1}")
+          System.out.println("DEBUG: cum_counts[i]=${cum_counts[i]}")
+          System.out.println("DEBUG: bins.size()=${bins.size()}")
+          System.out.println("DEBUG: bins[i]=${bins[i]}")
+          System.out.println("DEBUG: bins[i+1]=${bins[i+1]}")
+          System.out.println("DEBUG: bins[i+1]/2=${bins[i+1]/2}")
+          System.out.println("DEBUG: mid_count=$mid_count")
           return [(bins[i]+bins[i+1])/2, i+1, mid_count]
         }
         if (cum_counts[i]>mid_count) { 
