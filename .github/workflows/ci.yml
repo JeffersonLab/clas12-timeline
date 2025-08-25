@@ -28,7 +28,7 @@ jobs:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
       options: --user root
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: build
         run: mvn install
       - run: bin/qtl --version
@@ -91,7 +91,7 @@ jobs:
       matrix:
         type: [ detectors, physics ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/cache/restore@v4
         with:
           key: validation_files_${{ matrix.type }}
@@ -137,7 +137,7 @@ jobs:
       matrix:
         type: [ detectors, physics ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/cache/restore@v4
         with:
           key: validation_files_${{ matrix.type }}
@@ -174,7 +174,7 @@ jobs:
           - { type: detectors, qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya' }
           - { type: physics,   qtl_cmd: 'bin/qtl physics',  args: '' }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: download outfiles
         uses: actions/download-artifact@v5
         with:
