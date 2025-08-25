@@ -1,6 +1,6 @@
 package org.jlab.clas.timeline.histograms;
 
-import org.jlab.clas.timeline.util.RunDependentCut
+import org.jlab.clas.timeline.util.RunDependentCut;
 
 import java.io.*;
 import java.util.*;
@@ -32,7 +32,7 @@ public class run_histograms {
     System.out.println("will process run number "+runNum+" from list "+filelist+", beam energy setting "+EB);
 
     // get the dataset which contains this run number
-    var dataset = RunDependentCut.findDataset(runNum)
+    var dataset = RunDependentCut.findDataset(runNum);
 
     //// instantiate histogramming classes
     GeneralMon ana_mon      = new GeneralMon(runNum,outputDir,EB,useTB);
