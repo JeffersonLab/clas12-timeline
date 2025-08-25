@@ -5,25 +5,16 @@ import org.jlab.groot.data.TDirectory
 
 // define timeline engines
 def engines = [
-  out_ALERT: [new alert_atof_tdc_sector_0_4(),
-   new alert_atof_tdc_sector_5_9(),
-   new alert_atof_tdc_sector_10_14(),
-   new alert_atof_tdc_minus_start_time_sector_0_4(),
-   new alert_atof_tdc_minus_start_time_sector_5_9(),
-   new alert_atof_tdc_minus_start_time_sector_10_14(),
-   new alert_atof_tot_sector_0_4(),
-   new alert_atof_tot_sector_5_9(),
-   new alert_atof_tot_sector_10_14(),
-   new alert_start_time(),
-   new alert_ahdc_adc_layer_number1(),
-   new alert_ahdc_adc_layer_number2(),
-   new alert_ahdc_adc_layer_number3(),
-   new alert_ahdc_adc_layer_number4(),
-   new alert_ahdc_adc_layer_number5(),
-   new alert_ahdc_adc_layer_number6(),
-   new alert_ahdc_adc_layer_number7(),
-   new alert_ahdc_adc_layer_number8()
-   ],
+  out_ALERT: [
+    *(1..8).collect {ahdc_layer_number -> new alert_ahdc_adc (ahdc_layer_number) },
+    new alert_ahdc_residual(),
+    *(1..8).collect {ahdc_layer_number -> new alert_ahdc_time (ahdc_layer_number) },
+    // *(0..14).collect {atof_sector -> new alert_atof_tdc_minus_start_time_vs_tot(atof_sector)}, //  Leave these commented for now. Current clas12mon doesn't support 2d histogram timeline.
+    *(0..14).collect {atof_sector -> new alert_atof_tdc_minus_start_time(atof_sector)},
+    *(0..14).collect {atof_sector -> new alert_atof_tdc(atof_sector)},
+    *(0..14).collect {atof_sector -> new alert_atof_tot(atof_sector)},
+    new alert_start_time(),
+  ],
   out_BAND: [
     new band_adccor(),
     new band_lasertime(),
