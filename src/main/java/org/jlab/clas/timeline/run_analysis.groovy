@@ -215,7 +215,8 @@ fnames.sort().each{ fname ->
       if( timelineArg ==~ /^bmt.*/ ||
           timelineArg ==~ /^bst.*/ ||
           timelineArg ==~ /^cen.*/ ||
-          timelineArg ==~ /^cvt.*/ ) { allow_run = false }
+          timelineArg ==~ /^cvt.*/ ||
+          timelineArg == 'ftof_ctof_vtdiff' ) { allow_run = false }
     }
     else { // not RG-L
       if(timelineArg ==~ /^alert.*/) { allow_run = false }
