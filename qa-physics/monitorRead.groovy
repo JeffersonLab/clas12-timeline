@@ -527,8 +527,9 @@ defineTimeBins = { // in its own closure, so giant data structures are garbage c
   tag1eventNumList = tag1events.sort(false){it[0]}.collect{it[0]}
   // check that we would get the same result, if we instead sorted by timestamp
   if(FCmode!=3 && tag1eventNumList != tag1events.sort(false){it[1]}.collect{it[0]}) {
-    System.err.println "ERROR: sorting tag1 events by event number is DIFFERENT than sorting by timestamp"
-    System.exit(100)
+    System.err.println "WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING"
+    System.err.println "WARNING: sorting tag1 events by event number is DIFFERENT than sorting by timestamp"
+    System.err.println "WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING"
   }
 
   // define the time bin boundaries: first, some sorting and transformations
