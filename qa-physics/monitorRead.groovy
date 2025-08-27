@@ -13,7 +13,7 @@ import org.jlab.clas.physics.LorentzVector
 import org.jlab.detector.base.DetectorType
 import java.lang.Math.*
 import org.jlab.clas.timeline.util.Tools
-import org.jlab.clas.timeline.util.QaBinSequence;
+import org.jlab.detector.QaBinSequence;
 import java.nio.file.Paths
 import groovy.json.JsonSlurper
 Tools T = new Tools()
