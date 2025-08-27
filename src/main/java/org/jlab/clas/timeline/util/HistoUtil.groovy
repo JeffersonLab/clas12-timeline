@@ -86,7 +86,7 @@ class HistoUtil {
       int mid_count = _sum.intdiv(2)
       boolean is_even = (_sum%2==0)
       if (is_even) mid_count += 1 //NOTE: If you have an even length list there is no middle element and you will need to average the middle+1 and middle-1 elements.
-      for (int i=0; i<cum_counts.size(); i++) {
+      for (int i=0; i<cum_counts.size()-1; i++) {
         if (cum_counts[i]+1==mid_count && is_even) {
           return [(bins[i]+bins[i+1])/2, i+1, mid_count]
         }
@@ -94,7 +94,7 @@ class HistoUtil {
           return [bins[i], i, mid_count]
         }
       }
-      return [bins[bins.size()-1], bins.size()-1, mid_count] //NOTE: SHOULD NEVER REACH THIS POINT
+      return [bins[bins.size()-1], bins.size()-1, mid_count] //NOTE: SHOULD ONLY REACH THIS POINT IF THE MEDIAN IS IN THE FINAL BIN.
     }
 
     def mq_list = listMedian(sum,bins_list,cum_counts_list)
