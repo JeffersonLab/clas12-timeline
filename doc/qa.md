@@ -93,7 +93,8 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 <details>
 <summary>- [ ] make sure the beam energy from step 1 was correct</summary>
 
-- the beam energy that was used is printed when you run `qtl histogram`; it comes from RCDB
+- _e.g._, run `grep -wh beamEnergy /farm_out/$LOGNAME/clas12-timeline-*.out | sort -u`
+- the beam energy that was used was also printed when you ran `qtl histogram`; it comes from RCDB
 - we have had cases in the past where the beam energy from RCDB was incorrect
 - either have RCDB corrected (preferred), or correct the beam energy yourself (not preferred)
 </details>
