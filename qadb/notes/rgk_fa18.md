@@ -29,6 +29,13 @@ qtl histogram -d rgk_fa18_7.5GeV --flatdir --focus-physics /cache/clas12/rg-k/pr
 
 ## Make timelines
 
+> [!IMPORTANT]
+> Pass 2 run 5863 was mistakenly cooked into the 6.5 GeV, but it has beam energy 7.5 GeV. To make sure its QA
+> is performed in the correct epoch, move its step-1 output files to the correct output dataset directory:
+> ```bash
+> mv -v outfiles/rgk_fa18_6.5GeV/timeline_physics/5863 outfiles/rgk_fa18_7.5GeV/timeline_physics/
+> ```
+
 Make the timelines, separately for each of the 2 datasets:
 ```bash
 bin/qtl physics -d rgk_fa18_6.5GeV -p rgk/pass2/qa/fa18_6.5GeV
