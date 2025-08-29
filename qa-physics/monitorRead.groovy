@@ -13,20 +13,20 @@ import org.jlab.clas.physics.LorentzVector
 import org.jlab.detector.base.DetectorType
 import java.lang.Math.*
 import org.jlab.clas.timeline.util.Tools
-import org.jlab.detector.QaBinSequence;
+import org.jlab.detector.qadb.QadbBin;
+import org.jlab.detector.qadb.QadbBinSequence;
 import java.nio.file.Paths
 import groovy.json.JsonSlurper
 Tools T = new Tools()
 
 // CONSTANTS
-def MIN_NUM_SCALERS = 2000   // at least this many scaler readouts per time bin // 2000 is roughly a DST 5-file
+int MAX_NUM_SCALERS = 2000   // at most this many scaler readouts per QA bin // 2000 is roughly a DST 5-file
 def NBINS           = 50     // number of bins in some histograms
 def SECTORS         = 0..<6  // sector range
 def ECAL_ID         = DetectorType.ECAL.getDetectorId() // ECAL detector ID
 // debugging settings
 def VERBOSE = false  // enable extra log messages, for debugging
 def LIMITER = 0      // if nonzero, only analyze this many DST files (for quick testing and debugging)
-def AUXFILE = false  // enable auxfile production, an event-by-event table (a large text file)
 
 // function to print a debugging message
 def printDebug = { msg -> if(VERBOSE) println "[DEBUG]: $msg" }
@@ -115,67 +115,53 @@ else if(runnum>=18305 && runnum<=19131) RG="RGD" // fall 23
 else System.err.println "WARNING: unknown run group; using default run-group-dependent settings (see monitorRead.groovy)"
 println "rungroup = $RG"
 
-/* gated FC charge determination: `FCmode`
- * - 0: DAQ-gated FC charge is incorrect
- *   - recharge option was likely OFF during cook, and should be turned on
- *   - re-calculates DAQ-gated FC charge as: `ungated FC charge * average livetime`
- *   - typically applies to data cooked with version 6.5.3 or below
- *   - typically used as a fallback if there are "spikes" in gated charge when `FCmode==1`
- * - 1: DAQ-gated FC charge can be trusted
- *   - recharge option was either ON or did not need to be ON
- *   - calculate DAQ-gated FC charge directly from `RUN::scaler:fcupgated`
- *   - if you find `fcupgated > fcup(un-gated)`, then most likely the recharge option was OFF
- *     but should have been ON, and `FCmode=0` should be used instead
- * - 2: special case
- *   - calculate DAQ-gated FC charge from `REC::Event:beamCharge`
- *   - useful if `RUN::scaler` is unavailable
- * - 3: DAQ-gated FC charge and ungated FC charge are both incorrect
- *   - Read DAQ-gated charge from a JSON file in `clas12-timeline/data/fccharge/<RG>.json`
- *   - useful if `RUN::scaler` is unavailable
- */
-def FCmode = 1 // default assumes DAQ-gated FC charge can be trusted
+// gated FC charge determination: see `QadbBin` documentation
+enum FCmodeEnum {
+  NONE,             // no correction
+  CUSTOM,           // read custom numbers from a JSON file
+  BY_FLIP,          // see `QadbBin.ChargeCorrectionMethod`
+  BY_MEAN_LIVETIME, // see `QadbBin.ChargeCorrectionMethod`
+}
+
+FCmodeEnum FCmode = FCmodeEnum.NONE // default, no correction
+
+if(RG=="RGD") {
+  FCmode = FCmodeEnum.CUSTOM
+}
 if(RG=="RGM") {
-  FCmode = 1
+  FCmode = FCmodeEnum.NONE
   if(runnum>=15015 && runnum<=15199) {
-    FCmode = 2 // no scalars read out in this range probably dosen't work anyway
+    throw new RuntimeException("STOP, need FC correction mode using 'REC::Event:beamcharge' (see code comments)");
+    // FIXME: use `REC::Event:beamCharge`, which we have not yet implemented into `QadbBin`; may not even work....
+    // we used this in Pass-1 RG-M, but I don't know when/if they will cook Pass 2
+    // this is needed when `RUN::scaler` is unavailable
   }
 }
-/* PASS 1 FCmode settings:
+
+/* PASS 1 FCmode settings, for data which have a better PASS 2
 if(RG=="RGA") {
-  FCmode=1;
-  if(runnum==6724) FCmode=0; // fcupgated charge spike in file 230
+  FCmode = FCmodeEnum.NONE
+  if(runnum==6724) FCmode = FCmodeEnum.BY_MEAN_LIVETIME; // fcupgated charge spike in file 230
 }
 else if(RG=="RGB") {
-  FCmode = 1
-  if( runnum in [6263, 6350, 6599, 6601, 11119] ) FCmode=0 // fcupgated charge spikes
+  FCmode = FCmodeEnum.NONE
+  if( runnum in [6263, 6350, 6599, 6601, 11119] ) FCmode = FCmodeEnum.BY_MEAN_LIVETIME // fcupgated charge spikes
 }
-else if(RG=="RGC") FCmode = 1
-else if(RG=="RGK") FCmode = 0
-else if(RG=="RGF") FCmode = 0
-else if(RG=="RGM") {
-  FCmode = 1
-  if(runnum>=15015 && runnum<=15199) {
-    FCmode = 2 // no scalars read out in this range probably dosen't work anyway
-  }
-}
+else if(RG=="RGK") FCmode = FCmodeEnum.BY_MEAN_LIVETIME
+else if(RG=="RGF") FCmode = FCmodeEnum.BY_MEAN_LIVETIME
 */
-if(RG=="RGD") {
-  if(runnum>=18305 && runnum<=19131) {
-    FCmode = 3
-  }
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-// Set JSON variables for `FCmode==3`
+// Set JSON variables for `FCmode==CUSTOM`
 def jsonfilepath   = ""
 def runnum_colname = ""
 def fcchargeSlurper
 def fcchargeTree
-if (FCmode==3) {
+if (FCmode==FCmodeEnum.CUSTOM) {
 
   // Check if JSON file exists
   def TIMELINESRC = System.getenv("TIMELINESRC")
@@ -216,7 +202,7 @@ def setDataFromJSON = { _key ->
 // Set data from JSON and define a function to get key values for a given run number
 def dataFromJSON = [:]
 def conversion_factors = [:]
-if (FCmode==3) {
+if (FCmode==FCmodeEnum.CUSTOM) {
   dataFromJSON["fc"] = setDataFromJSON("charge_ave")
   conversion_factors["fc"] = 1e6 //NOTE: IMPORTANT: RGD JSON data is listed in mC but this script expects charge values in nC!
 }
@@ -230,33 +216,13 @@ def outHipo = new TDirectory()
 outHipo.mkdir("/$runnum")
 outHipo.cd("/$runnum")
 
-// prepare time-binned output table for electron count and FC charge
+// prepare QA-binned output table for electron count and FC charge
 def datfileName   = "$outDir/data_table_${runnum}.dat"
 def datfile       = new File(datfileName)
 def datfileWriter = datfile.newWriter(false)
-// prepare auxiliary, event-by-event output table (for debugging)
-def auxfileName
-def auxfile
-def auxfileWriter
-if(AUXFILE) {
-  auxfileName   = "$outDir/aux_table_${runnum}.dat"
-  auxfile       = new File(auxfileName)
-  auxfileWriter = auxfile.newWriter(false)
-  auxfileWriter << [
-    "runnum/I",
-    "binnum/I",
-    "on_bin_boundary/I", // actually a boolean
-    "has_run_scaler_bank/I", // actually a boolean
-    "evnum/L",
-    "timestamp/L",
-    "fc/D",
-    "ufc/D",
-  ].join(':') << '\n'
-}
 
 // define shared variables
 def hipoEvent
-def timeBins = [:] // RM THIS
 def pidList = []
 def particleBank
 def FTparticleBank
@@ -283,6 +249,62 @@ def vecEle = new LorentzVector()
 def vecH = new LorentzVector()
 def vecQ = new LorentzVector()
 def vecW = new LorentzVector()
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// DEFINE QA BINS
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// a class to hold all the things we want for each QADB bin
+class QaBinPayload {
+  public def nElec    = (0..<6).collect{0};
+  public def nElecFT  = 0;
+  public def histTree = [:];
+  public String toString() {
+    return """PAYLOAD
+    nElec = ${nElec}
+    nElecFT = ${nElecFT}"""
+  }
+}
+
+// set QADB bin width: the number of scalers in each bin
+def qaBinWidth = MAX_NUM_SCALERS
+if(FCmode == FCmodeEnum.CUSTOM) {
+  // for CUSTOM charge-correction, we assume we only have the charge for a FULL
+  // run, so, make the main bin as wide as possible, so we get 3 bins: one
+  // before the first scaler, one after the last scaler, and one for everything between
+  qaBinWidth = Integer.MAX_VALUE
+}
+
+// define the QADB bin sequence
+QadbBinSequence<QaBinPayload> qaBins = new QadbBinSequence<>(inHipoList, qaBinWidth, (binNum) -> new QaBinPayload());
+
+// correct the FC charge
+switch(FCmode) {
+  case FCmodeEnum.NONE -> {}
+  case FCmodeEnum.BY_FLIP          -> {qaBins.each{it.correctCharge(QadbBin.ChargeCorrectionMethod.BY_FLIP)}}
+  case FCmodeEnum.BY_MEAN_LIVETIME -> {qaBins.each{it.correctCharge(QadbBin.ChargeCorrectionMethod.BY_MEAN_LIVETIME)}}
+  case FCmodeEnum.CUSTOM -> {
+    if(qaBins.size() != 3) {
+      // FIXME: first and last bins get 'chargeUnknown', middle bin gets the real charge; this is just a kluge for RG-D...
+      // for now we throw an exception for other use attempts
+      throw new RuntimeException("we have not yet supported CUSTOM charge correction with number of QA bins != 3")
+    }
+    def chg = getDataFromJSON(runnum,"fc")
+    qaBins.getBin(0).correctCharge(0.0, 0.0);
+    qaBins.getBin(1).correctCharge(chg, chg); // set gated = ungated, for now...
+    qaBins.getBin(2).correctCharge(0.0, 0.0);
+  }
+}
+
+// print the QADB bins
+// qaBins.each { it.print(true, (data) -> data.toString()) }
+
+// initialize min and max overall event numbers and timestamps
+def overallMinEventNumber = "init"
+def overallMaxEventNumber = "init"
+def overallMinTimestamp   = "init"
+def overallMaxTimestamp   = "init"
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -423,11 +445,11 @@ def findParticles = { pid, binNum ->
         return
       }
       else if(disElectronInTrigger) {
-        timeBins[binNum].nElec[eleSec-1]++
+        qaBins.getBin(binNum).data.nElec[eleSec-1]++
         disEleFound = true
       }
       else if(disElectronInFT) {
-        timeBins[binNum].nElecFT++
+        qaBins.getBin(binNum).data.nElecFT++
         disEleFound = true
       }
 
@@ -472,157 +494,30 @@ def buildHist(histName, histTitle, propList, runn, nb, lb, ub, nb2=0, lb2=0, ub2
   else return new H2F(hn,ht,nb,lb,ub,nb2,lb2,ub2)
 }
 
-
-// subroutine to find the EARLIEST time bin for a given event number
-// - if the event number is on a time-bin boundary, the earlier time bin will be returned
-def findTimeBin = { evnum ->
-  def s = timeBins.find{ evnum >= it.value.eventNumMin && evnum <= it.value.eventNumMax }
-  if(s==null) {
-    System.err.println "ERROR: cannot find time bin for event number $evnum"
-    return -1
-  }
-  [ s.key, s.value ]
-}
-
-
-// subroutine to update a min and/or max value in a time bin (viz. FC charge start and stop)
-def setMinMaxInTimeBin = { binNum, key, val ->
-  valOld = timeBins[binNum][key]
-  timeBins[binNum][key] = [
-    valOld[0] == "init" ? val : [valOld[0], val].min(),
-    valOld[1] == "init" ? val : [valOld[1], val].max()
-  ]
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// DEFINE QA BINS
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-QaBinSequence qaBins = new QaBinSequence(inHipoList, MIN_NUM_SCALERS);
-qaBins.print();
-throw new RuntimeException("STOP");
-
-defineTimeBins = { // in its own closure, so giant data structures are garbage collected
-  // get list of tag1 event numbers
-  printDebug "Begin tag1 event loop"
-  def tag1events = []
-  inHipoList.each { inHipoFile ->
-    printDebug "Open HIPO file $inHipoFile"
-    def reader = new HipoDataSource()
-    reader.getReader().setTags(1) //NOTE: RUN::scaler bank is not used if `FCmode==3`, but still assume tag 1 events are present in file.
-    reader.open(inHipoFile)
-    while(reader.hasEvent()) {
-      hipoEvent = reader.getNextEvent()
-      // printDebug "tag1 event bank list: ${hipoEvent.getBankList()}"
-      if(((hipoEvent.hasBank("RUN::scaler") && hipoEvent.getBank("RUN::scaler").rows()>0) || FCmode==3) && //NOTE: Do not require tag 1 events to contain RUN::scaler for `FCmode==3`
-         hipoEvent.hasBank("RUN::config") && hipoEvent.getBank("RUN::config").rows()>0)
-      {
-        tag1events << [
-          BigInteger.valueOf(hipoEvent.getBank("RUN::config").getInt('event',0)),
-          BigInteger.valueOf(hipoEvent.getBank("RUN::config").getLong('timestamp',0))
-        ]
-      }
-    }
-    reader.close()
-  }
-  printDebug "Number of tag1 events: ${tag1events.size()}"
-
-  // sort the events by event number
-  tag1eventNumList = tag1events.sort(false){it[0]}.collect{it[0]}
-  // check that we would get the same result, if we instead sorted by timestamp
-  if(FCmode!=3 && tag1eventNumList != tag1events.sort(false){it[1]}.collect{it[0]}) {
-    System.err.println "WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING"
-    System.err.println "WARNING: sorting tag1 events by event number is DIFFERENT than sorting by timestamp"
-    System.err.println "WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING"
-  }
-
-  // define the time bin boundaries: first, some sorting and transformations
-  def timeBinBounds = tag1eventNumList
-    .collate(MIN_NUM_SCALERS)   // partition into subsets, each with cardinality MIN_NUM_SCALERS (the last subset may be smaller)
-    .collect{ it[0] }           // take the first event number of each subset
-    .plus(tag1eventNumList[-1]) // append the final tag1 event number...
-    .unique()                   // ...and make sure it's not just repeating the previous event number
-    .collect{ [it, it] }        // double each element (since upper bound of bin N = lower bound of bin N+1)...
-    .flatten()                  // ...and flatten it, since we are going to re-collate it below after adding the final bin boundaries
-  // set the first bin boundary to 0; we'll fix it later after the main event loop
-  timeBinBounds = [0] + timeBinBounds
-  // set the last bin boundary to a high number, because the true highest event
-  // number is not yet known; we'll fix it later after the main event loop
-  timeBinBounds = timeBinBounds + [10**(Math.log10(timeBinBounds[-1]).toInteger()+2)] // two orders of magnitude above largest known event number
-  // pair the elements to define the bin boundaries
-  timeBinBounds = timeBinBounds.collate(2)
-  // redefine time bins to merge all bins except the first and last if `FCmode==3`
-  if (FCmode==3 && timeBinBounds.size()>3) {
-    newTimeBinBounds = [timeBinBounds[0]]
-    newTimeBinBounds += [[timeBinBounds[0][1],timeBinBounds[-1][0]]]
-    newTimeBinBounds += [timeBinBounds[-1]]
-    timeBinBounds = newTimeBinBounds
-  }
-  // define the time bin objects, initializing additional fields
-  timeBinBounds.eachWithIndex{ bounds, binNum ->
-    timeBins[binNum] = [
-      eventNumMin:  bounds[0],           // event number range
-      eventNumMax:  bounds[-1],
-      timestampMin: "init",              // timestamp range
-      timestampMax: "init",
-      nElec:        SECTORS.collect{0},  // number of electrons for each FD sector
-      nElecFT:      0,                   // number of electrons for FT
-      fcRange:      ["init", "init"],    // gated FC charge at the bin boundaries
-      ufcRange:     ["init", "init"],    // ungated  ""             ""
-      fcMinMax:     ["init", "init"],    // gated FC charge min,max (to check if they are within the boundaries set in `fcRange`)
-      ufcMinMax:    ["init", "init"],    // ungated  ""             ""
-      LTlist:       [],
-      histTree:     [:],
-    ]
-  }
-}
-defineTimeBins()
-
-// debug `timeBins` logging function (call it where you need it)
-print_timeBinBounds = {
-  println "TIME BINS =============================="
-  println "@ #runnum/I:binnum/I:number_of_bins/I:evnum_min/L:evnum_max/L:timestamp_min/L:timestamp_max/L:num_events/L"
-  timeBins.each{ binNum, timeBin ->
-    def num_events = timeBin.eventNumMax - timeBin.eventNumMin
-    if(binNum==0) {
-      num_events++ // since first bin has no lower bound
-    }
-    println "@ ${runnum} ${binNum} ${timeBins.size()} ${timeBin.eventNumMin} ${timeBin.eventNumMax} ${timeBin.timestampMin} ${timeBin.timestampMax} ${num_events}"
-  }
-  println "END TIME BINS =========================="
-}
-// print_timeBinBounds()
-
-// initialize min and max overall event numbers and timestamps
-def overallMinEventNumber = timeBins[0].eventNumMax  // it will be smaller than first bin's max
-def overallMaxEventNumber = timeBins[timeBins.size()-1].eventNumMin // it will be larger than last bin's min
-def overallMinTimestamp   = "init"
-def overallMaxTimestamp   = "init"
-
-// initialize histograms for each time bin
-printDebug "Initialize histograms for each time bin"
-timeBins.each{ binNum, timeBin ->
+// initialize histograms for each QA bin
+printDebug "Initialize histograms for each QA bin"
+qaBins.each{ qaBin ->
+  def binNum = qaBin.getBinNum()
   def partList = [ 'pip', 'pim' ]
-  T.buildTree(timeBin.histTree, 'helic',     [['sinPhi'],partList,['hp','hm']],        { new H1F() })
-  T.buildTree(timeBin.histTree, 'helic',     [['dist']],                               { new H1F() })
-  T.buildTree(timeBin.histTree, 'helic',     [['scaler'],['chargeWeighted']],          { new H1F() })
-  T.buildTree(timeBin.histTree, 'DIS',       [['Q2','W','x','y']],                     { new H1F() })
-  T.buildTree(timeBin.histTree, "DIS",       [['Q2VsW']],                              { new H2F() })
-  T.buildTree(timeBin.histTree, "inclusive", [partList,['p','pT','z','theta','phiH']], { new H1F() })
-  // if(binNum==0) T.printTree(timeBin.histTree,{T.leaf.getClass()});
+  T.buildTree(qaBin.data.histTree, 'helic',     [['sinPhi'],partList,['hp','hm']],        { new H1F() })
+  T.buildTree(qaBin.data.histTree, 'helic',     [['dist']],                               { new H1F() })
+  T.buildTree(qaBin.data.histTree, 'helic',     [['scaler'],['chargeWeighted']],          { new H1F() })
+  T.buildTree(qaBin.data.histTree, 'DIS',       [['Q2','W','x','y']],                     { new H1F() })
+  T.buildTree(qaBin.data.histTree, "DIS",       [['Q2VsW']],                              { new H2F() })
+  T.buildTree(qaBin.data.histTree, "inclusive", [partList,['p','pT','z','theta','phiH']], { new H1F() })
+  // if(binNum==0) T.printTree(qaBin.data.histTree,{T.leaf.getClass()});
 
-  timeBin.histTree.helic.dist         = buildHist('helic_dist','helicity',[],runnum,3,-1,2)
-  timeBin.histTree.DIS.Q2             = buildHist('DIS_Q2','Q^2',[],runnum,2*NBINS,0,12)
-  timeBin.histTree.DIS.W              = buildHist('DIS_W','W',[],runnum,2*NBINS,0,6)
-  timeBin.histTree.DIS.x              = buildHist('DIS_x','x',[],runnum,2*NBINS,0,1)
-  timeBin.histTree.DIS.y              = buildHist('DIS_y','y',[],runnum,2*NBINS,0,1)
-  timeBin.histTree.DIS.Q2VsW          = buildHist('DIS_Q2VsW','Q^2 vs W',[],runnum,NBINS,0,6,NBINS,0,12)
-  T.exeLeaves( timeBin.histTree.helic.sinPhi, {
+  qaBin.data.histTree.helic.dist         = buildHist('helic_dist','helicity',[],runnum,3,-1,2)
+  qaBin.data.histTree.DIS.Q2             = buildHist('DIS_Q2','Q^2',[],runnum,2*NBINS,0,12)
+  qaBin.data.histTree.DIS.W              = buildHist('DIS_W','W',[],runnum,2*NBINS,0,6)
+  qaBin.data.histTree.DIS.x              = buildHist('DIS_x','x',[],runnum,2*NBINS,0,1)
+  qaBin.data.histTree.DIS.y              = buildHist('DIS_y','y',[],runnum,2*NBINS,0,1)
+  qaBin.data.histTree.DIS.Q2VsW          = buildHist('DIS_Q2VsW','Q^2 vs W',[],runnum,NBINS,0,6,NBINS,0,12)
+  T.exeLeaves( qaBin.data.histTree.helic.sinPhi, {
     T.leaf = buildHist('helic_sinPhi','sinPhiH',T.leafPath,runnum,NBINS,-1,1)
   })
-  timeBin.histTree.helic.scaler.chargeWeighted = buildHist('helic_scaler_chargeWeighted','FC-charge-weighted helicity',[],runnum,3,-1,2)
-  T.exeLeaves( timeBin.histTree.inclusive, {
+  qaBin.data.histTree.helic.scaler.chargeWeighted = buildHist('helic_scaler_chargeWeighted','FC-charge-weighted helicity',[],runnum,3,-1,2)
+  T.exeLeaves( qaBin.data.histTree.inclusive, {
     def lbound=0
     def ubound=0
     if(T.key=='p')          { lbound=0; ubound=10 }
@@ -633,19 +528,19 @@ timeBins.each{ binNum, timeBin ->
     T.leaf = buildHist('inclusive','',T.leafPath,runnum,NBINS,lbound,ubound)
   })
 
-  T.exeLeaves( timeBin.histTree, {
+  T.exeLeaves( qaBin.data.histTree, {
     def histN = T.leaf.getName() + "_${binNum}"
-    def histT = T.leaf.getTitle() + " :: timeBinNum=${binNum}"
+    def histT = T.leaf.getTitle() + " :: qaBinNum=${binNum}"
     T.leaf.setName(histN)
     T.leaf.setTitle(histT)
   })
 
   // print the histogram names and titles
-  // if(binNum==0) {
-    println "---\nhistogram names and titles:"
-    T.printTree(timeBin.histTree,{ T.leaf.getName() +" ::: "+ T.leaf.getTitle() })
-    println "---"
-  // }
+  // // if(binNum==0) {
+  //   println "---\nhistogram names and titles:"
+  //   T.printTree(qaBin.data.histTree,{ T.leaf.getName() +" ::: "+ T.leaf.getTitle() })
+  //   println "---"
+  // // }
 }
 
 
@@ -655,6 +550,7 @@ timeBins.each{ binNum, timeBin ->
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 def evCount = 0
+def evCountFull = 0
 def countEvent
 printDebug "Begin main event loop"
 inHipoList.each { inHipoFile ->
@@ -698,106 +594,34 @@ inHipoList.each { inHipoFile ->
     }
 
     // set overall min and max event numbers and timestamps
-    overallMinEventNumber = [ overallMinEventNumber, eventNum].min()
-    overallMaxEventNumber = [ overallMaxEventNumber, eventNum].max()
+    if(overallMinEventNumber == "init") overallMinEventNumber = eventNum
+    else overallMinEventNumber = [ overallMinEventNumber, eventNum ].min()
+    if(overallMaxEventNumber == "init") overallMaxEventNumber = eventNum
+    else overallMaxEventNumber = [ overallMaxEventNumber, eventNum ].max()
     if(overallMinTimestamp == "init") overallMinTimestamp = timestamp
     else overallMinTimestamp = [ overallMinTimestamp, timestamp ].min()
     if(overallMaxTimestamp == "init") overallMaxTimestamp = timestamp
     else overallMaxTimestamp = [ overallMaxTimestamp, timestamp ].max()
 
-    // find the time bin that contains this event
-    def (thisTimeBinNum, thisTimeBin) = findTimeBin(eventNum)
-    if(thisTimeBinNum == -1) continue
+    // find the bin that contains this event
+    def thisQaBinOpt = qaBins.find(timestamp.longValue())
+    if(!thisQaBinOpt.isPresent()) continue; // skip if not found
+    def thisQaBin    = thisQaBinOpt.get()
+    def thisQaBinNum = thisQaBin.getBinNum()
 
     // get list of PIDs, with list index corresponding to bank row
     pidList = (0..<particleBank.rows()).collect{ particleBank.getInt('pid',it) }
     //println "pidList = $pidList"
 
-
-    // get the FC charge and livetime, depending on `FCmode`
-    // - also sets the min and max FC charges, for this time bin
-    def lt
-    def fc  = "init"
-    def ufc = "init"
-    if(scalerBank.rows()>0) {
-      // ungated charge
-      ufc = scalerBank.getFloat("fcup",0)
-      setMinMaxInTimeBin(thisTimeBinNum, "ufcMinMax", ufc)
-      // livetime
-      lt = scalerBank.getFloat("livetime",0)
-      if(lt>=0) { thisTimeBin.LTlist << lt }
-      // gated charge (if trustworthy)
-      if(FCmode==1) {
-        fc = scalerBank.getFloat("fcupgated",0)
-        setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
-      }
-    }
-    if(FCmode==2 && eventBank.rows()>0) {
-      // gated charge only
-      fc = eventBank.getFloat("beamCharge",0)
-      setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
-    }
-    if(FCmode==3) {
-      // gated charge only from file
-      fc = (thisTimeBinNum>0 && thisTimeBinNum<timeBins.size()-1) ? getDataFromJSON(runnum,"fc") : 0.0 //NOTE: Only set FC charge for middle bin(s) since first and last bins should be empty and have same upper and lower limits in `FCmode==3`.
-      setMinMaxInTimeBin(thisTimeBinNum, "fcMinMax", fc)
-      // Set ungated charge = gated charge
-      ufc = fc
-      setMinMaxInTimeBin(thisTimeBinNum, "ufcMinMax", ufc)
-    }
-
-    // if this event is on a bin boundary, and it has `scalerBank`, update `fcRange` and `ufcRange`
-    // FIXME: this will only work for FCmode==1; need to figure out how to handle the others
-    def onBinBoundary = false
-    if(eventNum == thisTimeBin.eventNumMax) {
-      onBinBoundary = true
-      if(scalerBank.rows()>0 || FCmode==3) { // must have scalerBank, so `fc` and `ufc` are set (we'll check if any `(u)fcRange` values are still "init" later) UNLESS `FCmode==3` in which case thse values are set from a JSON file so the scaler bank is not required.
-        // events on the boundary are assigned to earlier bin; this FC charge is that bin's max charge
-        thisTimeBin.fcRange[1]   = fc
-        thisTimeBin.ufcRange[1]  = ufc
-        if (thisTimeBinNum==1 && FCmode==3) { //NOTE: Set middle bin (of 3) minimums for `FCmode==3`
-          thisTimeBin.fcRange[0]   = 0.0
-          thisTimeBin.ufcRange[0]  = 0.0
-          thisTimeBin.timestampMin = 0
-          timeBins[0].timestampMax = 0
-        }
-        thisTimeBin.timestampMax = timestamp
-        // this FC charge is also the next bin's min charge
-        def nextTimeBin = timeBins[thisTimeBinNum+1]
-        if(nextTimeBin==null) { System.err.println "ERROR: found a time bin that has no subsequent bin, and is not the latest bin" }
-        nextTimeBin.fcRange[0]   = fc
-        nextTimeBin.ufcRange[0]  = ufc
-        nextTimeBin.timestampMin = timestamp
-        printDebug "event number ${eventNum} on upper boundary of bin ${thisTimeBinNum}, and assigned to that bin:"
-        printDebug "  - gated charge:   ${fc}"
-        printDebug "  - ungated charge: ${ufc}"
-        printDebug "  - banks: ${hipoEvent.getBankList()}"
-      }
-    }
-    if(eventNum == thisTimeBin.eventNumMin) {
-      onBinBoundary = true
-      System.err.println "ERROR: event number ${eventNum} on lower boundary of bin ${thisTimeBinNum}, and assigned to that bin; this shouldn't happen in the current binning scheme."
-    }
-
-    // dump event-level info to a text file
-    if(AUXFILE) {
-      auxfileWriter << [
-        runnum,
-        thisTimeBinNum,
-        onBinBoundary ? 1 : 0,
-        scalerBank.rows() > 0 ? 1 : 0,
-        eventNum,
-        timestamp,
-        fc,
-        ufc,
-      ].join(' ') << '\n'
-    }
+    // get the FC charge
+    def fc = thisQaBin.getBeamChargeGated()
+    def ufc = thisQaBin.getBeamCharge()
 
     // get helicity and fill helicity distribution
     def helicity = 0 // if undefined, default to 0
     if(hipoEvent.hasBank("REC::Event") && eventBank.rows()>0) {
       helicity = eventBank.getByte('helicity',0)
-      thisTimeBin.histTree.helic.dist.fill(helicity)
+      thisQaBin.data.histTree.helic.dist.fill(helicity)
     }
     def helStr
     def helDefined
@@ -807,18 +631,18 @@ inHipoList.each { inHipoFile ->
       default: helDefined = false; helicity = 0; break
     }
     // get scaler helicity from `HEL::scaler`, and fill its charge-weighted distribution
-    // NOTE: do not do this if FCmode==3 (since FC charge is wrong)
-    if(hipoEvent.hasBank("HEL::scaler") && FCmode!=3) {
+    // NOTE: do not do this if FCmode==CUSTOM (since FC charge is wrong)
+    if(hipoEvent.hasBank("HEL::scaler") && FCmode!=FCmodeEnum.CUSTOM) {
       helScalerBank.rows().times{ row -> // HEL::scaler readouts "pile up", so there are multiple bank rows in an event
         def sc_helicity = helScalerBank.getByte("helicity", row)
         def sc_fc       = helScalerBank.getFloat("fcupgated", row) // helicity-latched FC charge
-        thisTimeBin.histTree.helic.scaler.chargeWeighted.fill(sc_helicity, sc_fc)
+        thisQaBin.data.histTree.helic.scaler.chargeWeighted.fill(sc_helicity, sc_fc)
       }
     }
 
     // get electron list, and increment the number of trigger electrons
     // - also finds the DIS electron, and calculates x,Q2,W,y,nu
-    findParticles(11, thisTimeBinNum)
+    findParticles(11, thisQaBinNum)
 
     // CUT: if a DIS electron was found by `findParticles`
     if(disEleFound) {
@@ -829,8 +653,8 @@ inHipoList.each { inHipoFile ->
         // get pions, calculate their kinematics and fill histograms
         countEvent = false
         [
-          [ findParticles(211, thisTimeBinNum),  'pip' ],
-          [ findParticles(-211, thisTimeBinNum), 'pim' ],
+          [ findParticles(211, thisQaBinNum),  'pip' ],
+          [ findParticles(-211, thisQaBinNum), 'pim' ],
         ].each{ pionList, pionName ->
 
           pionList.each { part ->
@@ -853,13 +677,13 @@ inHipoList.each { inHipoFile ->
 
                 // fill histograms
                 if(helDefined) {
-                  thisTimeBin["histTree"]['helic']['sinPhi'][pionName][helStr].fill(Math.sin(phiH))
+                  thisQaBin.data.histTree['helic']['sinPhi'][pionName][helStr].fill(Math.sin(phiH))
                 }
-                thisTimeBin["histTree"]['inclusive'][pionName]['p'].fill(p)
-                thisTimeBin["histTree"]['inclusive'][pionName]['pT'].fill(pT)
-                thisTimeBin["histTree"]['inclusive'][pionName]['z'].fill(z)
-                thisTimeBin["histTree"]['inclusive'][pionName]['theta'].fill(theta)
-                thisTimeBin["histTree"]['inclusive'][pionName]['phiH'].fill(phiH)
+                thisQaBin.data.histTree['inclusive'][pionName]['p'].fill(p)
+                thisQaBin.data.histTree['inclusive'][pionName]['pT'].fill(pT)
+                thisQaBin.data.histTree['inclusive'][pionName]['z'].fill(z)
+                thisQaBin.data.histTree['inclusive'][pionName]['theta'].fill(theta)
+                thisQaBin.data.histTree['inclusive'][pionName]['phiH'].fill(phiH)
 
                 // tell event counter that this event has at least one particle added to histos
                 countEvent = true
@@ -871,11 +695,11 @@ inHipoList.each { inHipoFile ->
         if(countEvent) {
 
           // fill event-level histograms
-          thisTimeBin.histTree.DIS.Q2.fill(Q2)
-          thisTimeBin.histTree.DIS.W.fill(W)
-          thisTimeBin.histTree.DIS.x.fill(x)
-          thisTimeBin.histTree.DIS.y.fill(y)
-          thisTimeBin.histTree.DIS.Q2VsW.fill(W,Q2)
+          thisQaBin.data.histTree.DIS.Q2.fill(Q2)
+          thisQaBin.data.histTree.DIS.W.fill(W)
+          thisQaBin.data.histTree.DIS.x.fill(x)
+          thisQaBin.data.histTree.DIS.y.fill(y)
+          thisQaBin.data.histTree.DIS.Q2VsW.fill(W,Q2)
 
           // increment event counter
           evCount++
@@ -885,88 +709,58 @@ inHipoList.each { inHipoFile ->
       }
     }
 
+    evCountFull++
+    if(evCountFull % 100000 == 0) System.out.println "analyzed $evCountFull events"
+
   } // end event loop
   reader.close()
 
 } // end loop over hipo files
 
 
-// correct the first and last time bins' event number ranges, and their FC charge ranges
-def firstTimeBin = timeBins[0]
-def lastTimeBin  = timeBins[timeBins.size()-1]
-firstTimeBin.eventNumMin  = overallMinEventNumber
-firstTimeBin.timestampMin = overallMinTimestamp
-firstTimeBin.fcRange      = [ 0, 0 ] // unknown accumulated charge (NOTE: first scaler readout may have NEGATIVE FC charge); just set it to zero
-firstTimeBin.fcMinMax     = [ 0, 0 ]
-firstTimeBin.ufcRange     = [ 0, 0 ]
-firstTimeBin.ufcMinMax    = [ 0, 0 ]
-lastTimeBin.eventNumMax   = overallMaxEventNumber
-lastTimeBin.timestampMax  = overallMaxTimestamp
-lastTimeBin.fcRange       = [ 0, 0 ] // unknown absolute maximum of FC charge; just set it to zero
-lastTimeBin.fcMinMax      = [ 0, 0 ]
-lastTimeBin.ufcRange      = [ 0, 0 ]
-lastTimeBin.ufcMinMax     = [ 0, 0 ]
+// correct the first and last QA bins' event number ranges
+qaBins.correctLowerBound(overallMinEventNumber, overallMinTimestamp.longValue());
+qaBins.correctUpperBound(overallMaxEventNumber, overallMaxTimestamp.longValue());
 
-// write final time bin's histograms
-timeBins.each{ itBinNum, itBin ->
+// write final QA bin's histograms
+qaBins.each{ itBin ->
+  def itBinNum = itBin.getBinNum()
 
   // loop through histTree, adding histos to the hipo file;
-  T.exeLeaves( itBin.histTree, {
+  T.exeLeaves( itBin.data.histTree, {
     outHipo.addDataSet(T.leaf)
   })
-  //println "write histograms:"; T.printTree(itBin.histTree,{T.leaf.getName()})
+  //println "write histograms:"; T.printTree(itBin.data.histTree,{T.leaf.getName()})
 
-
-  // get accumulated ungated FC charge
+  // get FC charge
+  // NOTE: prior to the following PRs, we saved both the START and STOP values of the
+  //       FC charge; however, we don't really need both of them since everything downstream
+  //       only uses the difference STOP-START (except for a systematic uncertainty estimate
+  //       for pass-1 RG-A, regarding gaps and overlaps of charge between consecutive bins).
+  //       Nowadays we just save the accumulated charge only, setting STOP to be that, and START to 0
+  //       - https://github.com/JeffersonLab/coatjava/pull/770
+  //       - https://github.com/JeffersonLab/clas12-timeline/pull/367
   def ufcStart = 0
-  def ufcStop  = 0
-  if(itBinNum+1<timeBins.size()) { // unknown for last time bin, just let the charge be "zero"
-    if(!itBin.ufcRange.contains("init")) {
-      ufcStart = itBin.ufcRange[0]
-      ufcStop  = itBin.ufcRange[1]
-    } else {
-      System.err.println "ERROR: no ungated FC charge for run ${runnum} time bin ${itBinNum}"
-    }
-  }
-
-  // get accumulated gated FC charge
+  def ufcStop  = itBin.getBeamCharge()
   def fcStart = 0
-  def fcStop  = 0
-  def aveLivetime = itBin.LTlist.size()>0 ? itBin.LTlist.sum() / itBin.LTlist.size() : 0
-  if(itBinNum+1<timeBins.size()) { // unknown for last time bin, just let the charge be "zero"
-    if(FCmode==0) { // workaround method: gated charge = <livetime> * ungated charge
-      itBin.fcRange[0]  = itBin.ufcRange[0]  * aveLivetime
-      itBin.fcRange[1]  = itBin.ufcRange[1]  * aveLivetime
-      itBin.fcMinMax[0] = itBin.ufcMinMax[0] * aveLivetime
-      itBin.fcMinMax[1] = itBin.ufcMinMax[1] * aveLivetime
-    }
-    if(!itBin.fcRange.contains("init")) {
-      fcStart = itBin.fcRange[0]
-      fcStop  = itBin.fcRange[1]
-    } else {
-      System.err.println "ERROR: no gated FC charge for run ${runnum} time bin ${itBinNum}"
-    }
-    if(fcStart>fcStop || ufcStart>ufcStop) {
-      System.err.println "ERROR: faraday cup start > stop for run ${runnum} time bin ${itBinNum}"
-    }
-  }
+  def fcStop  = itBin.getBeamChargeGated()
 
   // write number of electrons and FC charge to datfile
   SECTORS.each{ sec ->
     datfileWriter << [ runnum, itBinNum ].join(' ') << ' '
-    datfileWriter << [ itBin.eventNumMin, itBin.eventNumMax ].join(' ') << ' '
-    datfileWriter << [ itBin.timestampMin, itBin.timestampMax ].join(' ') << ' '
-    datfileWriter << [ sec+1, itBin.nElec[sec], itBin.nElecFT ].join(' ') << ' '
-    datfileWriter << [ fcStart, fcStop, ufcStart, ufcStop, aveLivetime ].join(' ') << '\n'
+    datfileWriter << [ itBin.getEventNumMin(), itBin.getEventNumMax() ].join(' ') << ' '
+    datfileWriter << [ itBin.getTimestampMin(), itBin.getTimestampMax() ].join(' ') << ' '
+    datfileWriter << [ sec+1, itBin.data.nElec[sec], itBin.data.nElecFT ].join(' ') << ' '
+    datfileWriter << [ fcStart, fcStop, ufcStart, ufcStop, itBin.getMeanLivetime() ].join(' ') << '\n'
   }
-  printDebug " - charge for timeBin $itBinNum:"
-  printDebug "   - event number range: [ ${itBin.eventNumMin}, ${itBin.eventNumMax} ]"
+  printDebug " - charge for QA bin $itBinNum:"
+  printDebug "   - event number range: [ ${itBin.getEventNumMin()}, ${itBin.getEventNumMin()} ]"
   printDebug "   - gated-FC charge:    [ $fcStart, $fcStop ]"
   printDebug "   - ungated-FC charge:  [ $ufcStart, $ufcStop ]"
 
   // print some stats
   /*
-  def nElecTotal = itBin.nElec*.value.sum()
+  def nElecTotal = itBin.data.nElec*.value.sum()
   println "\nnumber of trigger electrons: $nElecTotal"
   println """number of electrons that satisified FD trigger cuts, but were not analyzed...
   ...because they had subdominant E: $caseCountNtrigGT1
@@ -977,11 +771,19 @@ timeBins.each{ itBinNum, itBin ->
 }
 
 
-// print the time bins
-print_timeBinBounds()
+// print the QA bins
+println "QA BINS =============================="
+println "@ #runnum/I:binnum/I:number_of_bins/I:evnum_min/L:evnum_max/L:timestamp_min/L:timestamp_max/L:num_events/L"
+qaBins.each{
+  def num_events = it.getEventNumMax() - it.getEventNumMin()
+  if(it.getBinNum() == 0) {
+    num_events++ // since first bin has no lower bound
+  }
+  println "@ ${runnum} ${it.getBinNum()} ${qaBins.size()} ${it.getEventNumMin()} ${it.getEventNumMax()} ${it.getTimestampMin()} ${it.getTimestampMax()} ${num_events}"
+}
+println "END QA BINS =========================="
 
-
-// cross check: is each time bin's min and max FC charge within the FC charge values at the bin boundaries?
+// cross check: is each QA bin's min and max FC charge within the FC charge values at the bin boundaries?
 /*
 prior to RGC, we had a 1 second clock such that the FC charge as a function of event number
 is a bit non-monotonic, looking like
@@ -1000,14 +802,19 @@ is a bit non-monotonic, looking like
 If the bin boundary is on one of these non-monotonic jumps, the min or max FC charge within a bin
 may be smaller or larger than the FC charge values at the bin boundaries
 */
-def nonMonotonicityGr = new GraphErrors("nonMonotonicity_${runnum}_0") // one graph for all time bins, so just set time bin number to `0`
-nonMonotonicityGr.setTitle("FC charge non-monotonicity vs. time bin")
-timeBins.each{ itBinNum, itBin ->
-  if(itBinNum+1 == timeBins.size()) return // can't cross check the last bin
-  def (fc_lb,   fc_ub)   = itBin.fcRange
-  def (fc_min,  fc_max)  = itBin.fcMinMax
-  def (ufc_lb,  ufc_ub)  = itBin.ufcRange
-  def (ufc_min, ufc_max) = itBin.ufcMinMax
+def nonMonotonicityGr = new GraphErrors("nonMonotonicity_${runnum}_0") // one graph for all QA bins, so just set QA bin number to `0`
+nonMonotonicityGr.setTitle("FC charge non-monotonicity vs. QA bin")
+qaBins.each{ itBin ->
+  def itBinNum = itBin.getBinNum()
+  if(itBinNum+1 == qaBins.size()) return // can't cross check the last bin
+  def fc_lb   = itBin.getChargeExtremum(QadbBin.ExtremumType.FIRST, QadbBin.ChargeType.GATED)
+  def fc_ub   = itBin.getChargeExtremum(QadbBin.ExtremumType.LAST,  QadbBin.ChargeType.GATED)
+  def fc_min  = itBin.getChargeExtremum(QadbBin.ExtremumType.MIN,   QadbBin.ChargeType.GATED)
+  def fc_max  = itBin.getChargeExtremum(QadbBin.ExtremumType.MAX,   QadbBin.ChargeType.GATED)
+  def ufc_lb  = itBin.getChargeExtremum(QadbBin.ExtremumType.FIRST, QadbBin.ChargeType.UNGATED)
+  def ufc_ub  = itBin.getChargeExtremum(QadbBin.ExtremumType.LAST,  QadbBin.ChargeType.UNGATED)
+  def ufc_min = itBin.getChargeExtremum(QadbBin.ExtremumType.MIN,   QadbBin.ChargeType.UNGATED)
+  def ufc_max = itBin.getChargeExtremum(QadbBin.ExtremumType.MAX,   QadbBin.ChargeType.UNGATED)
   printDebug "FC charge cross check for bin ${itBinNum}"
   printDebug "  gated:   (lb,ub)   = [${fc_lb}, ${fc_ub}]"
   printDebug "           (min,max) = [${fc_min}, ${fc_max}]"
@@ -1025,10 +832,6 @@ outHipo.addDataSet(nonMonotonicityGr)
 // close output text files
 datfileWriter.flush()
 datfileWriter.close()
-if(AUXFILE) {
-  auxfileWriter.flush()
-  auxfileWriter.close()
-}
 
 // write outHipo file
 outHipoN = "$outDir/monitor_${runnum}.hipo"
@@ -1038,6 +841,3 @@ outHipo.writeFile(outHipoN)
 println("Wrote the following files:")
 println(" - $outHipoN")
 println(" - $datfileName")
-if(AUXFILE) {
-  println(" - $auxfileName")
-}

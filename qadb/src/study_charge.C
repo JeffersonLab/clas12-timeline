@@ -2,7 +2,7 @@
 //   1. fcupgated
 //   2. <livetime>*fcup
 // input: tree.root, produced by draw_epochs.sh
-// see monitorRead.groovy, `FCmode` setting, to know which charge is used
+// see monitorRead.groovy, charge-correction setting, to know which charge is used
 
 void study_charge(TString infileN="tree.root") {
 
