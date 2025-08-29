@@ -446,6 +446,7 @@ def findParticles = { pid, binNum ->
       }
       else if(disElectronInTrigger) {
         qaBins.getBin(binNum).data.nElec[eleSec-1]++
+        System.out.println("DEBUG: bump sector $eleSec");
         disEleFound = true
       }
       else if(disElectronInFT) {
@@ -608,6 +609,7 @@ inHipoList.each { inHipoFile ->
     if(!thisQaBinOpt.isPresent()) continue; // skip if not found
     def thisQaBin    = thisQaBinOpt.get()
     def thisQaBinNum = thisQaBin.getBinNum()
+    System.out.println("DEBUG: $eventNum $thisQaBinNum")
 
     // get list of PIDs, with list index corresponding to bank row
     pidList = (0..<particleBank.rows()).collect{ particleBank.getInt('pid',it) }
