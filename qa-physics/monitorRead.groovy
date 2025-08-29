@@ -604,7 +604,7 @@ inHipoList.each { inHipoFile ->
     else overallMaxTimestamp = [ overallMaxTimestamp, timestamp ].max()
 
     // find the bin that contains this event
-    def thisQaBinOpt = qaBins.find(timestamp.longValue())
+    def thisQaBinOpt = qaBins.findBin(timestamp.longValue())
     if(!thisQaBinOpt.isPresent()) continue; // skip if not found
     def thisQaBin    = thisQaBinOpt.get()
     def thisQaBinNum = thisQaBin.getBinNum()
