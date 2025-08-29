@@ -69,11 +69,10 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 - make sure they are correct for these data
 - you may need to produce timelines first, and come back to this step after making changes, for example, if the Faraday Cup (FC) charge is incorrect
 - in particular:
-    - set `FCmode`, to specify how to calculate the FC charge
+    - set any correction methods needed to correctly estimate the FC charge
         - for example, this depends on whether the data needed to be cooked with the recharge option ON or OFF (see `README.json`, typically included with the cooked data)
-        - note that the `FCmode` is NOT determined from the recharge setting, but instead from which charge values in the data we can use
         - if you find that the DAQ-gated FC charge is larger than the ungated charge, you may have assumed here that the recharge option was ON, when actually it was OFF and needs to be ON
-        - additional `FCmode` settings are used for certain special cases; see the `monitorRead.groovy` script comments for more information
+        - additional correction methods are used for certain special cases; see the `monitorRead.groovy` script comments for more information
 </details>
 
 <details>
