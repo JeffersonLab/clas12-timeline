@@ -66,7 +66,7 @@ class RunDependentCut {
         return 'rgc_su22';
       if(runIsInRange(check_run, 18301, 19131, true))
         return 'rgd';
-      if(runIsAfter(check_run, 21317, true)) // RG-L FIXME: needs upper bound when RG-L completes <https://github.com/JeffersonLab/clas12-timeline/issues/325>
+      if(runIsInRange(check_run, 21317, 23057, true))
         return 'rgl';
       return 'unknown';
     }.toUnique();
