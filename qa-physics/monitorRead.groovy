@@ -128,6 +128,9 @@ FCmodeEnum FCmode = FCmodeEnum.NONE // default, no correction
 if(RG=="RGD") {
   FCmode = FCmodeEnum.CUSTOM
 }
+if(RG=="RGK") {
+  FCmode = FCmodeEnum.BY_MEAN_LIVETIME
+}
 if(RG=="RGM") {
   FCmode = FCmodeEnum.NONE
   if(runnum>=15015 && runnum<=15199) {
