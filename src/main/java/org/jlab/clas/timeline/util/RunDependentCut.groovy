@@ -66,7 +66,7 @@ class RunDependentCut {
         return 'rgc_su22';
       if(runIsInRange(check_run, 18301, 19131, true))
         return 'rgd';
-      if(runIsInRange(check_run, 21317, 23057, true))
+      if(runIsInRange(check_run, 21317, 23065, true))
         return 'rgl';
       return 'unknown';
     }.toUnique();
