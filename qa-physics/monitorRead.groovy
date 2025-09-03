@@ -139,6 +139,10 @@ if(RG=="RGM") {
     FCmode = 2 // no scalars read out in this range probably dosen't work anyway
   }
 }
+else if(RG=="RGK") {
+  FCmode = 0 // for Pass 2
+}
+
 /* PASS 1 FCmode settings:
 if(RG=="RGA") {
   FCmode=1;
