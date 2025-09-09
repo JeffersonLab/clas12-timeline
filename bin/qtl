@@ -17,6 +17,7 @@ usage() {
       analysis      Analyze the histograms and generate timelines (Step 2)
       physics       Generate and analyze physics QA timelines (Step 2)
       error         Scan for errors in Slurm logs (for Step 1)
+      reheat        Reproduce a data file, e.g., to rerun postprocessing
 
   OPTIONS: Each command has its own set of options; run a command with no
            additional options to see usage for that command.
@@ -39,6 +40,7 @@ case $cmd in
   an*) exec $TIMELINESRC/bin/qtl-analysis "$@" ;;
   ph*) exec $TIMELINESRC/bin/qtl-physics "$@" ;;
   er*) exec $TIMELINESRC/bin/qtl-error "$@" ;;
+  re*) exec $TIMELINESRC/bin/qtl-reheat "$@" ;;
   -v|--version)
     echo $(mvn -q help:evaluate -Dexpression=project.version -DforceStdout -f $TIMELINESRC/pom.xml || echo "UNKNOWN")
     exit 0
