@@ -21,7 +21,7 @@ dataset=train
 sep="================================================================"
 usage() {
   echo """
-  Reproduce a data HIPO file
+  Reproduce cooked data
   NOTE: chefs should not typically need to run this
 
   $sep
