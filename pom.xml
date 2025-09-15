@@ -76,7 +76,7 @@
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-compiler</artifactId>
-            <version>3.9.0</version>
+            <version>3.9.1</version>
           </dependency>
           <!-- https://groovy.jfrog.io/ui/native/plugins-release/org/codehaus/groovy/groovy-eclipse-batch/ -->
           <dependency>
