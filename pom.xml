@@ -76,13 +76,13 @@
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-compiler</artifactId>
-            <version>3.9.1</version>
+            <version>3.9.1</version> <!-- WARNING: no release notes for this dependency; instead, if changed, check commits at https://github.com/groovy/groovy-eclipse/commits/master/extras/groovy-eclipse-compiler -->
           </dependency>
           <!-- https://groovy.jfrog.io/ui/native/plugins-release/org/codehaus/groovy/groovy-eclipse-batch/ -->
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-batch</artifactId>
-            <version>4.0.27-01</version>
+            <version>4.0.27-01</version> <!-- NOTE: if no release notes, try commit history of https://github.com/groovy/groovy-eclipse -->
           </dependency>
         </dependencies>
       </plugin>
