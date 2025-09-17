@@ -10,19 +10,27 @@ We need to use the Faraday Cup for the livetime, along with a DCS2 rollover fix.
 - https://github.com/JeffersonLab/coatjava/pull/814
 - https://github.com/JeffersonLab/coatjava/pull/822
 
-To do so, we'll need to run the following commands:
+To do so, we'll need to run the following commands on every file
 ```bash
 rebuild-scalers -c X -o $tmpFile $inputFile
 postprocess -q 1 -o $outputFile $tmpFile
 ```
 
-We decided to reheat only the `nSidis` train, and store the result on `/volatile`; here are the commands:
-
 > [!IMPORTANT]
 > You _must_ use Coatjava v13.3.0 or newer
 
+We decided to reheat only the `nSidis` train, and store the result on `/volatile`; here are the commands:
+
+1. make sure all data are on `/cache`; re-cache them if necessary:
 ```bash
-TODO: need paths
+qtl histogram -d rga_sp18_outbending --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/train/nSidis
+qtl histogram -d rga_sp18_inbending  --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/train/nSidis
+```
+
+2. run reheat:
+```bash
+qtl reheat -c rollover -d rga_sp18_outbending -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_outbending -i /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/train/nSidis
+qtl reheat -c rollover -d rga_sp18_inbending  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_inbending  -i /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/train/nSidis
 ```
 
 <!-- FIXME: the rest of this is copied from fa18 notes
