@@ -53,6 +53,6 @@ qtl histogram -d rga_sp18_inbending_nSidis  --submit --flatdir --focus-physics /
 
 Make the timelines:
 ```bash
-bin/qtl physics -d rga_sp18_inbending_nSidis -p rga/pass2/sp18/qa
 bin/qtl physics -d rga_sp18_outbending_nSidis -p rga/pass2/sp18/qa
+bin/qtl physics -d rga_sp18_inbending_nSidis -p rga/pass2/sp18/qa
 ```
