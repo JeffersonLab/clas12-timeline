@@ -1,6 +1,7 @@
 3211 3222
 3249 3293 # torus polarity changed outbending -> inbending at end of this epoch
-3867 3924 # torus polarity changed inbending -> outbending at beginning of this epoch
+3863 3865 # empty target runs; torus polarity changed inbending -> outbending at beginning of this epoch
+3867 3924 # back to production
 3925 3941 # N/Q stepped up
 3943 3959 # N/Q stepped down
 3963 3968 # N/Q stepped down
