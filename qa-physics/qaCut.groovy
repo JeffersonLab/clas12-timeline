@@ -197,7 +197,7 @@ def listMedian = { d, name ->
 def cutFactorDefault = cutDef(["Outlier${whichDet}", "IQR_cut_factor" ])
 def cutDefOverrides  = cutDef(["Overrides"], false)
 
-System.out.println "identify N/F outliers with ${cutFactorDefault} x IQR method"
+System.out.println "identify ${whichDet} N/F outliers with ${cutFactorDefault} x IQR method"
 sectors.each { s ->
   sectorIt = sec(s)
   if( !useFT || (useFT && sectorIt==1)) {
@@ -207,10 +207,10 @@ sectors.each { s ->
       def cutFactor = cutFactorDefault
       if(cutDefOverrides != null) {
         cutDefOverrides.each { cutDefOverride ->
-          if(cutDefOverride['epoch'] == epochIt && cutDefOverride['sectors'].contains(sectorIt)) {
+          if(cutDefOverride['detector'] == whichDet && cutDefOverride['epoch'] == epochIt && cutDefOverride['sectors'].contains(sectorIt)) {
             if(cutDefOverride["Outlier${whichDet}"] != null && cutDefOverride["Outlier${whichDet}"]["IQR_cut_factor"] != null) {
               cutFactor = cutDefOverride["Outlier${whichDet}"]["IQR_cut_factor"]
-              System.out.println "OVERRIDE: identify N/F outliers with ${cutFactor} x IQR method for epoch ${epochIt} sector ${sectorIt}"
+              System.out.println "OVERRIDE: identify ${whichDet} N/F outliers with ${cutFactor} x IQR method for epoch ${epochIt} sector ${sectorIt}"
             }
           }
         }
@@ -228,7 +228,7 @@ sectors.each { s ->
         cutDef(["RecalculateIQR"]).each { recalcIt ->
           if(recalcIt['detector'] == whichDet && recalcIt['epoch'] == epochIt && recalcIt['sectors'].contains(sectorIt)) {
             def recalcRange = recalcIt['within_range']
-            System.err.println "WARNING: recalculating IQR for epoch ${epochIt} sector ${sectorIt}, as specified in cutdef file"
+            System.out.println "OVERRIDE: recalculating IQR for epoch ${epochIt} sector ${sectorIt}, as specified in cutdef file"
             ratioListForIQR = ratioList.findAll{ it >= recalcRange[0] && it <= recalcRange[1] }
           }
         }
