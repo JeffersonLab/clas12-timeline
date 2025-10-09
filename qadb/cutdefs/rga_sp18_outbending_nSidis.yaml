@@ -25,6 +25,11 @@ Overrides:
     OutlierFD:
       IQR_cut_factor: 1.5
   # FT
+  - epoch: 3
+    sectors: [ 1 ]
+    detector: FT
+    OutlierFT:
+      IQR_cut_factor: 1.5
   - epoch: 5
     sectors: [ 1 ]
     detector: FT
