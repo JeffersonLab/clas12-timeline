@@ -24,13 +24,13 @@ We decided to reheat only the `nSidis` train, and store the result on `/volatile
 1. make sure all data are on `/cache`; re-cache them if necessary:
 ```bash
 qtl histogram -d rga_sp18_outbending_nSidis --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/train/nSidis
-qtl histogram -d rga_sp18_inbending_nSidis  --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/train/nSidis
+qtl histogram -d rga_sp18_inbending_nSidis  --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/dst/train/nSidis
 ```
 
 2. run reheat:
 ```bash
 qtl reheat -c rollover -d rga_sp18_outbending_nSidis -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_outbending_nSidis -i /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/train/nSidis
-qtl reheat -c rollover -d rga_sp18_inbending_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_inbending_nSidis  -i /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/train/nSidis
+qtl reheat -c rollover -d rga_sp18_inbending_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_inbending_nSidis  -i /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/dst/train/nSidis
 ```
 
 ## Run monitoring
