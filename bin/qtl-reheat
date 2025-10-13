@@ -119,7 +119,7 @@ EOF
       cat >> $jobScript << EOF
 echo "TMP FILE:    $tmpFile"
 # fix the clock rollover
-$(which rebuild-scalers) -l INFO -c X -o $tmpFile $inputFile
+$(which rebuild-scalers) -l INFO -c X -o $tmpFile $inputFile -- -Xmx1536m
 $(which postprocess) -l INFO -q 1 -o $outputFile $tmpFile
 rm -v $tmpFile
 EOF
