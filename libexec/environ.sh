@@ -12,12 +12,13 @@ log_config=logging # set to 'logging' for quiet, or to 'debug' for verbose
 export TIMELINESRC=$(realpath $(dirname $this_env)/..)
 
 # database URIs
-[ -z "${RCDB_CONNECTION-}" ] && export RCDB_CONNECTION=mysql://rcdb@clasdb-farm.jlab.org/rcdb
-[ -z "${CCDB_CONNECTION-}" ] && export CCDB_CONNECTION=mysql://clas12reader@clasdb-farm.jlab.org/clas12
-# overrides for CI
-if ${GITHUB_ACTIONS:-false}; then
-  export RCDB_CONNECTION=mysql://rcdb@clasdb.jlab.org/rcdb
-  export CCDB_CONNECTION=mysql://clas12reader@clasdb.jlab.org/clas12
+if [ -z "${RCDB_CONNECTION-}" ]; then
+  export RCDB_CONNECTION=mysql://rcdb@clasdb-farm.jlab.org/rcdb
+  printWarning "RCDB_CONNECTION not set, defaulting to $RCDB_CONNECTION"
+fi
+if [ -z "${CCDB_CONNECTION-}" ]; then
+  export CCDB_CONNECTION=mysql://clas12reader@clasdb-farm.jlab.org/clas12
+  printWarning "CCDB_CONNECTION not set, defaulting to $CCDB_CONNECTION"
 fi
 
 # java options
