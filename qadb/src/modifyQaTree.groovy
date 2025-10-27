@@ -143,7 +143,7 @@ if( cmd=="setbit" || cmd=="addbit" || cmd=="delbit") {
   }
 }
 
-else if(cmd=="sectorloss") {
+else if(cmd=="sectorloss" || cmd=="sl") {
   def rnum,bnumL,bnumR
   def secList = []
   if(args.length>3) {
