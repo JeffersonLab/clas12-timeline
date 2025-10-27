@@ -103,9 +103,9 @@ if( cmd=="setbit" || cmd=="addbit" || cmd=="delbit") {
     println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) +
       " sectors ${secList}: $cmd ${bit}="+T.bitNames[bit])
 
-    println("Enter a comment, if you want, otherwise press return")
-    print("> ")
-    def cmt = System.in.newReader().readLine()
+    // println("Enter a comment, if you want, otherwise press return")
+    // print("> ")
+    // def cmt = System.in.newReader().readLine()
 
 
     qaTree["$rnum"].each { k,v ->
@@ -130,7 +130,7 @@ if( cmd=="setbit" || cmd=="addbit" || cmd=="delbit") {
 
         recomputeDefMask(rnum,qaFnum)
 
-        if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
+        // if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
       }
     }
 
@@ -167,9 +167,9 @@ else if(cmd=="sectorloss") {
     println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) +
       " sectors ${secList}: define sector loss")
 
-    println("Enter a comment, if you want, otherwise press return")
-    print("> ")
-    def cmt = System.in.newReader().readLine()
+    // println("Enter a comment, if you want, otherwise press return")
+    // print("> ")
+    // def cmt = System.in.newReader().readLine()
 
     qaTree["$rnum"].each { k,v ->
       def qaFnum = k.toInteger()
@@ -184,7 +184,7 @@ else if(cmd=="sectorloss") {
 
         recomputeDefMask(rnum,qaFnum)
 
-        if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
+        // if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
       }
     }
 
@@ -332,9 +332,9 @@ else if(cmd=="lossft") {
 
     println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) + ": define sector loss")
 
-    println("Enter a comment, if you want, otherwise press return")
-    print("> ")
-    def cmt = System.in.newReader().readLine()
+    // println("Enter a comment, if you want, otherwise press return")
+    // print("> ")
+    // def cmt = System.in.newReader().readLine()
 
     qaTree["$rnum"].each { k,v ->
       def qaFnum = k.toInteger()
@@ -347,7 +347,7 @@ else if(cmd=="lossft") {
 
         recomputeDefMask(rnum,qaFnum)
 
-        if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
+        // if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
       }
     }
 
