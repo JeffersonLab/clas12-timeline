@@ -96,7 +96,7 @@ jobs:
           key: validation_files_${{ matrix.type }}
           path: validation_files.tar.zst
       - name: download timeline build
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: build_timeline
       - name: untar
@@ -142,7 +142,7 @@ jobs:
           key: validation_files_${{ matrix.type }}
           path: validation_files.tar.zst
       - name: download timeline build
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: build_timeline
       - name: untar
@@ -175,13 +175,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: download outfiles
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           pattern: outfiles_*
           merge-multiple: true
           path: outfiles
       - name: download timeline build
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: build_timeline
       - name: untar
