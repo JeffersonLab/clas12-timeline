@@ -20,6 +20,10 @@ usage["addcomment"] = "append a comment"
 usage["custom"]     = "do a custom action (see code)"
 println("\n\n")
 
+// abbreviations
+def abbrev = [:]
+abbrev["m"]  = "misc"
+abbrev["sl"] = "sectorloss"
 
 // check arguments and print usage
 def exe = "modify.sh"
@@ -34,8 +38,15 @@ USAGE: ${exe} [command] [arguments]\n
 List of Commands:
   """)
   usage.each{ key, value -> printf("%20s     %s\n", key, value) }
+  printf("\nAlternatively, use abbreviations for common commands:\n");
+  abbrev.each{ key, value -> printf("%20s     %s\n", key, value) }
   printf("\nType any command without arguments for usage guidance for that command\n\n")
   System.exit(101)
+}
+
+// unabbreviate
+if(abbrev[cmd]!=null) {
+  cmd = abbrev[cmd]
 }
 
 // read env vars
@@ -143,7 +154,7 @@ if( cmd=="setbit" || cmd=="addbit" || cmd=="delbit") {
   }
 }
 
-else if(cmd=="sectorloss" || cmd=="sl") {
+else if(cmd=="sectorloss") {
   def rnum,bnumL,bnumR
   def secList = []
   if(args.length>3) {
@@ -245,7 +256,7 @@ else if(cmd=="nobeam") {
   }
 }
 
-else if(cmd=="misc" || cmd == "m") {
+else if(cmd=="misc") {
   def rnum,bnumL,bnumR
   def secList = []
   if(args.length>1) {
