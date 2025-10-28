@@ -35,9 +35,9 @@ flowchart TB
             histogramDetectors["<strong>Make detector histograms</strong><br/>org.jlab.clas.timeline.histograms.run_histograms"]:::proc
             histogramPhysics["<strong>Make physics QA histograms</strong><br/>qa-physics/: monitorRead.groovy"]:::proc
         end
-        outplots[(___/detectors/$run_number/*.hipo)]:::data
-        outdat[(___/physics/$run_number/*.dat)]:::data
-        outmon[(___/physics/$run_number/*.hipo)]:::data
+        outplots[(___/hist/$run_number/*.hipo)]:::data
+        outdat[(___/hist/$run_number/*.dat)]:::data
+        outmon[(___/hist/$run_number/*.hipo)]:::data
     end
     dst --> histogramDetectors
     dst --> histogramPhysics
@@ -85,21 +85,14 @@ Temporary files are additionally stored in `tmp/`, including backups (for the ca
 outfiles
 └── $dataset
     │
-    ├── timeline_detectors            # histograms, etc. for detector timelines, from `bin/qtl histogram`
+    ├── hist                          # histograms, etc. from `bin/qtl histogram`
     │   │
     │   ├── 5000                      # for run number 5000
-    │   │   ├── out_HTCC_5000.hipo
-    │   │   ├── out_LTCC_5000.hipo
+    │   │   ├── out_HTCC_5000.hipo    # HTCC histograms
+    │   │   ├── out_LTCC_5000.hipo    # LTCC histograms
+    │   │   ├── out_PHYS_5000.hipo    # physics histograms
+    │   │   ├── out_NF_5000.dat       # table of number of electrons (N) and FC charge (F)
     │   │   └── ...
-    │   │
-    │   ├── 5001                      # for run number 5001
-    │   └── ...
-    │
-    ├── timeline_physics              # histograms, etc. for physics timelines, from `bin/qtl histogram`
-    │   │
-    │   ├── 5000                      # for run number 5000
-    │   │   ├── out_NF_5000.dat
-    │   │   └── out_PHYS_5000.hipo
     │   │
     │   ├── 5001                      # for run number 5001
     │   └── ...
@@ -136,12 +129,8 @@ outfiles
 
 # Notes on SWIF Workflows
 
-For chef cooking workflow integration, the `bin/qtl histogram` command (which normally generates `slurm` jobs) has a specific mode `--swifjob`:
-```bash
-qtl histogram --swifjob --focus-detectors   # generate files for detector timelines
-qtl histogram --swifjob --focus-physics     # generate files for physics QA timelines
-```
-Either or both of these commands is _all_ that needs to be executed on a runner node, within the cooking workflow; calling one of these will automatically run the wrapped code, with the following assumptions and conventions:
+For chef cooking workflow integration, the `bin/qtl histogram` command (which normally generates `slurm` jobs) has a specific mode `--swifjob`,
+which has the following assumptions and conventions:
 - input HIPO files are at `./` and only a single run will be processed
 - run number is obtained by `RUN::config` from one of the HIPO files; all HIPO files are assumed to belong to the same run
 - all output files will be in `./outfiles` (no `$dataset` subdirectory as above)
@@ -150,13 +139,9 @@ The output files `./outfiles/` are moved to the `swif` output target, following 
 ```
 top_level_target_directory
   │
-  ├── detectors
-  │   ├── 005000  # run 5000; corresponding output files from `--focus-detectors` in `outfiles/` are moved here
+  ├── hist
+  │   ├── 005000  # run 5000; corresponding output files from `qtl histogram`
   │   ├── 005001  # run 5001
-  │   └── ...
-  │
-  ├── physics
-  │   ├── 005000  # run 5000; corresponding output files from `--focus-physics` in `outfiles/` are moved here
   │   └── ...
   │
   ├── recon
@@ -165,8 +150,3 @@ top_level_target_directory
   │
   └── ...
 ```
-For compatibility with the file tree expected by downstream `qtl analysis` (see above), symbolic links may be made to these `timeline_{detectors,physics}` directories, but this is not required since these scripts also allow for the specification of an input directory.
-
-Separate `--focus-detectors` and `--focus-physics` options are preferred, since:
-- offers better organization of the contract data between `swif` jobs and downstream scripts
-- often we will run one and not the other: `--focus-detectors` needs `mon` schema, whereas `--focus-physics` prefers high statistics

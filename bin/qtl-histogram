@@ -235,10 +235,6 @@ modes['focus-all']=true
 for key in focus-detectors focus-physics; do
   if ${modes[$key]}; then modes['focus-all']=false; fi
 done
-if ${modes['swifjob']} && ${modes['focus-all']}; then
-  printError "option --swifjob must be used with either --focus-detectors or --focus-physics"
-  exit 100
-fi
 
 # print arguments
 echo """
@@ -276,21 +272,20 @@ fi
 # initial checks and preparations
 echo $dataset | grep -q "/" && printError "dataset name must not contain '/' " && echo && exit 100
 [ -z "$dataset" ] && printError "dataset name must not be empty" && echo && exit 100
-slurmJobName=clas12-timeline--$dataset
+slurmJobName=clas12-timeline--hist--$dataset
 
-# start job lists
+# start job list
 slurmDir=./slurm
 mkdir -p $slurmDir/scripts
+joblist=$slurmDir/job.$dataset.list
+> $joblist
+
+# list of jobkeys ('detectors' and/or 'physics')
 jobkeys=()
-for key in detectors physics; do
-  if ${modes['focus-all']} || ${modes['focus-'$key]}; then
-    jobkeys+=($key)
+for jobkey in detectors physics; do
+  if ${modes['focus-all']} || ${modes['focus-'$jobkey]}; then
+    jobkeys+=($jobkey)
   fi
-done
-declare -A joblists
-for key in ${jobkeys[@]}; do
-  joblists[$key]=$slurmDir/job.$dataset.$key.list
-  > ${joblists[$key]}
 done
 
 # get run numbers for each input
@@ -368,28 +363,22 @@ for rdir in ${rdirs[@]}; do
     realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
   fi
 
-  # generate job scripts
-  echo "..... generating its job scripts ....."
-  for key in ${jobkeys[@]}; do
-
-    # preparation: make output subdirectory and backup old one, if it exists
-    outputSubDir=$outputDir/timeline_$key/$runnum
-    if ${modes['swifjob']}; then
-      outputSubDir=$outputDir # no need for run subdirectory or backup on swif runner
-    else
-      if [ -d $outputSubDir ]; then
-        mkdir -p $backupDir/timeline_$key
-        mv -v $outputSubDir $backupDir/timeline_$key/
-      fi
+  # preparation: make output subdirectory and backup old one, if it exists
+  echo "..... generating its job script ....."
+  outputSubDir=$outputDir/hist/$runnum
+  if ${modes['swifjob']}; then
+    outputSubDir=$outputDir # no need for run subdirectory or backup on swif runner
+  else
+    if [ -d $outputSubDir ]; then
+      mkdir -p $backupDir/hist
+      mv -v $outputSubDir $backupDir/hist
     fi
-    mkdir -p $outputSubDir
+  fi
+  mkdir -p $outputSubDir
 
-    # make job scripts for each $key
-    jobscript=$slurmDir/scripts/$key.$dataset.$runnum.sh
-    case $key in
-
-      detectors)
-        cat > $jobscript << EOF
+  # start job script
+  jobscript=$slurmDir/scripts/hist.$dataset.$runnum.sh
+  cat > $jobscript << EOF
 #!/usr/bin/env bash
 set -e
 set -u
@@ -398,17 +387,22 @@ echo "RUN $runnum"
 
 # set env vars
 source $TIMELINESRC/libexec/environ.sh
+EOF
 
-# produce histograms
+  # make histograms, for each jobkey in `jobkeys`
+  for jobkey in ${jobkeys[@]}; do
+
+    case $jobkey in
+
+      detectors)
+        cat >> $jobscript << EOF
+# produce $jobkey histograms
 java $TIMELINE_JAVA_OPTS \\
   org.jlab.clas.timeline.histograms.run_histograms \\
     $runnum \\
     $outputSubDir \\
     $inputListFile \\
     $ebeam
-
-# check output HIPO files
-$TIMELINESRC/libexec/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
 EOF
         ;;
 
@@ -418,17 +412,8 @@ EOF
         else
           monitorReadType=dst
         fi
-        cat > $jobscript << EOF
-#!/usr/bin/env bash
-set -e
-set -u
-set -o pipefail
-echo "RUN $runnum"
-
-# set env vars
-source $TIMELINESRC/libexec/environ.sh
-
-# produce histograms
+        cat >> $jobscript << EOF
+# produce $jobkey histograms
 $TIMELINESRC/libexec/run-groovy-timeline.sh \\
   $TIMELINESRC/qa-physics/monitorRead.groovy \\
     $(realpath $rdir) \\
@@ -436,17 +421,20 @@ $TIMELINESRC/libexec/run-groovy-timeline.sh \\
     $monitorReadType \\
     $runnum \\
     $ebeam
-
-# check output HIPO files
-$TIMELINESRC/libexec/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
 EOF
         ;;
 
     esac
 
-    # grant permission and add it `joblists`
+    # finish job script
+    cat >> $jobscript << EOF
+# check output HIPO files
+$TIMELINESRC/libexec/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
+EOF
+
+    # grant permission and add it `joblist`
     chmod u+x $jobscript
-    echo $jobscript >> ${joblists[$key]}
+    echo $jobscript >> $joblist
 
   done # loop over `jobkeys`
 
@@ -457,32 +445,30 @@ done # loop over `rdirs`
 echo """
 Generating batch scripts..."""
 exelist=()
-for key in ${jobkeys[@]}; do
 
-  # check if we have any jobs to run
-  joblist=${joblists[$key]}
-  [ ! -s $joblist ] && printError "there are no $key timeline jobs to run" && continue
-  slurm=$(echo $joblist | sed 's;.list$;.slurm;')
+# check if we have any jobs to run
+[ ! -s $joblist ] && printError "there are no timeline jobs to run" && exit 100
+slurm=$(echo $joblist | sed 's;.list$;.slurm;')
 
-  # either generate single/sequential run scripts
-  if ${modes['single']} || ${modes['series']} || ${modes['swifjob']}; then
-    localScript=$(echo $joblist | sed 's;.list$;.local.sh;')
-    echo "#!/usr/bin/env bash" > $localScript
-    echo "set -e" >> $localScript
-    if ${modes['single']}; then
-      head -n1 $joblist >> $localScript
-    else # ${modes['series']} || ${modes['swifjob']}
-      cat $joblist >> $localScript
-    fi
-    chmod u+x $localScript
-    exelist+=($localScript)
+# either generate single/sequential run scripts
+if ${modes['single']} || ${modes['series']} || ${modes['swifjob']}; then
+  localScript=$(echo $joblist | sed 's;.list$;.local.sh;')
+  echo "#!/usr/bin/env bash" > $localScript
+  echo "set -e" >> $localScript
+  if ${modes['single']}; then
+    head -n1 $joblist >> $localScript
+  else # ${modes['series']} || ${modes['swifjob']}
+    cat $joblist >> $localScript
+  fi
+  chmod u+x $localScript
+  exelist+=($localScript)
 
-  # otherwise generate slurm description
-  else
-    cat > $slurm << EOF
+# otherwise generate slurm description
+else
+  cat > $slurm << EOF
 #!/bin/sh
 #SBATCH --ntasks=1
-#SBATCH --job-name=$slurmJobName--$key
+#SBATCH --job-name=$slurmJobName
 #SBATCH --output=$SLURM_LOG.out
 #SBATCH --error=$SLURM_LOG.err
 #SBATCH --partition=production
@@ -497,9 +483,7 @@ for key in ${jobkeys[@]}; do
 srun \$(head -n\$SLURM_ARRAY_TASK_ID $joblist | tail -n1)
 EOF
     exelist+=($slurm)
-  fi
-done
-
+fi
 
 # execution
 [ ${#exelist[@]} -eq 0 ] && printError "no jobs were created at all; check errors and warnings above" && exit 100
