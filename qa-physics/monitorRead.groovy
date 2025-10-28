@@ -229,7 +229,6 @@ def FTparticleBank
 def configBank
 def eventBank
 def calBank
-def scalerBank
 def disEleFound
 def caseCountNtrigGT1 = 0
 def caseCountNFTwithTrig = 0
@@ -570,7 +569,6 @@ inHipoList.each { inHipoFile ->
     configBank     = hipoEvent.getBank("RUN::config")
     FTparticleBank = hipoEvent.getBank("RECFT::Particle")
     calBank        = hipoEvent.getBank("REC::Calorimeter")
-    scalerBank     = hipoEvent.getBank("RUN::scaler")
     helScalerBank  = hipoEvent.getBank("HEL::scaler")
 
     // get event number
