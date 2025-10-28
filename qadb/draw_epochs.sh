@@ -17,7 +17,7 @@ else
   exit 101
 fi
 
-datfile="$inDir/timeline_physics_qa/outdat/data_table.dat"
+datfile="$inDir/timeline_physics_qa/outdat/out_NF.dat"
 cat "$TIMELINESRC/qadb/epochs/epochs.$dataset.txt" | sed 's;#.*;;g' > epochs.tmp # strip comments
 
 root -l $TIMELINESRC/qadb/src/draw_epochs.C'("'$dataset'","'$datfile'","epochs.tmp")'

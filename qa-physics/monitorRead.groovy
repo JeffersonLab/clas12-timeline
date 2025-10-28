@@ -230,7 +230,7 @@ outHipo.mkdir("/$runnum")
 outHipo.cd("/$runnum")
 
 // prepare time-binned output table for electron count and FC charge
-def datfileName   = "$outDir/data_table_${runnum}.dat"
+def datfileName   = "$outDir/out_NF_${runnum}.dat"
 def datfile       = new File(datfileName)
 def datfileWriter = datfile.newWriter(false)
 // prepare auxiliary, event-by-event output table (for debugging)
@@ -1025,7 +1025,7 @@ if(AUXFILE) {
 }
 
 // write outHipo file
-outHipoN = "$outDir/monitor_${runnum}.hipo"
+outHipoN = "$outDir/out_PHYS_${runnum}.hipo"
 File outHipoFile = new File(outHipoN)
 if(outHipoFile.exists()) outHipoFile.delete()
 outHipo.writeFile(outHipoN)

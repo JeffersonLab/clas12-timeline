@@ -19,7 +19,7 @@ automated by `qtl histogram`.
   * It is better to run this using `slurm`, but this can be run on a single skim file or
     directory of one run's DST files
   * Outputs:
-    * `[output_directory]/data_table_${run}.dat`, which is a data table with the following columns:
+    * `[output_directory]/out_NF_${run}.dat`, which is a data table with the following columns:
       * run number
       * time bin number
       * minimum event number
@@ -34,7 +34,7 @@ automated by `qtl histogram`.
       * DAQ-ungated FC charge at beginning of time bin
       * DAQ-ungated FC charge at end of time bin
       * average livetime
-    * monitoring HIPO file, `[output_directory]/monitor_${runnum}.hipo`, contains several plots
+    * monitoring HIPO file, `[output_directory]/out_PHYS_${runnum}.hipo`, contains several plots
       for each time bin
 
 ## Step 2 (`qtl physics`)
@@ -130,15 +130,15 @@ flowchart TB
     subgraph "Automated by qtl histogram"
       dst{{DSTs}}:::data
       monitorRead[monitorRead.groovy]:::auto
-      monitorReadOut{{$output_dir/data_table_$run.dat<br>$output_dir/monitor_$run.hipo}}:::data
+      monitorReadOut{{$output_dir/out_NF_$run.dat<br>$output_dir/out_PHYS_$run.hipo}}:::data
       dst --> monitorRead
       monitorRead --> monitorReadOut
     end
 
     subgraph "Automated by ../bin/qtl physics"
       datasetOrganize[datasetOrganize.sh]:::auto
-      outmonFiles{{$qa_dir/outmon/monitor_$run.hipo}}:::data
-      outdatFiles{{$qa_dir/outdat/data_table.dat}}:::data
+      outmonFiles{{$qa_dir/outmon/out_PHYS_$run.hipo}}:::data
+      outdatFiles{{$qa_dir/outdat/out_NF.dat}}:::data
       monitorReadOut --> datasetOrganize
       datasetOrganize --> outmonFiles
       datasetOrganize --> outdatFiles

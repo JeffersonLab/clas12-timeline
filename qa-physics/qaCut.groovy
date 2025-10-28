@@ -81,10 +81,10 @@ def getEpoch = { r,s ->
 
 
 // build map of (runnum,binnum) -> (evnumMin,evnumMax)
-def dataFile = new File("${inDir}/outdat/data_table.dat")
+def dataFile = new File("${inDir}/outdat/out_NF.dat")
 def tok
 def evnumTree = [:]
-if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
+if(!(dataFile.exists())) throw new Exception("out_NF.dat not found")
 dataFile.eachLine { line ->
   tok = line.tokenize(' ')
   int r = 0

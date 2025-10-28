@@ -19,9 +19,9 @@ def helState = [-1,0,1]  // labels for the json file
 def chargeTree = [:] // [runnum][binnum] -> charge
 def runTree = [:] // [runnum] -> list of bin numbers
 
-// open data_table.dat
-def dataFile = new File("${inDir}/data_table.dat")
-if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
+// open out_NF.dat
+def dataFile = new File("${inDir}/out_NF.dat")
+if(!(dataFile.exists())) throw new Exception("out_NF.dat not found")
 dataFile.eachLine { line ->
 
   // tokenize
@@ -62,11 +62,11 @@ dataFile.eachLine { line ->
 }
 
 
-// open monitor_*.hipo files
+// open out_PHYS_*.hipo files
 runTree.each { runnum, binnums ->
 
-  // open monitor_<runnum>.hipo
-  def monFile = new File("${monDir}/monitor_${runnum}.hipo")
+  // open out_PHYS_<runnum>.hipo
+  def monFile = new File("${monDir}/out_PHYS_${runnum}.hipo")
   def inMdir = new TDirectory()
   if(!(monFile.exists())) throw new Exception("monitor<run>.hipo not found")
   try {

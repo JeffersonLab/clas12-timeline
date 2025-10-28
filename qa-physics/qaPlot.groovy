@@ -61,14 +61,14 @@ def writePlots = { run ->
   writeHipo(grT)
 }
 
-// open data_table.dat
-def dataFile = new File("${inDir}/outdat/data_table.dat")
+// open out_NF.dat
+def dataFile = new File("${inDir}/outdat/out_NF.dat")
 def runnumTmp = 0
 def electronT = useFT ? "Forward Tagger Electron" : "Trigger Electron"
-if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
+if(!(dataFile.exists())) throw new Exception("out_NF.dat not found")
 dataFile.eachLine { line ->
 
-  // read columns of data_table.dat (in order left-to-right)
+  // read columns of out_NF.dat (in order left-to-right)
   tok = line.tokenize(' ')
   int r = 0
   runnum       = tok[r++].toInteger()
@@ -130,7 +130,7 @@ dataFile.eachLine { line ->
     grT[s].addPoint(binnum,livetime,0,0)
   }
 
-} // eo loop through data_table.dat
+} // eo loop through out_NF.dat
 writePlots(runnum) // write last run's graphs
 
 
