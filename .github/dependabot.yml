@@ -16,6 +16,11 @@ updates:
     registries:
       - clas12maven
       - groovy_jfrog
+    groups:
+      groovy:
+        patterns:
+          - "org.apache.groovy:groovy-*"
+          - "org.codehaus.groovy:groovy-eclipse-batch"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
