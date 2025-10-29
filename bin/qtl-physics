@@ -79,7 +79,7 @@ fi
 
 # set input and output directories
 [ -z "$dataset" ] && printError "data set not specified, use option '-d'" && exit 100
-[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/timeline_physics # set default `inputDir`
+[ -z "$inputDir" ] && inputDir=$(pwd -P)/outfiles/$dataset/hist # set default `inputDir`
 [ ! -d $inputDir ] && printError "input directory $inputDir does not exist" && exit 100
 inputDir=$(realpath $inputDir) # sanitize CLI argument's `inputDir`
 [ -z "$outputDir" ] && outputDir=$(pwd -P)/outfiles/$dataset # set default `outputDir`

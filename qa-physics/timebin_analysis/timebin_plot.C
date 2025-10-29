@@ -1,7 +1,7 @@
 // make plots for time bin sizes, etc.
 
 void timebin_plot(
-    TString dat_file="data_table.dat" // concatenated table from monitorRead.groovy -> datasetOrganize.sh
+    TString dat_file="out_NF.dat" // concatenated table from monitorRead.groovy -> datasetOrganize.sh
     )
 {
 

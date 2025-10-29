@@ -23,7 +23,7 @@ def inDir = args[0]
 // get list of input hipo files
 def inDirObj = new File(inDir+"/outmon")
 def inList = []
-def inFilter = ~/monitor_.*\.hipo/
+def inFilter = ~/out_PHYS_.*\.hipo/
 inDirObj.traverse( type: groovy.io.FileType.FILES, nameFilter: inFilter ) {
   if(it.size()>0) inList << inDir+"/outmon/"+it.getName()
 }
@@ -92,10 +92,10 @@ def objToMonTitle = { title ->
 // - this is only used for the relative luminosity attempt
 // - not enough statistics; disabled
 /*
-def dataFile = new File("${inDir}/outdat/data_table.dat")
+def dataFile = new File("${inDir}/outdat/out_NF.dat")
 def fcTree = [:]
 def fcrun,fcfile,fcp,fcm,ufcp,ufcm
-if(!(dataFile.exists())) throw new Exception("data_table.dat not found")
+if(!(dataFile.exists())) throw new Exception("out_NF.dat not found")
 dataFile.eachLine { line ->
   tok = line.tokenize(' ')
   fcrun = tok[0].toInteger()

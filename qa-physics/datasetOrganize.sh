@@ -23,16 +23,16 @@ for dir in $OUTMON_DIR $OUTDAT_DIR; do
 done
 
 # loop over runs, copying and linking to dataset subdirs
-hipoList=$(find $inputDir -name "monitor_*.hipo")
-datList=$(find $inputDir -name "data_table_*.dat")
+hipoList=$(find $inputDir -name "out_PHYS_*.hipo")
+datList=$(find $inputDir -name "out_NF_*.dat")
 [ -z "$hipoList" -o -z "$datList" ] && echo "ERROR: no monitoring HIPO and/or DAT files found in $inputDir" >&2 && exit 100
 for file in $hipoList; do
   ln -sv $file $(realpath $OUTMON_DIR)/
 done
 for file in $datList; do
-  cat $file >> $OUTDAT_DIR/data_table.dat.tmp
+  cat $file >> $OUTDAT_DIR/out_NF.dat.tmp
 done
 
 # be sure the data table is sorted
-sort -n -t ' ' -k1,1 -k2,2 -o $OUTDAT_DIR/data_table.dat{,.tmp}
-rm $OUTDAT_DIR/data_table.dat.tmp
+sort -n -t ' ' -k1,1 -k2,2 -o $OUTDAT_DIR/out_NF.dat{,.tmp}
+rm $OUTDAT_DIR/out_NF.dat.tmp

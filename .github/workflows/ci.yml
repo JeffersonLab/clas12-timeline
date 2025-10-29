@@ -52,17 +52,17 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        type: [ detectors, physics ]
+        id: [ detectors, physics ]
         include:
-          - { type: detectors, schema: mon }
-          - { type: physics,   schema: dst }
+          - { id: detectors, schema: mon }
+          - { id: physics,   schema: dst }
     env:
       xrootd_file: xroot://sci-xrootd.jlab.org//osgpool/hallb/clas12/validation/recon/${{ matrix.schema }}/validation_files.tar.zst
     steps:
       - uses: actions/cache@v4
         id: cache
         with:
-          key: validation_files_${{ matrix.type }}
+          key: validation_files_${{ matrix.id }}
           path: validation_files.tar.zst
           lookup-only: true
       - name: install dependencies
@@ -90,12 +90,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        type: [ detectors, physics ]
+        id: [ all, detectors, physics ]
+        include:
+          - { id: all,       validation_files_key: detectors, opts: ''                  }
+          - { id: detectors, validation_files_key: detectors, opts: '--focus-detectors' }
+          - { id: physics,   validation_files_key: physics,   opts: '--focus-physics'   }
     steps:
       - uses: actions/checkout@v5
       - uses: actions/cache/restore@v4
         with:
-          key: validation_files_${{ matrix.type }}
+          key: ${{ matrix.validation_files_key }}
           path: validation_files.tar.zst
       - name: download timeline build
         uses: actions/download-artifact@v6
@@ -110,18 +114,18 @@ jobs:
             -d ${{env.dataset}} \
             --findhipo \
             --series \
-            --focus-${{matrix.type}} \
+            ${{ matrix.opts }} \
             validation_files
       - run: tree slurm
       - run: tree outfiles
       - uses: actions/upload-artifact@v5
         with:
-          name: slurm_${{ matrix.type }}
+          name: slurm_${{ matrix.id }}
           retention-days: 1
           path: slurm
       - uses: actions/upload-artifact@v5
         with:
-          name: outfiles_histogram_${{ matrix.type }}
+          name: outfiles_histogram_${{ matrix.id }}
           retention-days: 14
           path: outfiles
 
@@ -136,12 +140,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        type: [ detectors, physics ]
+        id: [ all, detectors, physics ]
+        include:
+          - { id: all,       validation_files_key: detectors, opts: ''                  }
+          - { id: detectors, validation_files_key: detectors, opts: '--focus-detectors' }
+          - { id: physics,   validation_files_key: physics,   opts: '--focus-physics'   }
     steps:
       - uses: actions/checkout@v5
       - uses: actions/cache/restore@v4
         with:
-          key: validation_files_${{ matrix.type }}
+          key: ${{ matrix.validation_files_key }}
           path: validation_files.tar.zst
       - name: download timeline build
         uses: actions/download-artifact@v6
@@ -154,7 +162,7 @@ jobs:
         run: |
           single_rundir=$(find validation_files -mindepth 1 -maxdepth 1 -type d | head -n1)
           echo "single_rundir = $single_rundir"
-          util/test-swifjob.sh $single_rundir runner --focus-${{ matrix.type }}
+          util/test-swifjob.sh $single_rundir runner ${{ matrix.opts }}
       - run: tree runner
 
   # timeline production
@@ -170,18 +178,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        type: [ detectors, physics ]
+        id: [ all, detectors, physics ]
         include:
-          - { type: detectors, qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya' }
-          - { type: physics,   qtl_cmd: 'bin/qtl physics',  args: '' }
+          - { id: all,       qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya' }
+          - { id: detectors, qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya' }
+          - { id: physics,   qtl_cmd: 'bin/qtl physics',  args: '' } # FIXME: this should be the merged `qtl analysis`, once `qtl physics` is gone
     steps:
       - uses: actions/checkout@v5
       - name: download outfiles
         uses: actions/download-artifact@v6
         with:
-          pattern: outfiles_*
-          merge-multiple: true
-          path: outfiles
+          name: outfiles_histogram_${{ matrix.id }}
       - name: download timeline build
         uses: actions/download-artifact@v6
         with:
@@ -205,11 +212,11 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@v5
         with:
-          name: outfiles_timelines_${{ matrix.type }}
+          name: outfiles_timelines_${{ matrix.id }}
           retention-days: 14
           path: outfiles
       - uses: actions/upload-artifact@v5
         with:
-          name: web_timelines_${{ matrix.type }}
+          name: web_timelines_${{ matrix.id }}
           retention-days: 14
           path: web
