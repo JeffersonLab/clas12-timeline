@@ -20,6 +20,10 @@ usage["addcomment"] = "append a comment"
 usage["custom"]     = "do a custom action (see code)"
 println("\n\n")
 
+// abbreviations
+def abbrev = [:]
+abbrev["m"]  = "misc"
+abbrev["sl"] = "sectorloss"
 
 // check arguments and print usage
 def exe = "modify.sh"
@@ -34,8 +38,15 @@ USAGE: ${exe} [command] [arguments]\n
 List of Commands:
   """)
   usage.each{ key, value -> printf("%20s     %s\n", key, value) }
+  printf("\nAlternatively, use abbreviations for common commands:\n");
+  abbrev.each{ key, value -> printf("%20s     %s\n", key, value) }
   printf("\nType any command without arguments for usage guidance for that command\n\n")
   System.exit(101)
+}
+
+// unabbreviate
+if(abbrev[cmd]!=null) {
+  cmd = abbrev[cmd]
 }
 
 // read env vars
@@ -92,9 +103,9 @@ if( cmd=="setbit" || cmd=="addbit" || cmd=="delbit") {
     println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) +
       " sectors ${secList}: $cmd ${bit}="+T.bitNames[bit])
 
-    println("Enter a comment, if you want, otherwise press return")
-    print("> ")
-    def cmt = System.in.newReader().readLine()
+    // println("Enter a comment, if you want, otherwise press return")
+    // print("> ")
+    // def cmt = System.in.newReader().readLine()
 
 
     qaTree["$rnum"].each { k,v ->
@@ -119,7 +130,7 @@ if( cmd=="setbit" || cmd=="addbit" || cmd=="delbit") {
 
         recomputeDefMask(rnum,qaFnum)
 
-        if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
+        // if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
       }
     }
 
@@ -156,9 +167,9 @@ else if(cmd=="sectorloss") {
     println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) +
       " sectors ${secList}: define sector loss")
 
-    println("Enter a comment, if you want, otherwise press return")
-    print("> ")
-    def cmt = System.in.newReader().readLine()
+    // println("Enter a comment, if you want, otherwise press return")
+    // print("> ")
+    // def cmt = System.in.newReader().readLine()
 
     qaTree["$rnum"].each { k,v ->
       def qaFnum = k.toInteger()
@@ -173,7 +184,7 @@ else if(cmd=="sectorloss") {
 
         recomputeDefMask(rnum,qaFnum)
 
-        if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
+        // if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
       }
     }
 
@@ -245,7 +256,7 @@ else if(cmd=="nobeam") {
   }
 }
 
-else if(cmd=="misc" || cmd == "m") {
+else if(cmd=="misc") {
   def rnum,bnumL,bnumR
   def secList = []
   if(args.length>1) {
@@ -321,9 +332,9 @@ else if(cmd=="lossft") {
 
     println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) + ": define sector loss")
 
-    println("Enter a comment, if you want, otherwise press return")
-    print("> ")
-    def cmt = System.in.newReader().readLine()
+    // println("Enter a comment, if you want, otherwise press return")
+    // print("> ")
+    // def cmt = System.in.newReader().readLine()
 
     qaTree["$rnum"].each { k,v ->
       def qaFnum = k.toInteger()
@@ -336,7 +347,7 @@ else if(cmd=="lossft") {
 
         recomputeDefMask(rnum,qaFnum)
 
-        if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
+        // if(cmt.length()>0) qaTree["$rnum"]["$qaFnum"]["comment"] = cmt
       }
     }
 
@@ -472,6 +483,9 @@ else { System.err.println("ERROR: unknown command!"); System.exit(100) }
 
 
 // update qaTree.json
+print("updating .json file ... ")
 new File("qa/qaTree.json").write(JsonOutput.toJson(qaTree))
 
+// update qaTree.json.table
+print("updating .table file ... ")
 ["${TIMELINESRC}/libexec/run-groovy-timeline.sh", "${TIMELINESRC}/qadb/src/parseQaTree.groovy"].execute().waitFor()

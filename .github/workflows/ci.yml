@@ -12,6 +12,8 @@ defaults:
 
 env:
   dataset: ci_test
+  RCDB_CONNECTION: mysql://rcdb@clasdb.jlab.org/rcdb
+  CCDB_CONNECTION: mysql://clas12reader@clasdb.jlab.org/clas12
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
