@@ -1,0 +1,2 @@
+3306 3817
+4003 4325 # torus polarity changed outbending -> inbending at beginning of this epoch
