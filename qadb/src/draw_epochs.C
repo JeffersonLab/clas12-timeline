@@ -4,7 +4,7 @@ void draw_epochs(TString dataset, TString datfile, TString epochsfile) {
 
   /////////////////////////////
   // SETTINGS
-  Int_t NBINS = 2000; // number of N/F bins (default=200)
+  Int_t NBINS = 400; // number of N/F bins (default=200)
   /////////////////////////////
 
   // open root file
@@ -79,7 +79,7 @@ void draw_epochs(TString dataset, TString datfile, TString epochsfile) {
       if(UF>0) UFtot += UF;
     };
   };
-  //maxNF = 15; // override maxNF
+  maxNF = 6; // override maxNF
   printf("--------------------------------------------\n");
   printf("total gated FC charge = %.1f mC\n",Ftot*1e-6);
   printf("total ungated FC charge = %.1f mC\n",UFtot*1e-6);

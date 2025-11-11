@@ -1,2 +1,11 @@
-3306 3817
-4003 4325 # torus polarity changed outbending -> inbending at beginning of this epoch
+3306 3422
+3423 3482
+3483 3507
+3508 3527
+3528 3548
+3698 3817
+4003 4115 # torus polarity changed outbending -> inbending at beginning of this epoch
+4139 4169 # sector 2 mean N/F dropped
+4174 4229
+4243 4320
+4321 4325
