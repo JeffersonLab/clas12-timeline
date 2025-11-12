@@ -4,8 +4,10 @@
 3508 3527
 3528 3548
 3698 3817
-4003 4115 # torus polarity changed outbending -> inbending at beginning of this epoch
+4003 4123 # torus polarity changed outbending -> inbending at beginning of this epoch
 4139 4169 # sector 2 mean N/F dropped
 4174 4229
-4243 4320
+4243 4281
+4282 4293 # fast scaler rate? bin duration is around 6 seconds
+4294 4320
 4321 4325
