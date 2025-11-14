@@ -1,9 +1,9 @@
 version: 2
 
 registries:
-  clas12maven:
-    type: maven-repository
-    url: https://clasweb.jlab.org/clas12maven
+  # clas12maven: # FIXME: disabled, see <https://github.com/JeffersonLab/coatjava/issues/915>
+  #   type: maven-repository
+  #   url: https://clasweb.jlab.org/clas12maven
   groovy_jfrog:
     type: maven-repository
     url: https://groovy.jfrog.io/artifactory/plugins-release
@@ -14,7 +14,7 @@ updates:
     schedule:
       interval: "weekly"
     registries:
-      - clas12maven
+      # - clas12maven
       - groovy_jfrog
     groups:
       groovy:
