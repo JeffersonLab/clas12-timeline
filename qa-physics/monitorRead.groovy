@@ -752,7 +752,7 @@ qaBins.each{ itBin ->
     datfileWriter << [ fcStart, fcStop, ufcStart, ufcStop, itBin.getMeanLivetime() ].join(' ') << '\n'
   }
   printDebug " - charge for QA bin $itBinNum:"
-  printDebug "   - event number range: [ ${itBin.getEventNumMin()}, ${itBin.getEventNumMin()} ]"
+  printDebug "   - event number range: [ ${itBin.getEventNumMin()}, ${itBin.getEventNumMax()} ]"
   printDebug "   - gated-FC charge:    [ $fcStart, $fcStop ]"
   printDebug "   - ungated-FC charge:  [ $ufcStart, $ufcStop ]"
 
