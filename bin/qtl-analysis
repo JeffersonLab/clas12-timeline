@@ -140,6 +140,10 @@ if ${modes['help']}; then
   exit 101
 fi
 
+######################
+singleTimeline=cvt_efficiency
+######################
+
 ##################################################################################
 
 # main executable for detector timelines
