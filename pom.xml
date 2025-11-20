@@ -22,7 +22,7 @@
     </repository>
     <repository>
       <id>clas12maven</id>
-      <url>https://clasweb.jlab.org/clas12maven</url>
+      <url>https://clasweb.jlab.org/.clas12maven</url>
     </repository>
   </repositories>
 
