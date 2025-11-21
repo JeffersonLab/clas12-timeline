@@ -46,14 +46,14 @@
     <dependency>
       <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>4.0.28</version>
+      <version>5.0.2</version>
       <type>pom</type>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-dateutil -->
     <dependency>
       <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-dateutil</artifactId>
-      <version>4.0.28</version>
+      <version>5.0.2</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.codehaus.gpars/gpars -->
     <dependency>
@@ -85,7 +85,7 @@
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-batch</artifactId>
-            <version>4.0.27-01</version> <!-- NOTE: if no release notes, try commit history of https://github.com/groovy/groovy-eclipse -->
+            <version>5.0.2-01</version> <!-- NOTE: if no release notes, try commit history of https://github.com/groovy/groovy-eclipse -->
           </dependency>
         </dependencies>
       </plugin>
