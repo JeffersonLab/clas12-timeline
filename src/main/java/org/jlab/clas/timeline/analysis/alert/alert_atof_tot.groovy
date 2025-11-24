@@ -20,7 +20,7 @@ int max_index;
   }
   
   def getName() {
-    return "${this.class.simpleName}_${layer}"
+    return "${this.class.simpleName}_${sector}"
   }
 
   def processRun(dir, run) {
