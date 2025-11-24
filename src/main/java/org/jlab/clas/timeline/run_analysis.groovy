@@ -168,7 +168,7 @@ def engines = [
 // parse arguments
 if(args.any{it=="--timelines"}) {
   engines.values().flatten().each{
-    println(it.getClass().getSimpleName())
+    println(it.respondsTo('getName') ? it.name : it.getClass().getSimpleName())
   }
   System.exit(0)
 }
@@ -181,7 +181,7 @@ def (timelineArg, inputDirArg) = args
 
 // check the timeline argument
 def eng = engines.collectMany{key,engs->engs.collect{[key,it]}}
-  .find{name,eng->eng.getClass().getSimpleName()==timelineArg}
+  .find{name,eng-> (eng.respondsTo('getName') ? eng.name : eng.class.simpleName) == timelineArg}
 if(eng == null) {
   System.err.println("error: timeline '$timelineArg' is not defined")
   System.exit(100)

@@ -23,6 +23,10 @@ int number_of_wires_per_timeline;
       this.number_of_wires_this_layer   = layer_wires[layer_number - 1]
       this.number_of_wires_per_timeline = 15;
   }
+  
+  def getName() {
+    return "${this.class.simpleName}_${layer}"
+  }
 
   def processRun(dir, run) {
 
@@ -37,9 +41,12 @@ int number_of_wires_per_timeline;
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
           data[run].put(String.format('ahdc_time_layer%d_wire_number%d', layer, wire_number),  h1)
           def maxz = h1.getBinContent(h1.getMaximumBin());
-          int t0bin = (0..<h1.getMaximumBin()).find {
-            h1.getBinContent(it) >= 0.25 * maxz
-          }
+          //int t0bin = (0..<h1.getMaximumBin()).find {
+          //  h1.getBinContent(it) >= 0.25 * maxz
+          //}
+          int firstNonZeroBin = (0..h1.getMaximumBin()).find { h1.getBinContent(it) > 0 } 
+          int t0bin = firstNonZeroBin
+
           float t0 = h1.getAxis().getBinCenter(t0bin)
           int tmaxbin = (h1.getAxis().getNBins() - 1..h1.getMaximumBin()).find {
               h1.getBinContent(it) >= 0.25 * maxz
