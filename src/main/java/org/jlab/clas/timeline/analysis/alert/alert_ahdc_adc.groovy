@@ -24,6 +24,10 @@ int number_of_wires_per_timeline;
       this.number_of_wires_per_timeline = 15;
   }
 
+  def getName() {
+    return "${this.class.simpleName}_${layer}"
+  }
+
   def processRun(dir, run) {
 
     data[run] = [run:run]

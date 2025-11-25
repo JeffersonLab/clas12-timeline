@@ -18,6 +18,10 @@ int max_index;
     this.min_index = 48*(atof_sector); 
     this.max_index = 48*(atof_sector+1); 
   }
+  
+  def getName() {
+    return "${this.class.simpleName}_${sector}"
+  }
 
   def processRun(dir, run) {
 
@@ -25,7 +29,7 @@ int max_index;
     def trigger = dir.getObject('/TRIGGER/bits')
     def reference_trigger_bit = 0
     // data[run].put('bits',  trigger)
-    (index_min..<index_max).collect{index->
+    (min_index..<max_index).collect{index->
       int atof_sector = index / (12 * 4);
       assert sector == atof_sector;
       int layer     = (index % (12 * 4)) / 12;

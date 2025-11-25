@@ -18,6 +18,10 @@ int max_index;
     this.min_index = 48*(atof_sector); 
     this.max_index = 48*(atof_sector+1); 
   }
+  
+  def getName() {
+    return "${this.class.simpleName}_${sector}"
+  }
 
   def processRun(dir, run) {
 
