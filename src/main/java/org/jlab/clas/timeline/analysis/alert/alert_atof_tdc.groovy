@@ -39,7 +39,7 @@ int max_index;
       else file_index = String.format('sector%d_layer%d_component%d_order1', sector, layer, component-1)
       def h1 = dir.getObject(String.format('/ALERT/TDC_%s', file_index))
       if(h1!=null) {
-        if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
+        if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300 && h1.getRMS()<28){
           data[run].put(String.format('atof_tdc_%s', file_index),  h1)
           def f1 = ALERTFitter.tdcfitter(h1)
           data[run].put(String.format('fit_atof_tdc_%s', file_index),  f1)
