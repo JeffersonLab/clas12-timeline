@@ -346,6 +346,12 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 </details>
 
 <details>
+<summary>- [ ] make sure all special runs have the Misc bit, such as empty target runs</summary>
+
+- for example, see <https://clas12mon.jlab.org/rga/runs/table/>
+</details>
+
+<details>
 <summary>- [ ] backup your final version of the QADB</summary>
 
 - make sure your final `qa/qaTree.json` file is duplicated somewhere on another device

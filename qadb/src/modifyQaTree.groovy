@@ -157,11 +157,11 @@ if( cmd=="setbit" || cmd=="addbit" || cmd=="delbit") {
 else if(cmd=="sectorloss") {
   def rnum,bnumL,bnumR
   def secList = []
-  if(args.length>3) {
+  if(args.length>4) {
     rnum = args[1].toInteger()
     bnumL = args[2].toInteger()
     bnumR = args[3].toInteger()
-    if(args.length<5 || args[4]=="all") secList = (1..6).collect{it}
+    if(args[4]=="all") secList = (1..6).collect{it}
     else (4..<args.length).each{ secList<<args[it].toInteger() }
 
     println("run $rnum bins ${bnumL}-"+(bnumR==-1 ? "END" : bnumR) +
