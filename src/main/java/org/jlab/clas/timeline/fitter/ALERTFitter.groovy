@@ -117,6 +117,8 @@ class ALERTFitter{
 		            hcut.setBinError(b, 0)
 		        }
 
+		        if (hcut.integral() < 3) return null
+
 		        int mb = hcut.getMaximumBin()
 		        if (mb >= cutBin - 2) return null   // ensure left-side peak
 
