@@ -68,6 +68,90 @@ class ALERTFitter{
 		return f1
             }
             else {//wedges
+double height_fit_set = 0
+double mean_fit_set = 0
+double sigma_fit_set = 0
+double step = 2
+
+// ----- Clone & analyze primary peak -----
+H1F hpy = h1.histClone("hpy_zoom")
+int maxBin = hpy.getMaximumBin()
+double maxY = hpy.getBinContent(maxBin)
+double peak = hpy.getXaxis().getBinCenter(maxBin)
+double sigma0 = Math.min(step, getRestrictedRMS(hpy, peak - step, peak + step))
+
+// ----- Primary Gaussian Fit -----
+F1D fgaus = new F1D("fgaus", "[amp]*gaus(x,[mean],[sigma])",
+        peak - step, peak + step)
+
+fgaus.setParameter(0, maxY)
+fgaus.setParameter(1, peak)
+fgaus.setParameter(2, sigma0 > 0 ? sigma0 : 0.8)
+fgaus.setParLimits(0, 0, 1.2 * maxY)
+fgaus.setParLimits(1, peak - step, peak + step)
+fgaus.setParLimits(2, 0, step)
+
+def original = System.out
+System.setOut(new PrintStream(OutputStream.nullOutputStream()))
+DataFitter.fit(fgaus, hpy, "RQ")
+System.setOut(original)
+
+double height = fgaus.getParameter(0)
+double mean = fgaus.getParameter(1)
+double sigma = fgaus.getParameter(2)
+double entriesTotal = hpy.integral()
+
+// -------------------------------------------------------------------------
+// Utility closure to fit a left-side peak after cutting the histogram
+// -------------------------------------------------------------------------
+def fitLeftPeak = { H1F h, double prevMean, double prevSigma ->
+    // Cut histogram to the left of the previous peak
+    H1F hcut = h.histClone("hcut")
+    int cutBin = hcut.getXaxis().getBin(prevMean - prevSigma * 2)
+    for (int b = cutBin; b <= hcut.getXaxis().getNBins(); b++) {
+        hcut.setBinContent(b, 0)
+        hcut.setBinError(b, 0)
+    }
+
+    if (hcut.integral() < 3) return null
+
+    int mb = hcut.getMaximumBin()
+    if (mb >= cutBin - 2) return null   // ensure left-side peak
+
+    double pk = hcut.getXaxis().getBinCenter(mb)
+    double amp0 = hcut.getBinContent(mb)
+
+    F1D ftmp = new F1D("fgaus_left",
+            "[amp]*gaus(x,[mean],[sigma])",
+            pk - step, pk + step)
+
+    ftmp.setParameter(0, amp0)
+    ftmp.setParameter(1, pk)
+    ftmp.setParameter(2, 0.8)
+
+    ftmp.setParLimits(0, 0, 1.2 * amp0)
+    ftmp.setParLimits(1, pk - step, pk + step)
+    ftmp.setParLimits(2, 0, step)
+
+    System.setOut(new PrintStream(OutputStream.nullOutputStream()))
+    DataFitter.fit(ftmp, hcut, "RQ")
+    System.setOut(original)
+
+       double A = ftmp.getParameter(0)
+       double M = ftmp.getParameter(1)
+       double S = ftmp.getParameter(2)
+
+       // validation conditions
+       if (A > maxY * 0.3 &&
+           S < step && S > 0.1 &&
+           M < prevMean - prevSigma &&
+           hcut.integral() > 0.05 * entriesTotal)
+       {
+           return [A, M, S]
+       }
+       return null
+}
+
                 return null
             }
 	}
