@@ -41,8 +41,7 @@ class ALERTFitter{
 	}
 
 	static F1D tdc_minus_start_time_fitter(H1F h1, int component){
-		//works for bars
-		if(component>9){
+		if(component>9){//bars
 			def f1 =new F1D("fit:"+h1.getName(),"[amp]*gaus(x,[mean],[sigma])+[cst]", -5.0, 5.0);
 			f1.setLineColor(33);
 			f1.setLineWidth(10);
