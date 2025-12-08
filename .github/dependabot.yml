@@ -11,6 +11,8 @@ registries:
 updates:
   - package-ecosystem: "maven"
     directory: "/"
+    cooldown:
+      default-days: 14
     schedule:
       interval: "weekly"
     registries:
@@ -23,5 +25,7 @@ updates:
           - "org.codehaus.groovy:groovy-eclipse-batch"
   - package-ecosystem: "github-actions"
     directory: "/"
+    cooldown:
+      default-days: 14
     schedule:
       interval: "weekly"
