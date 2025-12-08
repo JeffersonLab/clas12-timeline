@@ -1,8 +1,8 @@
 /**
 *
-* Fitter package for CND
+* Fitter package for ALERT
 *
-* Writer: Sangbaek Lee
+* Writer: Sangbaek Lee, Zhiwan Xu
 *
 **/
 package org.jlab.clas.timeline.fitter
