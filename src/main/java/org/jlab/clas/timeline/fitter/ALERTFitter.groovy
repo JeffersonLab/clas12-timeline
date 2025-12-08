@@ -1,10 +1,10 @@
 /**
- *
- * Fitter package for CND
- *
- * Writer: Sangbaek Lee
- *
- **/
+*
+* Fitter package for CND
+*
+* Writer: Sangbaek Lee
+*
+**/
 package org.jlab.clas.timeline.fitter
 import org.jlab.groot.fitter.DataFitter
 import org.jlab.groot.data.H1F
@@ -31,8 +31,8 @@ class ALERTFitter{
 		double hMean, hRMS
 		def originalOut = System.out
 		System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
-
-		// Code that prints to System.out
+                
+                // Code that prints to System.out
 		DataFitter.fit(f1, h1, "");
 
 		System.setOut(originalOut)  // Restore the original output
@@ -233,8 +233,8 @@ class ALERTFitter{
 		double hMean, hRMS
 		def originalOut = System.out
 		System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
-
-		// Code that prints to System.out
+                
+                // Code that prints to System.out
 		DataFitter.fit(f1, h1, "");
 
 		System.setOut(originalOut)  // Restore the original output
