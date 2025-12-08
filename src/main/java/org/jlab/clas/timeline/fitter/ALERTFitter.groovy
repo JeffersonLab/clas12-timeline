@@ -1,8 +1,8 @@
 /**
 *
-* Fitter package for ALERT
+* Fitter package for CND
 *
-* Writer: Sangbaek Lee, Zhiwan Xu
+* Writer: Sangbaek Lee
 *
 **/
 package org.jlab.clas.timeline.fitter
@@ -65,7 +65,7 @@ class ALERTFitter{
 
 			System.setOut(originalOut)  // Restore the original output
 
-				return f1
+			return f1
 		}
 		else {
 		    double height_fit_set = 0
