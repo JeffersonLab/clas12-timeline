@@ -1,8 +1,8 @@
 /**
 *
-* Fitter package for CND
+* Fitter package for ALERT
 *
-* Writer: Sangbaek Lee
+* Writer: Sangbaek Lee, Zhiwan Xu
 *
 **/
 package org.jlab.clas.timeline.fitter
@@ -40,7 +40,8 @@ class ALERTFitter{
 		return f1
 	}
 
-	static F1D tdc_minus_start_time_fitter(H1F h1){
+	static F1D tdc_minus_start_time_fitter(H1F h1, int component){
+            if (component > 9) {//bars
 		def f1 =new F1D("fit:"+h1.getName(),"[amp]*gaus(x,[mean],[sigma])+[cst]", -5.0, 5.0);
 		f1.setLineColor(33);
 		f1.setLineWidth(10);
@@ -65,6 +66,10 @@ class ALERTFitter{
 		System.setOut(originalOut)  // Restore the original output
 
 		return f1
+            }
+            else {//wedges
+                return null
+            }
 	}
 
 
