@@ -41,6 +41,7 @@ class ALERTFitter{
 	}
 
 	static F1D tdc_minus_start_time_fitter(H1F h1){
+/* //works for bars
 		def f1 =new F1D("fit:"+h1.getName(),"[amp]*gaus(x,[mean],[sigma])+[cst]", -5.0, 5.0);
 		f1.setLineColor(33);
 		f1.setLineWidth(10);
@@ -65,6 +66,129 @@ class ALERTFitter{
 		System.setOut(originalOut)  // Restore the original output
 
 		return f1
+*/
+                double height_fit_set = 0;
+                double mean_fit_set = 0;
+                double sigma_fit_set = 0;
+                double step = 2;
+                if (h1.getEntries() < 10) return null;
+                // Clone & clean histogram
+                H1F hpy = h1.histClone("hpy_zoom");
+                int maxBin = hpy.getMaximumBin();
+                double maxY = hpy.getBinContent(maxBin);
+                double peak = hpy.getXaxis().getBinCenter(maxBin);
+                double sigma0 = Math.min(step, getRestrictedRMS(hpy, peak - step, peak + step));
+
+                // ----- Primary Gaussian Fit -----
+                F1D fgaus = new F1D("fgaus", "[amp]*gaus(x,[mean],[sigma])",
+                                peak - step, peak + step);
+
+                fgaus.setParameter(0, maxY);
+                fgaus.setParameter(1, peak);
+                fgaus.setParameter(2, sigma0 > 0 ? sigma0 : 0.8);
+                fgaus.setParLimits(0, 0, 1.2 * maxY);
+                fgaus.setParLimits(1, peak - step, peak + step);
+                fgaus.setParLimits(2, 0, step);
+
+                // Silence DFit output
+                PrintStream original = System.out;
+                System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+                DataFitter.fit(fgaus, hpy, "RQ");
+                System.setOut(original);
+
+                double height = fgaus.getParameter(0);
+                double mean = fgaus.getParameter(1);
+                double sigma = fgaus.getParameter(2);
+                double entriesTotal = hpy.integral();
+
+                // ----- Build left-side histogram -----
+                H1F hpy_side = hpy.histClone("hpy_side");
+                int bin1 = hpy_side.getXaxis().getBin(mean - step);
+                for (int b = bin1; b <= hpy_side.getXaxis().getNBins(); b++) {
+                        hpy_side.setBinContent(b, 0);
+                        hpy_side.setBinError(b, 0);
+                }
+                // ----- Find valley over 10 bins -----
+                int valleyBin = bin1 - 10;
+                double valleyValue = hpy_side.getBinContent(valleyBin);
+
+                for (int b = bin1 - 10; b < bin1; b++) {
+                        double val = hpy_side.getBinContent(b);
+                        if (val < valleyValue) {
+                                valleyValue = val;
+                                valleyBin = b;
+                        }
+                }
+                if (hpy_side.getMaximumBin() > bin1 - 5) {
+                        for (int b = valleyBin; b < bin1; b++) {
+                                hpy_side.setBinContent(b, 0);
+                                hpy_side.setBinError(b, 0);
+                        }
+                } else {
+                        valleyBin = bin1;
+                }
+
+                // ----- Fit potential secondary peak -----
+                boolean flag_replace = false;
+                double height2 = 0, mean2 = 0, sigma2 = 0;
+                double entries2 = hpy_side.integral();
+
+                if (entries2 > 0 && hpy_side.getMaximumBin() < bin1 - 2) {
+
+                        int maxBin2 = hpy_side.getMaximumBin();
+                        double peak2 = hpy_side.getXaxis().getBinCenter(maxBin2);
+
+                        F1D fgaus2 = new F1D("fgaus_side", "[amp]*gaus(x,[mean],[sigma])",
+                                        peak2 - step, peak2 + step);
+
+                        fgaus2.setParameter(0, hpy_side.getBinContent(maxBin2));
+                        fgaus2.setParameter(1, peak2);
+                        fgaus2.setParameter(2, 0.8);
+
+                        fgaus2.setParLimits(0, 0, 1.2 * hpy_side.getBinContent(maxBin2));
+                        fgaus2.setParLimits(1, peak2 - step, peak2 + step);
+                        fgaus2.setParLimits(2, 0, step);
+
+                        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+                        DataFitter.fit(fgaus2, hpy_side, "RQ");
+                        System.setOut(original);
+
+                        height2 = fgaus2.getParameter(0);
+                        mean2 = fgaus2.getParameter(1);
+                        sigma2 = fgaus2.getParameter(2);
+                        if (entries2 > 0.1 * entriesTotal &&
+                                        height2 > maxY * 0.3 &&
+                                        sigma2 < step && sigma2 > 0.1 &&
+                                        mean2 < mean - sigma) {
+                                flag_replace = true;
+                        }
+                }
+
+                // ----- Final selection -----
+                height_fit_set = height;
+                mean_fit_set = mean;
+                sigma_fit_set = sigma;
+
+                if (flag_replace) {
+                        height_fit_set = height2;
+                        mean_fit_set = mean2;
+                        sigma_fit_set = sigma2;
+                }
+
+                // ----- Return final fit function -----
+                F1D fout = new F1D("fit:" + h1.getName(),
+                                "[amp]*gaus(x,[mean],[sigma])",
+                                mean_fit_set - step * 2, mean_fit_set + step * 2);
+
+                fout.setParameter(0, height_fit_set);
+                fout.setParameter(1, mean_fit_set);
+                fout.setParameter(2, sigma_fit_set);
+
+                fout.setLineColor(33);
+                fout.setLineWidth(10);
+
+                return fout;
+
 	}
 
 
