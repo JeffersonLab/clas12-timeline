@@ -29,15 +29,15 @@ class ALERTFitter{
 		f1.setParLimits(3, 0.0, 0.1*maxz);
 
 		double hMean, hRMS
-			def originalOut = System.out
-			System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
+		def originalOut = System.out
+		System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
 
-			// Code that prints to System.out
-			DataFitter.fit(f1, h1, "");
+		// Code that prints to System.out
+		DataFitter.fit(f1, h1, "");
 
 		System.setOut(originalOut)  // Restore the original output
 
-			return f1
+		return f1
 	}
 
 	static F1D tdc_minus_start_time_fitter(H1F h1, int component){
@@ -209,7 +209,7 @@ class ALERTFitter{
 	static F1D totfitter(H1F h1){
 		def f1 =new F1D("fit:"+h1.getName(),"[cst]", -5.0, 5.0);
 		def peak_location = h1.getAxis().getBinCenter(h1.getMaximumBin())
-			def maxz = h1.getBinContent(h1.getMaximumBin());
+		def maxz = h1.getBinContent(h1.getMaximumBin());
 		f1.setRange(peak_location - 1, peak_location + 1);
 		f1.setParameter(0, maxz);
 
@@ -232,15 +232,15 @@ class ALERTFitter{
 		f1.setParLimits(3, 0.0, 0.1*maxz);
 
 		double hMean, hRMS
-			def originalOut = System.out
-			System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
+		def originalOut = System.out
+		System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
 
-			// Code that prints to System.out
-			DataFitter.fit(f1, h1, "");
+		// Code that prints to System.out
+		DataFitter.fit(f1, h1, "");
 
 		System.setOut(originalOut)  // Restore the original output
 
-			return f1
+		return f1
 	}
 	static F1D time_fitter_rising(H1F h1, float t0){
 		def f1 =new F1D("fit:"+h1.getName(),"[cst]", -5.0, 5.0);
