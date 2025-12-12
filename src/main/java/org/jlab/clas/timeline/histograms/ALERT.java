@@ -3,7 +3,7 @@ package org.jlab.clas.timeline.histograms;
 import java.util.*;
 
 import org.jlab.groot.data.H1F;
-// import org.jlab.groot.data.H2F;
+import org.jlab.groot.data.H2F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.groot.data.TDirectory;
@@ -27,10 +27,9 @@ public class ALERT {
   public int rf_large_integer;
 
   //Hodoscope
-  // public H1F[] TDC, TDC_minus_start_time, TOT; //ATOF-related histograms
-  // public H2F[] TDC_minus_start_time_vs_TOT;
-  // public H1F START_TIME;//ATOF-related histogram
-  public H1F[] TOT;
+  public H1F[] TDC, TDC_minus_start_time, TOT; //ATOF-related histograms
+  public H2F[] TDC_minus_start_time_vs_TOT;
+  public H1F START_TIME;//ATOF-related histogram
   public H1F[] ATOF_Time;
   public H1F[] ADC, AHDC_RESIDUAL, AHDC_TIME;//AHDC-related-histograms
   private H1F bits;
@@ -38,7 +37,7 @@ public class ALERT {
   public IndexedTable rfTable;
 
   public ConstantsManager ccdb;
-  // private float tdc_bin_time = 0.015625f; // ns/bin
+  private float tdc_bin_time = 0.015625f; // ns/bin
   // private int[] layer_wires             = {47,  56,  56,  72,  72,  87,  87,  99};
   private int[] layer_wires_cumulative  = {0, 47, 103, 159, 231, 303, 390, 477, 576};
   private int[] layer_encoding          = {11, 21, 22, 31, 32, 41, 42, 51};
@@ -64,11 +63,46 @@ public class ALERT {
     rf_large_integer = 1000;
 
     // //ATOF TDC Histograms
-    // TDC = new H1F[660];
-    // TDC_minus_start_time = new H1F[660];
-    // TOT = new H1F[660];
-    // TDC_minus_start_time_vs_TOT = new H2F[660];
+    TDC = new H1F[720];
+    TDC_minus_start_time = new H1F[720];
+    TOT = new H1F[720];
+    TDC_minus_start_time_vs_TOT = new H2F[720];
     ATOF_Time = new H1F[660];
+
+    for (int index = 0; index < 720; index++) {
+      int sector    = 0;
+      int layer     = 0;
+      int component = 0;
+      int order     = 0;
+
+      sector    = index / (12 * 4);
+      layer     = (index % (12 * 4)) / 12;
+      component = index % 12;
+      order = 0;
+      if (component == 11){
+        component = 10;
+        order = 1;
+      }
+
+      float tdc_offset = 0.0f;
+      if (reqrunNum<21331) tdc_offset = 250.0f;
+
+      TDC[index] = new H1F(String.format("TDC_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC sector%d layer%d component%d order%d", sector, layer, component, order), 200, tdc_offset + 150.0, tdc_offset+ 250.0);
+      TDC[index].setTitleX("TDC (ns)");
+      TDC[index].setTitleY("Counts");
+      TDC[index].setFillColor(4);
+      TDC_minus_start_time[index] = new H1F(String.format("TDC_minus_start_time_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TDC - start time sector%d layer%d component%d order%d", sector, layer, component, order), 200, tdc_offset + 50.0, tdc_offset + 150.0);
+      TDC_minus_start_time[index].setTitleX("TDC - start time (ns)");
+      TDC_minus_start_time[index].setTitleY("Counts");
+      TDC_minus_start_time[index].setFillColor(4);
+      TOT[index] = new H1F(String.format("TOT_sector%d_layer%d_component%d_order%d", sector, layer, component, order), String.format("TOT sector%d layer%d component%d order%d", sector, layer, component, order), 700, 0.0, 70.0);
+      TOT[index].setTitleX("TOT (ns)");
+      TOT[index].setTitleY("Counts");
+      TOT[index].setFillColor(4);
+      TDC_minus_start_time_vs_TOT[index] = new H2F(String.format("TDC_minus_start_time_vs_TOT_sector%d_layer%d_component_%d_order_%d", sector, layer, component, order), String.format("TDC minus start time vs TOT sector%d layer%d component%d order%d", sector, layer, component, order), 70, 0.0, 70.0, 40, tdc_offset + 80.0, tdc_offset + 120.0);
+      TDC_minus_start_time_vs_TOT[index].setTitleX("TOT (ns)");
+      TDC_minus_start_time_vs_TOT[index].setTitleY("TDC - start time (ns)");
+    }
 
     for (int index = 0; index < 660; index++) {
       int sector    = 0;
@@ -79,18 +113,15 @@ public class ALERT {
       layer     = (index % (11 * 4)) / 11;
       component = index % 11;
 
-      // float tdc_offset = 0.0f;
-      // if (reqrunNum<21331) tdc_offset = 250.0f;
-
       ATOF_Time[index] = new H1F(String.format("ATOF_Time_sector%d_layer%d_component%d", sector, layer, component), String.format("ATOF Time sector%d layer%d component%d", sector, layer, component), 300, 85, 100);
-      ATOF_Time[index].setTitleX("ATOF_Time (ns)");
+      ATOF_Time[index].setTitleX("ATOF Time (ns)");
       ATOF_Time[index].setTitleY("Counts");
       ATOF_Time[index].setFillColor(4);
     }
 
-    // START_TIME = new H1F("start time","start time", 80, 80.0, 120.0);
-    // START_TIME.setTitle("Event start time when the start time is defined and the trigger particle is an electron");
-    // START_TIME.setTitleX("start time (ns)");
+    START_TIME = new H1F("start time","start time", 80, 80.0, 120.0);
+    START_TIME.setTitle("Event start time when the start time is defined and the trigger particle is an electron");
+    START_TIME.setTitleX("start time (ns)");
 
     //AHDC ADC Histograms
     ADC           = new H1F[576];
@@ -112,7 +143,7 @@ public class ALERT {
       ADC[index].setTitleX("ADC");
       ADC[index].setTitleY("Counts");
       ADC[index].setFillColor(4);
-      AHDC_TIME[index] = new H1F(String.format("AHDC_TIME_layer%d_wire_number%d", layer, wire_number), String.format("AHDC Time layer %d wire number%d", layer, wire_number), 450, -150.f, 300.0f);
+      AHDC_TIME[index] = new H1F(String.format("AHDC_TIME_layer%d_wire_number%d", layer, wire_number), String.format("AHDC Time layer %d wire number%d", layer, wire_number), 450, -10.f, 440.0f);
       AHDC_TIME[index].setTitleX("AHDC TIME (ns)");
       AHDC_TIME[index].setTitleY("Counts");
       AHDC_TIME[index].setFillColor(4);
@@ -169,8 +200,28 @@ public class ALERT {
     }
   }
 
+  public void fillATOF(DataBank atof_tdc) {
+    int rows = atof_tdc.rows();
+    for (int loop = 0; loop < rows; loop++) {
+      int sector    = atof_tdc.getInt("sector", loop);
+      int layer     = atof_tdc.getInt("layer", loop);
+      int component = atof_tdc.getInt("component", loop);
+      int order     = atof_tdc.getInt("order", loop);
+      int tdc       = atof_tdc.getInt("TDC", loop);
+      int tot       = atof_tdc.getInt("ToT", loop);
+      int index     = sector * 48 + layer * 12 + component + order;
 
-  public void fillATOF(DataBank atof_hits) {
+      TDC[index].fill(tdc*tdc_bin_time);
+      if (startTime!=-1000.0 && triggerPID == 11){
+        START_TIME.fill(startTime);
+        TDC_minus_start_time[index].fill(tdc*tdc_bin_time - startTime);
+        TDC_minus_start_time_vs_TOT[index].fill(tot*tdc_bin_time, tdc*tdc_bin_time - startTime);
+      }
+      TOT[index].fill(tot*tdc_bin_time);
+    }
+  }
+
+  public void fillATOF_hits(DataBank atof_hits) {
     int rows = atof_hits.rows();
     for (int loop = 0; loop < rows; loop++) {
       int sector    = atof_hits.getInt("sector", loop);
@@ -189,7 +240,7 @@ public class ALERT {
     DataBank recBankEB = null;
     DataBank recEvenEB = null;
     DataBank runConfig = null;
-    // DataBank atof_tdc  = null;
+    DataBank atof_tdc  = null;
     DataBank atof_hits  = null;
     DataBank ahdc_adc  = null;
     DataBank ahdc_hits = null;
@@ -203,9 +254,9 @@ public class ALERT {
     if (event.hasBank("RUN::config")) {
       runConfig = event.getBank("RUN::config");
     }
-    // if (event.hasBank("ATOF::tdc")) {
-    //   atof_tdc = event.getBank("ATOF::tdc");
-    // }
+    if (event.hasBank("ATOF::tdc")) {
+      atof_tdc = event.getBank("ATOF::tdc");
+    }
 
     if (event.hasBank("ATOF::hits")) {
       atof_hits = event.getBank("ATOF::hits");
@@ -239,8 +290,12 @@ public class ALERT {
       triggerPID = recBankEB.getInt("pid", 0);
     }
 
+    if (atof_tdc != null) {
+      fillATOF(atof_tdc);
+    }
+
     if (atof_hits != null) {
-      fillATOF(atof_hits);
+      fillATOF_hits(atof_hits);
     }
 
     if (ahdc_adc != null) {
@@ -259,7 +314,9 @@ public class ALERT {
     dirout.cd("/ALERT/");
     for (int index = 0; index < 660; index++) {
       dirout.addDataSet(ATOF_Time[index]);
-      // dirout.addDataSet(TDC[index], TDC_minus_start_time[index], TOT[index], TDC_minus_start_time_vs_TOT[index]);//atof histograms
+    }
+    for (int index = 0; index < 720; index++) {
+      dirout.addDataSet(TDC[index], TDC_minus_start_time[index], TOT[index], TDC_minus_start_time_vs_TOT[index]);
     }
     for (int index = 0; index < 576; index++) {
       dirout.addDataSet(ADC[index], AHDC_TIME[index]);
