@@ -82,7 +82,7 @@ public class ALERT {
       // float tdc_offset = 0.0f;
       // if (reqrunNum<21331) tdc_offset = 250.0f;
 
-      ATOF_Time[index] = new H1F(String.format("ATOF_Time_sector%d_layer%d_component%d", sector, layer, component), String.format("ATOF Time sector%d layer%d component%d", sector, layer, component), 1000, -500, 500);
+      ATOF_Time[index] = new H1F(String.format("ATOF_Time_sector%d_layer%d_component%d", sector, layer, component), String.format("ATOF Time sector%d layer%d component%d", sector, layer, component), 300, 85, 100);
       ATOF_Time[index].setTitleX("ATOF_Time (ns)");
       ATOF_Time[index].setTitleY("Counts");
       ATOF_Time[index].setFillColor(4);
@@ -176,7 +176,7 @@ public class ALERT {
       int sector    = atof_hits.getInt("sector", loop);
       int layer     = atof_hits.getInt("layer", loop);
       int component = atof_hits.getInt("component", loop);
-      float time       = (float) atof_hits.getDouble("time", loop);
+      float time       = atof_hits.getFloat("time", loop);
       int index     = sector * 44 + layer * 11 + component;
 
       ATOF_Time[index].fill(time);
