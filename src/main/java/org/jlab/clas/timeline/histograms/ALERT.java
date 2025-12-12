@@ -325,7 +325,7 @@ public class ALERT {
       dirout.addDataSet(AHDC_RESIDUAL[index]);
     }
 
-    // dirout.addDataSet(START_TIME);
+    dirout.addDataSet(START_TIME);
     dirout.mkdir("/TRIGGER/");
     dirout.cd("/TRIGGER/");
     dirout.addDataSet(bits);

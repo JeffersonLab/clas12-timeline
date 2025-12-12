@@ -13,6 +13,7 @@ def engines = [
     *(0..14).collect {atof_sector -> new alert_atof_tdc_minus_start_time(atof_sector)},
     *(0..14).collect {atof_sector -> new alert_atof_tdc(atof_sector)},
     *(0..14).collect {atof_sector -> new alert_atof_tot(atof_sector)},
+    *(0..14).collect {atof_sector -> new alert_atof_time(atof_sector)},
     new alert_start_time(),
   ],
   out_BAND: [
