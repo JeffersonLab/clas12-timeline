@@ -30,6 +30,7 @@ public class ALERT {
   public H1F[] TDC, TDC_minus_start_time, TOT; //ATOF-related histograms
   public H2F[] TDC_minus_start_time_vs_TOT;
   public H1F START_TIME;//ATOF-related histogram
+  public H1F[] ATOF_Time;
   public H1F[] ADC, AHDC_RESIDUAL, AHDC_TIME;//AHDC-related-histograms
   private H1F bits;
 
@@ -61,11 +62,12 @@ public class ALERT {
     }
     rf_large_integer = 1000;
 
-    //ATOF TDC Histograms
+    // //ATOF TDC Histograms
     TDC = new H1F[720];
     TDC_minus_start_time = new H1F[720];
     TOT = new H1F[720];
     TDC_minus_start_time_vs_TOT = new H2F[720];
+    ATOF_Time = new H1F[660];
 
     for (int index = 0; index < 720; index++) {
       int sector    = 0;
@@ -102,6 +104,21 @@ public class ALERT {
       TDC_minus_start_time_vs_TOT[index].setTitleY("TDC - start time (ns)");
     }
 
+    for (int index = 0; index < 660; index++) {
+      int sector    = 0;
+      int layer     = 0;
+      int component = 0;
+
+      sector    = index / (11 * 4);
+      layer     = (index % (11 * 4)) / 11;
+      component = index % 11;
+
+      ATOF_Time[index] = new H1F(String.format("ATOF_Time_sector%d_layer%d_component%d", sector, layer, component), String.format("ATOF Time sector%d layer%d component%d", sector, layer, component), 300, 85, 100);
+      ATOF_Time[index].setTitleX("ATOF Time (ns)");
+      ATOF_Time[index].setTitleY("Counts");
+      ATOF_Time[index].setFillColor(4);
+    }
+
     START_TIME = new H1F("start time","start time", 80, 80.0, 120.0);
     START_TIME.setTitle("Event start time when the start time is defined and the trigger particle is an electron");
     START_TIME.setTitleX("start time (ns)");
@@ -126,7 +143,7 @@ public class ALERT {
       ADC[index].setTitleX("ADC");
       ADC[index].setTitleY("Counts");
       ADC[index].setFillColor(4);
-      AHDC_TIME[index] = new H1F(String.format("AHDC_TIME_layer%d_wire_number%d", layer, wire_number), String.format("AHDC Time layer %d wire number%d", layer, wire_number), 450, -150.f, 300.0f);
+      AHDC_TIME[index] = new H1F(String.format("AHDC_TIME_layer%d_wire_number%d", layer, wire_number), String.format("AHDC Time layer %d wire number%d", layer, wire_number), 450, -10.f, 440.0f);
       AHDC_TIME[index].setTitleX("AHDC TIME (ns)");
       AHDC_TIME[index].setTitleY("Counts");
       AHDC_TIME[index].setFillColor(4);
@@ -183,7 +200,6 @@ public class ALERT {
     }
   }
 
-
   public void fillATOF(DataBank atof_tdc) {
     int rows = atof_tdc.rows();
     for (int loop = 0; loop < rows; loop++) {
@@ -205,12 +221,27 @@ public class ALERT {
     }
   }
 
+  public void fillATOF_hits(DataBank atof_hits) {
+    int rows = atof_hits.rows();
+    for (int loop = 0; loop < rows; loop++) {
+      int sector    = atof_hits.getInt("sector", loop);
+      int layer     = atof_hits.getInt("layer", loop);
+      int component = atof_hits.getInt("component", loop);
+      float time       = atof_hits.getFloat("time", loop);
+      int index     = sector * 44 + layer * 11 + component;
+
+      ATOF_Time[index].fill(time);
+
+    }
+  }
+
   public void processEvent(DataEvent event) {
 
     DataBank recBankEB = null;
     DataBank recEvenEB = null;
     DataBank runConfig = null;
     DataBank atof_tdc  = null;
+    DataBank atof_hits  = null;
     DataBank ahdc_adc  = null;
     DataBank ahdc_hits = null;
 
@@ -225,6 +256,10 @@ public class ALERT {
     }
     if (event.hasBank("ATOF::tdc")) {
       atof_tdc = event.getBank("ATOF::tdc");
+    }
+
+    if (event.hasBank("ATOF::hits")) {
+      atof_hits = event.getBank("ATOF::hits");
     }
 
     if (event.hasBank("AHDC::adc")) {
@@ -259,6 +294,10 @@ public class ALERT {
       fillATOF(atof_tdc);
     }
 
+    if (atof_hits != null) {
+      fillATOF_hits(atof_hits);
+    }
+
     if (ahdc_adc != null) {
       fillAHDC(ahdc_adc);
     }
@@ -273,8 +312,11 @@ public class ALERT {
     TDirectory dirout = new TDirectory();
     dirout.mkdir("/ALERT/");
     dirout.cd("/ALERT/");
+    for (int index = 0; index < 660; index++) {
+      dirout.addDataSet(ATOF_Time[index]);
+    }
     for (int index = 0; index < 720; index++) {
-      dirout.addDataSet(TDC[index], TDC_minus_start_time[index], TOT[index], TDC_minus_start_time_vs_TOT[index]);//atof histograms
+      dirout.addDataSet(TDC[index], TDC_minus_start_time[index], TOT[index], TDC_minus_start_time_vs_TOT[index]);
     }
     for (int index = 0; index < 576; index++) {
       dirout.addDataSet(ADC[index], AHDC_TIME[index]);
