@@ -98,7 +98,7 @@ class ALERTFitter{
  			int maxBin = h1.getMaximumBin()
 			double maxY = h1.getBinContent(maxBin)
  			double peak = h1.getAxis().getBinCenter(maxBin)
- 			double step = 2.0
+ 			double step = .5f
  			int binLow  = h1.getAxis().getBin(peak - step)
  			int binHigh = h1.getAxis().getBin(peak + step)
  			double sigma0 = ALERTFitter.getRestrictedRMS(h1, binLow, binHigh)
