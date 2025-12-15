@@ -5,7 +5,7 @@ import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ALERTFitter
 
-class alert_start_time {
+class alert_atof_start_time {
 
 def data = new ConcurrentHashMap()
 def has_data = new AtomicBoolean(false)
@@ -45,6 +45,6 @@ def has_data = new AtomicBoolean(false)
     }
     out.cd('/timelines')
     out.addDataSet(gr)
-    out.writeFile('alert_atof_tdc_minus_start_time.hipo')
+    out.writeFile('alert_atof_start_time.hipo')
   }
 }
