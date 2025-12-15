@@ -13,6 +13,27 @@ import org.jlab.groot.math.F1D
 
 class ALERTFitter{
 
+	static double getRestrictedRMS(H1F h1, int bin_low, int bin_high){
+		double mean = h1.getMean();
+		double rms = 0.0;
+		double summ  = 0.0;
+		int    count = 0; 
+		for(int i = bin_low; i <= bin_high; i++){
+				int bincontent = (int) h1.getBinContent(i);
+				if(bincontent!=0){
+						double variance = h1.getAxis().getBinCenter(i) - mean;
+						summ  += variance*variance*h1.getBinContent(i);
+						count += (int) h1.getBinContent(i);
+				}
+		}
+		if(count!=0) {
+				rms = summ/count;
+				return Math.sqrt(rms);
+		}
+		return rms;
+  }
+
+
 	static F1D tdcfitter(H1F h1){
 		def f1 =new F1D("fit:"+h1.getName(),"[amp]*gaus(x,[mean],[sigma])+[cst]", -5.0, 5.0);
 		f1.setLineColor(33);
@@ -50,7 +71,7 @@ class ALERTFitter{
 			double peak_location = h1.getAxis().getBinCenter(h1.getMaximumBin());
 			int bin_low  = h1.getAxis().getBin(peak_location - 2.0);
 			int bin_high = h1.getAxis().getBin(peak_location + 2.0);
-			double sigma = h1.getRMS(bin_low, bin_high);
+			double sigma = ALERTFitter.getRestrictedRMS(h1, bin_low, bin_high);
 			if(sigma>1 || sigma<0 || Double.isNaN(sigma)) sigma=1;
 			f1.setRange(peak_location - sigma, peak_location + sigma);
 			f1.setParameter(0,maxz-h1.getBinContent(0));
@@ -80,7 +101,7 @@ class ALERTFitter{
  			double step = 2.0
  			int binLow  = h1.getAxis().getBin(peak - step)
  			int binHigh = h1.getAxis().getBin(peak + step)
- 			double sigma0 = h1.getRMS(binLow, binHigh)
+ 			double sigma0 = ALERTFitter.getRestrictedRMS(h1, binLow, binHigh)
  			if (sigma0 <= 0 || Double.isNaN(sigma0)) sigma0 = 1.0
 			
 			F1D fgaus = new F1D("fgaus_main",
@@ -226,7 +247,7 @@ class ALERTFitter{
 		    int maxBin = hpy.getMaximumBin()
 		    double maxY = hpy.getBinContent(maxBin)
 		    double peak = hpy.getXaxis().getBinCenter(maxBin)
-		    double sigma0 = Math.min(step, getRestrictedRMS(hpy, peak - step, peak + step))
+		    double sigma0 = Math.min(step, ALERTFitter.getRestrictedRMS(hpy, hpy.getXaxis().getBin(peak - step), hpy.getXaxis().getBin(peak + step)))
 
 		    // ----- Primary Gaussian Fit -----
 		    F1D fgaus = new F1D("fgaus", "[amp]*gaus(x,[mean],[sigma])",
