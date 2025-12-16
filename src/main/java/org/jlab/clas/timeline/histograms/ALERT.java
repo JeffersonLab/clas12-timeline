@@ -3,7 +3,6 @@ package org.jlab.clas.timeline.histograms;
 import java.util.*;
 
 import org.jlab.groot.data.H1F;
-import org.jlab.groot.data.H2F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.groot.data.TDirectory;
