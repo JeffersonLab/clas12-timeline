@@ -78,7 +78,7 @@ class ALERTFitter{
 			f1.setParameter(1, peak_location);
 			f1.setParameter(2, 1.0);
 			f1.setParameter(3, h1.getBinContent(0));
-			if (maxz>0) f1.setParLimits(0, maxz*0.9,maxz*1.1);
+			if (maxz>0) f1.setParLimits(0, maxz*0.7,maxz*1.3);
 			f1.setParLimits(3, 0.0, 0.1*maxz);
 			f1.setParLimits(2,0,1.0);
 			f1.setParLimits(1,peak_location - sigma, peak_location + sigma);
@@ -167,7 +167,7 @@ class ALERTFitter{
 			    double S = ftmp.getParameter(2)
 
 			    // same validation as your code
-			    if (A > maxY * 0.3 &&
+			    if (A > maxY * 0.4 &&
 			        S < step && S > 0.1 &&
 			        M < prevMean - prevSigma &&
 			        hcut.integral() > 0.05 * entriesTotal)
