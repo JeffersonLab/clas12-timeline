@@ -3,7 +3,7 @@ changelog:
     - title: ⚠️ Breaking Changes
       labels: [ breaking ]
     - title: ⭐ General Updates
-      labels: [ '*' ]
+      labels: [ general ]
     - title: 🐛 Bug Fixes
       labels: [ fix ]
     - title: 🔘 RG-L Updates
@@ -16,3 +16,5 @@ changelog:
       labels: [ dependencies ]
     - title: 🔧 Technical Changes
       labels: [ technical ]
+    - title: 🔘 Other Changes
+      labels: [ '*' ]
