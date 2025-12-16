@@ -6,7 +6,7 @@ changelog:
       labels: [ '*' ]
     - title: 🐛 Bug Fixes
       labels: [ fix ]
-    - title: 🔘 RG-L
+    - title: 🔘 RG-L Updates
       labels: [ rg-l ]
     - title: 📖 Documentation Updates
       labels: [ documentation ]
