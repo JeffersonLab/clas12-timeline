@@ -8,6 +8,8 @@ changelog:
       labels: [ fix ]
     - title: 🔘 RG-L Updates
       labels: [ rg-l ]
+    - title: 👓 QADB Updates
+      labels: [ qadb ]
     - title: 📖 Documentation Updates
       labels: [ documentation ]
     - title: 📦 Dependency Changes
