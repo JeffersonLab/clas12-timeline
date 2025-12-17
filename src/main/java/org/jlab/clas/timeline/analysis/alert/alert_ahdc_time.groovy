@@ -25,7 +25,7 @@ int number_of_wires_per_timeline;
   }
   
   def getName() {
-    return "${this.class.simpleName}_${layer}"
+    return "${this.class.simpleName}_${layer_number}"
   }
 
   def processRun(dir, run) {
@@ -36,10 +36,10 @@ int number_of_wires_per_timeline;
     // data[run].put('bits',  trigger)
     float integral = 0;
     (1..number_of_wires_this_layer).collect{wire_number->
-      def h1 = dir.getObject(String.format("/ALERT/AHDC_TIME_layer%d_wire_number%d", layer, wire_number))
+      def h1 = dir.getObject(String.format("/ALERT/AHDC_TIME_layer%d_wire_number%02d", layer_number, wire_number))
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
-          data[run].put(String.format('ahdc_time_layer%d_wire_number%d', layer, wire_number),  h1)
+          data[run].put(String.format('ahdc_time_layer%d_wire_number%02d', layer_number, wire_number),  h1)
           def maxz = h1.getBinContent(h1.getMaximumBin());
           //int t0bin = (0..<h1.getMaximumBin()).find {
           //  h1.getBinContent(it) >= 0.25 * maxz
@@ -53,12 +53,12 @@ int number_of_wires_per_timeline;
           }
           float tmax = h1.getAxis().getBinCenter(tmaxbin)
           float width = tmax - t0
-          data[run].put(String.format('t0_ahdc_time_layer%d_wire_number%d', layer, wire_number),  t0)
-          data[run].put(String.format('tmax_ahdc_time_layer%d_wire_number%d', layer, wire_number),  tmax)
-          data[run].put(String.format('width_ahdc_time_layer%d_wire_number%d', layer, wire_number),  width)
-          data[run].put(String.format('fit_t0_ahdc_time_layer%d_wire_number%d', layer, wire_number),  ALERTFitter.time_fitter_rising(h1, t0))
-          data[run].put(String.format('fit_tmax_ahdc_time_layer%d_wire_number%d', layer, wire_number),  ALERTFitter.time_fitter_falling(h1, tmax))
-          data[run].put(String.format('fit_width_ahdc_time_layer%d_wire_number%d', layer, wire_number),  ALERTFitter.time_fitter_width(h1, t0, tmax))
+          data[run].put(String.format('t0_ahdc_time_layer%d_wire_number%02d', layer_number, wire_number),  t0)
+          data[run].put(String.format('tmax_ahdc_time_layer%d_wire_number%02d', layer_number, wire_number),  tmax)
+          data[run].put(String.format('width_ahdc_time_layer%d_wire_number%02d', layer_number, wire_number),  width)
+          data[run].put(String.format('fit_t0_ahdc_time_layer%d_wire_number%02d', layer_number, wire_number),  ALERTFitter.time_fitter_rising(h1, t0))
+          data[run].put(String.format('fit_tmax_ahdc_time_layer%d_wire_number%02d', layer_number, wire_number),  ALERTFitter.time_fitter_falling(h1, tmax))
+          data[run].put(String.format('fit_width_ahdc_time_layer%d_wire_number%02d', layer_number, wire_number),  ALERTFitter.time_fitter_width(h1, t0, tmax))
           has_data.set(true)
         }
       }
@@ -85,10 +85,10 @@ int number_of_wires_per_timeline;
         (1..number_of_wires_this_timeline).collect{wire_index->
           def wire_number = wire_index + 15* timeline_index
           if (wire_number <= number_of_wires_this_layer){
-            def name = String.format('ahdc_time_layer%d_wire_number%d', layer, wire_number)
+            def name = String.format('ahdc_time_layer%d_wire_number%02d', layer_number, wire_number)
             def gr = new GraphErrors(name)
-            gr.setTitle(  String.format("AHDC Time %s Layer %d", variable.replace('_', ' '), layer))
-            gr.setTitleY( String.format("AHDC Time %s Layer %d", variable.replace('_', ' '), layer))
+            gr.setTitle(  String.format("AHDC Time %s Layer %d", variable.replace('_', ' '), layer_number))
+            gr.setTitleY( String.format("AHDC Time %s Layer %d", variable.replace('_', ' '), layer_number))
             gr.setTitleX("run number")
             data.sort{it.key}.each{run,it->
               out.mkdir('/'+it.run)
@@ -104,7 +104,7 @@ int number_of_wires_per_timeline;
             out.addDataSet(gr)
           }
         }
-        out.writeFile(String.format('alert_ahdc_time_%s_layer%d_%d.hipo', variable, layer, timeline_index))
+        out.writeFile(String.format('alert_ahdc_time_%s_layer%d_%d.hipo', variable, layer_number, timeline_index))
       }
     }
   }

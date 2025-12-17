@@ -20,7 +20,7 @@ int max_index;
   }
   
   def getName() {
-    return "${this.class.simpleName}_${sector}"
+    return "${this.class.simpleName}_${String.format('%02d', sector)}"
   }
 
   def processRun(dir, run) {
@@ -34,7 +34,7 @@ int max_index;
       assert sector == atof_sector // sanity-check. this should be the same.
       int layer     = (index % (11 * 4)) / 11;
       int component = index % 11;
-      def file_index = String.format('sector%d_layer%d_component%d', sector, layer, component)
+      def file_index = String.format('sector%02d_layer%d_component%02d', sector, layer, component)
       def h1 = dir.getObject(String.format('/ALERT/ATOF_Time_%s', file_index))
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
@@ -66,13 +66,13 @@ int max_index;
         out.mkdir('/timelines')
         (0..<11).collect{component->
           def file_index = ''
-           file_index = String.format('sector%d_layer%d_component%d', sector, layer, component)
+           file_index = String.format('sector%02d_layer%d_component%02d', sector, layer, component)
           names << String.format('atof_time_%s', file_index)
         }
         names.each{ name ->
           def gr = new GraphErrors(name)
-          gr.setTitle(  String.format("ATOF Time %s sector %d layer %d", variable.replace('_', ' '), sector, layer))
-          gr.setTitleY( String.format("ATOF Time %s sector %d layer %d (ns)", variable.replace('_', ' '), sector, layer))
+          gr.setTitle(  String.format("ATOF Time %s sector %02d layer %d", variable.replace('_', ' '), sector, layer))
+          gr.setTitleY( String.format("ATOF Time %s sector %02d layer %d (ns)", variable.replace('_', ' '), sector, layer))
           gr.setTitleX("run number")
           data.sort{it.key}.each{run,it->
             out.mkdir('/'+it.run)
@@ -87,7 +87,7 @@ int max_index;
           out.cd('/timelines')
           out.addDataSet(gr)
         }
-        out.writeFile(String.format('alert_atof_time_%s_sector%d_layer%d.hipo', variable, sector, layer))
+        out.writeFile(String.format('alert_atof_time_%s_sector%02d_layer%d.hipo', variable, sector, layer))
       }
     }
   }

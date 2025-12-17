@@ -68,7 +68,7 @@ public class ALERT {
       layer     = (index % (11 * 4)) / 11;
       component = index % 11;
 
-      ATOF_Time[index] = new H1F(String.format("ATOF_Time_sector%d_layer%d_component%d", sector, layer, component), String.format("ATOF Time sector%d layer%d component%d", sector, layer, component), 300, 85, 100);
+      ATOF_Time[index] = new H1F(String.format("ATOF_Time_sector%02d_layer%d_component%02d", sector, layer, component), String.format("ATOF Time sector%02d layer%d component%02d", sector, layer, component), 300, 85, 100);
       ATOF_Time[index].setTitleX("ATOF Time (ns)");
       ATOF_Time[index].setTitleY("Counts");
       ATOF_Time[index].setFillColor(4);
@@ -81,20 +81,22 @@ public class ALERT {
 
     for (int index = 0; index<576; index++) {
       int layer = 0;
+      int layer_number = 0;
       int wire_number = 0;
 
       for (int j=0; j<8; j++){
         if (index < layer_wires_cumulative[j+1]){
           layer = layer_encoding[j];
+          layer_number = j + 1;
           wire_number = index + 1 - layer_wires_cumulative[j];
           break;
         }
       }
-      ADC[index] = new H1F(String.format("ADC_layer%d_wire_number%d", layer, wire_number), String.format("ADC layer%d wire number%d", layer, wire_number), 516, 0.0, 3612.0);
+      ADC[index] = new H1F(String.format("ADC_layer%d_wire_number%02d", layer_number, wire_number), String.format("ADC layer%d wire number%02d", layer_number, wire_number), 516, 0.0, 3612.0);
       ADC[index].setTitleX("ADC");
       ADC[index].setTitleY("Counts");
       ADC[index].setFillColor(4);
-      AHDC_TIME[index] = new H1F(String.format("AHDC_TIME_layer%d_wire_number%d", layer, wire_number), String.format("AHDC Time layer %d wire number%d", layer, wire_number), 450, -10.f, 440.0f);
+      AHDC_TIME[index] = new H1F(String.format("AHDC_TIME_layer%d_wire_number%02d", layer_number, wire_number), String.format("AHDC Time layer %d wire number%02d", layer_number, wire_number), 450, -10.f, 440.0f);
       AHDC_TIME[index].setTitleX("AHDC TIME (ns)");
       AHDC_TIME[index].setTitleY("Counts");
       AHDC_TIME[index].setFillColor(4);

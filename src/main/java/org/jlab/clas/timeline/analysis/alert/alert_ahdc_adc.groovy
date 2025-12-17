@@ -25,7 +25,7 @@ int number_of_wires_per_timeline;
   }
 
   def getName() {
-    return "${this.class.simpleName}_${layer}"
+    return "${this.class.simpleName}_${layer_number}"
   }
 
   def processRun(dir, run) {
@@ -36,16 +36,16 @@ int number_of_wires_per_timeline;
     // data[run].put('bits',  trigger)
     float integral = 0;
     (1..number_of_wires_this_layer).collect{wire_number->
-      def h1 = dir.getObject(String.format('/ALERT/ADC_layer%d_wire_number%d', layer, wire_number))
+      def h1 = dir.getObject(String.format('/ALERT/ADC_layer%d_wire_number%02d', layer_number, wire_number))
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
-          data[run].put(String.format('ahdc_adc_layer%d_wire_number%d', layer, wire_number),  h1)
+          data[run].put(String.format('ahdc_adc_layer%d_wire_number%02d', layer_number, wire_number),  h1)
           integral = h1.integral()
           // def f1 = ALERTFitter.totfitter(h1)
-          // data[run].put(String.format('fit_adc_layer%d_wire_number%d', layer, wire_number),  f1)
-          // data[run].put(String.format('peak_location_ahdc_adc_layer%d_wire_number%d', layer, wire_number),  peak_location)
-          // data[run].put(String.format('sigma_adc_layer%d_wire_number%d', layer, wire_number),  f1.getParameter(2).abs())
-          data[run].put(String.format('integral_normalized_to_trigger_ahdc_adc_layer%d_wire_number%d', layer, wire_number),  integral/trigger.getBinContent(reference_trigger_bit) )
+          // data[run].put(String.format('fit_adc_layer%d_wire_number%02d', layer_number, wire_number),  f1)
+          // data[run].put(String.format('peak_location_ahdc_adc_layer%d_wire_number%02d', layer_number, wire_number),  peak_location)
+          // data[run].put(String.format('sigma_adc_layer%d_wire_number%02d', layer_number, wire_number),  f1.getParameter(2).abs())
+          data[run].put(String.format('integral_normalized_to_trigger_ahdc_adc_layer%d_wire_number%02d', layer_number, wire_number),  integral/trigger.getBinContent(reference_trigger_bit) )
           has_data.set(true)
         }
       }
@@ -72,10 +72,10 @@ int number_of_wires_per_timeline;
         (1..number_of_wires_this_timeline).collect{wire_index->
           def wire_number = wire_index + 15* timeline_index
           if (wire_number <= number_of_wires_this_layer){
-            def name = String.format('ahdc_adc_layer%d_wire_number%d', layer, wire_number)
+            def name = String.format('ahdc_adc_layer%d_wire_number%02d', layer_number, wire_number)
             def gr = new GraphErrors(name)
-            gr.setTitle(  String.format("AHDC ADC %s layer %d", variable.replace('_', ' '), layer))
-            gr.setTitleY( String.format("AHDC ADC %s layer %d", variable.replace('_', ' '), layer))
+            gr.setTitle(  String.format("AHDC ADC %s layer %d", variable.replace('_', ' '), layer_number))
+            gr.setTitleY( String.format("AHDC ADC %s layer %d", variable.replace('_', ' '), layer_number))
             gr.setTitleX("run number")
             data.sort{it.key}.each{run,it->
               out.mkdir('/'+it.run)
@@ -91,7 +91,7 @@ int number_of_wires_per_timeline;
             out.addDataSet(gr)
           }
         }
-        out.writeFile(String.format('alert_ahdc_adc_%s_layer%d_%d.hipo', variable, layer, timeline_index))
+        out.writeFile(String.format('alert_ahdc_adc_%s_layer%d_%d.hipo', variable, layer_number, timeline_index))
       }
     }
   }
