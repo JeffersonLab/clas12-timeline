@@ -31,7 +31,7 @@ timeline_java_opts+=(
   -Djava.util.logging.manager=org.jlab.logging.SplitLogManager
   -D.level=WARNING # global log level
   -Dorg.freehep.math.minuit.level=OFF
-  -Dorg.jlab.io.hipo=OFF
+  -Dorg.jlab.io.hipo.level=OFF
 )
 
 # export
