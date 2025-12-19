@@ -69,6 +69,7 @@
         <configuration>
           <release>21</release>
           <compilerId>groovy-eclipse-compiler</compilerId>
+          <failOnWarning>true</failOnWarning>
         </configuration>
         <dependencies>
           <!-- https://groovy.jfrog.io/ui/native/plugins-release/org/codehaus/groovy/groovy-eclipse-compiler/ -->
