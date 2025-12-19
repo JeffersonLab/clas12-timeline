@@ -80,13 +80,11 @@ public class ALERT {
     AHDC_TIME     = new H1F[576];
 
     for (int index = 0; index<576; index++) {
-      int layer = 0;
       int layer_number = 0;
       int wire_number = 0;
 
       for (int j=0; j<8; j++){
         if (index < layer_wires_cumulative[j+1]){
-          layer = layer_encoding[j];
           layer_number = j + 1;
           wire_number = index + 1 - layer_wires_cumulative[j];
           break;
