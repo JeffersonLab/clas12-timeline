@@ -56,25 +56,22 @@ jobs:
         include:
           - { type: detectors, schema: mon }
           - { type: physics,   schema: dst }
-    env:
-      xrootd_file: xroot://sci-xrootd.jlab.org//osgpool/hallb/clas12/validation/recon/${{ matrix.schema }}/validation_files.tar.zst
     steps:
       - uses: actions/cache@v4
         id: cache
         with:
-          key: validation_files_${{ matrix.type }}
+          key: validation_files_lfs_${{ matrix.type }}
           path: validation_files.tar.zst
           lookup-only: true
-      - name: install dependencies
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          sudo apt -y update
-          sudo apt -y install xrootd-client
       - name: download
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: xrdcp ${{ env.xrootd_file }} ./
-      - run: ls -lh .
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          GIT_LFS_SKIP_SMUDGE=1 git clone https://code.jlab.org/hallb/clas12/validation-data.git
+          cd validation-data
+          git lfs install --skip-smudge
+          git config lfs.fetchinclude "recon/${{ matrix.schema }}/validation_files.tar.zst"
+          git lfs pull
+          mv -v recon/${{ matrix.schema }}/validation_files.tar.zst $GITHUB_WORKSPACE/
 
   # histogramming
   #############################################################################
@@ -95,7 +92,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/cache/restore@v4
         with:
-          key: validation_files_${{ matrix.type }}
+          key: validation_files_lfs_${{ matrix.type }}
           path: validation_files.tar.zst
       - name: download timeline build
         uses: actions/download-artifact@v6
@@ -141,7 +138,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/cache/restore@v4
         with:
-          key: validation_files_${{ matrix.type }}
+          key: validation_files_lfs_${{ matrix.type }}
           path: validation_files.tar.zst
       - name: download timeline build
         uses: actions/download-artifact@v6
