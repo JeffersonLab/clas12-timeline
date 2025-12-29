@@ -37,7 +37,7 @@ jobs:
       - name: tar # to preserve any permissions
         run: |
           tar cavf build_timeline.tar.zst target
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: build_timeline
           retention-days: 1
@@ -111,12 +111,12 @@ jobs:
             validation_files
       - run: tree slurm
       - run: tree outfiles
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: slurm_${{ matrix.type }}
           retention-days: 1
           path: slurm
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: outfiles_histogram_${{ matrix.type }}
           retention-days: 14
@@ -200,12 +200,12 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           tree web | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: outfiles_timelines_${{ matrix.type }}
           retention-days: 14
           path: outfiles
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: web_timelines_${{ matrix.type }}
           retention-days: 14
