@@ -88,15 +88,15 @@ function wait_for_jobs() {
   done
 }
 
-i=0
+j=0
 echo "===== JOBS: ====="
 while IFS= read -r cmd; do
-  i=$((i+1))
-  echo "JOB $i: $cmd"
+  j=$((j+1))
+  echo "JOB $j: $cmd"
   if ! $dry; then
-    $cmd > $log_dir/job.$i.out 2> $log_dir/job.$i.err &
+    setsid $cmd > $log_dir/job.$j.out 2> $log_dir/job.$j.err &
     job_ids+=($!)
-    wait_for_jobs $NUM_THREADS
+    wait_for_jobs $((NUM_THREADS-1))
   fi
 done < <(tail -n +$((offset + 1)) $job_list | head -n $num_jobs)
 wait_for_jobs 0
