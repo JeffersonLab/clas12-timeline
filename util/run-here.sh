@@ -2,6 +2,7 @@
 set -euo pipefail
 offset=0
 dry=false
+NUM_THREADS=4 # number of parallel jobs
 usage() {
   echo """
   Run jobs from a slurm submission script's job list on
@@ -35,29 +36,74 @@ if [ ! -f "$job_list" ]; then
   exit 1
 fi
 
-if [ $num_jobs -gt 16 ]; then
-  echo "ERROR: too many jobs!"
-  exit 1
-fi
-
 mkdir -p $log_dir
 
+job_ids=()
+
+function cleanup_jobs() {
+  echo ""
+  echo ">>> Caught signal, killing all jobs..."
+  for job_id in "${job_ids[@]}"; do
+    if ps -p "$job_id" >& /dev/null; then
+      # Kill the entire process group (negative PID)
+      kill -- -"$job_id" 2>/dev/null || true # SIGTERM
+    fi
+  done
+  sleep 1
+  # SIGKILL, if still alive
+  for job_id in "${job_ids[@]}"; do
+    if ps -p "$job_id" >& /dev/null; then
+      kill -9 -- -"$job_id" 2>/dev/null || true
+    fi
+  done
+  echo """>>> All jobs killed.
+  To check if any remain:
+    ps -ef | grep $(whoami)
+  Kill zombies with, e.g.,:
+    pkill -u $(whoami) java
+  """
+  exit 1
+}
+trap cleanup_jobs SIGINT SIGTERM
+
+function wait_for_jobs() {
+  stat=10
+  while [ "${#job_ids[@]}" -gt $1 ]; do
+    for i in "${!job_ids[@]}"; do
+      if [ "$1" -eq 0 ]; then
+        if [ "${#job_ids[@]}" -lt $stat ]; then
+          echo ">>> $(date) >>> waiting on ${#job_ids[@]} jobs"
+          stat=${#job_ids[@]}
+        fi
+      fi
+      set +e
+      ps ${job_ids[$i]} >& /dev/null
+      if [ "$?" -ne 0 ]; then
+        echo ">>> jobid ${job_ids[$i]} finished."
+        unset job_ids[$i]
+      fi
+      set -e
+    done
+    sleep 1
+  done
+}
+
 i=0
-echo "SUBMITTING:"
-tail -n +$((offset + 1)) $job_list | head -n $num_jobs | while IFS= read -r cmd; do
+echo "===== JOBS: ====="
+while IFS= read -r cmd; do
+  i=$((i+1))
   echo "JOB $i: $cmd"
   if ! $dry; then
     $cmd > $log_dir/job.$i.out 2> $log_dir/job.$i.err &
+    job_ids+=($!)
+    wait_for_jobs $NUM_THREADS
   fi
-  i=$((i+1))
-done
+done < <(tail -n +$((offset + 1)) $job_list | head -n $num_jobs)
+wait_for_jobs 0
+
+echo "================="
 if $dry; then
   echo "THIS WAS A DRY-RUN; no jobs submitted"
 else
-  echo """
-JOBS SUBMITTED.
-- They are running in the backround
-- Monitor with \`htop -u $(whoami)\`
-- Logs written to \`$log_dir\`
-  """
+  echo "DONE!"
 fi
