@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-
+##################################################################################
+# ADAPTED FROM BHAWANI SINGH's ORIGINAL SCRIPT:
+#   /w/hallb-scshelf2102/clas12/singh/Softwares/QADB_studies/python/main2.py
+##################################################################################
 import numpy as np
 import os
 import sys
