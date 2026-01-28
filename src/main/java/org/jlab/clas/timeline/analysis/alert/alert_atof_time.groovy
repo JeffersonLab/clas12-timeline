@@ -18,14 +18,14 @@ def has_data = new AtomicBoolean(false)
     def reference_trigger_bit = 0
     // data[run].put('bits',  trigger)
     (0..<10).collect{component->
-      def h1 = dir.getObject(String.format('/ALERT/ATOF_Time_component%d', component))
+      def h1 = dir.getObject(String.format('/ALERT/ATOF_Time_component%02d', component))
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
-          data[run].put(String.format('atof_time_%d', component),  h1)
+          data[run].put(String.format('atof_time_%02d', component),  h1)
           def f1 = ALERTFitter.atof_time_fitter(h1,component)
-          data[run].put(String.format('fit_atof_time_%d', component),  f1)
-          data[run].put(String.format('peak_location_atof_time_%d', component),  f1.getParameter(1).abs())
-          data[run].put(String.format('sigma_atof_time_%d', component),  f1.getParameter(2).abs())
+          data[run].put(String.format('fit_atof_time_%02d', component),  f1)
+          data[run].put(String.format('peak_location_atof_time_%02d', component),  f1.getParameter(1).abs())
+          data[run].put(String.format('sigma_atof_time_%02d', component),  f1.getParameter(2).abs())
           has_data.set(true)
         }
       }
@@ -47,7 +47,7 @@ def has_data = new AtomicBoolean(false)
         TDirectory out = new TDirectory()
         out.mkdir('/timelines')
         (0..<11).collect{component->
-          def name = String.format('atof_time_%d', component)
+          def name = String.format('atof_time_%02d', component)
 
           def gr = new GraphErrors(name)
 
@@ -67,7 +67,7 @@ def has_data = new AtomicBoolean(false)
           out.cd('/timelines')
           out.addDataSet(gr)
         }
-        out.writeFile(String.format('alert_atof_time_%s_sector%02d_layer%d.hipo', variable, sector, layer))
+        out.writeFile(String.format('alert_atof_time_%s.hipo', variable))
       }
     }
   }
