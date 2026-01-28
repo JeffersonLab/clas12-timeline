@@ -9,7 +9,7 @@ def engines = [
     *(1..8).collect {ahdc_layer_number -> new alert_ahdc_adc (ahdc_layer_number) },
     new alert_ahdc_residual(),
     *(1..8).collect {ahdc_layer_number -> new alert_ahdc_time (ahdc_layer_number) },
-    *(0..14).collect {atof_sector -> new alert_atof_time(atof_sector)},
+    new alert_atof_time(),
   ],
   out_BAND: [
     new band_adccor(),
