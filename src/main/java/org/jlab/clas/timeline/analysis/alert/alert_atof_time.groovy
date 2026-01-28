@@ -17,7 +17,7 @@ def has_data = new AtomicBoolean(false)
     def trigger = dir.getObject('/TRIGGER/bits')
     def reference_trigger_bit = 0
     // data[run].put('bits',  trigger)
-    (0..<10).collect{component->
+    (0..<11).collect{component->
       def h1 = dir.getObject(String.format('/ALERT/ATOF_Time_component%02d', component))
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
@@ -42,33 +42,30 @@ def has_data = new AtomicBoolean(false)
     }
 
     ['peak_location', 'sigma'].each{variable->
-      (0..<4).collect{layer->
-        def names = []
-        TDirectory out = new TDirectory()
-        out.mkdir('/timelines')
-        (0..<11).collect{component->
-          def name = String.format('atof_time_%02d', component)
+      TDirectory out = new TDirectory()
+      out.mkdir('/timelines')
+      (0..<11).collect{component->
+        def name = String.format('atof_time_%02d', component)
 
-          def gr = new GraphErrors(name)
+        def gr = new GraphErrors(name)
 
-          gr.setTitle(  String.format("ATOF Time %s ", variable.replace('_', ' ')))
-          gr.setTitleY( String.format("ATOF Time %s  (ns)", variable.replace('_', ' ')))
-          gr.setTitleX("run number")
-          data.sort{it.key}.each{run,it->
-            out.mkdir('/'+it.run)
-            out.cd('/'+it.run)
-            if (it.containsKey(name)){
-              out.addDataSet(it[name])
-              out.addDataSet(it['fit_'+name])
-              gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
-            }
-            else if (variable=="peak_location") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
+        gr.setTitle(  String.format("ATOF Time %s ", variable.replace('_', ' ')))
+        gr.setTitleY( String.format("ATOF Time %s  (ns)", variable.replace('_', ' ')))
+        gr.setTitleX("run number")
+        data.sort{it.key}.each{run,it->
+          out.mkdir('/'+it.run)
+          out.cd('/'+it.run)
+          if (it.containsKey(name)){
+            out.addDataSet(it[name])
+            out.addDataSet(it['fit_'+name])
+            gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
           }
-          out.cd('/timelines')
-          out.addDataSet(gr)
+          else if (variable=="peak_location") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
         }
-        out.writeFile(String.format('alert_atof_time_%s.hipo', variable))
+        out.cd('/timelines')
+        out.addDataSet(gr)
       }
+      out.writeFile(String.format('alert_atof_time_%s.hipo', variable))
     }
   }
 }
