@@ -24,25 +24,25 @@ We decided to reheat only the `nSidis` train, and store the result on `/volatile
 1. make sure all data are on `/cache`; re-cache them if necessary:
 ```bash
 # 10.6 GeV data
-qtl histogram -d rga_sp18_outbending_nSidis --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/train/nSidis
-qtl histogram -d rga_sp18_inbending_nSidis  --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/dst/train/nSidis
+bin/qtl histogram -d rga_sp18_outbending_nSidis --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/train/nSidis
+bin/qtl histogram -d rga_sp18_inbending_nSidis  --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/dst/train/nSidis
 # 6.4 GeV data
-qtl histogram -d rga_sp18_6.4GeV_outbending_nSidis    --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis
-qtl histogram -d rga_sp18_6.4GeV_inbending_nSidis     --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-1/pass1/dst/train/nSidis
-qtl histogram -d rga_sp18_6.4GeV_outbending_lo_nSidis --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+0.75/pass1/dst/train/nSidis
-qtl histogram -d rga_sp18_6.4GeV_inbending_lo_nSidis  --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/pass1/dst/train/nSidis
+bin/qtl histogram -d rga_sp18_6.4GeV_outbending_nSidis    --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis
+bin/qtl histogram -d rga_sp18_6.4GeV_inbending_nSidis     --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-1/pass1/dst/train/nSidis
+bin/qtl histogram -d rga_sp18_6.4GeV_outbending_lo_nSidis --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+0.75/pass1/dst/train/nSidis
+bin/qtl histogram -d rga_sp18_6.4GeV_inbending_lo_nSidis  --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/pass1/dst/train/nSidis
 ```
 
 2. run reheat:
 ```bash
 # 10.6 GeV data
-qtl reheat -c rollover -d rga_sp18_outbending_nSidis -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_outbending_nSidis -i /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/train/nSidis
-qtl reheat -c rollover -d rga_sp18_inbending_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_inbending_nSidis  -i /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/dst/train/nSidis
+bin/qtl reheat -c rollover -d rga_sp18_outbending_nSidis -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_outbending_nSidis -i /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/train/nSidis
+bin/qtl reheat -c rollover -d rga_sp18_inbending_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_inbending_nSidis  -i /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/dst/train/nSidis
 # 6.4 GeV data
-qtl reheat -c rollover -d rga_sp18_6.4GeV_outbending_nSidis    -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_outbending_nSidis    -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis
-qtl reheat -c rollover -d rga_sp18_6.4GeV_inbending_nSidis     -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_inbending_nSidis     -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-1/pass1/dst/train/nSidis
-qtl reheat -c rollover -d rga_sp18_6.4GeV_outbending_lo_nSidis -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_outbending_lo_nSidis -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+0.75/pass1/dst/train/nSidis
-qtl reheat -c rollover -d rga_sp18_6.4GeV_inbending_lo_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_inbending_lo_nSidis  -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/pass1/dst/train/nSidis
+bin/qtl reheat -c rollover -d rga_sp18_6.4GeV_outbending_nSidis    -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_outbending_nSidis    -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis
+bin/qtl reheat -c rollover -d rga_sp18_6.4GeV_inbending_nSidis     -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_inbending_nSidis     -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-1/pass1/dst/train/nSidis
+bin/qtl reheat -c rollover -d rga_sp18_6.4GeV_outbending_lo_nSidis -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_outbending_lo_nSidis -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+0.75/pass1/dst/train/nSidis
+bin/qtl reheat -c rollover -d rga_sp18_6.4GeV_inbending_lo_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_inbending_lo_nSidis  -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/pass1/dst/train/nSidis
 ```
 
 3. check the results on some runs; see [`qa-physics/charge_analysis/README.md`](/qa-physics/charge_analysis/README.md)
@@ -58,10 +58,10 @@ qtl reheat -c rollover -d rga_sp18_6.4GeV_inbending_lo_nSidis  -o /volatile/clas
 
 ```bash
 # 10.6 GeV data
-qtl histogram -d rga_sp18_outbending_nSidis --submit --flatdir --focus-physics /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_outbending_nSidis
-qtl histogram -d rga_sp18_inbending_nSidis  --submit --flatdir --focus-physics /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_inbending_nSidis
+bin/qtl histogram -d rga_sp18_outbending_nSidis --submit --flatdir --focus-physics /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_outbending_nSidis
+bin/qtl histogram -d rga_sp18_inbending_nSidis  --submit --flatdir --focus-physics /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_inbending_nSidis
 # 6.4 GeV data
-qtl histogram -d rga_sp18_6.4GeV_nSidis --submit --flatdir --focus-physics    \
+bin/qtl histogram -d rga_sp18_6.4GeV_nSidis --submit --flatdir --focus-physics    \
   /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_outbending_nSidis    \
   /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_inbending_nSidis     \
   /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_outbending_lo_nSidis \
