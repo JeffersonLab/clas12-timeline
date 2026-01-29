@@ -33,6 +33,8 @@ qtl reheat -c rollover -d rga_sp18_outbending_nSidis -o /volatile/clas12/users/$
 qtl reheat -c rollover -d rga_sp18_inbending_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_inbending_nSidis  -i /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/dst/train/nSidis
 ```
 
+3. check the results on some runs; see [`qa-physics/charge_analysis/README.md`](/qa-physics/charge_analysis/README.md)
+
 ## Run monitoring
 
 > [!IMPORTANT]
