@@ -8,15 +8,21 @@
 We will use the `sidisdvcs` train. There are inbending and outbending data, which we'll
 combine to one "dataset" in `qtl histogram`.
 
-First make sure all skim files are cached:
+Cross check the train and DST run lists:
 ```bash
-qtl histogram -d rgb_fa19_sidisdvcs --check-cache --flatdir --focus-physics \
+bin/qtl xtrain /mss/clas12/rg-b/production/recon/fall2019/torus+1/pass2/v1/dst/train/sidisdvcs /mss/clas12/rg-b/production/recon/fall2019/torus+1/pass2/v1/dst/recon
+bin/qtl xtrain /mss/clas12/rg-b/production/recon/fall2019/torus-1/pass2/v1/dst/train/sidisdvcs /mss/clas12/rg-b/production/recon/fall2019/torus-1/pass2/v1/dst/recon
+```
+
+Make sure all skim files are cached:
+```bash
+bin/qtl histogram -d rgb_fa19_sidisdvcs --check-cache --flatdir --focus-physics \
   /cache/clas12/rg-b/production/recon/fall2019/torus+1/pass2/v1/dst/train/sidisdvcs/ \
   /cache/clas12/rg-b/production/recon/fall2019/torus-1/pass2/v1/dst/train/sidisdvcs/
 ```
 then run monitoring
 ```bash
-qtl histogram -d rgb_fa19_sidisdvcs --submit --flatdir --focus-physics \
+bin/qtl histogram -d rgb_fa19_sidisdvcs --submit --flatdir --focus-physics \
   /cache/clas12/rg-b/production/recon/fall2019/torus+1/pass2/v1/dst/train/sidisdvcs/ \
   /cache/clas12/rg-b/production/recon/fall2019/torus-1/pass2/v1/dst/train/sidisdvcs/
 ```

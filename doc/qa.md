@@ -50,6 +50,14 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
+<summary>- [ ] cross check run list from trains and from DSTs</summary>
+
+- use `qtl xtrain` to make sure the list of DST runs is consistent with the list of runs from a train
+  - sometimes there are missing train files
+  - the script also checks for missing DST files (though that should be impossible to happen)
+</details>
+
+<details>
 <summary>- [ ] make sure all data are cached</summary>
 
 - all data files _must_ be on `/cache`
