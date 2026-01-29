@@ -50,6 +50,12 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
+<summary>- [ ] cross check run list from trains and from DSTs</summary>
+
+- FIXME
+</details>
+
+<details>
 <summary>- [ ] make sure all data are cached</summary>
 
 - all data files _must_ be on `/cache`

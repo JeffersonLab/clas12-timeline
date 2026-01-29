@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+
+require 'set'
+
+unless ARGV.length == 2
+  puts """
+  Verify that a directory of a train's skim files has the same list of
+  run numbers as a directory of DST-file run directories.
+
+  USAGE: #{$0} [TRAIN_DIR] [DST_DIR]"""
+  exit 2
+end
+train_dir, dst_dir = ARGV
+
+# function to get a set of run numbers from one of the argument dirs
+def get_runnums(path, type)
+  runnums = Set.new
+  raise "path '#{path}' does not exist" unless Dir.exist? path
+
+  # get list of files/directories within
+  files = []
+  case type
+  when :train
+    files = Dir.glob File.join(path, '*.hipo')
+  when :dst
+    files = Dir.glob File.join(path, '*/')
+  else
+    raise 'bad type'
+  end
+
+  # extract their run numbers
+  files.each do |file|
+    nums = File.basename(file).scan(/\d+/).map &:to_i
+    raise "failed to get runnum from '#{file}'" unless nums.length == 1
+    runnums << nums[0]
+  end
+  runnums
+end
+
+# compare runnum sets
+train_runs = get_runnums train_dir, :train
+dst_runs   = get_runnums dst_dir,   :dst
+only_in_trains = train_runs - dst_runs
+only_in_dsts   = dst_runs   - train_runs
+
+# return results
+code = 0
+unless only_in_trains.empty?
+  $stderr.puts "ERROR: there are runs with skim files, but no corresponding DST-file directories:"
+  $stderr.puts only_in_trains
+  code = 1
+end
+unless only_in_dsts.empty?
+  $stderr.puts "ERROR: there are runs with DST-file directories, but no corresponding skim files:"
+  $stderr.puts only_in_dsts
+  code = 1
+end
+exit code
