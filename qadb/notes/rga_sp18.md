@@ -1,5 +1,17 @@
 # Run Group A, Spring 2018, Pass 1
 
+Before anything, cross check the train and DST run lists:
+```bash
+# 10.6 GeV data
+bin/qtl xtrain /mss/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/train/nSidis /mss/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/recon
+bin/qtl xtrain /mss/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/dst/train/nSidis /mss/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/dst/recon
+# 6.4 GeV data
+bin/qtl xtrain /mss/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis    /mss/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/recon
+bin/qtl xtrain /mss/clas12/rg-a/production/recon/spring2018/6.42gev/torus-1/pass1/dst/train/nSidis    /mss/clas12/rg-a/production/recon/spring2018/6.42gev/torus-1/pass1/dst/recon
+bin/qtl xtrain /mss/clas12/rg-a/production/recon/spring2018/6.42gev/torus+0.75/pass1/dst/train/nSidis /mss/clas12/rg-a/production/recon/spring2018/6.42gev/torus+0.75/pass1/dst/recon
+bin/qtl xtrain /mss/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/pass1/dst/train/nSidis /mss/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/pass1/dst/recon
+```
+
 ## Reheat
 
 > [!WARNING]
