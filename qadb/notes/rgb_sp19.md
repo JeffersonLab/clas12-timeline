@@ -7,13 +7,18 @@
 
 We will use the `sidisdvcs` train.
 
-First make sure all skim files are cached:
+Cross check the train and DST run lists:
 ```bash
-qtl histogram -d rgb_sp19_sidisdvcs --check-cache --flatdir --focus-physics /cache/clas12/rg-b/production/recon/spring2019/torus-1/pass2/v0/dst/train/sidisdvcs
+bin/qtl xtrain /mss/clas12/rg-b/production/recon/spring2019/torus-1/pass2/v0/dst/train/sidisdvcs /mss/clas12/rg-b/production/recon/spring2019/torus-1/pass2/v0/dst/recon/
+```
+
+Make sure all skim files are cached:
+```bash
+bin/qtl histogram -d rgb_sp19_sidisdvcs --check-cache --flatdir --focus-physics /cache/clas12/rg-b/production/recon/spring2019/torus-1/pass2/v0/dst/train/sidisdvcs
 ```
 then run monitoring
 ```bash
-qtl histogram -d rgb_sp19_sidisdvcs --submit --flatdir --focus-physics /cache/clas12/rg-b/production/recon/spring2019/torus-1/pass2/v0/dst/train/sidisdvcs
+bin/qtl histogram -d rgb_sp19_sidisdvcs --submit --flatdir --focus-physics /cache/clas12/rg-b/production/recon/spring2019/torus-1/pass2/v0/dst/train/sidisdvcs
 ```
 
 ## Double check that we have all the runs
