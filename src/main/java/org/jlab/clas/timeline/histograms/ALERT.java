@@ -61,7 +61,7 @@ public class ALERT {
 
     for (int component = 0; component < 11; component++) {
 
-      ATOF_Time[component] = new H1F(String.format("ATOF_Time_component%02d", component), String.format("ATOF Time component%02d", component), 300, 85, 100);
+      ATOF_Time[component] = new H1F(String.format("ATOF_Time_component%02d", component), String.format("ATOF Time component%02d", component), 240, 83, 95);
       ATOF_Time[component].setTitleX("ATOF Time (ns)");
       ATOF_Time[component].setTitleY("Counts");
       ATOF_Time[component].setFillColor(4);
