@@ -18,6 +18,7 @@ usage() {
       physics       Generate and analyze physics QA timelines (Step 2)
       error         Scan for errors in Slurm logs (for Step 1)
       reheat        Reproduce a data file, e.g., to rerun postprocessing
+      xtrain        Cross check run list from trains and DSTs
 
   OPTIONS: Each command has its own set of options; run a command with no
            additional options to see usage for that command.
@@ -41,6 +42,7 @@ case $cmd in
   ph*) exec $TIMELINESRC/bin/qtl-physics "$@" ;;
   er*) exec $TIMELINESRC/bin/qtl-error "$@" ;;
   re*) exec $TIMELINESRC/bin/qtl-reheat "$@" ;;
+  xt*) exec $TIMELINESRC/bin/qtl-xtrain "$@" ;;
   -v|--version)
     echo $(mvn -q help:evaluate -Dexpression=project.version -DforceStdout -f $TIMELINESRC/pom.xml || echo "UNKNOWN")
     exit 0

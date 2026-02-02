@@ -16,6 +16,10 @@ declare -A REHEAT_METHODS=(
 
 # default options
 dataset=train
+declare -A modes
+for key in submit; do
+  modes[$key]=false
+done
 
 # usage
 sep="================================================================"
@@ -37,6 +41,8 @@ $(for key in "${!REHEAT_METHODS[@]}"; do printf "%24s %-11s %-s\n" "" "$key" "${
   OPTIONAL OPTIONS:
      -d [DATASET]      unique name for this dataset
                        default: $dataset
+     --submit          submit the slurm jobs, rather than just
+                       printing the \`sbatch\` command
   """ >&2
 }
 if [ $# -lt 1 ]; then
@@ -48,7 +54,7 @@ fi
 inputDir=""
 outputDir=""
 cmd=""
-while getopts "i:o:c:d:h" opt; do
+while getopts "i:o:c:d:h-:" opt; do
   case $opt in
     i) inputDir=$OPTARG ;;
     o) outputDir=$OPTARG ;;
@@ -60,6 +66,12 @@ while getopts "i:o:c:d:h" opt; do
     h)
       usage
       exit 101
+      ;;
+    -)
+      for key in "${!modes[@]}"; do
+        [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
+      done
+      [ -z "${modes[$OPTARG]-}" ] && printError "unknown option --$OPTARG" && exit 100
       ;;
     *) exit 100 ;;
   esac
@@ -159,6 +171,12 @@ EOF
 echo """
 SLURM SCRIPT: $slurmScript
 JOB LIST:     $jobList
-Now submitting!
 """
-sbatch $slurmScript
+if ${modes['submit']}; then
+  echo "Now submitting!"
+  sbatch $slurmScript
+else
+  echo """Run this command to submit:
+  sbatch $slurmScript
+  """
+fi
