@@ -57,21 +57,14 @@ public class ALERT {
     }
     rf_large_integer = 1000;
 
-    ATOF_Time = new H1F[660];// ATOF Time Histograms
+    ATOF_Time = new H1F[11];// ATOF Time Histograms
 
-    for (int index = 0; index < 660; index++) {
-      int sector    = 0;
-      int layer     = 0;
-      int component = 0;
+    for (int component = 0; component < 11; component++) {
 
-      sector    = index / (11 * 4);
-      layer     = (index % (11 * 4)) / 11;
-      component = index % 11;
-
-      ATOF_Time[index] = new H1F(String.format("ATOF_Time_sector%02d_layer%d_component%02d", sector, layer, component), String.format("ATOF Time sector%02d layer%d component%02d", sector, layer, component), 300, 85, 100);
-      ATOF_Time[index].setTitleX("ATOF Time (ns)");
-      ATOF_Time[index].setTitleY("Counts");
-      ATOF_Time[index].setFillColor(4);
+      ATOF_Time[component] = new H1F(String.format("ATOF_Time_component%02d", component), String.format("ATOF Time component%02d", component), 240, 83, 95);
+      ATOF_Time[component].setTitleX("ATOF Time (ns)");
+      ATOF_Time[component].setTitleY("Counts");
+      ATOF_Time[component].setFillColor(4);
     }
 
     //AHDC ADC Histograms
@@ -154,13 +147,11 @@ public class ALERT {
   public void fillATOF_hits(DataBank atof_hits) {
     int rows = atof_hits.rows();
     for (int loop = 0; loop < rows; loop++) {
-      int sector    = atof_hits.getInt("sector", loop);
-      int layer     = atof_hits.getInt("layer", loop);
+
       int component = atof_hits.getInt("component", loop);
       float time       = atof_hits.getFloat("time", loop);
-      int index     = sector * 44 + layer * 11 + component;
 
-      ATOF_Time[index].fill(time);
+      ATOF_Time[component].fill(time);
 
     }
   }
@@ -231,8 +222,8 @@ public class ALERT {
     TDirectory dirout = new TDirectory();
     dirout.mkdir("/ALERT/");
     dirout.cd("/ALERT/");
-    for (int index = 0; index < 660; index++) {
-      dirout.addDataSet(ATOF_Time[index]);
+    for (int component = 0; component < 11; component++) {
+      dirout.addDataSet(ATOF_Time[component]);
     }
     for (int index = 0; index < 576; index++) {
       dirout.addDataSet(ADC[index], AHDC_TIME[index]);
