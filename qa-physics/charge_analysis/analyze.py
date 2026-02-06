@@ -22,8 +22,14 @@ logger = logging.getLogger(__name__)
 
 def main():
 
-    if len(sys.argv) != 2:
-        print(f'USAGE: {sys.argv[0]} [HIPO_FILE]')
+    if len(sys.argv) != 3:
+        print(f'''
+USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_FILE_SUFFIX]
+    INPUT_HIPO_FILE       input HIPO file
+    OUTPUT_FILE_SUFFIX    append this string to the output
+                          file name; useful if you are comparing
+                          output files before and after reheating
+        ''')
         exit(2)
     hipo_file = sys.argv[1]
 
