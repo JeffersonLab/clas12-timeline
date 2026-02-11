@@ -31,7 +31,30 @@ postprocess -q 1 -o $outputFile $tmpFile
 > [!IMPORTANT]
 > You _must_ use Coatjava v13.3.0 or newer
 
-We decided to reheat only the `nSidis` train, and store the result on `/volatile`; here are the commands:
+We decided to reheat only the `nSidis` train, and store the result on `/volatile`; here are the commands.
+
+Note that the 10.6 GeV data and 6.4 GeV data have some differences in how they were cooked.
+In particular, the `recharge` option was `false` for 10.6 GeV data, and `true` for 6.4 GeV data. Here is a comparison of the `README.json` files
+
+| Key           | 10.6 GeV torus=-1 | 10.6 GeV torus=+1 | 6.4 GeV torus=-1 | 6.4 GeV torus=+1 | 6.4 GeV torus=-0.75 | 6.4 GeV torus=+0.75 |
+| ---           | ---               | ---               | ---              | ---              | ---                 | ---                 |
+| recharge      | false             | false             | true             | true             | true                | true                |
+| model         | ana               | recana            | decrecana        | decrecana        | decrecana           | decrecana           |
+| denoise       | true              | true              | 4.0.1            | 4.0.1            | 4.0.1               | 4.0.1               |
+| has reconYaml | false             | true              | true             | true             | true                | true                |
+| coatjava      | 11.1.1            | 11.1.1            | 11.1.1           | 11.1.1           | 11.1.1              | 11.1.1              |
+
+The files are from:
+```
+/cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/dst/recon/README.json
+/cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/recon/README.json
+/cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/recon/README.json
+/cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/pass1/dst/recon/README.json
+/cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-1/pass1/dst/recon/README.json
+/cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+0.75/pass1/dst/recon/README.json
+```
+
+### Reheat procedure
 
 1. make sure all data are on `/cache`; re-cache them if necessary:
 ```bash
