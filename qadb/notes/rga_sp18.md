@@ -80,7 +80,16 @@ bin/qtl reheat -c rollover -d rga_sp18_6.4GeV_outbending_lo_nSidis -o /volatile/
 bin/qtl reheat -c rollover -d rga_sp18_6.4GeV_inbending_lo_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_inbending_lo_nSidis  -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/pass1/dst/train/nSidis
 ```
 
-3. check the results on some runs; see [`qa-physics/charge_analysis/README.md`](/qa-physics/charge_analysis/README.md)
+3. check the results on some runs; see [`qa-physics/charge_analysis/README.md`](/qa-physics/charge_analysis/README.md); for example:
+```bash
+cd qa-physics/charge_analysis
+
+# before reheat
+for f in /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis/*.hipo; do ./analyze.py $f before; done
+
+# after reheat
+for f in ~/v/reheat/rga_sp18_6.4GeV_outbending_nSidis/*.hipo; do ./analyze.py $f after; done
+```
 
 ## Run monitoring
 
