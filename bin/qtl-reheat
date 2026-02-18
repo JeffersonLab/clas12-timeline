@@ -16,6 +16,7 @@ declare -A REHEAT_METHODS=(
 
 # default options
 dataset=train
+coatjava_version=13.3.0 # the first version with rollover correction, used for RG-A Spring 2018 reheating
 declare -A modes
 for key in submit; do
   modes[$key]=false
@@ -35,12 +36,14 @@ usage() {
   REQUIRED OPTIONS:
      -i [INPUT_DIR]    input directory of HIPO files; all HIPO files will be reheated
      -o [OUTPUT_DIR]   output directory
-     -c [COMMAND]      which reheating method to use, one of:
+     -m [METHOD]       which reheating method to use, one of:
 $(for key in "${!REHEAT_METHODS[@]}"; do printf "%24s %-11s %-s\n" "" "$key" "${REHEAT_METHODS[$key]}"; done)
 
   OPTIONAL OPTIONS:
      -d [DATASET]      unique name for this dataset
                        default: $dataset
+     -c [COATJAVA_VER] coatjava version number
+                       default: $coatjava_version
      --submit          submit the slurm jobs, rather than just
                        printing the \`sbatch\` command
   """ >&2
@@ -53,16 +56,17 @@ fi
 # parse options
 inputDir=""
 outputDir=""
-cmd=""
-while getopts "i:o:c:d:h-:" opt; do
+mtd=""
+while getopts "i:o:m:d:c:h-:" opt; do
   case $opt in
     i) inputDir=$OPTARG ;;
     o) outputDir=$OPTARG ;;
-    c)
+    m)
       [ -z "${REHEAT_METHODS[$OPTARG]-}" ] && printError "unknown command '$OPTARG'" && exit 100
-      cmd=$OPTARG
+      mtd=$OPTARG
       ;;
     d) dataset=$OPTARG ;;
+    c) coatjava_version=$OPTARG ;;
     h)
       usage
       exit 101
@@ -80,10 +84,7 @@ done
 # check arguments
 [ -z "$inputDir" ] && printError "missing input directory argument" && exit 100
 [ -z "$outputDir" ] && printError "missing output directory argument" && exit 100
-[ -z "$cmd" ] && printError "missing command argument" && exit 100
-
-# make sure coatjava environment is loaded
-[ -z "${COATJAVA-}" ] && printError "COATJAVA environment variable is not set" && exit 100
+[ -z "$mtd" ] && printError "missing method argument" && exit 100
 
 # get list of input files
 [ ! -d $inputDir ] && printError "input directory '$inputDir' not found" && exit 100
@@ -95,7 +96,7 @@ mkdir -p $outputDir
 outputDir=$(realpath $outputDir)
 
 # start job lists
-jobName=reheat.$cmd.$dataset
+jobName=reheat.$mtd.$dataset
 slurmDir=./slurm
 jobList=$slurmDir/job.$jobName.list
 > $jobList
@@ -115,6 +116,13 @@ for inputFile in ${inputFiles[@]}; do
   cat > $jobScript << EOF
 #!/usr/bin/env bash
 set -eou pipefail
+# load coatjava module
+source /usr/share/Modules/init/bash
+module purge
+module use /scigroup/cvmfs/hallb/clas12/sw/modulefiles
+module load clas12
+module switch coatjava/$coatjava_version
+echo "COATJAVA = $COATJAVA"
 # set env vars
 source $TIMELINESRC/libexec/environ.sh
 # logger info
@@ -123,7 +131,7 @@ echo "OUTPUT FILE: $outputFile"
 EOF
 
   # add main command to the job script
-  case $cmd in
+  case $mtd in
 
     rollover)
       mkdir -p $outputDir/tmp
@@ -131,8 +139,8 @@ EOF
       cat >> $jobScript << EOF
 echo "TMP FILE:    $tmpFile"
 # fix the clock rollover
-$(which rebuild-scalers) -l INFO -c X -o $tmpFile $inputFile -- -Xmx1536m
-$(which postprocess) -l INFO -q 1 -o $outputFile $tmpFile
+$COATJAVA/bin/rebuild-scalers -l INFO -c X -o $tmpFile $inputFile -- -Xmx1536m
+$COATJAVA/bin/postprocess -l INFO -q 1 -o $outputFile $tmpFile
 rm -v $tmpFile
 EOF
 
