@@ -122,7 +122,7 @@ module purge
 module use /scigroup/cvmfs/hallb/clas12/sw/modulefiles
 module load clas12
 module switch coatjava/$coatjava_version
-echo "COATJAVA = $COATJAVA"
+echo "COATJAVA = \$COATJAVA"
 # set env vars
 source $TIMELINESRC/libexec/environ.sh
 # logger info
@@ -139,8 +139,8 @@ EOF
       cat >> $jobScript << EOF
 echo "TMP FILE:    $tmpFile"
 # fix the clock rollover
-$COATJAVA/bin/rebuild-scalers -l INFO -c X -o $tmpFile $inputFile -- -Xmx1536m
-$COATJAVA/bin/postprocess -l INFO -q 1 -o $outputFile $tmpFile
+\$COATJAVA/bin/rebuild-scalers -l INFO -c X -o $tmpFile $inputFile -- -Xmx1536m
+\$COATJAVA/bin/postprocess -l INFO -q 1 -o $outputFile $tmpFile
 rm -v $tmpFile
 EOF
 
