@@ -85,10 +85,10 @@ bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_6.4GeV_inbending_lo_nSidis  -o 
 cd qa-physics/charge_analysis
 
 # before reheat
-for f in /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis/*.hipo; do ./analyze.py $f before; done
+for f in /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis/*.hipo; do ./analyze.py $f original; done
 
 # after reheat
-for f in ~/v/reheat/rga_sp18_6.4GeV_outbending_nSidis/*.hipo; do ./analyze.py $f after; done
+for f in ~/v/reheat/rga_sp18_6.4GeV_outbending_nSidis/*.hipo; do ./analyze.py $f reheated; done
 ```
 
 ## Run monitoring
