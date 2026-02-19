@@ -42,7 +42,9 @@ $(for key in "${!REHEAT_METHODS[@]}"; do printf "%24s %-11s %-s\n" "" "$key" "${
   OPTIONAL OPTIONS:
      -d [DATASET]      unique name for this dataset
                        default: $dataset
-     -c [COATJAVA_VER] coatjava version number
+     -c [COATJAVA_VER] coatjava version number, either
+                       - version from coatjava env module
+                       - absolute path to coatjava
                        default: $coatjava_version
      --submit          submit the slurm jobs, rather than just
                        printing the \`sbatch\` command
@@ -116,19 +118,32 @@ for inputFile in ${inputFiles[@]}; do
   cat > $jobScript << EOF
 #!/usr/bin/env bash
 set -eou pipefail
-# load coatjava module
-source /usr/share/Modules/init/bash
-module purge
-module use /scigroup/cvmfs/hallb/clas12/sw/modulefiles
-module load clas12
-module switch coatjava/$coatjava_version
-echo "COATJAVA = \$COATJAVA"
 # set env vars
 source $TIMELINESRC/libexec/environ.sh
 # logger info
 echo "INPUT FILE:  $inputFile"
 echo "OUTPUT FILE: $outputFile"
 EOF
+
+  # handle coatjava
+  if [[ "$coatjava_version" == /* ]]; then
+    cat >> $jobScript << EOF
+# set coatjava environment
+export COATJAVA=$coatjava_version
+export CLAS12DIR=\$COATJAVA
+echo "COATJAVA:    \$COATJAVA"
+EOF
+  else
+    cat >> $jobScript << EOF
+# load coatjava module
+source /usr/share/Modules/init/bash
+module purge
+module use /scigroup/cvmfs/hallb/clas12/sw/modulefiles
+module load clas12
+module switch coatjava/$coatjava_version
+echo "COATJAVA:    \$COATJAVA"
+EOF
+  fi
 
   # add main command to the job script
   case $mtd in
@@ -137,8 +152,8 @@ EOF
       mkdir -p $outputDir/tmp
       tmpFile=$outputDir/tmp/$inputBase.hipo
       cat >> $jobScript << EOF
-echo "TMP FILE:    $tmpFile"
 # fix the clock rollover
+echo "TMP FILE:    $tmpFile"
 \$COATJAVA/bin/rebuild-scalers -l INFO -c X -o $tmpFile $inputFile -- -Xmx1536m
 \$COATJAVA/bin/postprocess -l INFO -q 1 -o $outputFile $tmpFile
 rm -v $tmpFile
