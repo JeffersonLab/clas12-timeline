@@ -22,17 +22,18 @@ logger = logging.getLogger(__name__)
 
 def main():
 
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print(f'''
-USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_FILE_SUFFIX]
+USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
     INPUT_HIPO_FILE       input HIPO file
     OUTPUT_FILE_SUFFIX    append this string to the output
                           file name; useful if you are comparing
                           output files before and after reheating
         ''')
         exit(2)
-    hipo_file = sys.argv[1]
-    output_suffix = sys.argv[2]
+    hipo_file     = sys.argv[1]
+    output_dir    = sys.argv[2]
+    output_suffix = sys.argv[3]
 
     hipo_prefix = os.getenv('HIPO')
     if hipo_prefix == None:
@@ -109,7 +110,7 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_FILE_SUFFIX]
         ax.tick_params(axis='both', labelsize=9)
 
     fig1.tight_layout(rect=[0, 0.03, 1, 0.95])
-    fig1.savefig(f'fcup_vs_timestamp_{run_number}_{output_suffix}.png', bbox_inches='tight', dpi=300)
+    fig1.savefig(f'{output_dir}/fcup_vs_timestamp_{run_number}_{output_suffix}.png', bbox_inches='tight', dpi=300)
     plt.close(fig1)
     # ---------- Compute Chunked FCUP Gated with neighbor handling ----------
     chunk_size = 2000
@@ -296,7 +297,7 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_FILE_SUFFIX]
     ax_ltdist.tick_params(axis='both', labelsize=10)
 
     fig2.tight_layout(rect=[0, 0.03, 1, 0.95])
-    fig2.savefig(f'chunked_fcupgated_comparison_{run_number}_{output_suffix}.png', bbox_inches='tight', dpi=300)
+    fig2.savefig(f'{output_dir}/chunked_fcupgated_comparison_{run_number}_{output_suffix}.png', bbox_inches='tight', dpi=300)
     plt.close(fig2)
 
 

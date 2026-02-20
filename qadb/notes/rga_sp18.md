@@ -80,16 +80,15 @@ bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_6.4GeV_outbending_lo_nSidis -o 
 bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_6.4GeV_inbending_lo_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_inbending_lo_nSidis  -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/pass1/dst/train/nSidis
 ```
 
-3. check the results on some runs; see [`qa-physics/charge_analysis/README.md`](/qa-physics/charge_analysis/README.md); for example:
+3. check the results on some runs; for example:
 ```bash
-cd qa-physics/charge_analysis
-
 # before reheat
-for f in /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis/*.hipo; do ./analyze.py $f original; done
+for f in /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis/*.hipo; do bin/qtl xcharge -m charge -i $f -o test_charge -s original; done
 
 # after reheat
-for f in ~/v/reheat/rga_sp18_6.4GeV_outbending_nSidis/*.hipo; do ./analyze.py $f reheated; done
+for f in ~/v/reheat/rga_sp18_6.4GeV_outbending_nSidis/*.hipo; do bin/qtl xcharge -m charge -i $f -o test_charge -s original; done
 ```
+then see files in `test_charge/`.
 
 ## Run monitoring
 
