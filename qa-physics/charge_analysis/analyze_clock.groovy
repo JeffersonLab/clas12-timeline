@@ -8,15 +8,16 @@ import org.jlab.jnp.hipo4.data.SchemaFactory;
 import java.util.List;
 import java.util.ArrayList;
 
-if(args.length<3) {
+if(args.length<4) {
   System.err.println """
-  USAGE: groovy ${this.class.getSimpleName()}.groovy [HIPO file] [output directory] [suffix]
+  USAGE: groovy ${this.class.getSimpleName()}.groovy [HIPO file] [output directory] [suffix] [0/1=rollover_off/rollover_on]
   """
   System.exit(101)
 }
-def in_file = args[0]
-def out_dir = args[1]
-def suffix  = args[2]
+def in_file  = args[0]
+def out_dir  = args[1]
+def suffix   = args[2]
+def rollover = args[3] == '1'
 
 List<String> filenames = new ArrayList<>();
 filenames.add(in_file);
@@ -25,7 +26,9 @@ ConstantsManager consts = new ConstantsManager();
 consts.init("/runcontrol/fcup","/runcontrol/slm","/runcontrol/helicity","/daq/config/scalers/dsc1","/runcontrol/hwp");
 DaqScalersSequence seq = DaqScalersSequence.rebuildSequence(1, consts, filenames);
 
-// seq.fixClockRollover();
+if(rollover) {
+  seq.fixClockRollover();
+}
 
 def out_file_name   = "${out_dir}/clock_${suffix}.dat";
 def out_file        = new File(out_file_name);

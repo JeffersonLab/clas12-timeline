@@ -74,8 +74,10 @@ case $mtd in
     $TIMELINESRC/qa-physics/charge_analysis/analyze_charge.py $inputFile $outputDir $suffix
     ;;
   clock)
-    $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-physics/charge_analysis/analyze_clock.groovy $inputFile $outputDir $suffix
-    root -b -q $TIMELINESRC/qa-physics/charge_analysis/plot_clock.C'("'$outputDir'", "'$suffix'")'
+    $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-physics/charge_analysis/analyze_clock.groovy $inputFile $outputDir rollover_corr_disabled_$suffix 0
+    $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-physics/charge_analysis/analyze_clock.groovy $inputFile $outputDir rollover_corr_enabled_$suffix  1
+    root -b -q $TIMELINESRC/qa-physics/charge_analysis/plot_clock.C'("'$outputDir'", "'rollover_corr_disabled_$suffix'")'
+    root -b -q $TIMELINESRC/qa-physics/charge_analysis/plot_clock.C'("'$outputDir'", "'rollover_corr_enabled_$suffix'")'
     ;;
   *)
     echo "ERROR: unknown method '$mtd'" >&2
