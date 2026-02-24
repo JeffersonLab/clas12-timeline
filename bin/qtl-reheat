@@ -152,6 +152,9 @@ EOF
       mkdir -p $outputDir/tmp
       tmpFile=$outputDir/tmp/$inputBase.hipo
       cat >> $jobScript << EOF
+# remove output files, if they exist
+[ -f "$tmpFile" ] && echo "WARNING: clobbering $tmpFile" >&2 && rm -v $tmpFile
+[ -f "$outputFile" ] && echo "WARNING: clobbering $outputFile" >&2 && rm -v $outputFile
 # fix the clock rollover
 echo "TMP FILE:    $tmpFile"
 \$COATJAVA/bin/rebuild-scalers -l INFO -c X -o $tmpFile $inputFile -- -Xmx1536m
