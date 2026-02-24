@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+source $(dirname $0)/../libexec/environ.sh
+
+# constants ############################################################
+# methods: name -> description
+declare -A METHODS=(
+  [charge]="run charge analysis (from Bhawani)"
+  [clock]="plot the clock vs timestamp"
+)
+########################################################################
+
+# usage
+suffix=''
+sep="================================================================"
+usage() {
+  echo """
+  Take a closer look at the FC charge
+  NOTE: chefs should not typically need to run this
+
+  $sep
+  USAGE: qtl xcharge [OPTIONS]
+  $sep
+
+  REQUIRED OPTIONS:
+     -i [INPUT_FILE]   input HIPO file
+     -o [OUTPUT_DIR]   output directory
+     -m [METHOD]       which analysis method, one of:
+$(for key in "${!METHODS[@]}"; do printf "%24s %-11s %-s\n" "" "$key" "${METHODS[$key]}"; done)
+
+  OPTIONAL OPTIONS:
+     -s [SUFFIX]       a suffix to append to output files
+                       default: $suffix
+  """ >&2
+}
+if [ $# -lt 1 ]; then
+  usage
+  exit 101
+fi
+
+# parse options
+inputFile=""
+outputDir=""
+mtd=""
+while getopts "i:o:m:s:h-:" opt; do
+  case $opt in
+    i) inputFile=$OPTARG ;;
+    o) outputDir=$OPTARG ;;
+    m)
+      [ -z "${METHODS[$OPTARG]-}" ] && printError "unknown command '$OPTARG'" && exit 100
+      mtd=$OPTARG
+      ;;
+    s) suffix=$OPTARG ;;
+    h)
+      usage
+      exit 101
+      ;;
+    *) exit 100 ;;
+  esac
+done
+
+# check arguments
+[ -z "$inputFile" ] && printError "missing input directory argument" && exit 100
+[ -z "$outputDir" ] && printError "missing output directory argument" && exit 100
+[ -z "$mtd" ] && printError "missing method argument" && exit 100
+
+# make output directory
+mkdir -p $outputDir
+
+# run the script
+case $mtd in
+  charge)
+    $TIMELINESRC/qa-physics/charge_analysis/analyze_charge.py $inputFile $outputDir $suffix
+    ;;
+  clock)
+    $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-physics/charge_analysis/analyze_clock.groovy $inputFile $outputDir rollover_corr_disabled_$suffix 0
+    $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-physics/charge_analysis/analyze_clock.groovy $inputFile $outputDir rollover_corr_enabled_$suffix  1
+    root -b -q $TIMELINESRC/qa-physics/charge_analysis/plot_clock.C'("'$outputDir'", "'rollover_corr_disabled_$suffix'")'
+    root -b -q $TIMELINESRC/qa-physics/charge_analysis/plot_clock.C'("'$outputDir'", "'rollover_corr_enabled_$suffix'")'
+    ;;
+  *)
+    echo "ERROR: unknown method '$mtd'" >&2
+    exit 100
+    ;;
+esac
+echo "Done, see files in '$outputDir' with suffix '$suffix'"
