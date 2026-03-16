@@ -20,7 +20,7 @@ train_dirs, dst_dir = ARGV
 num_failures = 0
 
 # loop over train directories glob
-Dir.glob(train_dirs).each do |train_dir|
+Dir.glob(train_dirs).select{|d|File.directory? d}.each do |train_dir|
 
   # function to get a set of run numbers from one of the argument dirs
   def get_runnums(path, type)
