@@ -17,6 +17,15 @@ bin/qtl xtrain /mss/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/p
 > [!WARNING]
 > The FC charge from the Pass 1 data files is incorrect; therefore, we need to "reheat" the data.
 
+> [!CAUTION]
+> The clock frequency for 6.4 GeV data differs from that in CCDB
+> - it is around 125 MHz for most runs, whereas CCDB stores 1 MHz
+> - the rollover structure also differs
+> - we have _not_ yet fixed this in CCDB or in COATJAVA; see
+>   - https://github.com/JeffersonLab/coatjava/pull/1116
+>   - https://github.com/JeffersonLab/coatjava/pull/1128
+> - because there may be additional issues, we have _not yet_ attempted to produce a QADB for these data
+
 We need to use the Faraday Cup for the livetime, along with a DCS2 rollover fix. See the following pull requests:
 - https://github.com/JeffersonLab/coatjava/pull/49
 - https://github.com/JeffersonLab/coatjava/pull/814
