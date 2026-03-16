@@ -9,11 +9,7 @@ def engines = [
     *(1..8).collect {ahdc_layer_number -> new alert_ahdc_adc (ahdc_layer_number) },
     new alert_ahdc_residual(),
     *(1..8).collect {ahdc_layer_number -> new alert_ahdc_time (ahdc_layer_number) },
-    // *(0..14).collect {atof_sector -> new alert_atof_tdc_minus_start_time_vs_tot(atof_sector)}, //  Leave these commented for now. Current clas12mon doesn't support 2d histogram timeline.
-    *(0..14).collect {atof_sector -> new alert_atof_tdc_minus_start_time(atof_sector)},
-    *(0..14).collect {atof_sector -> new alert_atof_tdc(atof_sector)},
-    *(0..14).collect {atof_sector -> new alert_atof_tot(atof_sector)},
-    new alert_start_time(),
+    new alert_atof_time(),
   ],
   out_BAND: [
     new band_adccor(),
@@ -168,7 +164,7 @@ def engines = [
 // parse arguments
 if(args.any{it=="--timelines"}) {
   engines.values().flatten().each{
-    println(it.getClass().getSimpleName())
+    println(it.respondsTo('getName') ? it.name : it.getClass().getSimpleName())
   }
   System.exit(0)
 }
@@ -181,7 +177,7 @@ def (timelineArg, inputDirArg) = args
 
 // check the timeline argument
 def eng = engines.collectMany{key,engs->engs.collect{[key,it]}}
-  .find{name,eng->eng.getClass().getSimpleName()==timelineArg}
+  .find{name,eng-> (eng.respondsTo('getName') ? eng.name : eng.class.simpleName) == timelineArg}
 if(eng == null) {
   System.err.println("error: timeline '$timelineArg' is not defined")
   System.exit(100)

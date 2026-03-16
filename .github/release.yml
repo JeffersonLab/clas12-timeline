@@ -1,0 +1,20 @@
+changelog:
+  categories:
+    - title: ⚠️ Breaking Changes
+      labels: [ breaking ]
+    - title: ⭐ General Updates
+      labels: [ general ]
+    - title: 🐛 Bug Fixes
+      labels: [ fix ]
+    - title: 🔘 RG-L Updates
+      labels: [ rg-l ]
+    - title: 👓 QADB Updates
+      labels: [ qadb ]
+    - title: 📖 Documentation Updates
+      labels: [ documentation ]
+    - title: 📦 Dependency Changes
+      labels: [ dependencies ]
+    - title: 🔧 Technical Changes
+      labels: [ technical ]
+    - title: 🔘 Other Changes
+      labels: [ '*' ]

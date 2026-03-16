@@ -12,6 +12,8 @@ defaults:
 
 env:
   dataset: ci_test
+  RCDB_CONNECTION: mysql://rcdb@clasdb.jlab.org/rcdb
+  CCDB_CONNECTION: mysql://clas12reader@clasdb.jlab.org/clas12
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -28,14 +30,14 @@ jobs:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
       options: --user root
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: build
         run: mvn install
       - run: bin/qtl --version
       - name: tar # to preserve any permissions
         run: |
           tar cavf build_timeline.tar.zst target
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: build_timeline
           retention-days: 1
@@ -54,25 +56,22 @@ jobs:
         include:
           - { type: detectors, schema: mon }
           - { type: physics,   schema: dst }
-    env:
-      xrootd_file: xroot://sci-xrootd.jlab.org//osgpool/hallb/clas12/validation/recon/${{ matrix.schema }}/validation_files.tar.zst
     steps:
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         id: cache
         with:
-          key: validation_files_${{ matrix.type }}
+          key: validation_files_lfs_${{ matrix.type }}
           path: validation_files.tar.zst
           lookup-only: true
-      - name: install dependencies
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          sudo apt -y update
-          sudo apt -y install xrootd-client
       - name: download
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: xrdcp ${{ env.xrootd_file }} ./
-      - run: ls -lh .
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          GIT_LFS_SKIP_SMUDGE=1 git clone https://code.jlab.org/hallb/clas12/validation-data.git
+          cd validation-data
+          git lfs install --skip-smudge
+          git config lfs.fetchinclude "recon/${{ matrix.schema }}/validation_files.tar.zst"
+          git lfs pull
+          mv -v recon/${{ matrix.schema }}/validation_files.tar.zst $GITHUB_WORKSPACE/
 
   # histogramming
   #############################################################################
@@ -90,13 +89,13 @@ jobs:
       matrix:
         type: [ detectors, physics ]
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/cache/restore@v4
+      - uses: actions/checkout@v6
+      - uses: actions/cache/restore@v5
         with:
-          key: validation_files_${{ matrix.type }}
+          key: validation_files_lfs_${{ matrix.type }}
           path: validation_files.tar.zst
       - name: download timeline build
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: build_timeline
       - name: untar
@@ -112,12 +111,12 @@ jobs:
             validation_files
       - run: tree slurm
       - run: tree outfiles
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: slurm_${{ matrix.type }}
           retention-days: 1
           path: slurm
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: outfiles_histogram_${{ matrix.type }}
           retention-days: 14
@@ -136,13 +135,13 @@ jobs:
       matrix:
         type: [ detectors, physics ]
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/cache/restore@v4
+      - uses: actions/checkout@v6
+      - uses: actions/cache/restore@v5
         with:
-          key: validation_files_${{ matrix.type }}
+          key: validation_files_lfs_${{ matrix.type }}
           path: validation_files.tar.zst
       - name: download timeline build
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: build_timeline
       - name: untar
@@ -173,15 +172,15 @@ jobs:
           - { type: detectors, qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya' }
           - { type: physics,   qtl_cmd: 'bin/qtl physics',  args: '' }
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: download outfiles
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           pattern: outfiles_*
           merge-multiple: true
           path: outfiles
       - name: download timeline build
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: build_timeline
       - name: untar
@@ -201,12 +200,12 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           tree web | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: outfiles_timelines_${{ matrix.type }}
           retention-days: 14
           path: outfiles
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: web_timelines_${{ matrix.type }}
           retention-days: 14

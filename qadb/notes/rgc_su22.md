@@ -43,12 +43,16 @@ Assuming your output data are in
 ```
 and that this wildcard pattern does _not_ include any files you _don't_ want, you may run
 ```bash
-qtl histogram -d rgc_su22_prescaled --flatdir --focus-physics $(ls -d /volatile/clas12/users/$LOGNAME/qa_rgc_su22_*/train/QA)
+bin/qtl histogram -d rgc_su22_prescaled --flatdir --focus-physics $(ls -d /volatile/clas12/users/$LOGNAME/qa_rgc_su22_*/train/QA)
 ```
 Alternatively, for `sidisdvcs` trains (which have better statistics for asymmetries):
 ```bash
-qtl histogram --check-cache -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
-qtl histogram -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
+bin/qtl histogram --check-cache -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
+bin/qtl histogram -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
+```
+Cross check the train and DST run lists:
+```bash
+for d in $(ls -d /mss/clas12/rg-c/production/summer22/pass1/*/*/dst); do echo "===== $d ====="; bin/qtl xtrain $d/train/sidisdvcs $d/recon; done
 ```
 
 ## Make timelines

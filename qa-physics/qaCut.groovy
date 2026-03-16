@@ -26,6 +26,10 @@ if(args.length>=4) qaBit = args[3].toInteger()
 def sectors = 0..<6
 def sec = { int i -> i+1 }
 
+// FT or FD
+def whichDet  = useFT ? "FT" : "FD"
+def whichDetX = useFT ? "FT" : ""   // mostly for the defect bit names' suffix
+
 // subroutine to write JSON
 def jPrint = { name,object -> new File(name).write(JsonOutput.toJson(object)) }
 
@@ -109,7 +113,7 @@ dataFile.eachLine { line ->
 
 // open hipo file
 def inTdir = new TDirectory()
-inTdir.readFile("${inDir}/outmon/monitorElec"+(useFT?"FT":"")+".hipo")
+inTdir.readFile("${inDir}/outmon/monitorElec${whichDetX}.hipo")
 def inList = inTdir.getCompositeObjectList(inTdir)
 
 // define 'ratioTree', a tree with the following structure
@@ -190,12 +194,27 @@ def listMedian = { d, name ->
 // establish cut lines using 'cutFactor' x IQR method, and fill cutTree
 // - note: for the FT electrons, it seems that N/F has a long tail toward
 //   lower values, so cutLo is forced to be lower
-def cutFactor = cutDef([ useFT ? "OutlierFT" : "OutlierFD", "IQR_cut_factor" ])
-System.out.println "N/F outliers will be determined with ${cutFactor} x IQR method"
+def cutFactorDefault = cutDef(["Outlier${whichDet}", "IQR_cut_factor" ])
+def cutDefOverrides  = cutDef(["Overrides"], false)
+
+System.out.println "identify ${whichDet} N/F outliers with ${cutFactorDefault} x IQR method"
 sectors.each { s ->
   sectorIt = sec(s)
   if( !useFT || (useFT && sectorIt==1)) {
     ratioTree[sectorIt].each { epochIt, ratioList ->
+
+      // override `cutFactor` for this epoch
+      def cutFactor = cutFactorDefault
+      if(cutDefOverrides != null) {
+        cutDefOverrides.each { cutDefOverride ->
+          if(cutDefOverride['detector'] == whichDet && cutDefOverride['epoch'] == epochIt && cutDefOverride['sectors'].contains(sectorIt)) {
+            if(cutDefOverride["Outlier${whichDet}"] != null && cutDefOverride["Outlier${whichDet}"]["IQR_cut_factor"] != null) {
+              cutFactor = cutDefOverride["Outlier${whichDet}"]["IQR_cut_factor"]
+              System.out.println "OVERRIDE: identify ${whichDet} N/F outliers with ${cutFactor} x IQR method for epoch ${epochIt} sector ${sectorIt}"
+            }
+          }
+        }
+      }
 
       // filter out zero/negative N/F
       def ratioListForIQR = ratioList.findAll{it>0}
@@ -207,10 +226,9 @@ sectors.each { s ->
       // for the IQR method to be robust
       if(cutDef(["RecalculateIQR"], false) != null) {
         cutDef(["RecalculateIQR"]).each { recalcIt ->
-          def whichDet = useFT ? "FT" : "FD"
           if(recalcIt['detector'] == whichDet && recalcIt['epoch'] == epochIt && recalcIt['sectors'].contains(sectorIt)) {
             def recalcRange = recalcIt['within_range']
-            System.err.println "WARNING: recalculating IQR for epoch ${epochIt} sector ${sectorIt}, as specified in cutdef file"
+            System.out.println "OVERRIDE: recalculating IQR for epoch ${epochIt} sector ${sectorIt}, as specified in cutdef file"
             ratioListForIQR = ratioList.findAll{ it >= recalcRange[0] && it <= recalcRange[1] }
           }
         }
@@ -679,11 +697,11 @@ inList.each { obj ->
           // set FD and FT outlier bits
           if( NFval<cutLo || NFval>cutHi ) {
             if( NFerrH>cutLo && NFerrL<cutHi ) {
-              defectList.add(T.bit("MarginalOutlier${useFT?"FT":""}"))
+              defectList.add(T.bit("MarginalOutlier${whichDetX}"))
             } else if( i==0 || i+1==grA.getDataSize(0) ) {
-              defectList.add(T.bit("TerminalOutlier${useFT?"FT":""}"))
+              defectList.add(T.bit("TerminalOutlier${whichDetX}"))
             } else {
-              defectList.add(T.bit("TotalOutlier${useFT?"FT":""}"))
+              defectList.add(T.bit("TotalOutlier${whichDetX}"))
             }
           }
 
@@ -881,7 +899,7 @@ def writeTimeline (tdir,timeline,title,once=false) {
   tdir.writeFile(outHipoName)
 }
 
-electronN = "electron_" + (useFT ? "FT" : "FD")
+electronN = "electron_${whichDet}"
 writeTimeline(outHipoQA,TLqa,"${electronN}_yield_QA_${qaName}",useFT)
 writeTimeline(outHipoA,TLA,"${electronN}_normalized_yield",useFT)
 writeTimeline(outHipoN,TLN,"${electronN}_yield_values",useFT)
@@ -909,7 +927,7 @@ outHipoEpochs.writeFile(outHipoName)
 //println T.pPrint(qaTree)
 qaTree.each { qaRun, qaRunTree -> qaRunTree.sort{it.key.toInteger()} }
 qaTree.sort()
-new File("${inDir}/outdat/qaTree"+(useFT?"FT":"FD")+".json").write(JsonOutput.toJson(qaTree))
+new File("${inDir}/outdat/qaTree${whichDet}.json").write(JsonOutput.toJson(qaTree))
 
 
 // print total QA passing fractions

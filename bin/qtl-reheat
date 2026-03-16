@@ -1,0 +1,208 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+source $(dirname $0)/../libexec/environ.sh
+
+# constants ############################################################
+# slurm settings
+SLURM_MEMORY=2000 # must be more than max heap size `java` calls
+SLURM_TIME=12:00:00
+SLURM_LOG=/farm_out/%u/%x-%A_%a
+# reheating methods: name -> description
+declare -A REHEAT_METHODS=(
+  [rollover]="fix the clock rollover and rebuild scalers"
+)
+########################################################################
+
+# default options
+dataset=train
+coatjava_version=13.3.0 # the first version with rollover correction, used for RG-A Spring 2018 reheating
+declare -A modes
+for key in submit; do
+  modes[$key]=false
+done
+
+# usage
+sep="================================================================"
+usage() {
+  echo """
+  Reproduce cooked data
+  NOTE: chefs should not typically need to run this
+
+  $sep
+  USAGE: qtl reheat [OPTIONS]
+  $sep
+
+  REQUIRED OPTIONS:
+     -i [INPUT_DIR]    input directory of HIPO files; all HIPO files will be reheated
+     -o [OUTPUT_DIR]   output directory
+     -m [METHOD]       which reheating method to use, one of:
+$(for key in "${!REHEAT_METHODS[@]}"; do printf "%24s %-11s %-s\n" "" "$key" "${REHEAT_METHODS[$key]}"; done)
+
+  OPTIONAL OPTIONS:
+     -d [DATASET]      unique name for this dataset
+                       default: $dataset
+     -c [COATJAVA_VER] coatjava version number, either
+                       - version from coatjava env module
+                       - absolute path to coatjava
+                       default: $coatjava_version
+     --submit          submit the slurm jobs, rather than just
+                       printing the \`sbatch\` command
+  """ >&2
+}
+if [ $# -lt 1 ]; then
+  usage
+  exit 101
+fi
+
+# parse options
+inputDir=""
+outputDir=""
+mtd=""
+while getopts "i:o:m:d:c:h-:" opt; do
+  case $opt in
+    i) inputDir=$OPTARG ;;
+    o) outputDir=$OPTARG ;;
+    m)
+      [ -z "${REHEAT_METHODS[$OPTARG]-}" ] && printError "unknown command '$OPTARG'" && exit 100
+      mtd=$OPTARG
+      ;;
+    d) dataset=$OPTARG ;;
+    c) coatjava_version=$OPTARG ;;
+    h)
+      usage
+      exit 101
+      ;;
+    -)
+      for key in "${!modes[@]}"; do
+        [ "$key" == "$OPTARG" ] && modes[$OPTARG]=true && break
+      done
+      [ -z "${modes[$OPTARG]-}" ] && printError "unknown option --$OPTARG" && exit 100
+      ;;
+    *) exit 100 ;;
+  esac
+done
+
+# check arguments
+[ -z "$inputDir" ] && printError "missing input directory argument" && exit 100
+[ -z "$outputDir" ] && printError "missing output directory argument" && exit 100
+[ -z "$mtd" ] && printError "missing method argument" && exit 100
+
+# get list of input files
+[ ! -d $inputDir ] && printError "input directory '$inputDir' not found" && exit 100
+inputFiles=($(find $inputDir -maxdepth 1 -name "*.hipo"))
+[ ${#inputFiles[@]} -eq 0 ] && printError "no HIPO files found within input directory" && exit 100
+
+# make output directory
+mkdir -p $outputDir
+outputDir=$(realpath $outputDir)
+
+# start job lists
+jobName=reheat.$mtd.$dataset
+slurmDir=./slurm
+jobList=$slurmDir/job.$jobName.list
+> $jobList
+mkdir -p $slurmDir/scripts
+
+# loop over input files, building the job list
+echo """
+Generating job scripts..."""
+for inputFile in ${inputFiles[@]}; do
+
+  # set output name
+  inputBase=$(basename $inputFile .hipo)
+  outputFile=$outputDir/$inputBase.hipo
+
+  # start job script
+  jobScript=$slurmDir/scripts/$jobName.$inputBase.sh
+  cat > $jobScript << EOF
+#!/usr/bin/env bash
+set -eou pipefail
+# set env vars
+source $TIMELINESRC/libexec/environ.sh
+# logger info
+echo "INPUT FILE:  $inputFile"
+echo "OUTPUT FILE: $outputFile"
+EOF
+
+  # handle coatjava
+  if [[ "$coatjava_version" == /* ]]; then
+    cat >> $jobScript << EOF
+# set coatjava environment
+export COATJAVA=$coatjava_version
+export CLAS12DIR=\$COATJAVA
+echo "COATJAVA:    \$COATJAVA"
+EOF
+  else
+    cat >> $jobScript << EOF
+# load coatjava module
+source /usr/share/Modules/init/bash
+module purge
+module use /scigroup/cvmfs/hallb/clas12/sw/modulefiles
+module load clas12
+module switch coatjava/$coatjava_version
+echo "COATJAVA:    \$COATJAVA"
+EOF
+  fi
+
+  # add main command to the job script
+  case $mtd in
+
+    rollover)
+      mkdir -p $outputDir/tmp
+      tmpFile=$outputDir/tmp/$inputBase.hipo
+      cat >> $jobScript << EOF
+# remove output files, if they exist
+[ -f "$tmpFile" ] && echo "WARNING: clobbering $tmpFile" >&2 && rm -v $tmpFile
+[ -f "$outputFile" ] && echo "WARNING: clobbering $outputFile" >&2 && rm -v $outputFile
+# fix the clock rollover
+echo "TMP FILE:    $tmpFile"
+\$COATJAVA/bin/rebuild-scalers -l INFO -c X -o $tmpFile $inputFile -- -Xmx1536m
+\$COATJAVA/bin/postprocess -l INFO -q 1 -o $outputFile $tmpFile
+rm -v $tmpFile
+EOF
+
+  esac
+
+  # finish the job script
+  cat >> $jobScript << EOF
+# check output file
+$TIMELINESRC/libexec/hipo-check.sh $outputFile
+EOF
+
+  # grant permission and add it to the job list
+  chmod u+x $jobScript
+  echo $jobScript >> $jobList
+done
+
+
+# now generate slurm descriptions and/or local scripts
+slurmScript=$(echo $jobList | sed 's;.list$;.slurm;')
+cat > $slurmScript << EOF
+#!/bin/sh
+#SBATCH --ntasks=1
+#SBATCH --job-name=$jobName
+#SBATCH --output=$SLURM_LOG.out
+#SBATCH --error=$SLURM_LOG.err
+#SBATCH --partition=production
+#SBATCH --account=clas12
+#SBATCH --mem-per-cpu=$SLURM_MEMORY
+#SBATCH --time=$SLURM_TIME
+#SBATCH --array=1-$(cat $jobList | wc -l)
+#SBATCH --ntasks=1
+srun \$(head -n\$SLURM_ARRAY_TASK_ID $jobList | tail -n1)
+EOF
+
+# submit
+echo """
+SLURM SCRIPT: $slurmScript
+JOB LIST:     $jobList
+"""
+if ${modes['submit']}; then
+  echo "Now submitting!"
+  sbatch $slurmScript
+else
+  echo """Run this command to submit:
+  sbatch $slurmScript
+  """
+fi

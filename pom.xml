@@ -4,7 +4,7 @@
 
   <groupId>org.jlab.clas.timeline</groupId>
   <artifactId>clas12-timeline</artifactId>
-  <version>3.3.0</version>
+  <version>4.0.2</version>
   <name>clas12-timeline</name>
   <url>http://www.github.com/JeffersonLab/clas12-timeline</url>
 
@@ -12,13 +12,12 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <release>21</release>
   </properties>
 
   <repositories>
     <repository>
       <id>clas12maven</id>
-      <url>https://clasweb.jlab.org/clas12maven</url>
+      <url>https://clasweb.jlab.org/.clas12maven</url>
     </repository>
   </repositories>
 
@@ -36,21 +35,21 @@
     <dependency>
       <groupId>org.jlab.coat</groupId>
       <artifactId>coat-libs</artifactId>
-      <version>13.0.2</version>
+      <version>13.6.0</version>
       <type>jar</type>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-all -->
     <dependency>
       <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>4.0.28</version>
+      <version>5.0.4</version>
       <type>pom</type>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-dateutil -->
     <dependency>
       <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-dateutil</artifactId>
-      <version>4.0.28</version>
+      <version>5.0.4</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.codehaus.gpars/gpars -->
     <dependency>
@@ -66,23 +65,24 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.14.0</version>
+        <version>3.15.0</version>
         <configuration>
           <release>21</release>
           <compilerId>groovy-eclipse-compiler</compilerId>
+          <failOnWarning>true</failOnWarning>
         </configuration>
         <dependencies>
           <!-- https://groovy.jfrog.io/ui/native/plugins-release/org/codehaus/groovy/groovy-eclipse-compiler/ -->
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-compiler</artifactId>
-            <version>3.9.0</version>
+            <version>3.9.1</version> <!-- WARNING: no release notes for this dependency; instead, if changed, check commits at https://github.com/groovy/groovy-eclipse/commits/master/extras/groovy-eclipse-compiler -->
           </dependency>
           <!-- https://groovy.jfrog.io/ui/native/plugins-release/org/codehaus/groovy/groovy-eclipse-batch/ -->
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-batch</artifactId>
-            <version>4.0.27-01</version>
+            <version>5.0.4-02</version> <!-- NOTE: if no release notes, try commit history of https://github.com/groovy/groovy-eclipse -->
           </dependency>
         </dependencies>
       </plugin>
@@ -90,7 +90,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>3.10.0</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>

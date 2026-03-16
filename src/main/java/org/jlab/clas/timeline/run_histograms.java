@@ -9,7 +9,6 @@ import java.text.SimpleDateFormat;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.hipo.HipoDataSource;
 import org.jlab.groot.base.GStyle;
-import org.jlab.logging.DefaultLogger;
 
 public class run_histograms {
   public run_histograms(){}
@@ -17,7 +16,6 @@ public class run_histograms {
   public static void main(String[] args) {
     System.setProperty("java.awt.headless", "true");
     GStyle.setPalette("kRainBow");
-    DefaultLogger.debug();
     int count = 0;
     int runNum = 0;
     String outputDir = "plots";

@@ -7,10 +7,15 @@
 
 We will use the `sidisdvcs` train.
 
+Cross check the train and DST run lists:
+```bash
+for d in $(ls -d /mss/clas12/rg-c/production/fall22/pass1/*/dst); do echo "===== $d ====="; bin/qtl xtrain $d/train/sidisdvcs $d/recon; done
+```
+
 We will combine the targets' data into a single dataset named `rgc_fa22_prescaled`.
 ```bash
-qtl histogram --check-cache -d rgc_fa22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/fall22/pass1/*/dst/train/sidisdvcs/)
-qtl histogram -d rgc_fa22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/fall22/pass1/*/dst/train/sidisdvcs/)
+bin/qtl histogram --check-cache -d rgc_fa22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/fall22/pass1/*/dst/train/sidisdvcs/)
+bin/qtl histogram -d rgc_fa22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/fall22/pass1/*/dst/train/sidisdvcs/)
 ```
 
 ## Double check that we have all the runs

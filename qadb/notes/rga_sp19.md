@@ -26,12 +26,12 @@ start-workflow.sh rga-a-sp19*.json  ## check that this is the correct JSON file 
 
 For the prescaled train:
 ```bash
-qtl histogram -d rga_sp19_prescaled --submit --focus-physics PATH_TO_PRESCALED_TRAIN
+bin/qtl histogram -d rga_sp19_prescaled --submit --focus-physics PATH_TO_PRESCALED_TRAIN
 ```
 
 For the SIDIS train, `nSidis`, first make sure all skim files are cached:
 ```bash
-qtl histogram -d rga_sp19_nSidis --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
+bin/qtl histogram -d rga_sp19_nSidis --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
 ```
 If they are not:
 ```bash
@@ -39,9 +39,13 @@ ls /mss/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis/*
 jcache get $(cat jlist.txt)
 # then wait for them to be cached
 ```
+Cross check the train and DST run lists:
+```bash
+bin/qtl xtrain /mss/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis /mss/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/recon
+```
 then run monitoring
 ```bash
-qtl histogram -d rga_sp19_nSidis --submit --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
+bin/qtl histogram -d rga_sp19_nSidis --submit --flatdir --focus-physics /cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis
 ```
 
 ## Make timelines

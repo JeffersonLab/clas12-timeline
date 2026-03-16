@@ -30,7 +30,7 @@ def write() {
     out.mkdir('/'+it.run)
     out.cd('/'+it.run)
     out.addDataSet(it.h1)
-    grtl.addPoint(it.run, it.h1.getDataX(it.h1.getMaximumBin()), 0, 0)
+    grtl.addPoint(it.run, it.h1.getMean(), 0, 0)
   }
 
   out.mkdir('/timelines')

@@ -7,15 +7,21 @@
 
 We will use the `nSidis` train.
 
-First make sure all skim files are cached:
+Cross check the train and DST run lists:
 ```bash
-qtl histogram -d rga_fa18_inbending_nSidis  --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/fall2018/torus-1/pass2/main/train/nSidis
-qtl histogram -d rga_fa18_outbending_nSidis --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/fall2018/torus+1/pass2/train/nSidis
+bin/qtl xtrain /mss/clas12/rg-a/production/recon/fall2018/torus-1/pass2/main/train/nSidis /mss/clas12/rg-a/production/recon/fall2018/torus-1/pass2/main/dst/recon/
+bin/qtl xtrain /mss/clas12/rg-a/production/recon/fall2018/torus+1/pass2/train/nSidis      /mss/clas12/rg-a/production/recon/fall2018/torus+1/pass2/dst/recon/
+```
+
+Make sure all skim files are cached:
+```bash
+bin/qtl histogram -d rga_fa18_inbending_nSidis  --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/fall2018/torus-1/pass2/main/train/nSidis
+bin/qtl histogram -d rga_fa18_outbending_nSidis --check-cache --flatdir --focus-physics /cache/clas12/rg-a/production/recon/fall2018/torus+1/pass2/train/nSidis
 ```
 then run monitoring
 ```bash
-qtl histogram -d rga_fa18_inbending_nSidis  --submit --flatdir --focus-physics /cache/clas12/rg-a/production/recon/fall2018/torus-1/pass2/main/train/nSidis
-qtl histogram -d rga_fa18_outbending_nSidis --submit --flatdir --focus-physics /cache/clas12/rg-a/production/recon/fall2018/torus+1/pass2/train/nSidis
+bin/qtl histogram -d rga_fa18_inbending_nSidis  --submit --flatdir --focus-physics /cache/clas12/rg-a/production/recon/fall2018/torus-1/pass2/main/train/nSidis
+bin/qtl histogram -d rga_fa18_outbending_nSidis --submit --flatdir --focus-physics /cache/clas12/rg-a/production/recon/fall2018/torus+1/pass2/train/nSidis
 ```
 
 ## Double check that we have all the runs
