@@ -9,7 +9,8 @@ unless ARGV.length == 2
 
   USAGE: qtl xtrain [TRAIN_DIR(S)] [DST_DIR]
 
-  Both directories must be on /mss
+  Both directories must be on /mss or /cache; the /mss dir is checked
+  (even if the argument is /cache)
 
   Use globs to specify multiple TRAIN_DIRS (surround in quotes)
   """
@@ -25,7 +26,7 @@ Dir.glob(train_dirs).select{|d|File.directory? d}.each do |train_dir|
   # function to get a set of run numbers from one of the argument dirs
   def get_runnums(path, type)
     runnums = Set.new
-    raise "#{type} dir `#{path}` is not on /mss" unless path.match? /^\/mss\//
+    path = path.sub /^\/cache\//, '/mss/' if path.match? /^\/cache\//
     raise "#{type} dir `#{path}` does not exist" unless Dir.exist? path
 
     # get list of files/directories within
