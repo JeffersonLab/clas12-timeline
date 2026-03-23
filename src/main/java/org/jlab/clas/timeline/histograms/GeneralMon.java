@@ -53,6 +53,10 @@ public class GeneralMon {
       // RG-C 2.2 GeV:  non-standard primary electron trigger:
       return testTriggerSector(TriggerWord, sector, 0x4081);
     }
+    if (RunDependentCut.runIsInRange(runNum, 22732, 23015, false)) {
+      // RG-L 2.2 GeV: no sector specific trigger bit is set
+      return true;
+    }
     // Default:  the primary electron trigger is the first (7) bits:
     return testTriggerSector(TriggerWord, sector, 0x1);
   }
