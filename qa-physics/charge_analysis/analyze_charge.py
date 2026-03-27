@@ -300,6 +300,9 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
     fig2.savefig(f'{output_dir}/chunked_fcupgated_comparison_{run_number}_{output_suffix}.png', bbox_inches='tight', dpi=300)
     plt.close(fig2)
 
+    print(f'TOTAL UNGATED CHARGE = {fcups[-1]-fcups[0]}')
+    print(f'TOTAL   GATED CHARGE = {fcupgateds[-1]-fcupgateds[0]}')
+
 
 if __name__ == "__main__":
     main()
