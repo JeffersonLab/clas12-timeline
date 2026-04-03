@@ -24,7 +24,7 @@ def has_data = new AtomicBoolean(false)
           data[run].put(String.format('atof_time_%02d', component),  h1)
           def f1 = ALERTFitter.atof_time_fitter(h1,component)
           data[run].put(String.format('fit_atof_time_%02d', component),  f1)
-          data[run].put(String.format('peak_location_atof_time_%02d', component),  f1.getParameter(1).abs())
+          data[run].put(String.format('peak_location_atof_time_%02d', component),  f1.getParameter(1))
           data[run].put(String.format('sigma_atof_time_%02d', component),  f1.getParameter(2).abs())
           has_data.set(true)
         }
