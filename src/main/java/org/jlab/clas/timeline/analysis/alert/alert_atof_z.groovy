@@ -31,7 +31,7 @@ class alert_atof_z {
     def name = 'atof_z_combined'
     def gr = new GraphErrors(name)
     gr.setTitle("ATOF z RMS")
-    gr.setTitleY("ATOF z RMS (cm)")
+    gr.setTitleY("ATOF z RMS (mm)")
     gr.setTitleX("run number")
     data.sort { it.key }.each { run, it ->
       out.mkdir('/' + it.run)
