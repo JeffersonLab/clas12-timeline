@@ -26,7 +26,7 @@ public class ALERT {
   public int rf_large_integer;
 
   //Hodoscope
-  public H1F[] ATOF_Time;
+  public H1F[] ATOF_Time, ATOF_Time_sl, ATOF_z, ATOF_z_sl, ATOF_z_c4, ATOF_z_c4_sl;
   public H1F[] ADC, AHDC_RESIDUAL, AHDC_TIME;//AHDC-related-histograms
   private H1F bits;
 
@@ -58,14 +58,51 @@ public class ALERT {
     rf_large_integer = 1000;
 
     ATOF_Time = new H1F[11];// ATOF Time Histograms
-
+    ATOF_Time_sl = new H1F[660];// ATOF Time Histograms
+    ATOF_z = new H1F[1];// ATOF Time Histograms
+    ATOF_z_c4 = new H1F[1];// ATOF Time Histograms
+    ATOF_z_sl = new H1F[60];// ATOF z Histograms
+    ATOF_z_c4_sl = new H1F[60];// ATOF z Histograms
+      
     for (int component = 0; component < 11; component++) {
-
       ATOF_Time[component] = new H1F(String.format("ATOF_Time_component%02d", component), String.format("ATOF Time component%02d", component), 200, -5, 5);
       ATOF_Time[component].setTitleX("ATOF Time (ns)");
       ATOF_Time[component].setTitleY("Counts");
       ATOF_Time[component].setFillColor(4);
     }
+      ATOF_z[0]= new H1F(String.format("ATOF_z_combined"), String.format("ATOF z"), 250,-30,20);
+      ATOF_z[0].setTitleX("ATOF z (ns)");
+      ATOF_z[0].setTitleY("Counts");
+      ATOF_z[0].setFillColor(4);
+      ATOF_z_c4[0]= new H1F(String.format("ATOF_z_combined_c4"), String.format("ATOF z with c4"), 250,-30,20);
+      ATOF_z_c4[0].setTitleX("ATOF z (ns)");
+      ATOF_z_c4[0].setTitleY("Counts");
+      ATOF_z_c4[0].setFillColor(4);
+    for(int sector=0;sector<15;sector++){
+          for(int layer=0;layer<4;layer++){
+              int gsector=sector*4+layer;
+              ATOF_z_sl[gsector] = new H1F(String.format("ATOF_z_sector%02d_layer%02d", sector,layer), String.format("ATOF z sector%02d layer %2d", sector,layer), 250,-30,20);
+              ATOF_z_sl[gsector].setTitleX("ATOF z (ns)");
+              ATOF_z_sl[gsector].setTitleY("Counts");
+              ATOF_z_sl[gsector].setFillColor(4);
+
+              ATOF_z_c4_sl[gsector] = new H1F(String.format("ATOF_z_c4_sector%02d_layer%02d", sector,layer), String.format("ATOF z with C4 sector%02d layer %2d", sector,layer), 250,-30,20);
+              ATOF_z_c4_sl[gsector].setTitleX("ATOF z (ns)");
+              ATOF_z_c4_sl[gsector].setTitleY("Counts");
+              ATOF_z_c4_sl[gsector].setFillColor(4);
+              
+              for (int component = 0; component < 11; component++) {
+                  int gcomponent = gsector*11+component;
+                  ATOF_Time_sl[gcomponent] = new H1F(String.format("ATOF_Time_sector%02d_layer%02d_component%02d",sector,layer, component), String.format("ATOF Time sector%02d layer%02d component%02d", sector,layer,component), 200, -5, 5);
+                  ATOF_Time_sl[gcomponent].setTitleX("ATOF Time (ns)");
+                  ATOF_Time_sl[gcomponent].setTitleY("Counts");
+                  ATOF_Time_sl[gcomponent].setFillColor(4);
+              }
+
+
+          }
+    }
+
 
     //AHDC ADC Histograms
     ADC           = new H1F[576];
@@ -146,13 +183,38 @@ public class ALERT {
 
   public void fillATOF_hits(DataBank atof_hits) {
     int rows = atof_hits.rows();
-    for (int loop = 0; loop < rows; loop++) {
 
-      int component = atof_hits.getInt("component", loop);
-      float time       = atof_hits.getFloat("time", loop);
+    // First pass: collect which gsectors have a hit on component 4
+    Set<Integer> gsectors_with_c4 = new HashSet<>();
+    for (int loop = 0; loop < rows; loop++) {
+      if (atof_hits.getInt("component", loop) == 4) {
+        int sector  = atof_hits.getInt("sector", loop);
+        int layer   = atof_hits.getInt("layer",  loop);
+        gsectors_with_c4.add(sector * 4 + layer);
+      }
+    }
+
+    // Second pass: fill all histograms
+    for (int loop = 0; loop < rows; loop++) {
+      int sector     = atof_hits.getInt("sector",    loop);
+      int layer      = atof_hits.getInt("layer",     loop);
+      int component  = atof_hits.getInt("component", loop);
+      float time     = atof_hits.getFloat("time",    loop);
+      int gsector    = sector * 4 + layer;
+      int gcomponent = gsector * 11 + component;
 
       ATOF_Time[component].fill(time);
+      ATOF_Time_sl[gcomponent].fill(time);
 
+      if (component == 10) {
+        float z = atof_hits.getFloat("z", loop);
+        ATOF_z[0].fill(z);
+        ATOF_z_sl[gsector].fill(z);
+        if (gsectors_with_c4.contains(gsector)) {
+          ATOF_z_c4[0].fill(z);
+          ATOF_z_c4_sl[gsector].fill(z);
+        }
+      }
     }
   }
 
@@ -224,6 +286,15 @@ public class ALERT {
     dirout.cd("/ALERT/");
     for (int component = 0; component < 11; component++) {
       dirout.addDataSet(ATOF_Time[component]);
+    }
+    dirout.addDataSet(ATOF_z[0]);
+    dirout.addDataSet(ATOF_z_c4[0]);
+    for (int gsector = 0; gsector < 60; gsector++) {
+      dirout.addDataSet(ATOF_z_sl[gsector]);
+      dirout.addDataSet(ATOF_z_c4_sl[gsector]);
+    }
+    for (int gcomponent = 0; gcomponent < 660; gcomponent++) {
+      dirout.addDataSet(ATOF_Time_sl[gcomponent]);
     }
     for (int index = 0; index < 576; index++) {
       dirout.addDataSet(ADC[index], AHDC_TIME[index]);
