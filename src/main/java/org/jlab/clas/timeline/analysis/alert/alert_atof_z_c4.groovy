@@ -36,7 +36,7 @@ class alert_atof_z_c4 {
       def name = 'atof_z_c4_combined'
       def gr = new GraphErrors(name)
       gr.setTitle(String.format("ATOF z c4 %s", variable.replace('_', ' ')))
-      gr.setTitleY(String.format("ATOF z c4 %s (cm)", variable.replace('_', ' ')))
+      gr.setTitleY(String.format("ATOF z c4 %s (mm)", variable.replace('_', ' ')))
       gr.setTitleX("run number")
       data.sort { it.key }.each { run, it ->
         out.mkdir('/' + it.run)

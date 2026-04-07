@@ -43,7 +43,7 @@ class alert_atof_z_sl {
     def name = String.format('atof_z_sl_s%02d_l%d', sector, layer)
     def gr = new GraphErrors(name)
     gr.setTitle(String.format("ATOF z RMS Sector %02d Layer %d", sector, layer))
-    gr.setTitleY("ATOF z RMS (cm)")
+    gr.setTitleY("ATOF z RMS (mm)")
     gr.setTitleX("run number")
     data.sort { it.key }.each { run, it ->
       out.mkdir('/' + it.run)
