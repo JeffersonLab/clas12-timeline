@@ -26,10 +26,12 @@ class alert_atof_time_sl {
     (0..<11).each { component ->
       def h1 = dir.getObject(String.format('/ALERT/ATOF_Time_sector%02d_layer%02d_component%02d', sector, layer, component))
       if (h1 != null) {
-        if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries() > 300) {
+        if (h1.getBinContent(h1.getMaximumBin()) > 3 && h1.getEntries() > 10) {
           def name = String.format('atof_time_sl_s%02d_l%d_c%02d', sector, layer, component)
           data[run].put(name, h1)
-          def f1 = ALERTFitter.atof_time_fitter(h1, component)
+          double fit_min = h1.getXaxis().getBinCenter(1)
+          double fit_max = h1.getXaxis().getBinCenter(h1.getXaxis().getNBins())
+          def f1 = ALERTFitter.atof_time_fitter(h1, component, fit_min, fit_max)
           data[run].put('fit_' + name, f1)
           data[run].put('peak_location_' + name, f1.getParameter(1))
           data[run].put('sigma_' + name, f1.getParameter(2).abs())

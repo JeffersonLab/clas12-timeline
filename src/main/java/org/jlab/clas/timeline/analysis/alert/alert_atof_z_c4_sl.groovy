@@ -25,7 +25,7 @@ class alert_atof_z_c4_sl {
     data[run] = [run:run]
     def h1 = dir.getObject(String.format('/ALERT/ATOF_z_c4_sector%02d_layer%02d', sector, layer))
     if (h1 != null) {
-      if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries() > 300) {
+      if (h1.getBinContent(h1.getMaximumBin()) > 3 && h1.getEntries() > 10) {
         def name = String.format('atof_z_c4_sl_s%02d_l%d', sector, layer)
         data[run].put(name, h1)
         def f1 = ALERTFitter.atof_z_fitter(h1)

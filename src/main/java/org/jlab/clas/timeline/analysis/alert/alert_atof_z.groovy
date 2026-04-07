@@ -13,7 +13,7 @@ class alert_atof_z {
     data[run] = [run:run]
     def h1 = dir.getObject('/ALERT/ATOF_z_combined')
     if (h1 != null) {
-      if (h1.getEntries() > 300) {
+      if (h1.getEntries() > 10) {
         data[run].put('atof_z_combined', h1)
         data[run].put('rms_atof_z_combined', h1.getRMS())
         has_data.set(true)

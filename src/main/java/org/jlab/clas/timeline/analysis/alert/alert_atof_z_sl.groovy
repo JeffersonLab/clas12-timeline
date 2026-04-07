@@ -24,7 +24,7 @@ class alert_atof_z_sl {
     data[run] = [run:run]
     def h1 = dir.getObject(String.format('/ALERT/ATOF_z_sector%02d_layer%02d', sector, layer))
     if (h1 != null) {
-      if (h1.getEntries() > 300) {
+      if (h1.getEntries() > 10) {
         def name = String.format('atof_z_sl_s%02d_l%d', sector, layer)
         data[run].put(name, h1)
         data[run].put('rms_' + name, h1.getRMS())
