@@ -71,23 +71,23 @@ public class ALERT {
       ATOF_Time[component].setFillColor(4);
     }
       ATOF_z[0]= new H1F(String.format("ATOF_z_combined"), String.format("ATOF z"), 300,-300,300);
-      ATOF_z[0].setTitleX("ATOF z (ns)");
+      ATOF_z[0].setTitleX("ATOF z (mm)");
       ATOF_z[0].setTitleY("Counts");
       ATOF_z[0].setFillColor(4);
       ATOF_z_c4[0]= new H1F(String.format("ATOF_z_combined_c4"), String.format("ATOF z with c4"), 300,-300,300);
-      ATOF_z_c4[0].setTitleX("ATOF z (ns)");
+      ATOF_z_c4[0].setTitleX("ATOF z (mm)");
       ATOF_z_c4[0].setTitleY("Counts");
       ATOF_z_c4[0].setFillColor(4);
     for(int sector=0;sector<15;sector++){
           for(int layer=0;layer<4;layer++){
               int gsector=sector*4+layer;
               ATOF_z_sl[gsector] = new H1F(String.format("ATOF_z_sector%02d_layer%02d", sector,layer), String.format("ATOF z sector%02d layer %2d", sector,layer), 300,-300,300);
-              ATOF_z_sl[gsector].setTitleX("ATOF z (ns)");
+              ATOF_z_sl[gsector].setTitleX("ATOF z (mm)");
               ATOF_z_sl[gsector].setTitleY("Counts");
               ATOF_z_sl[gsector].setFillColor(4);
 
               ATOF_z_c4_sl[gsector] = new H1F(String.format("ATOF_z_c4_sector%02d_layer%02d", sector,layer), String.format("ATOF z with C4 sector%02d layer %2d", sector,layer), 300,-300,300);
-              ATOF_z_c4_sl[gsector].setTitleX("ATOF z (ns)");
+              ATOF_z_c4_sl[gsector].setTitleX("ATOF z (mm)");
               ATOF_z_c4_sl[gsector].setTitleY("Counts");
               ATOF_z_c4_sl[gsector].setFillColor(4);
               
