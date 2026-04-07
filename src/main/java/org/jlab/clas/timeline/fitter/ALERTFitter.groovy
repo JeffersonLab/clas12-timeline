@@ -185,10 +185,10 @@ class ALERTFitter{
 	static F1D atof_z_fitter(H1F h1){
 		double maxz = h1.getBinContent(h1.getMaximumBin())
 		double peak = h1.getAxis().getBinCenter(h1.getMaximumBin())
-		int bin_low  = h1.getAxis().getBin(peak - 10.0)
-		int bin_high = h1.getAxis().getBin(peak + 10.0)
+		int bin_low  = h1.getAxis().getBin(peak - 100.0)
+		int bin_high = h1.getAxis().getBin(peak + 100.0)
 		double sigma = ALERTFitter.getRestrictedRMS(h1, bin_low, bin_high)
-		if (sigma <= 0 || Double.isNaN(sigma)) sigma = 5.0
+		if (sigma <= 0 || Double.isNaN(sigma)) sigma = 100.0
 
 		def f1 = new F1D("fit:" + h1.getName(), "[amp]*gaus(x,[mean],[sigma])", peak - 2*sigma, peak + 2*sigma)
 		f1.setLineColor(33)
@@ -198,8 +198,8 @@ class ALERTFitter{
 		f1.setParameter(1, peak)
 		f1.setParameter(2, sigma)
 		if (maxz > 0) f1.setParLimits(0, maxz * 0.5, maxz * 1.5)
-		f1.setParLimits(1, peak - 5.0, peak + 5.0)
-		f1.setParLimits(2, 0.01, 10.0)
+		f1.setParLimits(1, peak - 50.0, peak + 50.0)
+		f1.setParLimits(2, 0.01, 100.0)
 
 		PrintStream original = System.out
 		System.setOut(new PrintStream(OutputStream.nullOutputStream()))
