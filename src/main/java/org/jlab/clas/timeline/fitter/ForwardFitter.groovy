@@ -52,22 +52,28 @@ class ForwardFitter{
   }
 
 
-  static F1D fitRGL(H1F h1) {
-    def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", 15, 25);
-    double hAmp  = h1.getBinContent(h1.getMaximumBin());
-    double hMean = h1.getAxis().getBinCenter(h1.getMaximumBin());
-    double hRMS  = h1.getRMS(); //cm
-    f1.setRange(hMean-1.0, hMean+1.0);
+  static F1D fitRGL(H1F h1, double fit_left, double fit_right) {
+    def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", fit_left, fit_right);
+
+    // find local max within [fit_left, fit_right] only, avoiding the other peak
+    int binLeft  = Math.max(0, h1.getAxis().getBin(fit_left))
+    int binRight = Math.min(h1.getAxis().getNBins() - 1, h1.getAxis().getBin(fit_right))
+    int maxBin = binLeft
+    for (int i = binLeft + 1; i <= binRight; i++) {
+      if (h1.getBinContent(i) > h1.getBinContent(maxBin)) maxBin = i
+    }
+    double hAmp  = h1.getBinContent(maxBin)
+    double hMean = h1.getAxis().getBinCenter(maxBin)
+
+    f1.setRange(hMean - 2.0, hMean + 2.0);
     f1.setParameter(0, hAmp);
     f1.setParameter(1, hMean);
-    //f1.setParameter(2, hRMS);
-    f1.setParameter(2, 0.3);
+    f1.setParameter(2, 1);
     MoreFitter.fit(f1,h1,"LQ");
 
     def makefit = {func->
       hMean = func.getParameter(1)
-      hRMS = func.getParameter(2).abs()
-      func.setRange(hMean-1.0,hMean+1.0)
+      func.setRange(hMean - 2.0, hMean + 2.0)
       MoreFitter.fit(func,h1,"LQ")
       return [func.getChiSquare(), (0..<func.getNPars()).collect{func.getParameter(it)}]
     }
@@ -75,7 +81,6 @@ class ForwardFitter{
     def fits1 = (0..20).collect{makefit(f1)}
     def bestfit = fits1.sort()[0]
     f1.setParameters(*bestfit[1])
-    //makefit(f1)
 
     return f1
   }

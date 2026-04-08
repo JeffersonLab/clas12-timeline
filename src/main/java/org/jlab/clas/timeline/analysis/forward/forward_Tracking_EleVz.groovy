@@ -9,6 +9,7 @@ class forward_Tracking_EleVz {
 
 def data = new ConcurrentHashMap()
 def data_2nd_peak = new ConcurrentHashMap()
+def data_upstream = new ConcurrentHashMap()
 
 def is_RGD_LD2 = { run ->
   return (RunDependentCut.runIsInRange(run, 18305, 18313, true) ||
@@ -31,6 +32,11 @@ def processRun(dir, run) {
   def meanlist_2nd_peak = []
   def sigmalist_2nd_peak = []
   def chi2list_2nd_peak = []
+
+  def funclist_upstream = []
+  def meanlist_upstream = []
+  def sigmalist_upstream = []
+  def chi2list_upstream = []
 
   def histlist =   (0..<6).collect{
     def h1 = dir.getObject('/elec/H_trig_vz_mom_S'+(it+1)).projectionY()
@@ -56,7 +62,12 @@ def processRun(dir, run) {
       }
     }
     else if (dataset == 'rgl') {
-      f1 = ForwardFitter.fitRGL(h1)
+      f1 = ForwardFitter.fitRGL(h1, 10, 30)
+      def f1_upstream = ForwardFitter.fitRGL(h1, -40, -20)
+      funclist_upstream.add(f1_upstream)
+      meanlist_upstream.add(f1_upstream.getParameter(1))
+      sigmalist_upstream.add(f1_upstream.getParameter(2).abs())
+      chi2list_upstream.add(f1_upstream.getChiSquare())
     }
     else {
       f1 = ForwardFitter.fit(h1)
@@ -79,6 +90,9 @@ def processRun(dir, run) {
   data[run] = [run:run, hlist:histlist, flist:funclist, mean:meanlist, sigma:sigmalist, clist:chi2list]
   if (funclist_2nd_peak.size() > 0) {
     data_2nd_peak[run] = [run:run, hlist:histlist, flist:funclist_2nd_peak, mean:meanlist_2nd_peak, sigma:sigmalist_2nd_peak, clist:chi2list_2nd_peak]
+  }
+  if (funclist_upstream.size() > 0) {
+    data_upstream[run] = [run:run, hlist:histlist, flist:funclist_upstream, mean:meanlist_upstream, sigma:sigmalist_upstream, clist:chi2list_upstream]
   }
 }
 
@@ -117,6 +131,30 @@ def write() {
 
     if (data_2nd_peak.size() != 0) {
       out.addDataSet(grtl_2nd_peak)
+    }
+
+    if (data_upstream.size() != 0) {
+      def grtl_upstream = new GraphErrors('sec'+(sec+1)+'_upstream')
+      grtl_upstream.setTitle("VZ (upstream peak value) for electrons per sector")
+      grtl_upstream.setTitleY("VZ (upstream peak value) for electrons per sector (cm)")
+      grtl_upstream.setTitleX("run number")
+
+      def grtl_window = new GraphErrors('sec'+(sec+1)+'_window')
+      grtl_window.setTitle("VZ target window length (downstream - upstream peak distance) per sector")
+      grtl_window.setTitleY("VZ target window length (cm)")
+      grtl_window.setTitleX("run number")
+
+      data_upstream.sort{it.key}.each{run,it->
+        out.cd('/'+it.run)
+        out.addDataSet(it.flist[sec])
+        grtl_upstream.addPoint(it.run, it.mean[sec], 0, 0)
+        def window_length = (data[run].mean[sec] - it.mean[sec]).abs()
+        grtl_window.addPoint(it.run, window_length, 0, 0)
+      }
+
+      out.cd('/timelines')
+      out.addDataSet(grtl_upstream)
+      out.addDataSet(grtl_window)
     }
   }
 
