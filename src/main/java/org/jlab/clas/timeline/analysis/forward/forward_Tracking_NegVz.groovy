@@ -55,7 +55,7 @@ def processRun(dir, run) {
       }
     }
     else if (dataset == 'rgl') {
-      f1 = ForwardFitter.fitRGL(h1)
+      f1 = ForwardFitter.fitRGL(h1, 10, 30)
     }
     else {
       f1 = ForwardFitter.fit(h1)
