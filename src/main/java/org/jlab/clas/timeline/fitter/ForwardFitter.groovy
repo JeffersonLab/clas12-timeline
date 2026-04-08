@@ -55,12 +55,15 @@ class ForwardFitter{
   static F1D fitRGL(H1F h1, double fit_left, double fit_right) {
     def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])", fit_left, fit_right);
 
-    // zoom in to [fit_left, fit_right] to find local max, avoiding the other peak
-    int nBins = h1.getAxis().getNBins()
-    h1.getAxis().setRangeUser(fit_left, fit_right)
-    double hAmp  = h1.getBinContent(h1.getMaximumBin())
-    double hMean = h1.getAxis().getBinCenter(h1.getMaximumBin())
-    h1.getAxis().setRange(0, nBins + 1)  // restore full range
+    // find local max within [fit_left, fit_right] only, avoiding the other peak
+    int binLeft  = Math.max(0, h1.getAxis().getBin(fit_left))
+    int binRight = Math.min(h1.getAxis().getNBins() - 1, h1.getAxis().getBin(fit_right))
+    int maxBin = binLeft
+    for (int i = binLeft + 1; i <= binRight; i++) {
+      if (h1.getBinContent(i) > h1.getBinContent(maxBin)) maxBin = i
+    }
+    double hAmp  = h1.getBinContent(maxBin)
+    double hMean = h1.getAxis().getBinCenter(maxBin)
 
     f1.setRange(hMean - 2.0, hMean + 2.0);
     f1.setParameter(0, hAmp);
