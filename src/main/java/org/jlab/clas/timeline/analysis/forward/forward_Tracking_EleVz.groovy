@@ -132,58 +132,32 @@ def write() {
     if (data_2nd_peak.size() != 0) {
       out.addDataSet(grtl_2nd_peak)
     }
-  }
 
-  out.writeFile('forward_electron_VZ.hipo')
-
-  if (data_upstream.size() != 0) {
-
-    TDirectory out_upstream = new TDirectory()
-    out_upstream.mkdir('/timelines')
-    (0..<6).each{ sec->
-      def grtl_upstream = new GraphErrors('sec'+(sec+1))
+    if (data_upstream.size() != 0) {
+      def grtl_upstream = new GraphErrors('sec'+(sec+1)+'_upstream')
       grtl_upstream.setTitle("VZ (upstream peak value) for electrons per sector")
       grtl_upstream.setTitleY("VZ (upstream peak value) for electrons per sector (cm)")
       grtl_upstream.setTitleX("run number")
 
-      data_upstream.sort{it.key}.each{run,it->
-        if (sec==0){
-          out_upstream.mkdir('/'+it.run)
-        }
-        out_upstream.cd('/'+it.run)
-        out_upstream.addDataSet(it.hlist[sec])
-        out_upstream.addDataSet(it.flist[sec])
-        grtl_upstream.addPoint(it.run, it.mean[sec], 0, 0)
-      }
-
-      out_upstream.cd('/timelines')
-      out_upstream.addDataSet(grtl_upstream)
-    }
-    out_upstream.writeFile('forward_electron_VZ_upstream.hipo')
-
-    TDirectory out_window = new TDirectory()
-    out_window.mkdir('/timelines')
-    (0..<6).each{ sec->
-      def grtl_window = new GraphErrors('sec'+(sec+1))
+      def grtl_window = new GraphErrors('sec'+(sec+1)+'_window')
       grtl_window.setTitle("VZ target window length (downstream - upstream peak distance) per sector")
       grtl_window.setTitleY("VZ target window length (cm)")
       grtl_window.setTitleX("run number")
 
       data_upstream.sort{it.key}.each{run,it->
-        if (sec==0){
-          out_window.mkdir('/'+it.run)
-        }
-        out_window.cd('/'+it.run)
-        out_window.addDataSet(it.hlist[sec])
+        out.cd('/'+it.run)
+        out.addDataSet(it.flist[sec])
+        grtl_upstream.addPoint(it.run, it.mean[sec], 0, 0)
         def window_length = (data[run].mean[sec] - it.mean[sec]).abs()
         grtl_window.addPoint(it.run, window_length, 0, 0)
       }
 
-      out_window.cd('/timelines')
-      out_window.addDataSet(grtl_window)
+      out.cd('/timelines')
+      out.addDataSet(grtl_upstream)
+      out.addDataSet(grtl_window)
     }
-    out_window.writeFile('forward_electron_VZ_target_window_length.hipo')
-
   }
+
+  out.writeFile('forward_electron_VZ.hipo')
 }
 }
