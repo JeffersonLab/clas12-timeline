@@ -68,7 +68,7 @@ class ForwardFitter{
     f1.setRange(hMean - 2.0, hMean + 2.0);
     f1.setParameter(0, hAmp);
     f1.setParameter(1, hMean);
-    f1.setParameter(2, 0.3);
+    f1.setParameter(2, 1);
     MoreFitter.fit(f1,h1,"LQ");
 
     def makefit = {func->
