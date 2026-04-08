@@ -146,6 +146,12 @@ def write() {
 
       data_upstream.sort{it.key}.each{run,it->
         out.cd('/'+it.run)
+        def h = it.hlist[sec]    
+        def origName = h.getName() 
+        h.setName(origName+'_upstream')
+        out.addDataSet(h)
+        h.setName(origName) 
+        it.flist[sec].setName('fit:'+origName+'_upstream') 
         out.addDataSet(it.flist[sec])
         grtl_upstream.addPoint(it.run, it.mean[sec], 0, 0)
         def window_length = (data[run].mean[sec] - it.mean[sec]).abs()
