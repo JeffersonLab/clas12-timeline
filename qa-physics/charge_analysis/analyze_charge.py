@@ -82,12 +82,12 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
     fcupgateds = np.array(fcupgateds)
     live_times = np.array(live_times)
 
-    run_number = os.path.splitext(os.path.basename(hipo_file))[0]
+    file_basename = os.path.splitext(os.path.basename(hipo_file))[0]
 
     # ---------- Plot 1: Per-event data ----------
     # ---------- Plot 1: Per-event data ----------
     fig1, axs1 = plt.subplots(2, 2, figsize=(14, 8))
-    fig1.suptitle(f'Run {run_number} - Event-Level Detector Data', fontsize=16)
+    fig1.suptitle(f'{file_basename}', fontsize=16)
 
     plots1 = [
         (axs1[0, 0], fcups, 'FCUP', 'FCUP vs Timestamp', 'darkgreen', 'line'),
@@ -103,18 +103,19 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
             ax.scatter(timestamps, data, label=label, color=color, s=10, alpha=0.7)
 
         ax.set_title(title, fontsize=12)
-        ax.set_xlabel('Timestamp', fontsize=10)
+        ax.set_xlabel('Timestamp', fontsize=10, loc='center')
         ax.set_ylabel(label, fontsize=10)
         ax.legend(fontsize=9)
         ax.grid(True, linestyle='--', alpha=0.6)
         ax.tick_params(axis='both', labelsize=9)
 
     fig1.tight_layout(rect=[0, 0.03, 1, 0.95])
-    fig1.savefig(f'{output_dir}/fcup_vs_timestamp_{run_number}_{output_suffix}.png', bbox_inches='tight', dpi=300)
+    fig1.savefig(f'{output_dir}/fcup_vs_timestamp_{file_basename}_{output_suffix}.png', bbox_inches='tight', dpi=300)
     plt.close(fig1)
     # ---------- Compute Chunked FCUP Gated with neighbor handling ----------
-    chunk_size = 2000
+    chunk_size = 100
     num_chunks = len(timestamps) // chunk_size
+    xlabel     = f'Bin num. (size={chunk_size} scalers)'
 
 
     chunk_caseA, chunk_caseB, chunk_caseC, chunk_default, chunk_default_ungated = [], [], [], [], []
@@ -229,15 +230,16 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
         5, 1, figsize=(12, 17), sharex=False,
         gridspec_kw={'height_ratios': [3, 1, 1, 1, 2]}
     )
-    fig2.suptitle(f'Run {run_number} - Chunked FCUP Gated (Neighbor Handling)', fontsize=16)
+    fig2.suptitle(f'{file_basename}', fontsize=16)
 
     # Top: cumulative sums
-    ax_top.plot(chunk_indices, cum_caseA, label='Cumulative Case A (LT_nn × FCUPungated)', color='darkred', marker='o')
-    #ax_top.plot(chunk_indices, cum_caseB, label='Cumulative Case B (LT_nn × FCUPungated_nn)', color='darkgreen', marker='s')
-    ax_top.plot(chunk_indices, cum_caseC, label='Cumulative Case C (20-NN mean × FCUPungated)', color='darkorange', marker='d')
-    ax_top.plot(chunk_indices, cum_default, label='Cumulative Default (FCUPgated)', color='blue', marker='^')
-    ax_top.plot(chunk_indices, cum_default_ungated, label='Cumulative Default Ungated (FCUPungated)', color='teal', marker='x',linestyle='--')
+    ax_top.plot(chunk_indices, cum_default_ungated, label='U: ungated FC charge', color='black',       marker='o', markersize=4, linestyle='--')
+    ax_top.plot(chunk_indices, cum_default,         label='G: gated FC charge',   color='red',         marker='^', markersize=4)
+    ax_top.plot(chunk_indices, cum_caseA,           label='G\': LiveTime × U',    color='deepskyblue', marker='x', markersize=4, linestyle='--')
+    # ax_top.plot(chunk_indices, cum_caseB, label='Cumulative Case B (LT_nn × FCUPungated_nn)', color='darkgreen',  marker='s', markersize=4)
+    # ax_top.plot(chunk_indices, cum_caseC, label='Cumulative Case C (20-NN mean × U)',         color='darkorange', marker='d', markersize=4)
     ax_top.set_ylabel('Cumulative Σ', fontsize=11)
+    ax_top.set_xlabel(xlabel, fontsize=11, loc='right')
     ax_top.grid(True, linestyle='--', alpha=0.6)
     ax_top.legend(fontsize=10)
     ax_top.tick_params(axis='both', labelsize=10)
@@ -248,28 +250,30 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
     ratioC = np.divide(cum_caseC, cum_default, out=np.full_like(cum_caseC, np.nan, dtype=float), where=np.array(cum_default) != 0)
     ratioDefUng = np.divide(cum_default_ungated, cum_default, out=np.full_like(cum_default_ungated, np.nan, dtype=float), where=np.array(cum_default) != 0)
 
-    ax_mid.plot(chunk_indices, ratioA, label='Case A / Default', color='darkred', marker='o')
-    #ax_mid.plot(chunk_indices, ratioB, label='Case B / Default', color='darkgreen', marker='s')
-    ax_mid.plot(chunk_indices, ratioC, label='Case C / Default', color='darkorange', marker='d')
-    ax_mid.plot(chunk_indices, ratioDefUng, label='Default FCUP Ungated / Default FCUP gated', color='teal', marker='x',linestyle='--')
+    ax_mid.plot(chunk_indices, ratioA, label='G\' / G', color='magenta', marker='x', markersize=4, linestyle='--')
+    #ax_mid.plot(chunk_indices, ratioB, label='Case B / G', color='darkgreen', marker='s', markersize=4)
+    # ax_mid.plot(chunk_indices, ratioC, label='Case C / G', color='darkorange', marker='d', markersize=4)
+    # ax_mid.plot(chunk_indices, ratioDefUng, label='U / G', color='teal', marker='x', markersize=4, linestyle='--')
     ax_mid.axhline(1.0, color='black', linestyle='--', linewidth=1)
     ax_mid.set_ylabel('Ratio', fontsize=11)
+    ax_mid.set_xlabel(xlabel, fontsize=11, loc='right')
     ax_mid.grid(True, linestyle='--', alpha=0.6)
     ax_mid.legend(fontsize=10)
     ax_mid.tick_params(axis='both', labelsize=10)
 
     # Gated / Ungated ratio panel
     ratio_gated_ung = np.divide(cum_default, cum_default_ungated, out=np.full_like(cum_default, np.nan, dtype=float), where=np.array(cum_default_ungated) != 0)
-    ax_gatedrat.plot(chunk_indices, ratio_gated_ung, label='FCUPgated / FCUPungated', color='navy', marker='o')
+    ax_gatedrat.plot(chunk_indices, ratio_gated_ung, label='G / U', color='orange', marker='o', markersize=4)
     ax_gatedrat.axhline(1.0, color='black', linestyle='--', linewidth=1)
     ax_gatedrat.set_ylabel('Gated / Ungated', fontsize=11)
+    ax_gatedrat.set_xlabel(xlabel, fontsize=11, loc='right')
     ax_gatedrat.grid(True, linestyle='--', alpha=0.6)
     ax_gatedrat.legend(fontsize=10)
     ax_gatedrat.tick_params(axis='both', labelsize=10)
 
     # Bottom-1: skipped events count
     ax_bottom.bar(chunk_indices, skipped_counts, color='gray', alpha=0.7)
-    ax_bottom.set_xlabel(f'Chunk Index (Each = {chunk_size} events)', fontsize=11)
+    ax_bottom.set_xlabel(xlabel, fontsize=11, loc='right')
     ax_bottom.set_ylabel('# Skipped', fontsize=11)
     ax_bottom.grid(True, linestyle='--', alpha=0.6)
     ax_bottom.tick_params(axis='both', labelsize=10)
@@ -286,18 +290,18 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
     ax_ltdist.hist(corrected_livetimes_A, bins=bins, alpha=0.4,
                    label=f'Case A LT (μ={mean_A:.3f}, σ={sigma_A:.3f})', color='red')
     #ax_ltdist.hist(corrected_livetimes_B, bins=bins, alpha=0.4,
-     #              label=f'Case B LT (μ={mean_B:.3f}, σ={sigma_B:.3f})', color='green')
-    ax_ltdist.hist(corrected_livetimes_C, bins=bins, alpha=0.4,
-                   label=f'Case C LT (μ={mean_C:.3f}, σ={sigma_C:.3f})', color='orange')
+    #               label=f'Case B LT (μ={mean_B:.3f}, σ={sigma_B:.3f})', color='green')
+    # ax_ltdist.hist(corrected_livetimes_C, bins=bins, alpha=0.4,
+    #                label=f'Case C LT (μ={mean_C:.3f}, σ={sigma_C:.3f})', color='orange')
 
-    ax_ltdist.set_xlabel('Live Time', fontsize=11)
+    ax_ltdist.set_xlabel('Live Time', fontsize=11, loc='right')
     ax_ltdist.set_ylabel('Counts', fontsize=11)
     ax_ltdist.legend(fontsize=9)
     ax_ltdist.grid(True, linestyle='--', alpha=0.6)
     ax_ltdist.tick_params(axis='both', labelsize=10)
 
     fig2.tight_layout(rect=[0, 0.03, 1, 0.95])
-    fig2.savefig(f'{output_dir}/chunked_fcupgated_comparison_{run_number}_{output_suffix}.png', bbox_inches='tight', dpi=300)
+    fig2.savefig(f'{output_dir}/chunked_fcupgated_comparison_{file_basename}_{output_suffix}.png', bbox_inches='tight', dpi=300)
     plt.close(fig2)
 
     print(f'TOTAL UNGATED CHARGE = {fcups[-1]-fcups[0]}')
