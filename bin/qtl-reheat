@@ -6,6 +6,7 @@ source $(dirname $0)/../libexec/environ.sh
 # constants ############################################################
 # slurm settings
 SLURM_MEMORY=2000 # must be more than max heap size `java` calls
+SLURM_DISK=32M
 SLURM_TIME=12:00:00
 SLURM_LOG=/farm_out/%u/%x-%A_%a
 # reheating methods: name -> description
@@ -16,7 +17,9 @@ declare -A REHEAT_METHODS=(
 
 # default options
 dataset=train
-coatjava_version=13.3.0 # the first version with rollover correction, used for RG-A Spring 2018 reheating
+coatjava_version=13.8.0 # 13.3.0: first version with rollover correction, used for RG-A Spring 2018 reheating
+                        # 13.8.0: fix: avoid call to method that recalibrates already-calibrated dsc2
+                        #         https://github.com/JeffersonLab/coatjava/pull/1153
 declare -A modes
 for key in submit; do
   modes[$key]=false
@@ -187,6 +190,7 @@ cat > $slurmScript << EOF
 #SBATCH --partition=production
 #SBATCH --account=clas12
 #SBATCH --mem-per-cpu=$SLURM_MEMORY
+#SBATCH --gres=disk:$SLURM_DISK
 #SBATCH --time=$SLURM_TIME
 #SBATCH --array=1-$(cat $jobList | wc -l)
 #SBATCH --ntasks=1

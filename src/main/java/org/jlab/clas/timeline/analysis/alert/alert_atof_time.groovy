@@ -20,11 +20,13 @@ def has_data = new AtomicBoolean(false)
     (0..<11).collect{component->
       def h1 = dir.getObject(String.format('/ALERT/ATOF_Time_component%02d', component))
       if(h1!=null) {
-        if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
+        if (h1.getBinContent(h1.getMaximumBin()) > 3 && h1.getEntries()>10){
           data[run].put(String.format('atof_time_%02d', component),  h1)
-          def f1 = ALERTFitter.atof_time_fitter(h1,component)
+          double fit_min = h1.getXaxis().getBinCenter(1)
+          double fit_max = h1.getXaxis().getBinCenter(h1.getXaxis().getNBins())
+          def f1 = ALERTFitter.atof_time_fitter(h1, component, fit_min, fit_max)
           data[run].put(String.format('fit_atof_time_%02d', component),  f1)
-          data[run].put(String.format('peak_location_atof_time_%02d', component),  f1.getParameter(1).abs())
+          data[run].put(String.format('peak_location_atof_time_%02d', component),  f1.getParameter(1))
           data[run].put(String.format('sigma_atof_time_%02d', component),  f1.getParameter(2).abs())
           has_data.set(true)
         }

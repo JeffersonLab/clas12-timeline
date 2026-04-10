@@ -53,6 +53,10 @@ public class GeneralMon {
       // RG-C 2.2 GeV:  non-standard primary electron trigger:
       return testTriggerSector(TriggerWord, sector, 0x4081);
     }
+    if (RunDependentCut.runIsInRange(runNum, 22731, 23016, false)) {
+      // RG-L 2.2 GeV: no sector specific trigger bit is set
+      return true;
+    }
     // Default:  the primary electron trigger is the first (7) bits:
     return testTriggerSector(TriggerWord, sector, 0x1);
   }
@@ -1246,7 +1250,7 @@ public class GeneralMon {
       H_trig_theta_phi_S[s].setTitle(String.format("e sect %d",s+1));
       H_trig_theta_phi_S[s].setTitleX("#phi (^o)");
       H_trig_theta_phi_S[s].setTitleY("#theta (^o)");
-      H_trig_vz_mom_S[s] = new H2F(String.format("H_trig_vz_mom_S%d",s+1),String.format("H_trig_vz_mom_S%d",s+1),100,0,EB,100,-25,50);
+      H_trig_vz_mom_S[s] = new H2F(String.format("H_trig_vz_mom_S%d",s+1),String.format("H_trig_vz_mom_S%d",s+1),100,0,EB,200,-50,50);
       H_trig_vz_mom_S[s].setTitle(String.format("e sect %d",s+1));
       H_trig_vz_mom_S[s].setTitleX("p (GeV)");
       H_trig_vz_mom_S[s].setTitleY("vz (cm)");

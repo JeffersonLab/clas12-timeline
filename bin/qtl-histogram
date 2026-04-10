@@ -8,6 +8,7 @@ source $(dirname $0)/../libexec/environ.sh
 # constants ############################################################
 # slurm settings
 SLURM_MEMORY=2000 # must be more than max heap size in $TIMELINE_JAVA_OPTS
+SLURM_DISK=32M
 SLURM_TIME=10:00:00
 SLURM_LOG=/farm_out/%u/%x-%A_%a
 ########################################################################
@@ -489,6 +490,7 @@ for key in ${jobkeys[@]}; do
 #SBATCH --account=clas12
 
 #SBATCH --mem-per-cpu=$SLURM_MEMORY
+#SBATCH --gres=disk:$SLURM_DISK
 #SBATCH --time=$SLURM_TIME
 
 #SBATCH --array=1-$(cat $joblist | wc -l)
