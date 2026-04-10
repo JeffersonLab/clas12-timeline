@@ -71,6 +71,16 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
+<summary>- [ ] reheat the data, if necessary</summary>
+
+- see [RG-A Spring 2018](/qadb/notes/rga_sp18.md) and [RG-K Fall 2018](/qadb/notes/rgk_fa18.md) for details
+- basically:
+  - use `qtl xcharge` to check the charge
+  - if reheating is needed, use `qtl reheat`
+  - use `qtl xcharge` afterward to check the reheated charge
+</details>
+
+<details>
 <summary>- [ ] verify run-dependent settings are correct for these data</summary>
 
 - the script [`monitorRead.groovy`](/qa-physics/monitorRead.groovy) contains some run-dependent settings

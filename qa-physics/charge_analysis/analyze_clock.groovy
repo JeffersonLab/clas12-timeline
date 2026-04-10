@@ -7,6 +7,8 @@ import org.jlab.jnp.hipo4.data.Bank;
 import org.jlab.jnp.hipo4.data.SchemaFactory;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 if(args.length<4) {
   System.err.println """
@@ -22,6 +24,7 @@ def rollover = args[3] == '1'
 List<String> filenames = new ArrayList<>();
 filenames.add(in_file);
 
+Logger.getLogger("org.jlab.detector.scalers.DaqScalersSequence").setLevel(Level.INFO);
 ConstantsManager consts = new ConstantsManager();
 consts.init("/runcontrol/fcup","/runcontrol/slm","/runcontrol/helicity","/daq/config/scalers/dsc1","/runcontrol/hwp");
 DaqScalersSequence seq = DaqScalersSequence.rebuildSequence(1, consts, filenames);
