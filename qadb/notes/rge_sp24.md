@@ -20,14 +20,17 @@ The DSTs are found in:
 > [!IMPORTANT]
 > Check any run-dependent settings in `qa-physics/monitorRead.groovy`, such as beam energy.
 
+> [!NOTE]
+> Using `--rundir` here rather than `--flatdir`, since we're using a directory of DST files.
+
 check cache:
 ```bash
-bin/qtl histogram -d rge_sp24 --check-cache --flatdir --focus-physics $(ls -d /cache/clas12/rg-e/production/spring2024/pass1/*/*/dst/recon)
+bin/qtl histogram -d rge_sp24 --check-cache --rundir --focus-physics $(ls -d /cache/clas12/rg-e/production/spring2024/pass1/*/*/dst/recon)
 ```
 
 run:
 ```bash
-bin/qtl histogram -d rge_sp24 --flatdir --focus-physics $(ls -d /cache/clas12/rg-e/production/spring2024/pass1/*/*/dst/recon)
+bin/qtl histogram -d rge_sp24 --rundir --focus-physics $(ls -d /cache/clas12/rg-e/production/spring2024/pass1/*/*/dst/recon)
 ```
 
 ## Double check that we have all the runs
