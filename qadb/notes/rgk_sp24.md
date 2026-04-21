@@ -21,9 +21,16 @@ bin/qtl xtrain /mss/clas12/rg-k/production/recon/spring2024/pass1/8477MeV/dst/tr
 > [!IMPORTANT]
 > Check any run-dependent settings in `qa-physics/monitorRead.groovy`, such as beam energy.
 
+check cache:
 ```bash
-qtl histogram -d rgk_sp24_6.4GeV --flatdir --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/6395MeV/dst/train/skim1
-qtl histogram -d rgk_sp24_8.5GeV --flatdir --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/8477MeV/dst/train/skim1
+bin/qtl histogram -d rgk_sp24_6.4GeV --check-cache --flatdir --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/6395MeV/dst/train/skim1
+bin/qtl histogram -d rgk_sp24_8.5GeV --check-cache --flatdir --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/8477MeV/dst/train/skim1
+```
+
+run:
+```bash
+bin/qtl histogram -d rgk_sp24_6.4GeV --flatdir --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/6395MeV/dst/train/skim1
+bin/qtl histogram -d rgk_sp24_8.5GeV --flatdir --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/8477MeV/dst/train/skim1
 ```
 
 ## Double check that we have all the runs
