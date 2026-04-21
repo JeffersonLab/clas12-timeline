@@ -300,7 +300,7 @@ declare -A runnumHash # `rdirs` element -> run number
 for rdir in ${rdirs[@]}; do
   # get the run number, either from `rdir` basename (fast), or from `RUN::config` (slow)
   [[ ! -e $rdir ]] && printError "the run file/directory '$rdir' does not exist" && continue
-  runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory (or file) basename
+  runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" | tail -n1 || echo '') # first, try from run directory (or file) basename
   if [ -z "$runnum" ] || ${modes['swifjob']}; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
     if ${modes['flatdir']}; then
       $TIMELINESRC/libexec/hipo-check.sh $rdir
@@ -313,7 +313,8 @@ for rdir in ${rdirs[@]}; do
       runnum=$($TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/libexec/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
     fi
   fi
-  [ -z "$runnum" -o $runnum -eq 0 ] && printError "unknown run number for '$rdir'; ignoring it!" && continue
+  [ -z "$runnum" ] &&  printError "unknown run number for '$rdir'; ignoring it!" && continue
+  [ $runnum -eq 0 ] && printError "unknown run number for '$rdir'; ignoring it!" && continue
   runnum=$((10#$runnum))
   runnumHash[$rdir]=$runnum
 done
