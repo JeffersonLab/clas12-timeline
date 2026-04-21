@@ -17,7 +17,7 @@ SLURM_LOG=/farm_out/%u/%x-%A_%a
 # default options
 dataset=test_v0
 declare -A modes
-for key in findhipo rundir eachdir flatdir single series submit check-cache swifjob focus-detectors focus-physics help; do
+for key in findhipo rundir eachdir flatdir single series submit check-cache fast-ls swifjob focus-detectors focus-physics help; do
   modes[$key]=false
 done
 outputDir=""
@@ -81,8 +81,9 @@ usageVerbose() {
                       directory tree, e.g., runs grouped by target
 
        --rundir       assume each specified [RUN_DIRECTORY] contains
-                      subdirectories named as just run numbers; it is not
-                      recommended to use wildcards for this option
+                      subdirectories named as just run numbers;
+                      - it is not recommended to use wildcards for this option
+                      - see also \`--fast-ls\` option
                       **this is the DEFAULT option**
 
        --eachdir      assume each specified [RUN_DIRECTORY] is a single
@@ -120,6 +121,13 @@ usageVerbose() {
        --focus-detectors   run histogramming for detector QA timelines
 
        --focus-physics     run histogramming for physics QA timelines
+
+     *** MISCELLANEOUS OPTIONS
+
+       --fast-ls           use \`jasmine list-files\` to get lists of files, rather
+                           than commands such as \`find\` or \`ls\`
+                           - useful for options such as \`--rundir\` for DST files
+                           - WARNING: assumes you already tested \`--check-cache\`
 
   $sep
 
@@ -367,7 +375,18 @@ for rdir in ${rdirs[@]}; do
     realpath $rdir > $inputListFile
   else
     [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
-    realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
+    if ${modes['fast-ls']}; then
+      rdir_mss=$(realpath $rdir | sed 's;^.*/cache/;/mss/;')
+      rdir_cache=$(realpath $rdir)
+      # fast-ls mode will use `jasmine list-files`, but requires the stub files on `mss` to exist; if a cook is ongoing,
+      # it's possible the `/mss` directory won't be populated yet, although files are already on `/cache`; for that case,
+      # fall back to "slow" ls (i.e., the command that runs when not using `--fast-ls`)
+      jasmine list-files -display json -under $rdir_mss | jq -r '.[].mss' | xargs -n1 basename | sed "s;^;${swifPrefix}${rdir_cache}/;" > $inputListFile \
+        || { printWarning "falling back to slow ls..."; realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile; }
+    else
+      echo "      (use \`--fast-ls\` if this seems too slow)"
+      realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
+    fi
   fi
 
   # generate job scripts
