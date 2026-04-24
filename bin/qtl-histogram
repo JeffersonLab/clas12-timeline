@@ -83,7 +83,7 @@ usageVerbose() {
        --rundir       assume each specified [RUN_DIRECTORY] contains
                       subdirectories named as just run numbers;
                       - it is not recommended to use wildcards for this option
-                      - see also \`--fast-ls\` option
+                      - see also the \`--fast-ls\` option
                       **this is the DEFAULT option**
 
        --eachdir      assume each specified [RUN_DIRECTORY] is a single
@@ -125,9 +125,11 @@ usageVerbose() {
      *** MISCELLANEOUS OPTIONS
 
        --fast-ls           use \`jasmine list-files\` to get lists of files, rather
-                           than commands such as \`find\` or \`ls\`
+                           than commands such as \`find\` or \`ls\`, since \`jasmine\`
+                           may be much faster than the latter commands for tape dirs.
+                           - WARNING: assumes you already tested \`--check-cache\`,
+                                      since \`jasmine\` uses \`/mss\` stub files
                            - useful for options such as \`--rundir\` for DST files
-                           - WARNING: assumes you already tested \`--check-cache\`
 
   $sep
 
