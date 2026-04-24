@@ -17,7 +17,7 @@ SLURM_LOG=/farm_out/%u/%x-%A_%a
 # default options
 dataset=test_v0
 declare -A modes
-for key in findhipo rundir eachdir flatdir single series submit check-cache swifjob focus-detectors focus-physics help; do
+for key in findhipo rundir eachdir flatdir single series submit check-cache fast-ls swifjob focus-detectors focus-physics help; do
   modes[$key]=false
 done
 outputDir=""
@@ -81,8 +81,9 @@ usageVerbose() {
                       directory tree, e.g., runs grouped by target
 
        --rundir       assume each specified [RUN_DIRECTORY] contains
-                      subdirectories named as just run numbers; it is not
-                      recommended to use wildcards for this option
+                      subdirectories named as just run numbers;
+                      - it is not recommended to use wildcards for this option
+                      - see also the \`--fast-ls\` option
                       **this is the DEFAULT option**
 
        --eachdir      assume each specified [RUN_DIRECTORY] is a single
@@ -120,6 +121,15 @@ usageVerbose() {
        --focus-detectors   run histogramming for detector QA timelines
 
        --focus-physics     run histogramming for physics QA timelines
+
+     *** MISCELLANEOUS OPTIONS
+
+       --fast-ls           use \`jasmine list-files\` to get lists of files, rather
+                           than commands such as \`find\` or \`ls\`, since \`jasmine\`
+                           may be much faster than the latter commands for tape dirs.
+                           - WARNING: assumes you already tested \`--check-cache\`,
+                                      since \`jasmine\` uses \`/mss\` stub files
+                           - useful for options such as \`--rundir\` for DST files
 
   $sep
 
@@ -300,7 +310,7 @@ declare -A runnumHash # `rdirs` element -> run number
 for rdir in ${rdirs[@]}; do
   # get the run number, either from `rdir` basename (fast), or from `RUN::config` (slow)
   [[ ! -e $rdir ]] && printError "the run file/directory '$rdir' does not exist" && continue
-  runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" || echo '') # first, try from run directory (or file) basename
+  runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" | tail -n1 || echo '') # first, try from run directory (or file) basename
   if [ -z "$runnum" ] || ${modes['swifjob']}; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
     if ${modes['flatdir']}; then
       $TIMELINESRC/libexec/hipo-check.sh $rdir
@@ -313,7 +323,8 @@ for rdir in ${rdirs[@]}; do
       runnum=$($TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/libexec/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
     fi
   fi
-  [ -z "$runnum" -o $runnum -eq 0 ] && printError "unknown run number for '$rdir'; ignoring it!" && continue
+  [ -z "$runnum" ] &&  printError "unknown run number for '$rdir'; ignoring it!" && continue
+  [ $runnum -eq 0 ] && printError "unknown run number for '$rdir'; ignoring it!" && continue
   runnum=$((10#$runnum))
   runnumHash[$rdir]=$runnum
 done
@@ -366,7 +377,18 @@ for rdir in ${rdirs[@]}; do
     realpath $rdir > $inputListFile
   else
     [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
-    realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
+    if ${modes['fast-ls']}; then
+      rdir_mss=$(realpath $rdir | sed 's;^.*/cache/;/mss/;')
+      rdir_cache=$(realpath $rdir)
+      # fast-ls mode will use `jasmine list-files`, but requires the stub files on `mss` to exist; if a cook is ongoing,
+      # it's possible the `/mss` directory won't be populated yet, although files are already on `/cache`; for that case,
+      # fall back to "slow" ls (i.e., the command that runs when not using `--fast-ls`)
+      jasmine list-files -display json -under $rdir_mss | jq -r '.[].mss' | xargs -n1 basename | sed "s;^;${swifPrefix}${rdir_cache}/;" > $inputListFile \
+        || { printWarning "falling back to slow ls..."; realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile; }
+    else
+      echo "      (use \`--fast-ls\` if this seems too slow)"
+      realpath $rdir/*.hipo | sed "s;^;$swifPrefix;" > $inputListFile
+    fi
   fi
 
   # generate job scripts
