@@ -45,7 +45,7 @@ bin/qtl histogram -d rge_sp24 --rundir --fast-ls --focus-physics $(ls -d /cache/
 
 Make the timelines:
 ```bash
-bin/qtl physics -d rge_sp24 -p rgk/qa_pass1_sp24
+bin/qtl physics -d rge_sp24 -p rge/qa_pass1_sp24
 ```
 
 > [!WARNING]
