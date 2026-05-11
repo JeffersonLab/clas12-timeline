@@ -49,7 +49,7 @@
     <dependency>
       <groupId>org.apache.groovy</groupId>
       <artifactId>groovy-dateutil</artifactId>
-      <version>5.0.5</version>
+      <version>5.0.6</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.codehaus.gpars/gpars -->
     <dependency>
