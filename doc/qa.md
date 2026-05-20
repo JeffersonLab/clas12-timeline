@@ -413,11 +413,17 @@ with the pull request you opened earlier.
 </details>
 
 <details>
-<summary>- [ ] QADB repository: update the tables in the 'README.md' of the QADB repository</summary>
+<summary>- [ ] QADB repository: update the datasets tables in its 'README.md'</summary>
 
 - link to the timelines
 - fill out all the other fields
 - if you are deploying a Pass 2 or higher, make sure the previous Passes' status symbols are updated appropriately
+</details>
+
+<details>
+<summary>- [ ] QADB repository: update production status table in its 'README.md'</summary>
+
+- the dataset should be marked as done and cross checked
 </details>
 
 <details>
