@@ -1,6 +1,7 @@
 package org.jlab.clas.timeline.histograms.qadb;
 
 import org.jlab.io.base.DataEvent;
+import org.jlab.groot.data.TDirectory;
 
 /**
  * @author dilks
@@ -12,10 +13,13 @@ public class QadbBinData {
 
   // ----------------------------------------------------------------------------------
 
-  /** constructor */
-  public QadbBinData()
+  /**
+   * constructor
+   * @param bin_num QADB bin number
+   **/
+  public QadbBinData(int bin_num)
   {
-    yield = new Yield();
+    yield = new Yield(bin_num);
   }
 
   // ----------------------------------------------------------------------------------
@@ -33,12 +37,11 @@ public class QadbBinData {
 
   /**
    * write to a HIPO file
-   * @param output_dir the output directory
-   * @param run_num the run number
+   * @param tdir the output {@code TDirectory}
    */
-  public void write(String output_dir, int run_num)
+  public void write(TDirectory tdir)
   {
-    yield.write(output_dir, run_num);
+    yield.write(tdir);
   }
 
 }
