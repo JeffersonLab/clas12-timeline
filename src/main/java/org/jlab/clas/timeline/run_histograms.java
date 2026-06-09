@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 
 import org.jlab.detector.qadb.QadbBinSequence;
 import org.jlab.detector.qadb.QadbBin;
+import org.jlab.clas.timeline.histograms.qadb.QadbBinData;
 
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.hipo.HipoDataSource;
@@ -66,21 +67,20 @@ public class run_histograms {
     QadbBinSequence<QadbBinData> qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinData());
 
     // instantiate histogramming classes
-    GeneralMon ana_mon      = new GeneralMon(runNum,outputDir,EB,useTB);
-    DCandFTOF  ana_dc_ftof  = new DCandFTOF(runNum,outputDir,useTB);
-    CTOF       ana_ctof     = new CTOF(runNum,outputDir,useTB);
-    HTCC       ana_htcc     = new HTCC(runNum,outputDir);
-    LTCC       ana_ltcc     = new LTCC(runNum,outputDir,EB,useTB);
-    RICH       ana_rich     = new RICH(runNum,outputDir,EB,useTB);
-    CND        ana_cnd      = new CND(runNum,outputDir,useTB);
-    CVT        ana_cvt      = dataset != "rgl" ? new CVT() : null;
-    FT         ana_ft       = new FT(runNum,outputDir,useTB);
-    BAND       ana_band     = new BAND(runNum,outputDir,EB,useTB);
-    ALERT      ana_alert    = dataset == "rgl" ? new ALERT(runNum,outputDir,EB,useTB) : null;
-    helicity   ana_helicity = new helicity();
-    trigger    ana_trigger  = new trigger();
-    // QADB mon histogramming
-    ChargeMon mon_charge = new ChargeMon(qa_seq);
+    QadbBinData ana_qadb     = new QadbBinData();
+    GeneralMon  ana_mon      = new GeneralMon(runNum,outputDir,EB,useTB);
+    DCandFTOF   ana_dc_ftof  = new DCandFTOF(runNum,outputDir,useTB);
+    CTOF        ana_ctof     = new CTOF(runNum,outputDir,useTB);
+    HTCC        ana_htcc     = new HTCC(runNum,outputDir);
+    LTCC        ana_ltcc     = new LTCC(runNum,outputDir,EB,useTB);
+    RICH        ana_rich     = new RICH(runNum,outputDir,EB,useTB);
+    CND         ana_cnd      = new CND(runNum,outputDir,useTB);
+    CVT         ana_cvt      = dataset != "rgl" ? new CVT() : null;
+    FT          ana_ft       = new FT(runNum,outputDir,useTB);
+    BAND        ana_band     = new BAND(runNum,outputDir,EB,useTB);
+    ALERT       ana_alert    = dataset == "rgl" ? new ALERT(runNum,outputDir,EB,useTB) : null;
+    helicity    ana_helicity = new helicity();
+    trigger     ana_trigger  = new trigger();
 
     // loop over input HIPO files
     for (String input_file : input_file_list) {
@@ -98,6 +98,7 @@ public class run_histograms {
         DataEvent event = reader.getNextEvent();
 
         //// call each histogramming class instance's `processEvent`
+        if(ana_qadb!=null) ana_qadb.processEvent(event);
         if(ana_mon!=null) ana_mon.processEvent(event);
         if(ana_ctof!=null) ana_ctof.processEvent(event);
         if(ana_dc_ftof!=null) ana_dc_ftof.processEvent(event);
@@ -129,6 +130,7 @@ public class run_histograms {
     System.out.println("Total : " + count + " events");
 
     //// call each histogramming class instance's `write`
+    if(ana_qadb!=null) ana_qadb.write(outputDir, runNum);
     if(ana_mon!=null) ana_mon.write();
     if(ana_ctof!=null) ana_ctof.write();
     if(ana_dc_ftof!=null) ana_dc_ftof.write();
