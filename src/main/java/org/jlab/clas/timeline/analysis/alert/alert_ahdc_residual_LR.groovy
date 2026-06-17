@@ -71,8 +71,8 @@ int number_of_wires_per_timeline;
           if (wire_number <= number_of_wires_this_layer){
             def name = String.format('ahdc_residual_LR_layer%d_wire_number%02d', layer_number, wire_number)
             def gr = new GraphErrors(name)
-            gr.setTitle(  String.format("AHDC Residual LR %s Layer %d", variable.replace('_', ' '), layer_number))
-            gr.setTitleY( String.format("AHDC Residual LR %s Layer %d", variable.replace('_', ' '), layer_number))
+            gr.setTitle(  String.format("AHDC Residual LR %s Layer %d Wire %d", variable.replace('_', ' '), layer_number, wire_number))
+            gr.setTitleY( String.format("AHDC Residual LR %s (mm)", variable.replace('_', ' '), layer_number))
             gr.setTitleX("run number")
             data.sort{it.key}.each{run,it->
               out.mkdir('/'+it.run)

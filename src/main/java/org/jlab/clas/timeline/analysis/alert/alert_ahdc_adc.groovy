@@ -75,7 +75,7 @@ int number_of_wires_per_timeline;
             def name = String.format('ahdc_adc_layer%d_wire_number%02d', layer_number, wire_number)
             def gr = new GraphErrors(name)
             gr.setTitle(  String.format("AHDC ADC %s layer %d", variable.replace('_', ' '), layer_number))
-            gr.setTitleY( String.format("AHDC ADC %s layer %d", variable.replace('_', ' '), layer_number))
+            gr.setTitleY( String.format("AHDC ADC %s", variable.replace('_', ' ')))
             gr.setTitleX("run number")
             data.sort{it.key}.each{run,it->
               out.mkdir('/'+it.run)
