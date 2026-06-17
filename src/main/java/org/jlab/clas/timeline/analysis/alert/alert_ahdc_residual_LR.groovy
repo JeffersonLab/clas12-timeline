@@ -5,7 +5,7 @@ import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ALERTFitter
 
-class alert_ahdc_adc {
+class alert_ahdc_residual_LR {
 
 def data = new ConcurrentHashMap()
 def has_data = new AtomicBoolean(false)
@@ -17,16 +17,17 @@ int layer;
 int number_of_wires_this_layer;
 int number_of_wires_per_timeline;
 
-  alert_ahdc_adc(int ahdc_layer_number) {
+  alert_ahdc_residual_LR(int ahdc_layer_number) {
       this.layer_number                 = ahdc_layer_number
       this.layer                        = layer_encoding[layer_number - 1];
       this.number_of_wires_this_layer   = layer_wires[layer_number - 1]
       this.number_of_wires_per_timeline = 15;
   }
-
+  
   def getName() {
     return "${this.class.simpleName}_${layer_number}"
   }
+
 
   def processRun(dir, run) {
 
@@ -36,23 +37,19 @@ int number_of_wires_per_timeline;
     // data[run].put('bits',  trigger)
     float integral = 0;
     (1..number_of_wires_this_layer).collect{wire_number->
-      def h1 = dir.getObject(String.format('/ALERT/ADC_layer%d_wire_number%02d', layer_number, wire_number))
+      def h1 = dir.getObject(String.format("/ALERT/AHDC_RESIDUAL_LR_layer%d_wire_number%02d", layer_number, wire_number))
       if(h1!=null) {
         if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
-          data[run].put(String.format('ahdc_adc_layer%d_wire_number%02d', layer_number, wire_number),  h1)
-          integral = h1.integral()
-          // def f1 = ALERTFitter.totfitter(h1)
-          // data[run].put(String.format('fit_adc_layer%d_wire_number%02d', layer_number, wire_number),  f1)
-          // data[run].put(String.format('peak_location_ahdc_adc_layer%d_wire_number%02d', layer_number, wire_number),  peak_location)
-          // data[run].put(String.format('sigma_adc_layer%d_wire_number%02d', layer_number, wire_number),  f1.getParameter(2).abs())
-          data[run].put(String.format('integral_normalized_to_trigger_ahdc_adc_layer%d_wire_number%02d', layer_number, wire_number),  integral/trigger.getBinContent(reference_trigger_bit) )
+          data[run].put(String.format('ahdc_residual_LR_layer%d_wire_number%02d', layer_number, wire_number),  h1)
+          def f1 = ALERTFitter.residual_fitter(h1)
+          data[run].put(String.format("fit_ahdc_residual_LR_layer%d_wire_number%02d", layer_number, wire_number),  f1)
+          data[run].put(String.format("mean_ahdc_residual_LR_layer%d_wire_number%02d", layer_number, wire_number),  f1.getParameter(1))
+          data[run].put(String.format("width_ahdc_residual_LR_layer%d_wire_number%02d", layer_number, wire_number),  f1.getParameter(2).abs())
           has_data.set(true)
         }
       }
     }
   }
-
-
 
   def write() {
 
@@ -62,7 +59,7 @@ int number_of_wires_per_timeline;
     }
     int timeline_index_max = number_of_wires_this_layer/number_of_wires_per_timeline + 1
     if (layer_number==1) (timeline_index_max = timeline_index_max-1)
-    ['integral_normalized_to_trigger'].each{variable->
+    ['mean', 'width'].each{variable->
       (0..<timeline_index_max).collect{timeline_index->
 
         TDirectory out = new TDirectory()
@@ -72,26 +69,26 @@ int number_of_wires_per_timeline;
         (1..number_of_wires_this_timeline).collect{wire_index->
           def wire_number = wire_index + 15* timeline_index
           if (wire_number <= number_of_wires_this_layer){
-            def name = String.format('ahdc_adc_layer%d_wire_number%02d', layer_number, wire_number)
+            def name = String.format('ahdc_residual_LR_layer%d_wire_number%02d', layer_number, wire_number)
             def gr = new GraphErrors(name)
-            gr.setTitle(  String.format("AHDC ADC %s layer %d", variable.replace('_', ' '), layer_number))
-            gr.setTitleY( String.format("AHDC ADC %s", variable.replace('_', ' ')))
+            gr.setTitle(  String.format("AHDC Residual LR %s Layer %d Wire %d", variable.replace('_', ' '), layer_number, wire_number))
+            gr.setTitleY( String.format("AHDC Residual LR %s (mm)", variable.replace('_', ' '), layer_number))
             gr.setTitleX("run number")
             data.sort{it.key}.each{run,it->
               out.mkdir('/'+it.run)
               out.cd('/'+it.run)
               if (it.containsKey(name)){
                 out.addDataSet(it[name])
-                // out.addDataSet(it['fit_'+name])
+                out.addDataSet(it['fit_'+name])
                 gr.addPoint(it.run, it[variable + '_' + name], 0, 0)
               }
-              else if (variable=="integral_normalized_to_trigger") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
+              else if (variable=="mean") println(String.format("run %d: %s either does not exist or does not have enough statistics.", it.run, name))
             }
             out.cd('/timelines')
             out.addDataSet(gr)
           }
         }
-        out.writeFile(String.format('alert_ahdc_adc_%s_layer%d_%d.hipo', variable, layer_number, timeline_index))
+        out.writeFile(String.format('alert_ahdc_residual_LR_%s_layer%d_%d.hipo', variable, layer_number, timeline_index))
       }
     }
   }

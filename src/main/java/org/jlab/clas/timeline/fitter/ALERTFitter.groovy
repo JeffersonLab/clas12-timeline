@@ -216,10 +216,10 @@ class ALERTFitter{
 		f1.setOptStat("1111");
 		double maxz = h1.getBinContent(h1.getMaximumBin());
 		double peak_location = h1.getAxis().getBinCenter(h1.getMaximumBin());
-		f1.setRange(peak_location - 2.5, peak_location + 2.5);
+		f1.setRange(peak_location - 1.0, peak_location + 1.0);
 		f1.setParameter(0,maxz-h1.getBinContent(0));
 		f1.setParameter(1, peak_location);
-		f1.setParameter(2, 0.5);
+		f1.setParameter(2, 0.2);
 		f1.setParameter(3, h1.getBinContent(0));
 		if (maxz>0) f1.setParLimits(0, maxz*0.9,maxz*1.1);
 		f1.setParLimits(3, 0.0, 0.1*maxz);

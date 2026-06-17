@@ -27,7 +27,7 @@ public class ALERT {
 
   //Hodoscope
   public H1F[] ATOF_Time, ATOF_Time_sl, ATOF_z, ATOF_z_sl, ATOF_z_c4, ATOF_z_c4_sl;
-  public H1F[] ADC, AHDC_RESIDUAL, AHDC_TIME;//AHDC-related-histograms
+  public H1F[] ADC, AHDC_RESIDUAL, AHDC_RESIDUAL_LR, AHDC_TIME;//AHDC-related-histograms
   private H1F bits;
 
   public IndexedTable rfTable;
@@ -106,7 +106,8 @@ public class ALERT {
 
     //AHDC ADC Histograms
     ADC           = new H1F[576];
-    AHDC_RESIDUAL = new H1F[8];
+    AHDC_RESIDUAL = new H1F[576];
+    AHDC_RESIDUAL_LR = new H1F[576];
     AHDC_TIME     = new H1F[576];
 
     for (int index = 0; index<576; index++) {
@@ -128,14 +129,14 @@ public class ALERT {
       AHDC_TIME[index].setTitleX("AHDC TIME (ns)");
       AHDC_TIME[index].setTitleY("Counts");
       AHDC_TIME[index].setFillColor(4);
-    }
-
-    for (int k=0; k<8; k++){
-
-      AHDC_RESIDUAL[k] = new H1F(String.format("AHDC_RESIDUAL_layer%d", layer_encoding[k]), String.format("AHDC Residual layer%d", layer_encoding[k]), 300, -20.0f, 10.0f);
-      AHDC_RESIDUAL[k].setTitleX("AHDC RESIDUAL (mm)");
-      AHDC_RESIDUAL[k].setTitleY("Counts");
-      AHDC_RESIDUAL[k].setFillColor(4);
+      AHDC_RESIDUAL[index] = new H1F(String.format("AHDC_RESIDUAL_layer%d_wire_number%02d", layer_number, wire_number), String.format("AHDC Residual layer%d wire number%02d", layer_number, wire_number), 200, -7.0f, 3.0f);
+      AHDC_RESIDUAL[index].setTitleX("AHDC RESIDUAL (mm)");
+      AHDC_RESIDUAL[index].setTitleY("Counts");
+      AHDC_RESIDUAL[index].setFillColor(4);
+      AHDC_RESIDUAL_LR[index] = new H1F(String.format("AHDC_RESIDUAL_LR_layer%d_wire_number%02d", layer_number, wire_number), String.format("AHDC Residual SL layer%d wire number%02d", layer_number, wire_number), 200, -5.0f, 5.0f);
+      AHDC_RESIDUAL_LR[index].setTitleX("AHDC RESIDUAL LR (mm)");
+      AHDC_RESIDUAL_LR[index].setTitleY("Counts");
+      AHDC_RESIDUAL_LR[index].setFillColor(4);
     }
 
     // Trigger bits
@@ -170,13 +171,15 @@ public class ALERT {
       int component   = ahdc_hits.getInt("wire", loop);
       float time      = (float) ahdc_hits.getDouble("time", loop);
       float residual  = (float) ahdc_hits.getDouble("residual", loop);
+      float residual_LR  = (float) ahdc_hits.getDouble("residual_LR", loop);
       int index = 0;
 
       layer = superlayer * 10 + layer;
       int layer_number = Arrays.asList(boxed_encoding).indexOf(layer) + 1;
       index = component - 1 + layer_wires_cumulative[layer_number - 1];
 
-      if (Math.signum(residual) != 0) AHDC_RESIDUAL[layer_number - 1].fill(residual);
+      if (Math.signum(residual) != 0) AHDC_RESIDUAL[index].fill(residual);
+      if (Math.signum(residual_LR) != 0) AHDC_RESIDUAL_LR[index].fill(residual_LR);
       AHDC_TIME[index].fill(time);
     }
   }
@@ -297,10 +300,7 @@ public class ALERT {
       dirout.addDataSet(ATOF_Time_sl[gcomponent]);
     }
     for (int index = 0; index < 576; index++) {
-      dirout.addDataSet(ADC[index], AHDC_TIME[index]);
-    }
-    for (int index = 0; index < 8; index++){
-      dirout.addDataSet(AHDC_RESIDUAL[index]);
+      dirout.addDataSet(ADC[index], AHDC_TIME[index], AHDC_RESIDUAL[index], AHDC_RESIDUAL_LR[index]);
     }
 
     dirout.mkdir("/TRIGGER/");
