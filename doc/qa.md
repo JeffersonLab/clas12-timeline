@@ -413,17 +413,18 @@ with the pull request you opened earlier.
 </details>
 
 <details>
-<summary>- [ ] QADB repository: update the datasets tables in its 'README.md'</summary>
+<summary>- [ ] clas12-config repository: save the README.json file(s)</summary>
+
+- put the dataset's `README.json` file(s) in the `clas12-config` repository's `wok/` directory
+- the directory structure mimics that on `/cache`
+</details>
+
+<details>
+<summary>- [ ] QADB repository: update the datasets tables in its documentation</summary>
 
 - link to the timelines
 - fill out all the other fields
 - if you are deploying a Pass 2 or higher, make sure the previous Passes' status symbols are updated appropriately
-</details>
-
-<details>
-<summary>- [ ] QADB repository: update production status table in its 'README.md'</summary>
-
-- the dataset should be marked as done and cross checked
 </details>
 
 <details>
