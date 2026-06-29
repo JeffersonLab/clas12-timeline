@@ -4,6 +4,7 @@ import org.jlab.io.base.DataEvent;
 import org.jlab.io.base.DataBank;
 import org.jlab.clas.physics.Particle;
 import org.jlab.detector.base.DetectorType;
+import org.jlab.clas.timeline.util.Tools;
 
 /**
  * @author dilks
@@ -11,7 +12,7 @@ import org.jlab.detector.base.DetectorType;
 public class Electron {
 
   /** particle banks */
-  public enum ElectronDet {
+  public enum Det {
     /** electron not found */
     none,
     /** electron in {@code REC::Particle} */
@@ -20,15 +21,16 @@ public class Electron {
     FT,
   }
 
-  // private members
-  private boolean     m_found;
-  private int         m_pindex;
-  private int         m_sec;
-  private ElectronDet m_det;
-
   // constants
-  private static final int ELE_PDG = 11;
-  private static final int ECAL_ID = DetectorType.ECAL.getDetectorId();
+  public static final int PDG = 11;
+  public static final int ECAL_ID = DetectorType.ECAL.getDetectorId();
+
+  // private members
+  private boolean  m_found;
+  private int      m_pindex;
+  private int      m_sec;
+  private Det      m_det;
+  private Particle m_par = new Particle(PDG, 0.0, 0.0, 0.0);
 
   // ----------------------------------------------------------------------------------
 
@@ -48,8 +50,11 @@ public class Electron {
   /** @return the electron sector */
   public int getSector() { return m_sec; }
 
-  /** @return the electron {@code ElectronDet} */
-  public ElectronDet getDet() { return m_det; }
+  /** @return the electron {@code Det} */
+  public Det getDetector() { return m_det; }
+
+  /** @returns the electron {@code Particle} */
+  public Particle getParticle() { return m_par; }
 
   /** @return the electron particle-bank name */
   public String getParticleBankName()
@@ -64,23 +69,6 @@ public class Electron {
   // ----------------------------------------------------------------------------------
 
   /**
-   * create a {@code Particle} object given a bank row
-   * @param bank the HIPO bank
-   * @param row the HIPO bank row
-   * @param pid the PID value (could be gotten from the bank row, but you probably already have it)
-   */
-  private Particle getParticle(DataBank bank, int row, int pid)
-  {
-    return new Particle(
-        pid,
-        bank.getFloat("px", row),
-        bank.getFloat("py", row),
-        bank.getFloat("pz", row));
-  }
-
-  // ----------------------------------------------------------------------------------
-
-  /**
    * process a single event
    * @param event the HIPO event object
    */
@@ -90,10 +78,8 @@ public class Electron {
     m_found  = false;
     m_pindex = -1;
     m_sec    = -1;
-    m_det    = ElectronDet.none;
-
-    // electron Particle
-    Particle ele = new Particle(ELE_PDG, 0.0, 0.0, 0.0);
+    m_det    = Det.none;
+    m_par.setVector(PDG, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
     // find the electron
     if(event.hasBank("REC::Particle") && event.hasBank("REC::Calorimeter")) {
@@ -103,7 +89,7 @@ public class Electron {
       // loop over electrons from `REC::Particle`
       for(int par_row = 0; par_row < par_bank.rows(); par_row++) {
         var pid = par_bank.getInt("pid", par_row);
-        if(pid == ELE_PDG) {
+        if(pid == PDG) {
           var status  = (int) par_bank.getShort("status", par_row);
           var chi2pid = par_bank.getFloat("chi2pid", par_row);
 
@@ -127,13 +113,13 @@ public class Electron {
             // CUT: sector must be defined
             if(sec != null) {
               // CUT: choose max-E electron; choice is from both FD and FT electron sets
-              var par = getParticle(par_bank, par_row, pid);
-              if(par.e() > ele.e()) {
+              var par = Tools.getParticle(par_bank, par_row);
+              if(par.e() > m_par.e()) {
                 m_found  = true;
                 m_pindex = par_row;
                 m_sec    = sec;
-                m_det    = ElectronDet.FD;
-                ele      = par;
+                m_det    = Det.FD;
+                m_par.copy(par);
               }
             }
           }
@@ -147,18 +133,18 @@ public class Electron {
             var par_ft_bank = event.getBank("RECFT::Particle");
             if(par_ft_bank.rows() > par_row) {
               var ft_status = par_ft_bank.getShort("status", par_row);
-              if( par_ft_bank.getInt("pid", par_row) == ELE_PDG
+              if( par_ft_bank.getInt("pid", par_row) == PDG
                   && ft_status < 0
                   && (Math.abs(ft_status/1000) & 0x1) != 0)
               {
-                var par = getParticle(par_bank, par_row, pid);
+                var par = Tools.getParticle(par_bank, par_row);
                 // CUT: must have E > 300 MeV, and be the max energy
-                if(par.e() > 0.3 && par.e() > ele.e()) {
+                if(par.e() > 0.3 && par.e() > m_par.e()) {
                   m_found  = true;
                   m_pindex = par_row;
                   m_sec    = 0;
-                  m_det    = ElectronDet.FT;
-                  ele      = par;
+                  m_det    = Det.FT;
+                  m_par.copy(par);
                 }
               }
             }
