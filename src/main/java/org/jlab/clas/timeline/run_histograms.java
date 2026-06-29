@@ -7,7 +7,7 @@ import java.util.*;
 import java.text.SimpleDateFormat;
 
 import org.jlab.detector.qadb.QadbBinSequence;
-import org.jlab.clas.timeline.histograms.qadb.QadbBinData;
+import org.jlab.clas.timeline.histograms.qadb.QadbBinHistograms;
 
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.hipo.HipoDataSource;
@@ -64,7 +64,7 @@ public class run_histograms {
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     // QADB binning
-    QadbBinSequence<QadbBinData> qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinData(bin_num));
+    QadbBinSequence<QadbBinHistograms> qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinHistograms(bin_num));
 
     // instantiate histogramming classes
     GeneralMon ana_mon      = new GeneralMon(runNum,outputDir,EB,useTB);

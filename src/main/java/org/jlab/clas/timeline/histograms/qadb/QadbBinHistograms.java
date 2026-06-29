@@ -6,7 +6,7 @@ import org.jlab.groot.data.TDirectory;
 /**
  * @author dilks
  */
-public class QadbBinData {
+public class QadbBinHistograms {
 
   // histogram class instances
   private Yield yield;
@@ -17,7 +17,7 @@ public class QadbBinData {
    * constructor
    * @param bin_num QADB bin number
    **/
-  public QadbBinData(int bin_num)
+  public QadbBinHistograms(int bin_num)
   {
     yield = new Yield(bin_num);
   }
