@@ -9,6 +9,7 @@ import org.jlab.groot.data.TDirectory;
 public class QadbBinHistograms {
 
   // class instances
+  public Charge charge;
   private Electron electron;
   private Yield yield;
 
@@ -20,6 +21,7 @@ public class QadbBinHistograms {
    **/
   public QadbBinHistograms(int bin_num)
   {
+    charge = new Charge(bin_num);
     electron = new Electron();
     yield = new Yield(bin_num);
   }
@@ -32,6 +34,7 @@ public class QadbBinHistograms {
    */
   public void processEvent(DataEvent event)
   {
+    charge.processEvent(event);
     electron.processEvent(event);
     yield.processEvent(event, electron);
   }
@@ -44,6 +47,7 @@ public class QadbBinHistograms {
    */
   public void write(TDirectory tdir)
   {
+    charge.write(tdir);
     yield.write(tdir);
   }
 

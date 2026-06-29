@@ -63,8 +63,12 @@ public class run_histograms {
     long previousTime = System.currentTimeMillis();
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
-    // QADB binning
+    // QADB binning and integrated charge
     QadbBinSequence<QadbBinHistograms> qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinHistograms(bin_num));
+    for(var qa_bin : qa_seq) {
+      qa_bin.data.fillDSC2(qa_bin);
+    }
+
 
     // instantiate histogramming classes
     GeneralMon ana_mon      = new GeneralMon(runNum,outputDir,EB,useTB);
