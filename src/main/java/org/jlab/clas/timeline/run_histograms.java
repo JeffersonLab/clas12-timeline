@@ -66,7 +66,7 @@ public class run_histograms {
     // QADB binning and integrated charge
     QadbBinSequence<QadbBinHistograms> qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinHistograms(bin_num));
     for(var qa_bin : qa_seq) {
-      qa_bin.data.fillDSC2(qa_bin);
+      qa_bin.data.charge.fillDSC2(qa_bin);
     }
 
 

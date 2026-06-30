@@ -1,7 +1,6 @@
 package org.jlab.clas.timeline.histograms.qadb;
 
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.base.DataBank;
 import org.jlab.clas.physics.Particle;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.clas.timeline.util.Tools;
