@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -144,7 +143,7 @@ public class QadbBinBoundsSequence implements Iterable<QadbBinBounds> {
    * write a table file
    * @param file_name the path to the file
    */
-  public void write(String file_name) throws IOException {
+  public void write(String file_name) {
     Path path = Path.of(file_name);
     try(BufferedWriter writer = Files.newBufferedWriter(path)) {
       writer.write(QadbBinBounds.HEADER);
@@ -154,6 +153,10 @@ public class QadbBinBoundsSequence implements Iterable<QadbBinBounds> {
         writer.newLine();
       }
     }
+    catch(IOException e) {
+      throw new RuntimeException("Failed to write QadbBinBoundsSequence to " + file_name, e);
+    }
+
   }
 
 }
