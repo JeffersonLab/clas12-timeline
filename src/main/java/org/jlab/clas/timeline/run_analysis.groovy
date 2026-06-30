@@ -1,5 +1,7 @@
 package org.jlab.clas.timeline.analysis
+
 import org.jlab.clas.timeline.util.RunDependentCut
+import org.jlab.clas.timeline.histograms.qadb.QadbBinBoundsSequence;
 
 import org.jlab.groot.data.TDirectory
 
@@ -164,6 +166,9 @@ def engines = [
   out_TRIGGER: [
     new trigger(),
   ],
+  out_QADB: [
+    new qadb(),
+  ],
 ]
 
 
@@ -229,7 +234,12 @@ fnames.sort().each{ fname ->
       allow_timeline = true // allow the timeline if at least one run is allowed
       TDirectory dir = new TDirectory()
       dir.readFile(fname)
-      engine.processRun(dir, run)
+      if(timelineArg == 'qadb') {
+        def qa_seq = QadbBinBoundsSequence.read(fname.replace(".hipo", ".dat"));
+        engine.processRun(dir, run, qa_seq)
+      } else {
+        engine.processRun(dir, run)
+      }
       println("debug: "+engine.getClass().getSimpleName()+" finished $fname")
     }
     else {

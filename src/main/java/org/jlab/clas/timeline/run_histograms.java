@@ -16,8 +16,9 @@ import org.jlab.groot.base.GStyle;
 import org.jlab.groot.data.TDirectory;
 
 public class run_histograms {
+
   public run_histograms(){}
-  ////////////////////////////////////////////////
+
   public static void main(String[] args) {
     System.setProperty("java.awt.headless", "true");
     GStyle.setPalette("kRainBow");
@@ -100,7 +101,7 @@ public class run_histograms {
       while(reader.hasEvent()) {
         DataEvent event = reader.getNextEvent();
 
-        //// call each histogramming class instance's `processEvent`
+        // call each histogramming class instance's `processEvent`
         if(ana_mon!=null) ana_mon.processEvent(event);
         if(ana_ctof!=null) ana_ctof.processEvent(event);
         if(ana_dc_ftof!=null) ana_dc_ftof.processEvent(event);
@@ -142,7 +143,7 @@ public class run_histograms {
     }
     System.out.println("Total : " + count + " events");
 
-    //// call each histogramming class instance's `write`
+    // call each histogramming class instance's `write`
     if(ana_mon!=null) ana_mon.write();
     if(ana_ctof!=null) ana_ctof.write();
     if(ana_dc_ftof!=null) ana_dc_ftof.write();
