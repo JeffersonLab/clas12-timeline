@@ -9,6 +9,9 @@ import org.jlab.io.base.DataEvent;
  */
 public class Yield {
 
+  /** {@code TDirectory} path */
+  public static final String TDIR = "/QADB/yield";
+
   /** channels to monitor */
   public enum Channel {
     /** trigger electrons in the Forward Detector (FD) sector 1 */
@@ -84,8 +87,8 @@ public class Yield {
    */
   public void write(TDirectory tdir)
   {
-    tdir.mkdir("/QADB/yield/");
-    tdir.cd("/QADB/yield/");
+    tdir.mkdir(TDIR);
+    tdir.cd(TDIR);
     tdir.addDataSet(yield_hist);
   }
 
