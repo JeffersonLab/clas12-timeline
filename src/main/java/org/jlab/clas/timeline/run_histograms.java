@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 
 import org.jlab.detector.qadb.QadbBinSequence;
 import org.jlab.clas.timeline.histograms.qadb.QadbBinHistograms;
+import org.jlab.clas.timeline.histograms.qadb.QadbBinBoundsSequence;
 
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.hipo.HipoDataSource;
@@ -68,7 +69,6 @@ public class run_histograms {
     for(var qa_bin : qa_seq) {
       qa_bin.data.charge.fillDSC2(qa_bin);
     }
-
 
     // instantiate histogramming classes
     GeneralMon ana_mon      = new GeneralMon(runNum,outputDir,EB,useTB);
@@ -164,6 +164,10 @@ public class run_histograms {
       qa_bin.data.write(qa_tdir);
     }
     qa_tdir.writeFile(outputDir + String.format("/out_QADB_%d.hipo", runNum));
+
+    // write QADB bounds table
+    var qa_bounds_seq = QadbBinBoundsSequence.read(qa_seq);
+    qa_bounds_seq.write(outputDir + String.format("/out_QADB_%d.dat", runNum));
 
   }
 }
