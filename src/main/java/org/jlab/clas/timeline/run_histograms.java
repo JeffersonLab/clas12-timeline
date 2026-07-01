@@ -6,13 +6,18 @@ import java.io.*;
 import java.util.*;
 import java.text.SimpleDateFormat;
 
+import org.jlab.detector.qadb.QadbBinSequence;
+import org.jlab.clas.timeline.histograms.qadb.QadbBinHistograms;
+
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.hipo.HipoDataSource;
 import org.jlab.groot.base.GStyle;
+import org.jlab.groot.data.TDirectory;
 
 public class run_histograms {
+
   public run_histograms(){}
-  ////////////////////////////////////////////////
+
   public static void main(String[] args) {
     System.setProperty("java.awt.headless", "true");
     GStyle.setPalette("kRainBow");
@@ -32,7 +37,40 @@ public class run_histograms {
     // get the dataset which contains this run number
     var dataset = RunDependentCut.findDataset(runNum);
 
-    //// instantiate histogramming classes
+    // get list of input HIPO files
+    List<String> input_file_list = new ArrayList<String>();
+    File file = new File(filelist);
+    Scanner read;
+    try {
+      read = new Scanner(file);
+      do {
+        String filename = read.next()
+          .replaceAll("^file:", "")
+          .replaceAll("^mss:", "");
+        if(runNum==0 || filename.contains(String.format("%d",runNum) ) ){
+          input_file_list.add(filename);
+          System.out.println("adding "+filename);
+        }
+
+      }while (read.hasNext());
+      read.close();
+    }catch(IOException e){
+      e.printStackTrace();
+      System.exit(100);
+    }
+    int progresscount = 0;
+    int filetot = input_file_list.size();
+    long startTime = System.currentTimeMillis();
+    long previousTime = System.currentTimeMillis();
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
+    // QADB binning and integrated charge
+    QadbBinSequence<QadbBinHistograms> qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinHistograms(bin_num));
+    for(var qa_bin : qa_seq) {
+      qa_bin.data.charge.fillDSC2(qa_bin);
+    }
+
+    // instantiate histogramming classes
     GeneralMon ana_mon      = new GeneralMon(runNum,outputDir,EB,useTB);
     DCandFTOF  ana_dc_ftof  = new DCandFTOF(runNum,outputDir,useTB);
     CTOF       ana_ctof     = new CTOF(runNum,outputDir,useTB);
@@ -47,47 +85,22 @@ public class run_histograms {
     helicity   ana_helicity = new helicity();
     trigger    ana_trigger  = new trigger();
 
-    List<String> toProcessFileNames = new ArrayList<String>();
-    File file = new File(filelist);
-    Scanner read;
-    try {
-      read = new Scanner(file);
-      do { 
-        String filename = read.next()
-          .replaceAll("^file:", "")
-          .replaceAll("^mss:", "");
-        if(runNum==0 || filename.contains(String.format("%d",runNum) ) ){
-          toProcessFileNames.add(filename);
-          System.out.println("adding "+filename);
-        }
-
-      }while (read.hasNext());
-      read.close();
-    }catch(IOException e){
-      e.printStackTrace();
-      System.exit(100);
-    }
-    int progresscount = 0;
-    int filetot = toProcessFileNames.size();
-    long startTime = System.currentTimeMillis();
-    long previousTime = System.currentTimeMillis();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-
-    for (String runstrg : toProcessFileNames) {
+    // loop over input HIPO files
+    for (String input_file : input_file_list) {
       progresscount++;
-      System.out.println(String.format(">>>>>>>>>>>>>>>> %s",runstrg));
-      File varTmpDir = new File(runstrg);
+      System.out.println(String.format(">>>>>>>>>>>>>>>> %s",input_file));
+      File varTmpDir = new File(input_file);
       if(!varTmpDir.exists()) {
-        System.err.println(String.format("ERROR: FILE DOES NOT EXIST: '%s'",runstrg));
+        System.err.println(String.format("ERROR: FILE DOES NOT EXIST: '%s'",input_file));
         continue;
       }
-      System.out.println("READING NOW "+runstrg);
+      System.out.println("READING NOW "+input_file);
       HipoDataSource reader = new HipoDataSource();
-      reader.open(runstrg);
+      reader.open(input_file);
       while(reader.hasEvent()) {
         DataEvent event = reader.getNextEvent();
 
-        //// call each histogramming class instance's `processEvent`
+        // call each histogramming class instance's `processEvent`
         if(ana_mon!=null) ana_mon.processEvent(event);
         if(ana_ctof!=null) ana_ctof.processEvent(event);
         if(ana_dc_ftof!=null) ana_dc_ftof.processEvent(event);
@@ -102,6 +115,17 @@ public class run_histograms {
         if(ana_helicity!=null) ana_helicity.processEvent(event);
         if(ana_trigger!=null) ana_trigger.processEvent(event);
 
+        // call the QA bin's histogramming `processEvent`
+        if(event.hasBank("RUN::config")) {
+          var cfg_bank = event.getBank("RUN::config");
+          if(cfg_bank.rows() > 0) {
+            var qa_bin_opt = qa_seq.findBin(cfg_bank.getLong("timestamp", 0));
+            if(qa_bin_opt.isPresent()) {
+              qa_bin_opt.get().data.processEvent(event);
+            }
+          }
+        }
+
         count++;
         if(count%10000 == 0){
           long nowTime = System.currentTimeMillis();
@@ -110,7 +134,7 @@ public class run_histograms {
           elapsedTime = elapsedTime/1000;
           totalTime = totalTime/1000;
           Date date = new Date();
-          System.out.println(count/1000 + "k events (this is all analysis on "+runstrg+") ; time : " + dateFormat.format(date) + " , last elapsed : " + elapsedTime + "s ; total elapsed : " + totalTime + "s ; progress : "+progresscount+"/"+filetot);
+          System.out.println(count/1000 + "k events (this is all analysis on "+input_file+") ; time : " + dateFormat.format(date) + " , last elapsed : " + elapsedTime + "s ; total elapsed : " + totalTime + "s ; progress : "+progresscount+"/"+filetot);
           previousTime = nowTime;
         }
       }
@@ -118,7 +142,7 @@ public class run_histograms {
     }
     System.out.println("Total : " + count + " events");
 
-    //// call each histogramming class instance's `write`
+    // call each histogramming class instance's `write`
     if(ana_mon!=null) ana_mon.write();
     if(ana_ctof!=null) ana_ctof.write();
     if(ana_dc_ftof!=null) ana_dc_ftof.write();
@@ -132,6 +156,15 @@ public class run_histograms {
     if(ana_rich!=null) ana_rich.write();
     if(ana_helicity!=null) ana_helicity.write(outputDir, runNum);
     if(ana_trigger!=null) ana_trigger.write(outputDir, runNum);
+
+    // write QADB histograms and binning specification files
+    TDirectory qa_tdir = new TDirectory();
+    qa_tdir.mkdir("/QADB/");
+    for(var qa_bin : qa_seq) {
+      qa_bin.data.write(qa_tdir);
+    }
+    qa_tdir.writeFile(outputDir + String.format("/out_QADB_%d.hipo", runNum));
+    qa_seq.writeBinSpec(outputDir + String.format("/out_QADB_%d.dat", runNum));
 
   }
 }

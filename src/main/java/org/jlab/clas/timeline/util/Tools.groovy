@@ -2,6 +2,8 @@ package org.jlab.clas.timeline.util
 import org.jlab.clas.physics.LorentzVector
 import org.jlab.clas.physics.Vector3
 import org.jlab.io.hipo.HipoDataSource
+import org.jlab.io.base.DataBank;
+import org.jlab.clas.physics.Particle;
 import groovy.json.JsonOutput
 
 class Tools {
@@ -227,5 +229,23 @@ class Tools {
     if(runnum<=0)
       System.err.println("[ERROR]: run number not found for file $infile")
     return runnum
+  }
+
+
+  /**
+   * create a {@code Particle} object given a bank row
+   * @param bank the HIPO bank
+   * @param row the HIPO bank row
+   */
+  static Particle getParticle(DataBank bank, int row)
+  {
+    return new Particle(
+        bank.getInt("pid", row),
+        bank.getFloat("px", row),
+        bank.getFloat("py", row),
+        bank.getFloat("pz", row),
+        bank.getFloat("vx", row),
+        bank.getFloat("vy", row),
+        bank.getFloat("vz", row));
   }
 }
