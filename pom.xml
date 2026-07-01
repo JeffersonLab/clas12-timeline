@@ -35,7 +35,7 @@
     <dependency>
       <groupId>org.jlab.coat</groupId>
       <artifactId>coat-libs</artifactId>
-      <version>13.8.0</version>
+      <version>14.1.1-SNAPSHOT</version> <!-- FIXME FIXME FIXME -->
       <type>jar</type>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-all -->
