@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat;
 
 import org.jlab.detector.qadb.QadbBinSequence;
 import org.jlab.clas.timeline.histograms.qadb.QadbBinHistograms;
-import org.jlab.clas.timeline.histograms.qadb.QadbBinBoundsSequence;
 
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.hipo.HipoDataSource;
@@ -158,17 +157,14 @@ public class run_histograms {
     if(ana_helicity!=null) ana_helicity.write(outputDir, runNum);
     if(ana_trigger!=null) ana_trigger.write(outputDir, runNum);
 
-    // write QADB histograms
+    // write QADB histograms and binning specification files
     TDirectory qa_tdir = new TDirectory();
     qa_tdir.mkdir("/QADB/");
     for(var qa_bin : qa_seq) {
       qa_bin.data.write(qa_tdir);
     }
     qa_tdir.writeFile(outputDir + String.format("/out_QADB_%d.hipo", runNum));
-
-    // write QADB bounds table
-    var qa_bounds_seq = QadbBinBoundsSequence.read(qa_seq);
-    qa_bounds_seq.write(outputDir + String.format("/out_QADB_%d.dat", runNum));
+    qa_seq.writeBinSpec(outputDir + String.format("/out_QADB_%d.dat", runNum));
 
   }
 }

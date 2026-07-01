@@ -14,9 +14,9 @@ class qadb_charge {
   def processRun(dir, run, qa_seq) {
     data[run] = [run:run, hists:[:]];
     qa_seq.each{ qa_bin ->
-      def c = new Charge(qa_bin.binNum);
-      c.readHistograms(dir, qa_bin.binNum);
-      data[run]['hists'][qa_bin.binNum] = c;
+      def c = new Charge(qa_bin.getBinNum());
+      c.readHistograms(dir, qa_bin.getBinNum());
+      data[run]['hists'][qa_bin.getBinNum()] = c;
     }
   }
 

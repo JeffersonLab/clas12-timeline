@@ -1,7 +1,7 @@
 package org.jlab.clas.timeline.analysis
 
 import org.jlab.clas.timeline.util.RunDependentCut
-import org.jlab.clas.timeline.histograms.qadb.QadbBinBoundsSequence;
+import org.jlab.clas.timeline.histograms.qadb.QadbBinSequence;
 
 import org.jlab.groot.data.TDirectory
 
@@ -235,7 +235,7 @@ fnames.sort().each{ fname ->
       TDirectory dir = new TDirectory()
       dir.readFile(fname)
       if(timelineArg == 'qadb') {
-        def qa_seq = QadbBinBoundsSequence.read(fname.replace(".hipo", ".dat"));
+        def qa_seq<Void> = new QadbBinSequence<>(fname.replace(".hipo", ".dat"));
         engine.processRun(dir, run, qa_seq)
       } else {
         engine.processRun(dir, run)
