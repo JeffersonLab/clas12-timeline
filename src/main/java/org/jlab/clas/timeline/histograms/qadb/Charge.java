@@ -220,4 +220,16 @@ public class Charge {
     dsc2_hist.setBinContent(DSC2Type.mean_livetime.ordinal(), mean_livetime);
   }
 
+  // ----------------------------------------------------------------------------------
+
+  /**
+   * convert default charge units (nC) to mC
+   * @param q the input charge in (nC)
+   * @return the charge in mC
+   */
+  static double to_mC(double q)
+  {
+    return q / 1e6;
+  }
+
 }
