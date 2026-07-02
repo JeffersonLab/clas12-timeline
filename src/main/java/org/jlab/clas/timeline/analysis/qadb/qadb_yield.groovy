@@ -5,9 +5,9 @@ import org.jlab.groot.data.TDirectory;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
 
-import org.jlab.clas.timeline.histograms.qadb.Charge;
+import org.jlab.clas.timeline.histograms.qadb.Yield;
 
-class qadb_charge {
+class qadb_yield {
 
   def data = new ConcurrentHashMap();
 
@@ -16,9 +16,12 @@ class qadb_charge {
   def processRun(dir, runnum, qa_seq) {
     data[runnum] = [run:runnum, histos:[:]];
     qa_seq.each{ qa_bin ->
-      def histos = new Charge(qa_bin.getBinNum());
+      def histos = new Yield(qa_bin.getBinNum());
+      def charge = new Charge(qa_bin.getBinNum());
       histos.readHistograms(dir, qa_bin.getBinNum());
+      charge.readHistograms(dir, qa_bin.getBinNum());
       data[runnum]['histos'][qa_bin.getBinNum()] = histos;
+      data[runnum]['charge'][qa_bin.getBinNum()] = charge;
     }
   }
 
@@ -27,10 +30,17 @@ class qadb_charge {
   def write() {
 
     // start ouput `TDirectory`s
-    TDirectory tdir_per = new TDirectory(); // charge per run
-    TDirectory tdir_acc = new TDirectory(); // accumulated charge as a function of run
+    TDirectory tdir_FD_ele = new TDirectory(); // forward detector (FD) electrons
+    TDirectory tdir_FT_ele = new TDirectory(); // forward tagger (FT) electrons
 
-    // define timeline graphs: charge vs. run
+    // define timeline graphs: N/Q vs. run
+    //
+    //
+    // TODO: stopped here
+    //
+    //
+
+
     def make_tl = { name ->
       def g = new GraphErrors(name);
       g.setTitle("Charge [mC]");

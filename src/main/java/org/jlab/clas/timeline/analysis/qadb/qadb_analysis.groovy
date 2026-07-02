@@ -4,10 +4,12 @@ class qadb_analysis {
 
   def processRun(dir, run, qa_seq) {
     qadb_charge.processRun(dir, run, qa_seq);
+    qadb_yield.processRun(dir, run, qa_seq);
   }
 
   def write() {
     qadb_charge.write();
+    qadb_yield.write();
   }
 
 }

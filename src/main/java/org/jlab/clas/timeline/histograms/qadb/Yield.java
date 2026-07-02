@@ -30,8 +30,8 @@ public class Yield {
     electronFT,
   }
 
-  // private members
-  private H1F yield_hist;
+  // histograms
+  public H1F yield_hist;
 
   // ----------------------------------------------------------------------------------
 
@@ -90,6 +90,17 @@ public class Yield {
     tdir.mkdir(TDIR);
     tdir.cd(TDIR);
     tdir.addDataSet(yield_hist);
+  }
+
+  // ----------------------------------------------------------------------------------
+
+  /** read histograms from a {@code TDirectory}
+   * @param tdir the {@code TDirectory}
+   * @param bin_num QADB bin number
+   */
+  void readHistograms(TDirectory tdir, int bin_num)
+  {
+    yield_hist = (H1F) tdir.getObject(TDIR + "/yield_hist_qa" + String.valueOf(bin_num));
   }
 
 }
