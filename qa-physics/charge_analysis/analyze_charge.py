@@ -24,14 +24,18 @@ def main():
 
     if len(sys.argv) != 4:
         print(f'''
-USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
-    INPUT_HIPO_FILE       input HIPO file
+USAGE: {sys.argv[0]} [INPUT_HIPO_PATH] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
+    INPUT_HIPO_PATH       input HIPO. If it ends in ".hipo" it is treated as a
+                          single file; otherwise it is treated as a directory and
+                          ALL "*.hipo" files inside it (assumed to be for the same
+                          run) are read and aggregated together. Useful for DSTs.
+    OUTPUT_DIR            directory where output plots are written
     OUTPUT_FILE_SUFFIX    append this string to the output
                           file name; useful if you are comparing
                           output files before and after reheating
         ''')
         exit(2)
-    hipo_file     = sys.argv[1]
+    hipo_path     = sys.argv[1]
     output_dir    = sys.argv[2]
     output_suffix = sys.argv[3]
 
@@ -39,36 +43,82 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
     if hipo_prefix == None:
         raise ValueError("HIPO env var not set")
 
-    logger.info(f"Processing file: {hipo_file}")
+    # Make sure the output directory exists before writing any plots into it.
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Resolve the input into a concrete list of .hipo files. A path ending in
+    # ".hipo" is a single file; anything else is a directory whose *.hipo files
+    # (all for the same run) are read and aggregated together.
+    if hipo_path.endswith('.hipo'):
+        hipo_files    = [hipo_path]
+        file_basename = os.path.splitext(os.path.basename(hipo_path))[0]
+    else:
+        hipo_files    = sorted(glob(os.path.join(hipo_path, '*.hipo')))
+        file_basename = os.path.basename(os.path.normpath(hipo_path))
+
+    if not hipo_files:
+        raise ValueError(f"No .hipo files found for input path: {hipo_path}")
+
+    logger.info(f"Found {len(hipo_files)} HIPO file(s) to process under: {hipo_path}")
 
     reader = hipolib.hreader(f'{hipo_prefix}/lib')
-    reader.open_with_tag(hipo_file, 1)  # filter by tag at open time
-    reader.define('RUN::config')
-    reader.define('RUN::scaler')
 
     timestamps, fcups, fcupgateds, live_times = [], [], [], []
 
+    # Helicity-latched FC charge from HEL::scaler. There can be more than one row
+    # per event (pile-up), so every row is read. We keep the latched helicity and
+    # both its ungated ('fcup') and gated ('fcupgated') FC charge, tagged with the
+    # event timestamp.
+    hel_timestamps, hel_helicities, hel_fcups, hel_fcupgateds = [], [], [], []
+
     counter = 0
-    while reader.next():
-        if counter % 10000 == 0 and counter > 0:
-            logger.info(f'Processing event # {counter}')
-        counter += 1
+    last_timestamp = 0
+    for file_idx, hipo_file in enumerate(hipo_files):
+        logger.info(f"[{file_idx + 1}/{len(hipo_files)}] Processing file: {hipo_file}")
+        reader.open_with_tag(hipo_file, 1)  # filter by tag at open time
+        # Banks must be (re)declared for each newly opened file handle.
+        reader.define('RUN::config')
+        reader.define('RUN::scaler')
+        reader.define('HEL::scaler')
 
-        if reader.getSize('RUN::config') == 0 or reader.getSize('RUN::scaler') == 0:
-            # logger.warning(f"Skipping empty bank at event {counter}")
-            continue
+        while reader.next():
+            if counter % 10000 == 0 and counter > 0:
+                logger.info(f'Processing event # {counter}')
+            counter += 1
 
-        timestamp = reader.getEntry('RUN::config', 'timestamp')
-        fcup = reader.getEntry('RUN::scaler', 'fcup')
-        fcupgated = reader.getEntry('RUN::scaler', 'fcupgated')
-        live_time = reader.getEntry('RUN::scaler', 'livetime')
+            # Track the most recent config timestamp so HEL::scaler rows can be
+            # placed on the same time axis even when RUN::scaler is empty.
+            if reader.getSize('RUN::config') > 0:
+                last_timestamp = reader.getEntry('RUN::config', 'timestamp')[0]
 
-        timestamps.append(timestamp[0])
-        fcups.append(fcup[0])
-        fcupgateds.append(fcupgated[0])
-        live_times.append(live_time[0])
+            # ----- HEL::scaler: loop over ALL rows (pile-up) -----
+            hel_size = reader.getSize('HEL::scaler')
+            if hel_size > 0:
+                hel_h   = reader.getEntry('HEL::scaler', 'helicity')
+                hel_fc  = reader.getEntry('HEL::scaler', 'fcup')
+                hel_fcg = reader.getEntry('HEL::scaler', 'fcupgated')
+                for r in range(hel_size):
+                    hel_timestamps.append(last_timestamp)
+                    hel_helicities.append(hel_h[r])
+                    hel_fcups.append(hel_fc[r])
+                    hel_fcupgateds.append(hel_fcg[r])
 
-    logger.info(f"Processed {counter} events.")
+            if reader.getSize('RUN::config') == 0 or reader.getSize('RUN::scaler') == 0:
+                # logger.warning(f"Skipping empty bank at event {counter}")
+                continue
+
+            timestamp = reader.getEntry('RUN::config', 'timestamp')
+            fcup = reader.getEntry('RUN::scaler', 'fcup')
+            fcupgated = reader.getEntry('RUN::scaler', 'fcupgated')
+            live_time = reader.getEntry('RUN::scaler', 'livetime')
+
+            timestamps.append(timestamp[0])
+            fcups.append(fcup[0])
+            fcupgateds.append(fcupgated[0])
+            live_times.append(live_time[0])
+
+    logger.info(f"Processed {counter} events across {len(hipo_files)} file(s).")
+    logger.info(f"Collected {len(hel_helicities)} HEL::scaler rows.")
 
     # Sort data by timestamps
     sorted_data = sorted(zip(timestamps, fcups, fcupgateds, live_times))
@@ -82,26 +132,104 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
     fcupgateds = np.array(fcupgateds)
     live_times = np.array(live_times)
 
-    file_basename = os.path.splitext(os.path.basename(hipo_file))[0]
+    # ---------- Helicity-latched FC charge prep (HEL::scaler) ----------
+    # RUN::scaler 'fcup'/'fcupgated' are cumulative counters (diffed in the chunked
+    # loop below); HEL::scaler 'fcup'/'fcupgated' are per-window deltas, so the
+    # charge for a given helicity state is a running SUM of the rows latched to that
+    # state. Prepared once here; the helicity content is merged into the timestamp
+    # figure (extra columns) and the chunked figure (no standalone figure).
+    chunk_size = 100
+    # Bin HEL::scaler at the same size as RUN::scaler so the helicity panel's chunk
+    # axis lines up with the other chunked panels (~same number of bins). Note the
+    # two still index different banks (HEL has pile-up rows), so counts differ slightly.
+    hel_chunk_size = chunk_size
+    has_hel = bool(hel_helicities)
+    if has_hel:
+        hel_sorted = sorted(zip(hel_timestamps, hel_helicities, hel_fcups, hel_fcupgateds))
+        h_ts, h_hel, h_fcup, h_fcupg = zip(*hel_sorted)
+        h_ts    = np.array(h_ts)
+        h_hel   = np.array(h_hel)
+        h_fcup  = np.array(h_fcup,  dtype=float)   # ungated per-window charge
+        h_fcupg = np.array(h_fcupg, dtype=float)   # gated per-window charge
 
-    # ---------- Plot 1: Per-event data ----------
-    # ---------- Plot 1: Per-event data ----------
-    fig1, axs1 = plt.subplots(2, 2, figsize=(14, 8))
-    fig1.suptitle(f'{file_basename}', fontsize=16)
+        hel_masks = {
+            '-1': h_hel < 0,
+            '+1': h_hel > 0,
+            '0':  h_hel == 0,
+        }
+        logger.info(
+            f"HEL::scaler rows by helicity: "
+            f"-1={np.count_nonzero(hel_masks['-1'])}, "
+            f"+1={np.count_nonzero(hel_masks['+1'])}, "
+            f"0={np.count_nonzero(hel_masks['0'])}"
+        )
+
+        # Bin the helicity rows and accumulate ungated/gated charge per state vs bin.
+        hbin = hel_chunk_size
+        if len(h_hel) < 2 * hbin:
+            hbin = max(1, len(h_hel) // 50)
+        num_hel_bins = len(h_hel) // hbin
+        hel_bin_idx  = np.arange(num_hel_bins)
+        hel_xlabel   = f'Chunk Index (Each = {hbin} helicity windows)'
+        # End-of-bin timestamp, so the binned helicity charge can also be shown
+        # against the time axis (used by the fcup_vs_timestamp figure).
+        hel_bin_ts   = h_ts[(hel_bin_idx + 1) * hbin - 1]
+
+        # cumulative charge per state: 'u' = ungated (fcup), 'g' = gated (fcupgated)
+        hel_cum       = {'u': {k: [] for k in hel_masks}, 'g': {k: [] for k in hel_masks}}
+        hel_cum_total = {'u': [], 'g': []}
+        _run       = {'u': {k: 0.0 for k in hel_masks}, 'g': {k: 0.0 for k in hel_masks}}
+        _run_total = {'u': 0.0, 'g': 0.0}
+        for i in range(num_hel_bins):
+            s, e = i * hbin, (i + 1) * hbin
+            for k, m in hel_masks.items():
+                sub = m[s:e]
+                _run['u'][k] += h_fcup[s:e][sub].sum()
+                _run['g'][k] += h_fcupg[s:e][sub].sum()
+                hel_cum['u'][k].append(_run['u'][k])
+                hel_cum['g'][k].append(_run['g'][k])
+            _run_total['u'] += h_fcup[s:e].sum()
+            _run_total['g'] += h_fcupg[s:e].sum()
+            hel_cum_total['u'].append(_run_total['u'])
+            hel_cum_total['g'].append(_run_total['g'])
+
+        for kind in ('u', 'g'):
+            for k in hel_masks:
+                hel_cum[kind][k] = np.array(hel_cum[kind][k], dtype=float)
+            hel_cum_total[kind] = np.array(hel_cum_total[kind], dtype=float)
+
+        # Running charge asymmetry (Q+ - Q-)/(Q+ + Q-), ungated and gated.
+        hel_asym = {}
+        for kind in ('u', 'g'):
+            qp, qm = hel_cum[kind]['+1'], hel_cum[kind]['-1']
+            denom  = qp + qm
+            hel_asym[kind] = np.divide(qp - qm, denom, out=np.full_like(denom, np.nan), where=denom != 0)
+
+        # Integrated totals per state (ungated + gated), for the bar chart + print.
+        hel_tot = {
+            'u': {k: float(h_fcup[m].sum())  for k, m in hel_masks.items()},
+            'g': {k: float(h_fcupg[m].sum()) for k, m in hel_masks.items()},
+        }
+        hel_tot['u']['total'] = float(h_fcup.sum())
+        hel_tot['g']['total'] = float(h_fcupg.sum())
+    else:
+        logger.warning("No HEL::scaler data found; helicity-latched panels will be skipped.")
+
+    # ---------- Plot 1: Per-event data (cols 1-2) + helicity-latched (cols 3-4) ----------
+    fig1, axs1 = plt.subplots(2, 4, figsize=(24, 10))
+    fig1.suptitle(f'{file_basename}', fontsize=16, y=0.995)
 
     plots1 = [
-        (axs1[0, 0], fcups, 'FCUP', 'FCUP vs Timestamp', 'darkgreen', 'line'),
-        (axs1[0, 1], fcupgateds, 'FCUP Gated', 'FCUP Gated vs Timestamp', 'darkorange', 'line'),
+        (axs1[0, 0], fcups, 'DSC2:FCup', 'DSC2:FCup vs Timestamp', 'darkgreen', 'line'),
+        (axs1[0, 1], fcupgateds, 'DSC2:FCupgated', 'DSC2:FCupgated vs Timestamp', 'darkorange', 'line'),
         (axs1[1, 0], live_times, 'Live Time', 'Live Time vs Timestamp', 'purple', 'scatter'),
-        (axs1[1, 1], fcups * live_times, 'FCUP × Live Time', 'FCUP × Live Time vs Timestamp', 'steelblue', 'line'),
+        (axs1[1, 1], fcups * live_times, 'DSC2:FCup × Live Time', 'DSC2:FCup × Live Time vs Timestamp', 'steelblue', 'line'),
     ]
-
     for ax, data, label, title, color, style in plots1:
         if style == 'line':
             ax.plot(timestamps, data, label=label, color=color, linewidth=1.5)
         elif style == 'scatter':
             ax.scatter(timestamps, data, label=label, color=color, s=10, alpha=0.7)
-
         ax.set_title(title, fontsize=12)
         ax.set_xlabel('Timestamp', fontsize=10, loc='center')
         ax.set_ylabel(label, fontsize=10)
@@ -109,11 +237,62 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
         ax.grid(True, linestyle='--', alpha=0.6)
         ax.tick_params(axis='both', labelsize=9)
 
-    fig1.tight_layout(rect=[0, 0.03, 1, 0.95])
+    # Right two columns: helicity-latched charge (HEL::scaler)
+    ax_hu   = axs1[0, 2]   # cumulative ungated per helicity
+    ax_hg   = axs1[0, 3]   # cumulative gated per helicity
+    ax_hasy = axs1[1, 2]   # running charge asymmetry
+    ax_hbar = axs1[1, 3]   # total per state (bar chart)
+
+    if has_hel:
+        for ax, kind, ylab, title in (
+            (ax_hu, 'u', 'Cumulative STRUCK FCup',      'Cumulative Ungated Charge (STRUCK FCup) per Helicity'),
+            (ax_hg, 'g', 'Cumulative STRUCK FCupgated', 'Cumulative Gated Charge (STRUCK FCupgated) per Helicity'),
+        ):
+            ax.plot(hel_bin_ts, hel_cum[kind]['+1'], label='Helicity +1', color='crimson', marker='^', markersize=3)
+            ax.plot(hel_bin_ts, hel_cum[kind]['-1'], label='Helicity -1', color='navy',    marker='v', markersize=3)
+            ax.plot(hel_bin_ts, hel_cum[kind]['0'],  label='Helicity  0', color='gray',    marker='s', markersize=3)
+            ax.plot(hel_bin_ts, hel_cum_total[kind], label='Total (+1, -1, 0)', color='black', linestyle='--')
+            ax.set_title(title, fontsize=11)
+            ax.set_xlabel('Timestamp', fontsize=10)
+            ax.set_ylabel(ylab, fontsize=10)
+            ax.legend(fontsize=9)
+            ax.grid(True, linestyle='--', alpha=0.6)
+            ax.tick_params(axis='both', labelsize=9)
+
+        ax_hasy.axhline(0.0, color='black', linestyle='--', linewidth=1)
+        ax_hasy.plot(hel_bin_ts, hel_asym['u'], label='Ungated asymmetry', color='darkorange', marker='o', markersize=3)
+        ax_hasy.plot(hel_bin_ts, hel_asym['g'], label='Gated asymmetry',   color='teal',       marker='d', markersize=3)
+        ax_hasy.set_title('Running Charge Asymmetry  (Q+ - Q-)/(Q+ + Q-)', fontsize=11)
+        ax_hasy.set_xlabel('Timestamp', fontsize=10)
+        ax_hasy.set_ylabel('Asymmetry', fontsize=10)
+        ax_hasy.set_ylim(-0.02, 0.02)
+        ax_hasy.legend(fontsize=9)
+        ax_hasy.grid(True, linestyle='--', alpha=0.6)
+        ax_hasy.tick_params(axis='both', labelsize=9)
+
+        states = ['+1', '-1', '0']
+        labels = ['Hel +1', 'Hel -1', 'Undefined']
+        x = np.arange(len(states))
+        w = 0.38
+        ung = [hel_tot['u'][k] for k in states]
+        gat = [hel_tot['g'][k] for k in states]
+        ax_hbar.bar(x - w / 2, ung, w, label='Ungated (STRUCK FCup)',     color='darkorange', alpha=0.85)
+        ax_hbar.bar(x + w / 2, gat, w, label='Gated (STRUCK FCupgated)', color='teal',       alpha=0.85)
+        ax_hbar.set_xticks(x)
+        ax_hbar.set_xticklabels(labels)
+        ax_hbar.set_title('Total STRUCK Latched Charge per Helicity State', fontsize=11)
+        ax_hbar.set_ylabel('Integrated Charge', fontsize=10)
+        ax_hbar.legend(fontsize=9)
+        ax_hbar.grid(True, axis='y', linestyle='--', alpha=0.6)
+        ax_hbar.tick_params(axis='both', labelsize=9)
+    else:
+        for ax in (ax_hu, ax_hg, ax_hasy, ax_hbar):
+            ax.text(0.5, 0.5, 'No HEL::scaler data', ha='center', va='center', transform=ax.transAxes)
+
+    fig1.tight_layout(rect=[0, 0, 1, 0.985])
     fig1.savefig(f'{output_dir}/fcup_vs_timestamp_{file_basename}_{output_suffix}.png', bbox_inches='tight', dpi=300)
     plt.close(fig1)
     # ---------- Compute Chunked FCUP Gated with neighbor handling ----------
-    chunk_size = 100
     num_chunks = len(timestamps) // chunk_size
     xlabel     = f'Bin num. (size={chunk_size} scalers)'
 
@@ -225,16 +404,16 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
     logger.info(f"Computed chunked FCUP Gated values with neighbor handling (Cases A, B, C).")
     logger.info(f"Total skipped events (no valid LT neighbor): {total_skipped}")
 
-    # ---------- Plot 2: Chunked FCUP Gated + Ratios + Skips + LT Distribution ----------
-    fig2, (ax_top, ax_mid, ax_gatedrat, ax_bottom, ax_ltdist) = plt.subplots(
-        5, 1, figsize=(12, 17), sharex=False,
-        gridspec_kw={'height_ratios': [3, 1, 1, 1, 2]}
+    # ---------- Plot 2: Chunked FCUP Gated + Ratios + Helicity-Latched Charge + Asymmetry ----------
+    fig2, (ax_top, ax_mid, ax_gatedrat, ax_hel, ax_asym) = plt.subplots(
+        5, 1, figsize=(12, 19), sharex=False,
+        gridspec_kw={'height_ratios': [3, 1, 1, 3, 2]}
     )
-    fig2.suptitle(f'{file_basename}', fontsize=16)
+    fig2.suptitle(f'{file_basename}', fontsize=16, y=0.995)
 
     # Top: cumulative sums
-    ax_top.plot(chunk_indices, cum_default_ungated, label='U: ungated FC charge', color='black',       marker='o', markersize=4, linestyle='--')
-    ax_top.plot(chunk_indices, cum_default,         label='G: gated FC charge',   color='red',         marker='^', markersize=4)
+    ax_top.plot(chunk_indices, cum_default_ungated, label='U: ungated DSC2:FCup',    color='black',       marker='o', markersize=4, linestyle='--')
+    ax_top.plot(chunk_indices, cum_default,         label='G: gated DSC2:FCupgated', color='red',         marker='^', markersize=4)
     ax_top.plot(chunk_indices, cum_caseA,           label='G\': LiveTime × U',    color='deepskyblue', marker='x', markersize=4, linestyle='--')
     # ax_top.plot(chunk_indices, cum_caseB, label='Cumulative Case B (LT_nn × FCUPungated_nn)', color='darkgreen',  marker='s', markersize=4)
     # ax_top.plot(chunk_indices, cum_caseC, label='Cumulative Case C (20-NN mean × U)',         color='darkorange', marker='d', markersize=4)
@@ -271,41 +450,47 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_FILE] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
     ax_gatedrat.legend(fontsize=10)
     ax_gatedrat.tick_params(axis='both', labelsize=10)
 
-    # Bottom-1: skipped events count
-    ax_bottom.bar(chunk_indices, skipped_counts, color='gray', alpha=0.7)
-    ax_bottom.set_xlabel(xlabel, fontsize=11, loc='right')
-    ax_bottom.set_ylabel('# Skipped', fontsize=11)
-    ax_bottom.grid(True, linestyle='--', alpha=0.6)
-    ax_bottom.tick_params(axis='both', labelsize=10)
+    # Bottom: chunked helicity-latched cumulative gated charge per state vs bin
+    if has_hel:
+        ax_hel.plot(hel_bin_idx, hel_cum['g']['+1'], label='Helicity +1', color='crimson', marker='^', markersize=3)
+        ax_hel.plot(hel_bin_idx, hel_cum['g']['-1'], label='Helicity -1', color='navy',    marker='v', markersize=3)
+        ax_hel.plot(hel_bin_idx, hel_cum['g']['0'],  label='Helicity  0', color='gray',    marker='s', markersize=3)
+        ax_hel.plot(hel_bin_idx, hel_cum_total['g'], label='Total (sum)', color='black', linestyle='--')
+        ax_hel.legend(fontsize=10, ncol=2)
+    else:
+        ax_hel.text(0.5, 0.5, 'No HEL::scaler data', ha='center', va='center', transform=ax_hel.transAxes)
+    ax_hel.set_title('STRUCK Helicity-Latched Gated Charge (HEL::scaler)', fontsize=11)
+    ax_hel.set_ylabel('Cumulative STRUCK FCupgated', fontsize=11)
+    ax_hel.set_xlabel(hel_xlabel if has_hel else xlabel, fontsize=11, loc='right')
+    ax_hel.grid(True, linestyle='--', alpha=0.6)
+    ax_hel.tick_params(axis='both', labelsize=10)
 
-    # Bottom-2: livetime distributions
-    bins = 100
-    mean_raw, sigma_raw = np.mean(live_times), np.std(live_times)
-    mean_A, sigma_A = np.mean(corrected_livetimes_A), np.std(corrected_livetimes_A)
-    mean_B, sigma_B = np.mean(corrected_livetimes_B), np.std(corrected_livetimes_B)
-    mean_C, sigma_C = np.mean(corrected_livetimes_C), np.std(corrected_livetimes_C)
+    # Bottom: running charge asymmetry (Q+ - Q-)/(Q+ + Q-) vs chunk number
+    ax_asym.axhline(0.0, color='black', linestyle='--', linewidth=1)
+    if has_hel:
+        ax_asym.plot(hel_bin_idx, hel_asym['u'], label='Ungated asymmetry', color='darkorange', marker='o', markersize=3)
+        ax_asym.plot(hel_bin_idx, hel_asym['g'], label='Gated asymmetry',   color='teal',       marker='d', markersize=3)
+        ax_asym.legend(fontsize=10)
+    else:
+        ax_asym.text(0.5, 0.5, 'No HEL::scaler data', ha='center', va='center', transform=ax_asym.transAxes)
+    ax_asym.set_title('Running Charge Asymmetry  (Q+ - Q-)/(Q+ + Q-)', fontsize=11)
+    ax_asym.set_ylabel('Asymmetry', fontsize=11)
+    ax_asym.set_ylim(-0.02, 0.02)
+    ax_asym.set_xlabel(hel_xlabel if has_hel else xlabel, fontsize=11, loc='right')
+    ax_asym.grid(True, linestyle='--', alpha=0.6)
+    ax_asym.tick_params(axis='both', labelsize=10)
 
-    ax_ltdist.hist(live_times, bins=bins, alpha=0.4,
-                   label=f'Raw LT (μ={mean_raw:.3f}, σ={sigma_raw:.3f})', color='purple')
-    ax_ltdist.hist(corrected_livetimes_A, bins=bins, alpha=0.4,
-                   label=f'Case A LT (μ={mean_A:.3f}, σ={sigma_A:.3f})', color='red')
-    #ax_ltdist.hist(corrected_livetimes_B, bins=bins, alpha=0.4,
-    #               label=f'Case B LT (μ={mean_B:.3f}, σ={sigma_B:.3f})', color='green')
-    # ax_ltdist.hist(corrected_livetimes_C, bins=bins, alpha=0.4,
-    #                label=f'Case C LT (μ={mean_C:.3f}, σ={sigma_C:.3f})', color='orange')
-
-    ax_ltdist.set_xlabel('Live Time', fontsize=11, loc='right')
-    ax_ltdist.set_ylabel('Counts', fontsize=11)
-    ax_ltdist.legend(fontsize=9)
-    ax_ltdist.grid(True, linestyle='--', alpha=0.6)
-    ax_ltdist.tick_params(axis='both', labelsize=10)
-
-    fig2.tight_layout(rect=[0, 0.03, 1, 0.95])
+    fig2.tight_layout(rect=[0, 0, 1, 0.985])
     fig2.savefig(f'{output_dir}/chunked_fcupgated_comparison_{file_basename}_{output_suffix}.png', bbox_inches='tight', dpi=300)
     plt.close(fig2)
 
     print(f'TOTAL UNGATED CHARGE = {fcups[-1]-fcups[0]}')
     print(f'TOTAL   GATED CHARGE = {fcupgateds[-1]-fcupgateds[0]}')
+
+    if has_hel:
+        g = hel_tot['g']
+        print(f'HELICITY-LATCHED GATED CHARGE: '
+              f"hel(-1)={g['-1']}, hel(+1)={g['+1']}, hel(0)={g['0']}, total={g['total']}")
 
 
 if __name__ == "__main__":
