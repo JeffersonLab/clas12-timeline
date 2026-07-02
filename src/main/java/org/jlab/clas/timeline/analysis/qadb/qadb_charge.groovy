@@ -1,9 +1,9 @@
-package org.jlab.clas.timeline.analysis
+package org.jlab.clas.timeline.analysis.qadb;
 
-import java.util.concurrent.ConcurrentHashMap
-import org.jlab.groot.data.TDirectory
-import org.jlab.groot.data.GraphErrors
-import org.jlab.groot.data.H1F
+import java.util.concurrent.ConcurrentHashMap;
+import org.jlab.groot.data.TDirectory;
+import org.jlab.groot.data.GraphErrors;
+import org.jlab.groot.data.H1F;
 
 import org.jlab.clas.timeline.histograms.qadb.Charge;
 

@@ -1,9 +1,9 @@
-package org.jlab.clas.timeline.analysis
+package org.jlab.clas.timeline.analysis;
 
-import org.jlab.clas.timeline.util.RunDependentCut
-import org.jlab.clas.timeline.histograms.qadb.QadbBinSequence;
-
-import org.jlab.groot.data.TDirectory
+import org.jlab.clas.timeline.util.RunDependentCut;
+import org.jlab.detector.qadb.QadbBinSequence;
+import org.jlab.clas.timeline.analysis.qadb.qadb_analysis;
+import org.jlab.groot.data.TDirectory;
 
 // define timeline engines
 def engines = [
@@ -167,7 +167,7 @@ def engines = [
     new trigger(),
   ],
   out_QADB: [
-    new qadb(),
+    new qadb_analysis(),
   ],
 ]
 
@@ -234,11 +234,11 @@ fnames.sort().each{ fname ->
       allow_timeline = true // allow the timeline if at least one run is allowed
       TDirectory dir = new TDirectory()
       dir.readFile(fname)
-      if(timelineArg == 'qadb') {
-        def qa_seq<Void> = new QadbBinSequence<>(fname.replace(".hipo", ".dat"));
-        engine.processRun(dir, run, qa_seq)
+      if(timelineArg == 'qadb_analysis') {
+        def qa_seq = new QadbBinSequence<Void>(fname.replace(".hipo", ".dat"));
+        engine.processRun(dir, run, qa_seq);
       } else {
-        engine.processRun(dir, run)
+        engine.processRun(dir, run);
       }
       println("debug: "+engine.getClass().getSimpleName()+" finished $fname")
     }
