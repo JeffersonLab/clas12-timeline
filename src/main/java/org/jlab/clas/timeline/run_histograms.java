@@ -25,13 +25,15 @@ public class run_histograms {
     int runNum = 0;
     String outputDir = "plots";
     String filelist = "list_of_files.txt";
+    String whichHistos = "all";
     float EB = 10.2f;
     boolean useTB=true;
     if(args.length>0)runNum=Integer.parseInt(args[0]);
     if(args.length>1)outputDir=args[1];
     if(args.length>2)filelist=args[2];
-    if(args.length>3)EB=Float.parseFloat(args[3]);
-    if(args.length>4)if(Integer.parseInt(args[4])==0)useTB=false;
+    if(args.length>3)whichHistos=args[3];
+    if(args.length>4)EB=Float.parseFloat(args[4]);
+    if(args.length>5)if(Integer.parseInt(args[5])==0)useTB=false;
     System.out.println("will process run number "+runNum+" from list "+filelist+", beam energy setting "+EB);
 
     // get the dataset which contains this run number
@@ -64,26 +66,47 @@ public class run_histograms {
     long previousTime = System.currentTimeMillis();
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
-    // QADB binning and integrated charge
-    QadbBinSequence<QadbBinHistograms> qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinHistograms(bin_num));
-    for(var qa_bin : qa_seq) {
-      qa_bin.data.charge.fillDSC2(qa_bin);
+    // instantiate QADB histograms and fill charge histograms
+    QadbBinSequence<QadbBinHistograms> qa_seq = null;
+    if(whichHistos == "all" || whichHistos == "qadb") {
+      qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinHistograms(bin_num));
+      for(var qa_bin : qa_seq) {
+        qa_bin.data.charge.fillDSC2(qa_bin);
+      }
     }
 
+    // declare histogramming classes
+    GeneralMon ana_mon      = null;
+    DCandFTOF  ana_dc_ftof  = null;
+    CTOF       ana_ctof     = null;
+    HTCC       ana_htcc     = null;
+    LTCC       ana_ltcc     = null;
+    RICH       ana_rich     = null;
+    CND        ana_cnd      = null;
+    CVT        ana_cvt      = null;
+    FT         ana_ft       = null;
+    BAND       ana_band     = null;
+    ALERT      ana_alert    = null;
+    helicity   ana_helicity = null;
+    trigger    ana_trigger  = null;
+
+
     // instantiate histogramming classes
-    GeneralMon ana_mon      = new GeneralMon(runNum,outputDir,EB,useTB);
-    DCandFTOF  ana_dc_ftof  = new DCandFTOF(runNum,outputDir,useTB);
-    CTOF       ana_ctof     = new CTOF(runNum,outputDir,useTB);
-    HTCC       ana_htcc     = new HTCC(runNum,outputDir);
-    LTCC       ana_ltcc     = new LTCC(runNum,outputDir,EB,useTB);
-    RICH       ana_rich     = new RICH(runNum,outputDir,EB,useTB);
-    CND        ana_cnd      = new CND(runNum,outputDir,useTB);
-    CVT        ana_cvt      = dataset != "rgl" ? new CVT() : null;
-    FT         ana_ft       = new FT(runNum,outputDir,useTB);
-    BAND       ana_band     = new BAND(runNum,outputDir,EB,useTB);
-    ALERT      ana_alert    = dataset == "rgl" ? new ALERT(runNum,outputDir,EB,useTB) : null;
-    helicity   ana_helicity = new helicity();
-    trigger    ana_trigger  = new trigger();
+    if(whichHistos == "all") {
+      ana_mon      = new GeneralMon(runNum,outputDir,EB,useTB);
+      ana_dc_ftof  = new DCandFTOF(runNum,outputDir,useTB);
+      ana_ctof     = new CTOF(runNum,outputDir,useTB);
+      ana_htcc     = new HTCC(runNum,outputDir);
+      ana_ltcc     = new LTCC(runNum,outputDir,EB,useTB);
+      ana_rich     = new RICH(runNum,outputDir,EB,useTB);
+      ana_cnd      = new CND(runNum,outputDir,useTB);
+      ana_cvt      = dataset != "rgl" ? new CVT() : null;
+      ana_ft       = new FT(runNum,outputDir,useTB);
+      ana_band     = new BAND(runNum,outputDir,EB,useTB);
+      ana_alert    = dataset == "rgl" ? new ALERT(runNum,outputDir,EB,useTB) : null;
+      ana_helicity = new helicity();
+      ana_trigger  = new trigger();
+    }
 
     // loop over input HIPO files
     for (String input_file : input_file_list) {
