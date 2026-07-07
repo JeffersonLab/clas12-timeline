@@ -13,9 +13,9 @@ class qadb_charge {
 
   // ----------------------------------------------------------------------------------
 
-  def processRun(dir, runnum, qa_seq) {
+  def processRun(dir, runnum, qa_map) {
     data[runnum] = [run:runnum, histos:[:]];
-    qa_seq.each{ qa_bin ->
+    qa_map[runnum].each{ qa_bin ->
       def histos = new Charge(qa_bin.getBinNum());
       histos.readHistograms(dir, qa_bin.getBinNum());
       data[runnum]['histos'][qa_bin.getBinNum()] = histos;
@@ -24,7 +24,7 @@ class qadb_charge {
 
   // ----------------------------------------------------------------------------------
 
-  def write() {
+  def write(qa_map) {
 
     // start ouput `TDirectory`s
     TDirectory tdir_per = new TDirectory(); // charge per run

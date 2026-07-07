@@ -1,9 +1,11 @@
 package org.jlab.clas.timeline.analysis;
 
 import org.jlab.clas.timeline.util.RunDependentCut;
-import org.jlab.detector.qadb.QadbBinSequence;
-import org.jlab.clas.timeline.analysis.qadb.qadb_analysis;
+import org.jlab.clas.timeline.util.Tools;
+import org.jlab.clas.timeline.analysis.qadb.QADB;
 import org.jlab.groot.data.TDirectory;
+
+Tools T = new Tools()
 
 // define timeline engines
 def engines = [
@@ -167,7 +169,7 @@ def engines = [
     new trigger(),
   ],
   out_QADB: [
-    new qadb_analysis(),
+    new QADB(),
   ],
 ]
 
@@ -204,6 +206,11 @@ inputDir.traverse {
     fnames.add(it.absolutePath)
 }
 
+// start QADB
+if(timelineArg == 'QADB') {
+  engine.start(fnames.sort())
+}
+
 // loop over input HIPO histogram files
 def allow_timeline = false
 fnames.sort().each{ fname ->
@@ -211,9 +218,7 @@ fnames.sort().each{ fname ->
     println("debug: "+engine.getClass().getSimpleName()+" started $fname")
 
     // get run number from directory name
-    def dname = fname.split('/')[-2]
-    def m = dname =~ /\d+/
-    def run = m[0].toInteger()
+    def run = T.getRunNumberForAnalysis(fname)
 
     // exclude certain run ranges from certain timelines
     def allow_run = true
@@ -234,12 +239,7 @@ fnames.sort().each{ fname ->
       allow_timeline = true // allow the timeline if at least one run is allowed
       TDirectory dir = new TDirectory()
       dir.readFile(fname)
-      if(timelineArg == 'qadb_analysis') {
-        def qa_seq = new QadbBinSequence<Void>(fname.replace(".hipo", ".dat"));
-        engine.processRun(dir, run, qa_seq);
-      } else {
-        engine.processRun(dir, run);
-      }
+      engine.processRun(dir, run);
       println("debug: "+engine.getClass().getSimpleName()+" finished $fname")
     }
     else {

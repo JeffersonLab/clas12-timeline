@@ -94,7 +94,7 @@ class Tools {
     }
     return "0b"+str.reverse()
   }
-      
+
 
 
   ///////////
@@ -231,6 +231,16 @@ class Tools {
     return runnum
   }
 
+  //////////
+  // MISC //
+  //////////
+
+  // get run number from directory name (for `run_analysis` only!)
+  def getRunNumberForAnalysis(fname) {
+    def dname = fname.split('/')[-2]
+    def m = dname =~ /\d+/
+    m[0].toInteger()
+  }
 
   /**
    * create a {@code Particle} object given a bank row
