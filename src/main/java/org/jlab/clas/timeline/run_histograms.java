@@ -68,7 +68,7 @@ public class run_histograms {
 
     // instantiate QADB histograms and fill charge histograms
     QadbBinSequence<QadbBinHistograms> qa_seq = null;
-    if(whichHistos == "all" || whichHistos == "qadb") {
+    if(whichHistos.equals("all") || whichHistos.equals("qadb")) {
       qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinHistograms(bin_num));
       for(var qa_bin : qa_seq) {
         qa_bin.data.charge.fillDSC2(qa_bin);
@@ -92,7 +92,7 @@ public class run_histograms {
 
 
     // instantiate histogramming classes
-    if(whichHistos == "all") {
+    if(whichHistos.equals("all")) {
       ana_mon      = new GeneralMon(runNum,outputDir,EB,useTB);
       ana_dc_ftof  = new DCandFTOF(runNum,outputDir,useTB);
       ana_ctof     = new CTOF(runNum,outputDir,useTB);
@@ -139,18 +139,20 @@ public class run_histograms {
         if(ana_trigger!=null) ana_trigger.processEvent(event);
 
         // call the QA bin's histogramming `processEvent`
-        if(event.hasBank("RUN::config")) {
-          var cfg_bank = event.getBank("RUN::config");
-          if(cfg_bank.rows() > 0) {
-            var qa_bin_opt = qa_seq.findBin(cfg_bank.getLong("timestamp", 0));
-            if(qa_bin_opt.isPresent()) {
-              qa_bin_opt.get().data.processEvent(event);
+        if(qa_seq!=null) {
+          if(event.hasBank("RUN::config")) {
+            var cfg_bank = event.getBank("RUN::config");
+            if(cfg_bank.rows() > 0) {
+              var qa_bin_opt = qa_seq.findBin(cfg_bank.getLong("timestamp", 0));
+              if(qa_bin_opt.isPresent()) {
+                qa_bin_opt.get().data.processEvent(event);
+              }
             }
           }
         }
 
         count++;
-        if(count%10000 == 0){
+        if(count%100000 == 0){
           long nowTime = System.currentTimeMillis();
           long elapsedTime = nowTime - previousTime;
           long totalTime = nowTime - startTime;
@@ -181,13 +183,15 @@ public class run_histograms {
     if(ana_trigger!=null) ana_trigger.write(outputDir, runNum);
 
     // write QADB histograms and binning specification files
-    TDirectory qa_tdir = new TDirectory();
-    qa_tdir.mkdir("/QADB/");
-    for(var qa_bin : qa_seq) {
-      qa_bin.data.write(qa_tdir);
+    if(qa_seq!=null) {
+      TDirectory qa_tdir = new TDirectory();
+      qa_tdir.mkdir("/QADB/");
+      for(var qa_bin : qa_seq) {
+        qa_bin.data.write(qa_tdir);
+      }
+      qa_tdir.writeFile(outputDir + String.format("/out_QADB_%d.hipo", runNum));
+      qa_seq.writeBinSpec(outputDir + String.format("/out_QADB_%d.dat", runNum));
     }
-    qa_tdir.writeFile(outputDir + String.format("/out_QADB_%d.hipo", runNum));
-    qa_seq.writeBinSpec(outputDir + String.format("/out_QADB_%d.dat", runNum));
 
   }
 }
