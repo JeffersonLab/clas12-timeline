@@ -63,12 +63,12 @@ class qadb_charge {
 
     // loop over runs, filling graphs
     data_map.sort{it.key}.each { runnum, run_data ->
-      // define run graphs: charge vs. QA bin, for this run
+      // define run graphs ('rn'): charge vs. QA bin, for this run
       // NOTE: the front-end will order them alphabetically, so prefix their names with unique letters (`sort_prefix`)
-      def make_rn = { sort_prefix, name, title, xtitle ->
+      def make_rn = { sort_prefix, name, title, ytitle ->
         def g = new GraphErrors("${sort_prefix}__${name}__${runnum}")
         g.setTitle  title
-        g.setTitleY xtitle
+        g.setTitleY ytitle
         g.setTitleX 'QA Bin'
         g
       }
@@ -104,7 +104,7 @@ class qadb_charge {
       rn_struck_to_dsc2.getDataSize(0).times {
         def s = rn_struck_totl_qg.getDataY(it)
         def d = rn_dsc2_qg.getDataY(it)
-        rn_struck_to_dsc2.setError it, 0, Tools.safeRatio(s,d) * Math.sqrt(Tools.safeRatio(1,s) + Tools.safeRatio(1,d)) // uncertainty propagation
+        rn_struck_to_dsc2.setError it, 0, Tools.ratioPoissonUncertainty(s,d)
       }
       // fill timeline graphs: sum over each QA bin's charge values, and plot that sum on the timeline graph
       def add_tl_point = { rn, tl ->

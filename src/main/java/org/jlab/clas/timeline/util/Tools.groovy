@@ -100,7 +100,15 @@ class Tools {
     return "0b"+str.reverse()
   }
 
-
+  /**
+   * propagate uncertainty for a ratio, assuming Poisson statistics
+   * @param n the numerator
+   * @param d the denominator
+   * @return the uncertainty of {@code n/d}
+   */
+  static def ratioPoissonUncertainty(n, d) {
+    Tools.safeRatio(n,d) * Math.sqrt(Tools.safeRatio(1,n) + Tools.safeRatio(1,d))
+  }
 
   ///////////
   // TREES //
@@ -236,11 +244,36 @@ class Tools {
     return runnum
   }
 
+  /////////////
+  // SECTORS //
+  /////////////
+
+  /**
+   * loop over sectors, running a function on each
+   * @param ftn the function, with signature {@code ftn(sector)}
+   */
+  static void eachSector = { Closure ftn ->
+    (1..6).each { ftn it }
+  }
+
+  /**
+   * make a map of sector number to result of a function
+   * @param ftn the function, with signature {@code ftn(sector)}
+   * @return the map
+   */
+  static def collectSectors = { Closure ftn ->
+    (1..6).collectEntries { [it, ftn(it)] }
+  }
+
   //////////
   // MISC //
   //////////
 
-  // get run number from directory name (for `run_analysis` only!)
+  /**
+   * get run number from file's directory name (for `run_analysis` only!)
+   * @param fname the file name
+   * @return the run number
+   */
   static def getRunNumberForAnalysis(fname) {
     def dname = fname.split('/')[-2]
     def m = dname =~ /\d+/
@@ -251,6 +284,7 @@ class Tools {
    * create a {@code Particle} object given a bank row
    * @param bank the HIPO bank
    * @param row the HIPO bank row
+   * @return the {@code Particle}
    */
   static Particle getParticle(DataBank bank, int row)
   {
