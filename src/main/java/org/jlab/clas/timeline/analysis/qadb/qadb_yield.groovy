@@ -10,19 +10,19 @@ import org.jlab.clas.timeline.histograms.qadb.Charge
 
 class qadb_yield {
 
-  def data = new ConcurrentHashMap()
+  def data_map = new ConcurrentHashMap()
 
   // ----------------------------------------------------------------------------------
 
   def processRun(dir, runnum, qa_map) {
-    data[runnum] = [run:runnum, histos:[:]]
+    data_map[runnum] = [run:runnum, histos:[:]]
     qa_map[runnum].each { qa_bin ->
       def histos = new Yield(qa_bin.getBinNum())
       def charge = new Charge(qa_bin.getBinNum())
       histos.readHistograms(dir, qa_bin.getBinNum())
       charge.readHistograms(dir, qa_bin.getBinNum())
-      data[runnum]['histos'][qa_bin.getBinNum()] = histos
-      data[runnum]['charge'][qa_bin.getBinNum()] = charge
+      data_map[runnum]['histos'][qa_bin.getBinNum()] = histos
+      data_map[runnum]['charge'][qa_bin.getBinNum()] = charge
     }
   }
 

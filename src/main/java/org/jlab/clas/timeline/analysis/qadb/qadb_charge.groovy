@@ -5,20 +5,22 @@ import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.groot.data.H1F
 
+import org.jlab.clas.timeline.util.Tools
 import org.jlab.clas.timeline.histograms.qadb.Charge
 
 class qadb_charge {
 
-  def data = new ConcurrentHashMap()
+  def T = new Tools()
+  def data_map = new ConcurrentHashMap()
 
   // ----------------------------------------------------------------------------------
 
   def processRun(dir, runnum, qa_map) {
-    data[runnum] = [run:runnum, histos:[:]]
+    data_map[runnum] = [run:runnum, histos:[:]]
     qa_map[runnum].each { qa_bin ->
       def histos = new Charge(qa_bin.getBinNum())
       histos.readHistograms(dir, qa_bin.getBinNum())
-      data[runnum]['histos'][qa_bin.getBinNum()] = histos
+      data_map[runnum]['histos'][qa_bin.getBinNum()] = histos
     }
   }
 
@@ -27,10 +29,10 @@ class qadb_charge {
   def write(qa_map) {
 
     // start ouput `TDirectory`s
-    TDirectory tdir_per = new TDirectory() // charge per run
-    TDirectory tdir_acc = new TDirectory() // accumulated charge as a function of run
+    TDirectory tdir_tl  = new TDirectory() // charge per run
+    TDirectory tdir_ctl = new TDirectory() // cumulative charge as a function of run
 
-    // define timeline graphs: charge vs. run number
+    // define timeline ('tl') graphs: charge vs. run number
     def make_tl = { name ->
       def g = new GraphErrors(name)
       g.setTitle  'Charge q [mC]'
@@ -38,113 +40,135 @@ class qadb_charge {
       g.setTitleX 'Run Number'
       g
     }
-    def tl_gated_dsc2         = make_tl 'gated_DSC2'
-    def tl_ungated_dsc2       = make_tl 'ungated_DSC2'
-    def tl_gated_hel_p_struck = make_tl 'gated_STRUCK_hel_pos'
-    def tl_gated_hel_0_struck = make_tl 'gated_STRUCK_hel_0'
-    def tl_gated_hel_n_struck = make_tl 'gated_STRUCK_hel_neg'
+    def tl_dsc2_qg        = make_tl 'DSC2_qGated'
+    def tl_dsc2_qu        = make_tl 'DSC2_qUngated'
+    def tl_struck_helP_qg = make_tl 'STRUCK_helPositive_qGated'
+    def tl_struck_hel0_qg = make_tl 'STRUCK_helUndefined_qGated'
+    def tl_struck_helN_qg = make_tl 'STRUCK_helNegative_qGated'
+    def tl_struck_totl_qg = make_tl 'STRUCK_total_qGated'
 
-    // define accumulated timeline graphs: accumulated charge vs. run
-    def make_acc = { name ->
+    // define cumulative timeline ('ctl') graphs: cumulative charge vs. run
+    def make_ctl = { name ->
       def g = new GraphErrors(name)
-      g.setTitle  'Accumulated Charge q [mC]'
-      g.setTitleY 'Accumulated q [mC]'
+      g.setTitle  'Cumulative Charge q [mC]'
+      g.setTitleY 'Cumulative q [mC]'
       g.setTitleX 'Run Number'
       g
     }
-    def acc_gated_dsc2         = make_acc 'gated_DSC2'
-    def acc_ungated_dsc2       = make_acc 'ungated_DSC2'
-    def acc_gated_hel_p_struck = make_acc 'gated_STRUCK_hel_pos'
-    def acc_gated_hel_0_struck = make_acc 'gated_STRUCK_hel_0'
-    def acc_gated_hel_n_struck = make_acc 'gated_STRUCK_hel_neg'
+    def ctl_dsc2_qg        = make_ctl 'DSC2_qGated'
+    def ctl_dsc2_qu        = make_ctl 'DSC2_qUngated'
+    def ctl_struck_helP_qg = make_ctl 'STRUCK_helPositive_qGated'
+    def ctl_struck_hel0_qg = make_ctl 'STRUCK_helUndefined_qGated'
+    def ctl_struck_helN_qg = make_ctl 'STRUCK_helNegative_qGated'
+    def ctl_struck_totl_qg = make_ctl 'STRUCK_total_qGated'
 
     // loop over runs, filling graphs
-    data.sort{it.key}.each { runnum, run_data ->
+    data_map.sort{it.key}.each { runnum, run_data ->
       // define run graphs: charge vs. QA bin, for this run
-      def make_rn = { name, title ->
-        def g = new GraphErrors("${name}__${runnum}")
-        g.setTitle  "${title} -- run ${runnum}"
-        g.setTitleY 'q [mC]'
+      // NOTE: the front-end will order them alphabetically, so prefix their names with unique letters (`sort_prefix`)
+      def make_rn = { sort_prefix, name, title, xtitle ->
+        def g = new GraphErrors("${sort_prefix}__${name}__${runnum}")
+        g.setTitle  title
+        g.setTitleY xtitle
         g.setTitleX 'QA Bin'
         g
       }
-      def rn_gated_dsc2         = make_rn 'gated_DSC2',           'gated DSC2 charge q'
-      def rn_ungated_dsc2       = make_rn 'ungated_DSC2',         'ungated DSC2 charge q'
-      def rn_gated_hel_p_struck = make_rn 'gated_STRUCK_hel_pos', 'gated STRUCK charge q for helicity=+1'
-      def rn_gated_hel_0_struck = make_rn 'gated_STRUCK_hel_0',   'gated STRUCK charge q for helicity=0'
-      def rn_gated_hel_n_struck = make_rn 'gated_STRUCK_hel_neg', 'gated STRUCK charge q for helicity=-1'
+      def rn_dsc2_qg        = make_rn 'a', 'DSC2_qGated',                'DSC2 q_gated [nC]',                  'q [nC]'
+      def rn_dsc2_qu        = make_rn 'b', 'DSC2_qUngated',              'DSC2 q_ungated [nC]',                'q [nC]'
+      def rn_struck_totl_qg = make_rn 'c', 'STRUCK_total_qGated',        'STRUCK total q_gated [nC]',          'q [nC]'
+      def rn_struck_to_dsc2 = make_rn 'd', 'STRUCK_to_DSC2',             'STRUCK q_gated / DSC2 q_gated',      'q_STRUCK / q_DSC2'
+      def rn_struck_helP_qg = make_rn 'e', 'STRUCK_helPositive_qGated',  'STRUCK helicity=+1 q_gated [nC]',    'q [nC]'
+      def rn_struck_helN_qg = make_rn 'f', 'STRUCK_helNegative_qGated',  'STRUCK helicity=-1 q_gated [nC]',    'q [nC]'
+      def rn_struck_hel0_qg = make_rn 'g', 'STRUCK_helUndefined_qGated', 'STRUCK helicity=undef q_gated [nC]', 'q [nC]'
       // fill run graphs: loop over each QA bin's histograms (`Charge` objects), read the charge, and plot it
       run_data['histos'].each { binnum, histos ->
-        rn_gated_dsc2.addPoint          binnum, Charge.to_mC(histos.getChargeGatedDSC2()),     0, 0 // NOTE: errors are calculated later
-        rn_ungated_dsc2.addPoint        binnum, Charge.to_mC(histos.getChargeUngatedDSC2()),   0, 0
-        rn_gated_hel_p_struck.addPoint  binnum, Charge.to_mC(histos.getChargeGatedSTRUCK(1)),  0, 0
-        rn_gated_hel_0_struck.addPoint  binnum, Charge.to_mC(histos.getChargeGatedSTRUCK(0)),  0, 0
-        rn_gated_hel_n_struck.addPoint  binnum, Charge.to_mC(histos.getChargeGatedSTRUCK(-1)), 0, 0
+        def q_struck_totl    = [1,0,-1].collect{histos.getChargeGatedSTRUCK(it)}.sum()
+        def q_struck_to_dsc2 = T.safeRatio q_struck_totl, histos.getChargeGatedDSC2()
+        rn_dsc2_qg.addPoint        binnum, histos.getChargeGatedDSC2(),     0, 0 // NOTE: errors are calculated later
+        rn_dsc2_qu.addPoint        binnum, histos.getChargeUngatedDSC2(),   0, 0
+        rn_struck_helP_qg.addPoint binnum, histos.getChargeGatedSTRUCK(1),  0, 0
+        rn_struck_hel0_qg.addPoint binnum, histos.getChargeGatedSTRUCK(0),  0, 0
+        rn_struck_helN_qg.addPoint binnum, histos.getChargeGatedSTRUCK(-1), 0, 0
+        rn_struck_totl_qg.addPoint binnum, q_struck_totl,                   0, 0
+        rn_struck_to_dsc2.addPoint binnum, q_struck_to_dsc2,                0, 0
       }
       // set Poisson errors for each run graph
       def set_errors = { g ->
         g.getDataSize(0).times{ g.setError it, 0, Math.sqrt(g.getDataY(it)) }
       }
-      set_errors rn_gated_dsc2
-      set_errors rn_ungated_dsc2
-      set_errors rn_gated_hel_p_struck
-      set_errors rn_gated_hel_0_struck
-      set_errors rn_gated_hel_n_struck
+      set_errors rn_dsc2_qg
+      set_errors rn_dsc2_qu
+      set_errors rn_struck_helP_qg
+      set_errors rn_struck_hel0_qg
+      set_errors rn_struck_helN_qg
+      set_errors rn_struck_totl_qg
+      rn_struck_to_dsc2.getDataSize(0).times {
+        def s = rn_struck_totl_qg.getDataY(it)
+        def d = rn_dsc2_qg.getDataY(it)
+        rn_struck_to_dsc2.setError it, 0, T.safeRatio(s,d) * Math.sqrt(T.safeRatio(1,s) + T.safeRatio(1,d)) // uncertainty propagation
+      }
       // fill timeline graphs: sum over each QA bin's charge values, and plot that sum on the timeline graph
       def add_tl_point = { rn, tl ->
         def sum = 0.0
         rn.getDataSize(0).times{ sum += rn.getDataY(it) }
+        sum = Charge.to_mC sum // NOTE: this is the one and only place we do this conversion, i.e., for timeline graphs only!
         tl.addPoint runnum, sum, 0, 0
       }
-      add_tl_point rn_gated_dsc2,         tl_gated_dsc2
-      add_tl_point rn_ungated_dsc2,       tl_ungated_dsc2
-      add_tl_point rn_gated_hel_p_struck, tl_gated_hel_p_struck
-      add_tl_point rn_gated_hel_0_struck, tl_gated_hel_0_struck
-      add_tl_point rn_gated_hel_n_struck, tl_gated_hel_n_struck
+      add_tl_point rn_dsc2_qg,        tl_dsc2_qg
+      add_tl_point rn_dsc2_qu,        tl_dsc2_qu
+      add_tl_point rn_struck_helP_qg, tl_struck_helP_qg
+      add_tl_point rn_struck_hel0_qg, tl_struck_hel0_qg
+      add_tl_point rn_struck_helN_qg, tl_struck_helN_qg
+      add_tl_point rn_struck_totl_qg, tl_struck_totl_qg
       // write run graphs for this run
-      [ tdir_per, tdir_acc ].each { tdir ->
+      [ tdir_tl, tdir_ctl ].each { tdir ->
         tdir.mkdir "/${runnum}"
         tdir.cd    "/${runnum}"
-        tdir.addDataSet rn_gated_dsc2
-        tdir.addDataSet rn_ungated_dsc2
-        tdir.addDataSet rn_gated_hel_p_struck
-        tdir.addDataSet rn_gated_hel_0_struck
-        tdir.addDataSet rn_gated_hel_n_struck
+        tdir.addDataSet rn_dsc2_qg
+        tdir.addDataSet rn_dsc2_qu
+        tdir.addDataSet rn_struck_helP_qg
+        tdir.addDataSet rn_struck_hel0_qg
+        tdir.addDataSet rn_struck_helN_qg
+        tdir.addDataSet rn_struck_totl_qg
+        tdir.addDataSet rn_struck_to_dsc2
       }
     } // end loop over runs
 
-    // fill accumulated timeline graphs: loop over timeline graph, and accumulate the sum
-    def fill_acc = { acc, tl ->
+    // fill cumulative timeline graphs: loop over timeline graph, and accumulate the sum
+    def fill_ctl = { ctl, tl ->
       tl.getDataSize(0).times {
-        def val = it==0 ? tl.getDataY(it) : tl.getDataY(it) + acc.getDataY(it-1)
-        acc.addPoint tl.getDataX(it), val, 0, 0
+        def val = it==0 ? tl.getDataY(it) : tl.getDataY(it) + ctl.getDataY(it-1)
+        ctl.addPoint tl.getDataX(it), val, 0, 0
       }
     }
-    fill_acc acc_gated_dsc2,         tl_gated_dsc2
-    fill_acc acc_ungated_dsc2,       tl_ungated_dsc2
-    fill_acc acc_gated_hel_p_struck, tl_gated_hel_p_struck
-    fill_acc acc_gated_hel_0_struck, tl_gated_hel_0_struck
-    fill_acc acc_gated_hel_n_struck, tl_gated_hel_n_struck
+    fill_ctl ctl_dsc2_qg,        tl_dsc2_qg
+    fill_ctl ctl_dsc2_qu,        tl_dsc2_qu
+    fill_ctl ctl_struck_helP_qg, tl_struck_helP_qg
+    fill_ctl ctl_struck_hel0_qg, tl_struck_hel0_qg
+    fill_ctl ctl_struck_helN_qg, tl_struck_helN_qg
+    fill_ctl ctl_struck_totl_qg, tl_struck_totl_qg
 
     // write timelines
-    tdir_per.mkdir '/timelines'
-    tdir_per.cd    '/timelines'
-    tdir_per.addDataSet tl_gated_dsc2
-    tdir_per.addDataSet tl_ungated_dsc2
-    tdir_per.addDataSet tl_gated_hel_p_struck
-    tdir_per.addDataSet tl_gated_hel_0_struck
-    tdir_per.addDataSet tl_gated_hel_n_struck
-    tdir_acc.mkdir '/timelines'
-    tdir_acc.cd    '/timelines'
-    tdir_acc.addDataSet acc_gated_dsc2
-    tdir_acc.addDataSet acc_ungated_dsc2
-    tdir_acc.addDataSet acc_gated_hel_p_struck
-    tdir_acc.addDataSet acc_gated_hel_0_struck
-    tdir_acc.addDataSet acc_gated_hel_n_struck
+    tdir_tl.mkdir '/timelines'
+    tdir_tl.cd    '/timelines'
+    tdir_tl.addDataSet tl_dsc2_qg
+    tdir_tl.addDataSet tl_dsc2_qu
+    tdir_tl.addDataSet tl_struck_helP_qg
+    tdir_tl.addDataSet tl_struck_hel0_qg
+    tdir_tl.addDataSet tl_struck_helN_qg
+    tdir_tl.addDataSet tl_struck_totl_qg
+    tdir_ctl.mkdir '/timelines'
+    tdir_ctl.cd    '/timelines'
+    tdir_ctl.addDataSet ctl_dsc2_qg
+    tdir_ctl.addDataSet ctl_dsc2_qu
+    tdir_ctl.addDataSet ctl_struck_helP_qg
+    tdir_ctl.addDataSet ctl_struck_hel0_qg
+    tdir_ctl.addDataSet ctl_struck_helN_qg
+    tdir_ctl.addDataSet ctl_struck_totl_qg
 
     // write HIPO
-    tdir_per.writeFile 'qadb_charge.hipo'
-    tdir_acc.writeFile 'qadb_charge_accumulated.hipo'
+    tdir_tl.writeFile 'qadb_charge_per_run.hipo'
+    tdir_ctl.writeFile 'qadb_charge_cumulative.hipo'
   }
 
 }

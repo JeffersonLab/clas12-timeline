@@ -57,6 +57,11 @@ class Tools {
   // MATH //
   //////////
 
+  // safe ratio: if the denominator is not greater than zero, return zero
+  def safeRatio(a, b) {
+    return Math.abs(b) > 1e-12 ? a / b : 0.0
+  }
+
   // calculate scalar product of 4-vectors
   def lorentzDot = { v1,v2 -> return v1.e()*v2.e() - v1.vect().dot(v2.vect()) }
 
