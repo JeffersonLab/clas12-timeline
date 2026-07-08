@@ -318,6 +318,7 @@ detDirs=(
   rf
   rich
   trigger
+  qadb
 )
 
 # cleanup output directories
