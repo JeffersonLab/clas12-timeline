@@ -10,7 +10,6 @@ import org.jlab.clas.timeline.histograms.qadb.Charge
 
 class qadb_charge {
 
-  def T = new Tools()
   def data_map = new ConcurrentHashMap()
 
   // ----------------------------------------------------------------------------------
@@ -83,7 +82,7 @@ class qadb_charge {
       // fill run graphs: loop over each QA bin's histograms (`Charge` objects), read the charge, and plot it
       run_data['histos'].each { binnum, histos ->
         def q_struck_totl    = [1,0,-1].collect{histos.getChargeGatedSTRUCK(it)}.sum()
-        def q_struck_to_dsc2 = T.safeRatio q_struck_totl, histos.getChargeGatedDSC2()
+        def q_struck_to_dsc2 = Tools.safeRatio q_struck_totl, histos.getChargeGatedDSC2()
         rn_dsc2_qg.addPoint        binnum, histos.getChargeGatedDSC2(),     0, 0 // NOTE: errors are calculated later
         rn_dsc2_qu.addPoint        binnum, histos.getChargeUngatedDSC2(),   0, 0
         rn_struck_helP_qg.addPoint binnum, histos.getChargeGatedSTRUCK(1),  0, 0
@@ -105,7 +104,7 @@ class qadb_charge {
       rn_struck_to_dsc2.getDataSize(0).times {
         def s = rn_struck_totl_qg.getDataY(it)
         def d = rn_dsc2_qg.getDataY(it)
-        rn_struck_to_dsc2.setError it, 0, T.safeRatio(s,d) * Math.sqrt(T.safeRatio(1,s) + T.safeRatio(1,d)) // uncertainty propagation
+        rn_struck_to_dsc2.setError it, 0, Tools.safeRatio(s,d) * Math.sqrt(Tools.safeRatio(1,s) + Tools.safeRatio(1,d)) // uncertainty propagation
       }
       // fill timeline graphs: sum over each QA bin's charge values, and plot that sum on the timeline graph
       def add_tl_point = { rn, tl ->

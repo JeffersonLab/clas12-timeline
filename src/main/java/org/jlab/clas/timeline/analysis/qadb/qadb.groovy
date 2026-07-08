@@ -11,9 +11,8 @@ class qadb {
   private def ana_qadb_yield = new qadb_yield()
 
   public def start(histo_files) {
-    Tools T = new Tools()
     histo_files.collect{it.replace(".hipo", ".dat")}.each { histo_file ->
-      def run = T.getRunNumberForAnalysis(histo_file)
+      def run = Tools.getRunNumberForAnalysis(histo_file)
       qa_map[run] = new QadbBinSequence<Map>(histo_file)
     }
   }

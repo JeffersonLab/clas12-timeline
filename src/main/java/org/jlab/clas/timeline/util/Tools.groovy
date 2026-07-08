@@ -2,8 +2,8 @@ package org.jlab.clas.timeline.util
 import org.jlab.clas.physics.LorentzVector
 import org.jlab.clas.physics.Vector3
 import org.jlab.io.hipo.HipoDataSource
-import org.jlab.io.base.DataBank;
-import org.jlab.clas.physics.Particle;
+import org.jlab.io.base.DataBank
+import org.jlab.clas.physics.Particle
 import groovy.json.JsonOutput
 
 class Tools {
@@ -58,7 +58,7 @@ class Tools {
   //////////
 
   // safe ratio: if the denominator is not greater than zero, return zero
-  def safeRatio(a, b) {
+  static def safeRatio(a, b) {
     return Math.abs(b) > 1e-12 ? a / b : 0.0
   }
 
@@ -79,7 +79,7 @@ class Tools {
     if(Math.abs(sgn)<0.00001) return -10000
     sgn /= Math.abs(sgn)
 
-    // calculate numerator and denominator 
+    // calculate numerator and denominator
     numer = crossAB.dot(crossCD) // (AxB).(CxD)
     denom = crossAB.mag() * crossCD.mag() // |AxB|*|CxD|
     if(Math.abs(denom)<0.00001) return -10000
@@ -131,12 +131,12 @@ class Tools {
   //   the branches listed in the subsequent element of levelList; the last element of
   //   levelList refers to the leaves
   // - the leaves will be initialized with the result of the closure 'clos'
-  def buildTree = { trunkName, treeName, levelList, clos -> 
+  def buildTree = { trunkName, treeName, levelList, clos ->
     rec_buildTree( trunkName, [[treeName],*levelList], 0, clos )
   }
 
 
-  // get a leaf, following the path of branch names specified 
+  // get a leaf, following the path of branch names specified
   // by the list 'path'
   def getLeaf = { tree,path ->
     def node = tree
@@ -176,7 +176,7 @@ class Tools {
     // if the current node has branches, it is not a leaf; loop through the branches and
     // analyze their nodes
     if(node.getClass()==java.util.LinkedHashMap) {
-      node.each { 
+      node.each {
         path += it.key
         exeLeaves(it.value,clos,path)
         if(it.value.getClass()!=java.util.LinkedHashMap) it.value = leaf
@@ -241,7 +241,7 @@ class Tools {
   //////////
 
   // get run number from directory name (for `run_analysis` only!)
-  def getRunNumberForAnalysis(fname) {
+  static def getRunNumberForAnalysis(fname) {
     def dname = fname.split('/')[-2]
     def m = dname =~ /\d+/
     m[0].toInteger()
@@ -261,6 +261,6 @@ class Tools {
         bank.getFloat("pz", row),
         bank.getFloat("vx", row),
         bank.getFloat("vy", row),
-        bank.getFloat("vz", row));
+        bank.getFloat("vz", row))
   }
 }

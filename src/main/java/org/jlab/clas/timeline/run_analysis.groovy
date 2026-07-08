@@ -1,11 +1,9 @@
-package org.jlab.clas.timeline.analysis;
+package org.jlab.clas.timeline.analysis
 
-import org.jlab.clas.timeline.util.RunDependentCut;
-import org.jlab.clas.timeline.util.Tools;
-import org.jlab.clas.timeline.analysis.qadb.qadb;
-import org.jlab.groot.data.TDirectory;
-
-Tools T = new Tools()
+import org.jlab.clas.timeline.util.RunDependentCut
+import org.jlab.clas.timeline.util.Tools
+import org.jlab.clas.timeline.analysis.qadb.qadb
+import org.jlab.groot.data.TDirectory
 
 // define timeline engines
 def engines = [
@@ -218,7 +216,7 @@ fnames.sort().each{ fname ->
     println("debug: "+engine.getClass().getSimpleName()+" started $fname")
 
     // get run number from directory name
-    def run = T.getRunNumberForAnalysis(fname)
+    def run = Tools.getRunNumberForAnalysis fname
 
     // exclude certain run ranges from certain timelines
     def allow_run = true
@@ -239,7 +237,7 @@ fnames.sort().each{ fname ->
       allow_timeline = true // allow the timeline if at least one run is allowed
       TDirectory dir = new TDirectory()
       dir.readFile(fname)
-      engine.processRun(dir, run);
+      engine.processRun(dir, run)
       println("debug: "+engine.getClass().getSimpleName()+" finished $fname")
     }
     else {
