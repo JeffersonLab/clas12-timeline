@@ -2,7 +2,7 @@ package org.jlab.clas.timeline.analysis;
 
 import org.jlab.clas.timeline.util.RunDependentCut;
 import org.jlab.clas.timeline.util.Tools;
-import org.jlab.clas.timeline.analysis.qadb.QADB;
+import org.jlab.clas.timeline.analysis.qadb.qadb;
 import org.jlab.groot.data.TDirectory;
 
 Tools T = new Tools()
@@ -169,7 +169,7 @@ def engines = [
     new trigger(),
   ],
   out_QADB: [
-    new QADB(),
+    new qadb(),
   ],
 ]
 
@@ -207,7 +207,7 @@ inputDir.traverse {
 }
 
 // start QADB
-if(timelineArg == 'QADB') {
+if(timelineArg == 'qadb') {
   engine.start(fnames.sort())
 }
 

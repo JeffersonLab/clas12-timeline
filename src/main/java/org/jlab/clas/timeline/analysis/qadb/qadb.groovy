@@ -3,7 +3,7 @@ package org.jlab.clas.timeline.analysis.qadb;
 import org.jlab.detector.qadb.QadbBinSequence;
 import org.jlab.clas.timeline.util.Tools;
 
-class QADB {
+class qadb {
 
   private def qa_map = [:]
 
