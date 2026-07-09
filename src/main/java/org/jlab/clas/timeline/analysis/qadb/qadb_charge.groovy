@@ -91,21 +91,21 @@ class qadb_charge {
         g
       }
       // charge run graphs
-      def rn_dsc2_qg           = make_rn 'a1', 'DSC2_qGated',                'DSC2 q_gated [nC]',                    'q [nC]'
-      def rn_dsc2_qu           = make_rn 'a2', 'DSC2_qUngated',              'DSC2 q_ungated [nC]',                  'q [nC]'
-      def rn_struck_totl_qg    = make_rn 'b1', 'STRUCK_total_qGated',        'STRUCK total q_gated [nC]',            'q [nC]'
-      def rn_struck_totl_qu    = make_rn 'b2', 'STRUCK_total_qUngated',      'STRUCK total q_ungated [nC]',          'q [nC]'
-      def rn_struck_to_dsc2_qg = make_rn 'c1', 'STRUCK_to_DSC2_qGated',      'STRUCK q_gated / DSC2 q_gated',        'q_STRUCK / q_DSC2'
-      def rn_struck_to_dsc2_qu = make_rn 'c2', 'STRUCK_to_DSC2_qUngated',    'STRUCK q_ungated / DSC2 q_ungated',    'q_STRUCK / q_DSC2'
-      def rn_struck_helP_qg    = make_rn 'd1', 'STRUCK_helPositive_qGated',  'STRUCK helicity = +1 q_gated [nC]',    'q [nC]'
-      def rn_struck_helN_qg    = make_rn 'd2', 'STRUCK_helNegative_qGated',  'STRUCK helicity = -1 q_gated [nC]',    'q [nC]'
-      def rn_struck_hel0_qg    = make_rn 'd3', 'STRUCK_helUndefined_qGated', 'STRUCK helicity = undef q_gated [nC]', 'q [nC]'
+      def rn_dsc2_qg           = make_rn 'a1', 'DSC2_qGated',                'DSC2 q_gated [nC]',                  'q [nC]'
+      def rn_dsc2_qu           = make_rn 'a2', 'DSC2_qUngated',              'DSC2 q_ungated [nC]',                'q [nC]'
+      def rn_struck_totl_qg    = make_rn 'b1', 'STRUCK_total_qGated',        'STRUCK total q_gated [nC]',          'q [nC]'
+      def rn_struck_totl_qu    = make_rn 'b2', 'STRUCK_total_qUngated',      'STRUCK total q_ungated [nC]',        'q [nC]'
+      def rn_struck_to_dsc2_qg = make_rn 'c1', 'STRUCK_to_DSC2_qGated',      'STRUCK q_gated / DSC2 q_gated',      'q_STRUCK / q_DSC2'
+      def rn_struck_to_dsc2_qu = make_rn 'c2', 'STRUCK_to_DSC2_qUngated',    'STRUCK q_ungated / DSC2 q_ungated',  'q_STRUCK / q_DSC2'
+      def rn_struck_helP_qg    = make_rn 'd1', 'STRUCK_helPositive_qGated',  'STRUCK helicity=+1 q_gated [nC]',    'q [nC]'
+      def rn_struck_helN_qg    = make_rn 'd2', 'STRUCK_helNegative_qGated',  'STRUCK helicity=-1 q_gated [nC]',    'q [nC]'
+      def rn_struck_hel0_qg    = make_rn 'd3', 'STRUCK_helUndefined_qGated', 'STRUCK helicity=undef q_gated [nC]', 'q [nC]'
       // clock run graphs
-      def rn_struck_totl_cg = make_rn 'a1', 'STRUCK_total_clkGated',        'STRUCK total C_gated',            'C'
-      def rn_struck_totl_cu = make_rn 'a2', 'STRUCK_total_clkUngated',      'STRUCK total C_ungated',          'C'
-      def rn_struck_helP_cg = make_rn 'b1', 'STRUCK_helPositive_clkGated',  'STRUCK helicity = +1 C_gated',    'C'
-      def rn_struck_helN_cg = make_rn 'b2', 'STRUCK_helNegative_clkGated',  'STRUCK helicity = -1 C_gated',    'C'
-      def rn_struck_hel0_cg = make_rn 'b3', 'STRUCK_helUndefined_clkGated', 'STRUCK helicity = undef C_gated', 'C'
+      def rn_struck_totl_cg = make_rn 'a1', 'STRUCK_total_clkGated',        'STRUCK total C_gated',          'C'
+      def rn_struck_totl_cu = make_rn 'a2', 'STRUCK_total_clkUngated',      'STRUCK total C_ungated',        'C'
+      def rn_struck_helP_cg = make_rn 'b1', 'STRUCK_helPositive_clkGated',  'STRUCK helicity=+1 C_gated',    'C'
+      def rn_struck_helN_cg = make_rn 'b2', 'STRUCK_helNegative_clkGated',  'STRUCK helicity=-1 C_gated',    'C'
+      def rn_struck_hel0_cg = make_rn 'b3', 'STRUCK_helUndefined_clkGated', 'STRUCK helicity=undef C_gated', 'C'
 
       // fill run graphs: loop over each QA bin's histograms (`Charge` objects), read the charge etc., and plot it
       run_data['histos'].each { binnum, histos ->
