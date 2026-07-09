@@ -65,6 +65,7 @@ class qadb_charge {
 
     // loop over runs, filling graphs
     data_map.sort{it.key}.each { runnum, run_data ->
+
       // define run graphs ('rn'): charge vs. QA bin, for this run
       // NOTE: the front-end will order them alphabetically, so prefix their names with unique letters (`sort_prefix`)
       def make_rn = { sort_prefix, name, title, ytitle ->
@@ -74,28 +75,33 @@ class qadb_charge {
         g.setTitleX 'QA Bin'
         g
       }
-      def rn_dsc2_qg        = make_rn 'a1', 'DSC2_qGated',                'DSC2 q_gated [nC]',                  'q [nC]'
-      def rn_dsc2_qu        = make_rn 'a2', 'DSC2_qUngated',              'DSC2 q_ungated [nC]',                'q [nC]'
-      def rn_struck_totl_qg = make_rn 'b1', 'STRUCK_total_qGated',        'STRUCK total q_gated [nC]',          'q [nC]'
-      def rn_struck_totl_qu = make_rn 'b2', 'STRUCK_total_qUngated',      'STRUCK total q_ungated [nC]',        'q [nC]'
-      def rn_struck_to_dsc2 = make_rn 'c',  'STRUCK_to_DSC2',             'STRUCK q_gated / DSC2 q_gated',      'q_STRUCK / q_DSC2'
-      def rn_struck_helP_qg = make_rn 'd1', 'STRUCK_helPositive_qGated',  'STRUCK helicity=+1 q_gated [nC]',    'q [nC]'
-      def rn_struck_helN_qg = make_rn 'd2', 'STRUCK_helNegative_qGated',  'STRUCK helicity=-1 q_gated [nC]',    'q [nC]'
-      def rn_struck_hel0_qg = make_rn 'd3', 'STRUCK_helUndefined_qGated', 'STRUCK helicity=undef q_gated [nC]', 'q [nC]'
+      def rn_dsc2_qg           = make_rn 'a1', 'DSC2_qGated',                'DSC2 q_gated [nC]',                    'q [nC]'
+      def rn_dsc2_qu           = make_rn 'a2', 'DSC2_qUngated',              'DSC2 q_ungated [nC]',                  'q [nC]'
+      def rn_struck_totl_qg    = make_rn 'b1', 'STRUCK_total_qGated',        'STRUCK total q_gated [nC]',            'q [nC]'
+      def rn_struck_totl_qu    = make_rn 'b2', 'STRUCK_total_qUngated',      'STRUCK total q_ungated [nC]',          'q [nC]'
+      def rn_struck_to_dsc2_qg = make_rn 'c1', 'STRUCK_to_DSC2_qGated',      'STRUCK q_gated / DSC2 q_gated',        'q_STRUCK / q_DSC2'
+      def rn_struck_to_dsc2_qu = make_rn 'c2', 'STRUCK_to_DSC2_qUngated',    'STRUCK q_ungated / DSC2 q_ungated',    'q_STRUCK / q_DSC2'
+      def rn_struck_helP_qg    = make_rn 'd1', 'STRUCK_helPositive_qGated',  'STRUCK helicity = +1 q_gated [nC]',    'q [nC]'
+      def rn_struck_helN_qg    = make_rn 'd2', 'STRUCK_helNegative_qGated',  'STRUCK helicity = -1 q_gated [nC]',    'q [nC]'
+      def rn_struck_hel0_qg    = make_rn 'd3', 'STRUCK_helUndefined_qGated', 'STRUCK helicity = undef q_gated [nC]', 'q [nC]'
+
       // fill run graphs: loop over each QA bin's histograms (`Charge` objects), read the charge, and plot it
       run_data['histos'].each { binnum, histos ->
-        def qg_struck_totl = [1,0,-1].collect{ histos.getChargeGatedSTRUCK(it)   }.sum()
-        def qu_struck_totl = [1,0,-1].collect{ histos.getChargeUngatedSTRUCK(it) }.sum()
+        def qg_struck_totl    = [1,0,-1].collect{ histos.getChargeGatedSTRUCK(it)   }.sum()
+        def qu_struck_totl    = [1,0,-1].collect{ histos.getChargeUngatedSTRUCK(it) }.sum()
         def qg_struck_to_dsc2 = Tools.safeRatio qg_struck_totl, histos.getChargeGatedDSC2()
-        rn_dsc2_qg.addPoint        binnum, histos.getChargeGatedDSC2(),     0, 0 // NOTE: errors are calculated later
-        rn_dsc2_qu.addPoint        binnum, histos.getChargeUngatedDSC2(),   0, 0
-        rn_struck_helP_qg.addPoint binnum, histos.getChargeGatedSTRUCK(1),  0, 0
-        rn_struck_hel0_qg.addPoint binnum, histos.getChargeGatedSTRUCK(0),  0, 0
-        rn_struck_helN_qg.addPoint binnum, histos.getChargeGatedSTRUCK(-1), 0, 0
-        rn_struck_totl_qg.addPoint binnum, qg_struck_totl,                  0, 0
-        rn_struck_totl_qu.addPoint binnum, qu_struck_totl,                  0, 0
-        rn_struck_to_dsc2.addPoint binnum, qg_struck_to_dsc2,               0, 0
+        def qu_struck_to_dsc2 = Tools.safeRatio qu_struck_totl, histos.getChargeUngatedDSC2()
+        rn_dsc2_qg.addPoint           binnum, histos.getChargeGatedDSC2(),     0, 0 // NOTE: errors are calculated later
+        rn_dsc2_qu.addPoint           binnum, histos.getChargeUngatedDSC2(),   0, 0
+        rn_struck_helP_qg.addPoint    binnum, histos.getChargeGatedSTRUCK(1),  0, 0
+        rn_struck_hel0_qg.addPoint    binnum, histos.getChargeGatedSTRUCK(0),  0, 0
+        rn_struck_helN_qg.addPoint    binnum, histos.getChargeGatedSTRUCK(-1), 0, 0
+        rn_struck_totl_qg.addPoint    binnum, qg_struck_totl,                  0, 0
+        rn_struck_totl_qu.addPoint    binnum, qu_struck_totl,                  0, 0
+        rn_struck_to_dsc2_qg.addPoint binnum, qg_struck_to_dsc2,               0, 0
+        rn_struck_to_dsc2_qu.addPoint binnum, qu_struck_to_dsc2,               0, 0
       }
+
       // set Poisson errors for each run graph
       def set_errors = { g ->
         g.getDataSize(0).times{ g.setError it, 0, Math.sqrt(g.getDataY(it)) }
@@ -107,11 +113,13 @@ class qadb_charge {
       set_errors rn_struck_helN_qg
       set_errors rn_struck_totl_qg
       set_errors rn_struck_totl_qu
-      rn_struck_to_dsc2.getDataSize(0).times {
-        def s = rn_struck_totl_qg.getDataY(it)
-        def d = rn_dsc2_qg.getDataY(it)
-        rn_struck_to_dsc2.setError it, 0, Tools.ratioPoissonUncertainty(s,d)
+      rn_struck_to_dsc2_qg.getDataSize(0).times {
+        rn_struck_to_dsc2_qg.setError it, 0, Tools.ratioPoissonUncertainty(rn_struck_totl_qg.getDataY(it), rn_dsc2_qg.getDataY(it))
       }
+      rn_struck_to_dsc2_qu.getDataSize(0).times {
+        rn_struck_to_dsc2_qu.setError it, 0, Tools.ratioPoissonUncertainty(rn_struck_totl_qu.getDataY(it), rn_dsc2_qu.getDataY(it))
+      }
+
       // fill timeline graphs: sum over each QA bin's charge values, and plot that sum on the timeline graph
       def add_tl_point = { rn, tl ->
         def sum = 0.0
@@ -125,6 +133,7 @@ class qadb_charge {
       add_tl_point rn_struck_helN_qg, tl_struck_helN_qg
       add_tl_point rn_struck_totl_qg, tl_struck_totl_qg
       add_tl_point rn_struck_totl_qu, tl_struck_totl_qu
+
       // write run graphs for this run
       [ tdir_tl, tdir_ctl ].each { tdir ->
         tdir.mkdir "/${runnum}"
@@ -136,8 +145,10 @@ class qadb_charge {
         tdir.addDataSet rn_struck_helN_qg
         tdir.addDataSet rn_struck_totl_qg
         tdir.addDataSet rn_struck_totl_qu
-        tdir.addDataSet rn_struck_to_dsc2
+        tdir.addDataSet rn_struck_to_dsc2_qg
+        tdir.addDataSet rn_struck_to_dsc2_qu
       }
+
     } // end loop over runs
 
     // fill cumulative timeline graphs: loop over timeline graph, and accumulate the sum

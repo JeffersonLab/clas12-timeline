@@ -48,6 +48,7 @@ class qadb_yield {
 
     // loop over runs, filling graphs
     data_map.sort{it.key}.each { runnum, run_data ->
+
       // define run graphs ('rn'): e.g., N/q vs. QA bin, for this run
       // NOTE: the front-end will order them alphabetically, so prefix their names with unique letters (`sort_prefix`)
       def make_rn = { sort_prefix, name, title, ytitle ->
@@ -61,6 +62,7 @@ class qadb_yield {
       def rn_fd_ele_n  = Tools.collectSectors{ s -> make_rn "a${s}b", "FD_ele_sec${s}_n",  "FD sector ${s} Electron N",           'N' }
       def rn_ft_ele_nq = make_rn 'aa', "FT_ele_nq", 'FT Electron N/q [nC^-1]', 'N/q [nC^-1]'
       def rn_ft_ele_n  = make_rn 'ab', "FT_ele_n",  'FT Electron N',           'N'
+
       // fill run graphs: loop over each QA bin's histograms (`Yield` objects)
       run_data['yield'].each { binnum, histos ->
         // get the yields
@@ -83,6 +85,7 @@ class qadb_yield {
         rn_ft_ele_nq.addPoint binnum, Tools.safeRatio(n_ft_ele, q), 0, Tools.ratioPoissonUncertainty(n_ft_ele, q)
         rn_ft_ele_n.addPoint  binnum, n_ft_ele,                     0, Math.sqrt(n_ft_ele)
       }
+
       // calculate total charge for this run by summing over its QA bins' charges
       def q_run = 0.0
       run_data['charge'].each{ binnum, histos -> q_run += histos.getChargeGatedDSC2() }
@@ -94,6 +97,7 @@ class qadb_yield {
       }
       Tools.eachSector{ s -> add_tl_point rn_fd_ele_n[s], tl_fd_ele_nq[s] }
       add_tl_point rn_ft_ele_n, tl_ft_ele_nq
+
       // write run graphs for this run
       tdir_fd_ele.mkdir "/${runnum}"
       tdir_fd_ele.cd    "/${runnum}"
@@ -105,6 +109,7 @@ class qadb_yield {
       tdir_ft_ele.cd    "/${runnum}"
       tdir_ft_ele.addDataSet rn_ft_ele_nq
       tdir_ft_ele.addDataSet rn_ft_ele_n
+
     } // end loop over runs
 
     // write timelines
