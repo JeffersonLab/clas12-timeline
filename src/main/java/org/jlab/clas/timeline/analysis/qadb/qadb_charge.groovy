@@ -45,6 +45,7 @@ class qadb_charge {
     def tl_struck_hel0_qg = make_tl 'STRUCK_helUndefined_qGated'
     def tl_struck_helN_qg = make_tl 'STRUCK_helNegative_qGated'
     def tl_struck_totl_qg = make_tl 'STRUCK_total_qGated'
+    def tl_struck_totl_qu = make_tl 'STRUCK_total_qUngated'
 
     // define cumulative timeline ('ctl') graphs: cumulative charge vs. run
     def make_ctl = { name ->
@@ -60,6 +61,7 @@ class qadb_charge {
     def ctl_struck_hel0_qg = make_ctl 'STRUCK_helUndefined_qGated'
     def ctl_struck_helN_qg = make_ctl 'STRUCK_helNegative_qGated'
     def ctl_struck_totl_qg = make_ctl 'STRUCK_total_qGated'
+    def ctl_struck_totl_qu = make_ctl 'STRUCK_total_qUngated'
 
     // loop over runs, filling graphs
     data_map.sort{it.key}.each { runnum, run_data ->
@@ -72,24 +74,27 @@ class qadb_charge {
         g.setTitleX 'QA Bin'
         g
       }
-      def rn_dsc2_qg        = make_rn 'a', 'DSC2_qGated',                'DSC2 q_gated [nC]',                  'q [nC]'
-      def rn_dsc2_qu        = make_rn 'b', 'DSC2_qUngated',              'DSC2 q_ungated [nC]',                'q [nC]'
-      def rn_struck_totl_qg = make_rn 'c', 'STRUCK_total_qGated',        'STRUCK total q_gated [nC]',          'q [nC]'
-      def rn_struck_to_dsc2 = make_rn 'd', 'STRUCK_to_DSC2',             'STRUCK q_gated / DSC2 q_gated',      'q_STRUCK / q_DSC2'
-      def rn_struck_helP_qg = make_rn 'e', 'STRUCK_helPositive_qGated',  'STRUCK helicity=+1 q_gated [nC]',    'q [nC]'
-      def rn_struck_helN_qg = make_rn 'f', 'STRUCK_helNegative_qGated',  'STRUCK helicity=-1 q_gated [nC]',    'q [nC]'
-      def rn_struck_hel0_qg = make_rn 'g', 'STRUCK_helUndefined_qGated', 'STRUCK helicity=undef q_gated [nC]', 'q [nC]'
+      def rn_dsc2_qg        = make_rn 'a1', 'DSC2_qGated',                'DSC2 q_gated [nC]',                  'q [nC]'
+      def rn_dsc2_qu        = make_rn 'a2', 'DSC2_qUngated',              'DSC2 q_ungated [nC]',                'q [nC]'
+      def rn_struck_totl_qg = make_rn 'b1', 'STRUCK_total_qGated',        'STRUCK total q_gated [nC]',          'q [nC]'
+      def rn_struck_totl_qu = make_rn 'b2', 'STRUCK_total_qUngated',      'STRUCK total q_ungated [nC]',        'q [nC]'
+      def rn_struck_to_dsc2 = make_rn 'c',  'STRUCK_to_DSC2',             'STRUCK q_gated / DSC2 q_gated',      'q_STRUCK / q_DSC2'
+      def rn_struck_helP_qg = make_rn 'd1', 'STRUCK_helPositive_qGated',  'STRUCK helicity=+1 q_gated [nC]',    'q [nC]'
+      def rn_struck_helN_qg = make_rn 'd2', 'STRUCK_helNegative_qGated',  'STRUCK helicity=-1 q_gated [nC]',    'q [nC]'
+      def rn_struck_hel0_qg = make_rn 'd3', 'STRUCK_helUndefined_qGated', 'STRUCK helicity=undef q_gated [nC]', 'q [nC]'
       // fill run graphs: loop over each QA bin's histograms (`Charge` objects), read the charge, and plot it
       run_data['histos'].each { binnum, histos ->
-        def q_struck_totl    = [1,0,-1].collect{histos.getChargeGatedSTRUCK(it)}.sum()
-        def q_struck_to_dsc2 = Tools.safeRatio q_struck_totl, histos.getChargeGatedDSC2()
+        def qg_struck_totl = [1,0,-1].collect{ histos.getChargeGatedSTRUCK(it)   }.sum()
+        def qu_struck_totl = [1,0,-1].collect{ histos.getChargeUngatedSTRUCK(it) }.sum()
+        def qg_struck_to_dsc2 = Tools.safeRatio qg_struck_totl, histos.getChargeGatedDSC2()
         rn_dsc2_qg.addPoint        binnum, histos.getChargeGatedDSC2(),     0, 0 // NOTE: errors are calculated later
         rn_dsc2_qu.addPoint        binnum, histos.getChargeUngatedDSC2(),   0, 0
         rn_struck_helP_qg.addPoint binnum, histos.getChargeGatedSTRUCK(1),  0, 0
         rn_struck_hel0_qg.addPoint binnum, histos.getChargeGatedSTRUCK(0),  0, 0
         rn_struck_helN_qg.addPoint binnum, histos.getChargeGatedSTRUCK(-1), 0, 0
-        rn_struck_totl_qg.addPoint binnum, q_struck_totl,                   0, 0
-        rn_struck_to_dsc2.addPoint binnum, q_struck_to_dsc2,                0, 0
+        rn_struck_totl_qg.addPoint binnum, qg_struck_totl,                  0, 0
+        rn_struck_totl_qu.addPoint binnum, qu_struck_totl,                  0, 0
+        rn_struck_to_dsc2.addPoint binnum, qg_struck_to_dsc2,               0, 0
       }
       // set Poisson errors for each run graph
       def set_errors = { g ->
@@ -101,6 +106,7 @@ class qadb_charge {
       set_errors rn_struck_hel0_qg
       set_errors rn_struck_helN_qg
       set_errors rn_struck_totl_qg
+      set_errors rn_struck_totl_qu
       rn_struck_to_dsc2.getDataSize(0).times {
         def s = rn_struck_totl_qg.getDataY(it)
         def d = rn_dsc2_qg.getDataY(it)
@@ -118,6 +124,7 @@ class qadb_charge {
       add_tl_point rn_struck_hel0_qg, tl_struck_hel0_qg
       add_tl_point rn_struck_helN_qg, tl_struck_helN_qg
       add_tl_point rn_struck_totl_qg, tl_struck_totl_qg
+      add_tl_point rn_struck_totl_qu, tl_struck_totl_qu
       // write run graphs for this run
       [ tdir_tl, tdir_ctl ].each { tdir ->
         tdir.mkdir "/${runnum}"
@@ -128,6 +135,7 @@ class qadb_charge {
         tdir.addDataSet rn_struck_hel0_qg
         tdir.addDataSet rn_struck_helN_qg
         tdir.addDataSet rn_struck_totl_qg
+        tdir.addDataSet rn_struck_totl_qu
         tdir.addDataSet rn_struck_to_dsc2
       }
     } // end loop over runs
@@ -147,6 +155,7 @@ class qadb_charge {
     fill_ctl ctl_struck_hel0_qg, tl_struck_hel0_qg
     fill_ctl ctl_struck_helN_qg, tl_struck_helN_qg
     fill_ctl ctl_struck_totl_qg, tl_struck_totl_qg
+    fill_ctl ctl_struck_totl_qu, tl_struck_totl_qu
 
     // write timelines
     tdir_tl.mkdir '/timelines'
@@ -157,6 +166,7 @@ class qadb_charge {
     tdir_tl.addDataSet tl_struck_hel0_qg
     tdir_tl.addDataSet tl_struck_helN_qg
     tdir_tl.addDataSet tl_struck_totl_qg
+    tdir_tl.addDataSet tl_struck_totl_qu
     tdir_ctl.mkdir '/timelines'
     tdir_ctl.cd    '/timelines'
     tdir_ctl.addDataSet ctl_dsc2_qg
@@ -165,6 +175,7 @@ class qadb_charge {
     tdir_ctl.addDataSet ctl_struck_hel0_qg
     tdir_ctl.addDataSet ctl_struck_helN_qg
     tdir_ctl.addDataSet ctl_struck_totl_qg
+    tdir_ctl.addDataSet ctl_struck_totl_qu
 
     // write HIPO
     tdir_tl.writeFile  'qadb_charge_per_run.hipo'

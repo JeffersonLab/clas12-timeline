@@ -43,7 +43,7 @@ public class Yield {
   {
     // make a histogram with one bin per `Channel`
     yield_hist = new H1F(
-        "yield_hist_qa" + String.valueOf(bin_num),
+        "yield_hist" + "_qa" + String.valueOf(bin_num),
         "channel",
         "yield",
         Channel.values().length,
@@ -100,7 +100,7 @@ public class Yield {
    */
   void readHistograms(TDirectory tdir, int bin_num)
   {
-    yield_hist = (H1F) tdir.getObject(TDIR + "/yield_hist_qa" + String.valueOf(bin_num));
+    yield_hist = (H1F) tdir.getObject(TDIR + "/yield_hist" + "_qa" + String.valueOf(bin_num));
   }
 
 }
