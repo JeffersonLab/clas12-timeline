@@ -34,8 +34,8 @@ class qadb_charge {
     // define timeline ('tl') graphs: charge vs. run number
     def make_tl = { name ->
       def g = new GraphErrors(name)
-      g.setTitle  'Charge q [mC]'
-      g.setTitleY 'q [mC]'
+      g.setTitle  'Charge q [nC]'
+      g.setTitleY 'q [nC]'
       g.setTitleX 'Run Number'
       g
     }
@@ -110,7 +110,6 @@ class qadb_charge {
       def add_tl_point = { rn, tl ->
         def sum = 0.0
         rn.getDataSize(0).times{ sum += rn.getDataY(it) }
-        sum = Charge.to_mC sum // NOTE: this is the one and only place we do this conversion, i.e., for timeline graphs only!
         tl.addPoint runnum, sum, 0, 0
       }
       add_tl_point rn_dsc2_qg,        tl_dsc2_qg
@@ -134,10 +133,12 @@ class qadb_charge {
     } // end loop over runs
 
     // fill cumulative timeline graphs: loop over timeline graph, and accumulate the sum
+    // NOTE: since the cumulative charge gets large, we plot it in mC rather than nC
     def fill_ctl = { ctl, tl ->
       tl.getDataSize(0).times {
-        def val = it==0 ? tl.getDataY(it) : tl.getDataY(it) + ctl.getDataY(it-1)
-        ctl.addPoint tl.getDataX(it), val, 0, 0
+        def q_this_run   = Charge.to_mC tl.getDataY(it) // NOTE: this is the one and only place we do this conversion, i.e., for the cumulative timeline graph only!
+        def q_cumulative = it==0 ? 0.0 : ctl.getDataY(it-1)
+        ctl.addPoint tl.getDataX(it), q_cumulative + q_this_run, 0, 0
       }
     }
     fill_ctl ctl_dsc2_qg,        tl_dsc2_qg
