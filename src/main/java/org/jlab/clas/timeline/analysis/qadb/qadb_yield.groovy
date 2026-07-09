@@ -59,8 +59,8 @@ class qadb_yield {
       }
       def rn_fd_ele_nq = Tools.collectSectors{ s -> make_rn "a${s}a", "FD_ele_sec${s}_nq", "FD sector ${s} Electron N/q [nC^-1]", 'N/q [nC^-1])' }
       def rn_fd_ele_n  = Tools.collectSectors{ s -> make_rn "a${s}b", "FD_ele_sec${s}_n",  "FD sector ${s} Electron N",           'N' }
-      def rn_ft_ele_nq = make_tl 'aa', "FT_ele_nq", 'FT Electron N/q [nC^-1]', 'N/q [nC^-1]'
-      def rn_ft_ele_n  = make_tl 'ab', "FT_ele_n",  'FT Electron N',           'N'
+      def rn_ft_ele_nq = make_rn 'aa', "FT_ele_nq", 'FT Electron N/q [nC^-1]', 'N/q [nC^-1]'
+      def rn_ft_ele_n  = make_rn 'ab', "FT_ele_n",  'FT Electron N',           'N'
       // fill run graphs: loop over each QA bin's histograms (`Yield` objects)
       run_data['yield'].each { binnum, histos ->
         // get the yields
@@ -74,22 +74,23 @@ class qadb_yield {
         ]
         def n_ft_ele = histos.yield_hist.getBinContent(Yield.Channel.electronFT.ordinal())
         // get the charge
-        def q = histos.getChargeGatedDSC2()
+        def q = run_data['charge'][binnum].getChargeGatedDSC2()
         // plot the points, with Poisson uncertainty
         Tools.eachSector { s ->
-          rn_fd_ele_nq[s].addPoint binnum, Tools.safeRatio(nq_fd_ele[s], q), 0, Tools.ratioPoissonUncertainty(nq_fd_ele[s], q)
-          rn_fd_ele_n[s].addPoint  binnum, nq_fd_ele[s],                     0, Math.sqrt(nq_fd_ele[s])
+          rn_fd_ele_nq[s].addPoint binnum, Tools.safeRatio(n_fd_ele[s], q), 0, Tools.ratioPoissonUncertainty(n_fd_ele[s], q)
+          rn_fd_ele_n[s].addPoint  binnum, n_fd_ele[s],                     0, Math.sqrt(n_fd_ele[s])
         }
-        rn_ft_ele_nq.addPoint binnum, Tools.safeRatio(nq_ft_ele, q), 0, Tools.ratioPoissonUncertainty(nq_ft_ele, q)
-        rn_ft_ele_n.addPoint  binnum, nq_ft_ele,                     0, Math.sqrt(nq_ft_ele)
+        rn_ft_ele_nq.addPoint binnum, Tools.safeRatio(n_ft_ele, q), 0, Tools.ratioPoissonUncertainty(n_ft_ele, q)
+        rn_ft_ele_n.addPoint  binnum, n_ft_ele,                     0, Math.sqrt(n_ft_ele)
       }
       // calculate total charge for this run by summing over its QA bins' charges
-      def q_run = run_data['charge'].sum{ binnum, histos -> histos.getChargeGatedDSC2() }
+      def q_run = 0.0
+      run_data['charge'].each{ binnum, histos -> q_run += histos.getChargeGatedDSC2() }
       // fill timeline graphs
       def add_tl_point = { rn_n, tl_nq ->
         def sum = 0.0
         rn_n.getDataSize(0).times{ sum += rn_n.getDataY(it) }
-        tl_nq.addPoint runnum, Tools.safeRatio(sum,run_q), 0, 0
+        tl_nq.addPoint runnum, Tools.safeRatio(sum,q_run), 0, 0
       }
       Tools.eachSector{ s -> add_tl_point rn_fd_ele_n[s], tl_fd_ele_nq[s] }
       add_tl_point rn_ft_ele_n, tl_ft_ele_nq
@@ -113,6 +114,10 @@ class qadb_yield {
     tdir_ft_ele.mkdir '/timelines'
     tdir_ft_ele.cd    '/timelines'
     tdir_ft_ele.addDataSet tl_ft_ele_nq
+
+    // write HIPO
+    tdir_fd_ele.writeFile 'qadb_yield_FD_electrons.hipo'
+    tdir_ft_ele.writeFile 'qadb_yield_FT_electrons.hipo'
   }
 
 }

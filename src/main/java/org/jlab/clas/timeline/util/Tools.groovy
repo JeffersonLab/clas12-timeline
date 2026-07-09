@@ -252,7 +252,7 @@ class Tools {
    * loop over sectors, running a function on each
    * @param ftn the function, with signature {@code ftn(sector)}
    */
-  static void eachSector = { Closure ftn ->
+  static def eachSector = { Closure ftn ->
     (1..6).each { ftn it }
   }
 

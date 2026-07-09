@@ -166,7 +166,7 @@ class qadb_charge {
     tdir_ctl.addDataSet ctl_struck_totl_qg
 
     // write HIPO
-    tdir_tl.writeFile 'qadb_charge_per_run.hipo'
+    tdir_tl.writeFile  'qadb_charge_per_run.hipo'
     tdir_ctl.writeFile 'qadb_charge_cumulative.hipo'
   }
 

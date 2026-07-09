@@ -21,14 +21,14 @@ class qadb {
 
   public def processRun(dir, run) {
     ana_qadb_charge.processRun(dir, run, qa_map)
-    // ana_qadb_yield.processRun(dir, run, qa_map)
+    ana_qadb_yield.processRun(dir, run, qa_map)
   }
 
   // ----------------------------------------------------------------------------------
 
   public def write() {
     ana_qadb_charge.write(qa_map)
-    // ana_qadb_yield.write(qa_map)
+    ana_qadb_yield.write(qa_map)
   }
 
 }
