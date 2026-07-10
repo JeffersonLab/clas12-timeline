@@ -2,6 +2,8 @@ package org.jlab.clas.timeline.histograms.qadb;
 
 import org.jlab.detector.qadb.QadbBin;
 import org.jlab.io.base.DataEvent;
+import org.jlab.io.hipo.HipoDataEvent;
+import org.jlab.jnp.hipo4.data.Event;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.groot.data.H1F;
 
@@ -168,13 +170,15 @@ public class Charge {
   // ----------------------------------------------------------------------------------
 
   /**
-   * process a single event, filling STRUCK histogram
+   * process a single event, filling STRUCK histograms
    * @param event the HIPO event object
    */
   public void processEvent(DataEvent event)
   {
-    // fill STRUCK histogram
-    if(event.hasBank("HEL::scaler")) {
+    // get the tag; when reading scalers, be sure to process only tag-1 events
+    int tag = ((HipoDataEvent) event).getHipoEvent().getEventTag();
+    // fill STRUCK histograms
+    if(tag == 1 && event.hasBank("HEL::scaler")) {
       var hel_bank = event.getBank("HEL::scaler");
       for(int row = 0; row < hel_bank.rows(); row++) {
         switch(hel_bank.getByte("helicity", row)) {
