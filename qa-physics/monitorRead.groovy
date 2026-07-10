@@ -564,7 +564,7 @@ inHipoList.each { inHipoFile ->
   // EVENT LOOP
   while(reader.hasEvent()) {
     hipoEvent = reader.getNextEvent()
-    def tag = ((HipoDataEvent) event).getHipoEvent().getEventTag()
+    def tag = ((HipoDataEvent) hipoEvent).getHipoEvent().getEventTag()
 
     // get required banks
     particleBank   = hipoEvent.getBank("REC::Particle")
