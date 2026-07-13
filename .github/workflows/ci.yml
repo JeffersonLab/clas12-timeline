@@ -193,6 +193,9 @@ jobs:
             -p web \
             --custom-pub \
             ${{matrix.args}}
+      - name: dump charge
+        if: ${{ matrix.type == 'physics' }}
+        run: util/dump-charges.rb outfiles/${{env.dataset}}/outdat/chargeTree.json
       - run: tree outfiles
       - name: summarize
         run: |
