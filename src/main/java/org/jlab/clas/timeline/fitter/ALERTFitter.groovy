@@ -61,12 +61,12 @@ class ALERTFitter{
             f1.setParameter(0, maxz)                    // amp
             f1.setParameter(1, peak_location)            // mean
             f1.setParameter(2, sigmaEst)                 // sigma
-            f1.setParameter(3, 1.0)                      // alpha (positive = left tail)
+            f1.setParameter(3, -1.0)                      // alpha (positive = left tail)
             f1.setParameter(4, 2.0)                      // n
             f1.setParameter(5, h1.getBinContent(0))      // constant background
 			if (maxz>0) f1.setParLimits(0, maxz*0.7,maxz*1.3);
             f1.setParLimits(2, 0.1, 2.0)
-            f1.setParLimits(3, 0.1, 10.0)               // alpha
+            f1.setParLimits(3, -10.0, 0.0)               // alpha
             f1.setParLimits(4, 1.0, 50.0)               // n
             f1.setParLimits(5, 0.0, 0.1 * maxz)         // constant
 
@@ -222,8 +222,8 @@ class ALERTFitter{
             fout.setParameter(5, 0)              // cst   → index 5
             fout.setParLimits(0, localMax * 0.9, localMax * 1.1)
             fout.setParLimits(1, mean_fit - 0.5, mean_fit)
-            fout.setParLimits(2, 0.2, 1.5)
-            fout.setParLimits(3, -10.0, -0.3)
+            fout.setParLimits(2, 0.1, 1.5)
+            fout.setParLimits(3, -10.0, -0.0)
             fout.setParLimits(4, 1.0, 5.0)
             fout.setParLimits(5, 0, maxY * 0.5)
             System.setOut(new PrintStream(OutputStream.nullOutputStream()))
