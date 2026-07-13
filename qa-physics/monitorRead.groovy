@@ -4,6 +4,8 @@
 // - note: search for 'CUT' to find which cuts are applied
 
 import org.jlab.io.hipo.HipoDataSource
+import org.jlab.io.hipo.HipoDataEvent
+import org.jlab.jnp.hipo4.data.Event
 import org.jlab.clas.physics.Particle
 import org.jlab.groot.data.H1F
 import org.jlab.groot.data.H2F
@@ -562,6 +564,7 @@ inHipoList.each { inHipoFile ->
   // EVENT LOOP
   while(reader.hasEvent()) {
     hipoEvent = reader.getNextEvent()
+    def tag = ((HipoDataEvent) hipoEvent).getHipoEvent().getEventTag()
 
     // get required banks
     particleBank   = hipoEvent.getBank("REC::Particle")
@@ -630,7 +633,7 @@ inHipoList.each { inHipoFile ->
     }
     // get scaler helicity from `HEL::scaler`, and fill its charge-weighted distribution
     // NOTE: do not do this if FCmode==CUSTOM (since FC charge is wrong)
-    if(hipoEvent.hasBank("HEL::scaler") && FCmode!=FCmodeEnum.CUSTOM) {
+    if(tag==1 && hipoEvent.hasBank("HEL::scaler") && FCmode!=FCmodeEnum.CUSTOM) {
       helScalerBank.rows().times{ row -> // HEL::scaler readouts "pile up", so there are multiple bank rows in an event
         def sc_helicity = helScalerBank.getByte("helicity", row)
         def sc_fc       = helScalerBank.getFloat("fcupgated", row) // helicity-latched FC charge
