@@ -65,7 +65,7 @@ public class ALERT {
     ATOF_z_c4_sl = new H1F[60];// ATOF z Histograms
       
     for (int component = 0; component < 11; component++) {
-      ATOF_Time[component] = new H1F(String.format("ATOF_Time_component%02d", component), String.format("ATOF Time component%02d", component), 200, -5, 5);
+      ATOF_Time[component] = new H1F(String.format("ATOF_Time_component%02d", component), String.format("ATOF Time component%02d", component), 100, -5, 5);
       ATOF_Time[component].setTitleX("ATOF Time (ns)");
       ATOF_Time[component].setTitleY("Counts");
       ATOF_Time[component].setFillColor(4);
@@ -93,7 +93,7 @@ public class ALERT {
               
               for (int component = 0; component < 11; component++) {
                   int gcomponent = gsector*11+component;
-                  ATOF_Time_sl[gcomponent] = new H1F(String.format("ATOF_Time_sector%02d_layer%02d_component%02d",sector,layer, component), String.format("ATOF Time sector%02d layer%02d component%02d", sector,layer,component), 200, -5, 5);
+                  ATOF_Time_sl[gcomponent] = new H1F(String.format("ATOF_Time_sector%02d_layer%02d_component%02d",sector,layer, component), String.format("ATOF Time sector%02d layer%02d component%02d", sector,layer,component), 100, -5, 5);
                   ATOF_Time_sl[gcomponent].setTitleX("ATOF Time (ns)");
                   ATOF_Time_sl[gcomponent].setTitleY("Counts");
                   ATOF_Time_sl[gcomponent].setFillColor(4);
@@ -189,6 +189,7 @@ public class ALERT {
 
     // First pass: collect which gsectors have a hit on component 4
     Set<Integer> gsectors_with_c4 = new HashSet<>();
+    Map<Integer, Float> barTimeByGsector = new HashMap<>();
     for (int loop = 0; loop < rows; loop++) {
       if (atof_hits.getInt("component", loop) == 4) {
         int sector  = atof_hits.getInt("sector", loop);
@@ -197,6 +198,13 @@ public class ALERT {
         if (Math.abs(time) < 1) {
           gsectors_with_c4.add(sector * 4 + layer);
         }
+      }
+      if (atof_hits.getInt("component", loop) == 10) {
+          int sector = atof_hits.getInt("sector", loop);
+          int layer  = atof_hits.getInt("layer",  loop);
+          float time = atof_hits.getFloat("time", loop);
+          int gsector = sector * 4 + layer;
+          barTimeByGsector.put(gsector, time);
       }
     }
 
@@ -209,8 +217,11 @@ public class ALERT {
       int gsector    = sector * 4 + layer;
       int gcomponent = gsector * 11 + component;
 
-      ATOF_Time[component].fill(time);
-      ATOF_Time_sl[gcomponent].fill(time);
+      Float barTime = barTimeByGsector.get(gsector);
+      if (barTime != null && Math.abs(barTime) < 5) {
+          ATOF_Time[component].fill(time);
+          ATOF_Time_sl[gcomponent].fill(time);
+      }
 
       if (component == 10 && Math.abs(time) < 10) {
         float z = atof_hits.getFloat("z", loop);

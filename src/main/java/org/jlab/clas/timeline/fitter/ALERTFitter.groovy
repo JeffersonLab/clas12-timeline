@@ -36,25 +36,39 @@ class ALERTFitter{
 
 	static F1D atof_time_fitter(H1F h1, int component, double fit_min, double fit_max){
 		if(component>9){//bars
-			def f1 =new F1D("fit:"+h1.getName(),"[amp]*gaus(x,[mean],[sigma])+[cst]", fit_min, fit_max);
-			f1.setLineColor(33);
-			f1.setLineWidth(10);
-			f1.setOptStat("1111");
 			double maxz = h1.getBinContent(h1.getMaximumBin());
 			double peak_location = h1.getAxis().getBinCenter(h1.getMaximumBin());
-			int bin_low  = h1.getAxis().getBin(peak_location - 2.0);
-			int bin_high = h1.getAxis().getBin(peak_location + 2.0);
-			double sigma = ALERTFitter.getRestrictedRMS(h1, bin_low, bin_high);
-			if(sigma>1 || sigma<0 || Double.isNaN(sigma)) sigma=1;
-			f1.setRange(peak_location - sigma, peak_location + sigma);
-			f1.setParameter(0,maxz-h1.getBinContent(0));
-			f1.setParameter(1, peak_location);
-			f1.setParameter(2, 1.0);
-			f1.setParameter(3, h1.getBinContent(0));
+            double halfMax = maxz / 2.0
+            int peakBin = h1.getMaximumBin()
+            int nBins = h1.getAxis().getNBins()
+            int bLow = peakBin
+            int bHigh = peakBin
+            while (bLow > 0 && h1.getBinContent(bLow) > halfMax) bLow--
+            while (bHigh < nBins && h1.getBinContent(bHigh) > halfMax) bHigh++
+            double fwhm = h1.getAxis().getBinCenter(bHigh) - h1.getAxis().getBinCenter(bLow)
+            double sigmaEst = (fwhm > 0) ? fwhm / 2.35 : 0.5
+            if (sigmaEst < 0.2) sigmaEst = 0.5
+            if (sigmaEst > 1.5) sigmaEst = 1.0
+            double fitLow  = peak_location - 2.0
+            double fitHigh = peak_location + 1.5
+            
+            def f1 = new F1D("fit:" + h1.getName(),
+                    "[amp]*crystalball(x,[mean],[sigma],[alpha],[n])+[cst]",
+                    fitLow, fitHigh)
+            f1.setLineColor(33);
+            f1.setLineWidth(10);
+            f1.setOptStat("1111");
+            f1.setParameter(0, maxz)                    // amp
+            f1.setParameter(1, peak_location)            // mean
+            f1.setParameter(2, sigmaEst)                 // sigma
+            f1.setParameter(3, 1.0)                      // alpha (positive = left tail)
+            f1.setParameter(4, 2.0)                      // n
+            f1.setParameter(5, h1.getBinContent(0))      // constant background
 			if (maxz>0) f1.setParLimits(0, maxz*0.7,maxz*1.3);
-			f1.setParLimits(3, 0.0, 0.1*maxz);
-			f1.setParLimits(2,0,1.0);
-			f1.setParLimits(1,peak_location - sigma, peak_location + sigma);
+            f1.setParLimits(2, 0.1, 2.0)
+            f1.setParLimits(3, 0.1, 10.0)               // alpha
+            f1.setParLimits(4, 1.0, 50.0)               // n
+            f1.setParLimits(5, 0.0, 0.1 * maxz)         // constant
 
 			double hMean, hRMS
 			def originalOut = System.out
@@ -65,13 +79,16 @@ class ALERTFitter{
 
 			System.setOut(originalOut)  // Restore the original output
 
-				return f1
+            return f1
 		}
 		else{//wedges
+            PrintStream original = System.out
+
  			int maxBin = h1.getMaximumBin()
 			double maxY = h1.getBinContent(maxBin)
  			double peak = h1.getAxis().getBinCenter(maxBin)
  			double step = 1.0f
+    
  			int binLow  = h1.getAxis().getBin(peak - step)
  			int binHigh = h1.getAxis().getBin(peak + step)
  			double sigma0 = ALERTFitter.getRestrictedRMS(h1, binLow, binHigh)
@@ -89,7 +106,6 @@ class ALERTFitter{
 			fgaus.setParLimits(1, peak - step, peak + step)
 			fgaus.setParLimits(2, 0, step)
 
-			PrintStream original = System.out
 			System.setOut(new PrintStream(OutputStream.nullOutputStream()))
 			DataFitter.fit(fgaus, h1, "RQ")
 			System.setOut(original)
@@ -166,17 +182,53 @@ class ALERTFitter{
 			    mean_fit   = mean_main
 			    sigma_fit  = sigma_main
 			}
+            
+            // --- Step 2: Crystal Ball fit at the found peak ---
 
-			F1D fout = new F1D("fit:" + h1.getName(),
-			        "[amp]*gaus(x,[mean],[sigma])",
-			        mean_fit - 2 * step, mean_fit + 2 * step)
+            int pkBin = h1.getAxis().getBin(mean_fit)
+            double pkHeight = h1.getBinContent(pkBin)
+            if (pkHeight <= 0) pkHeight = height_fit
+            double halfMax = pkHeight / 2.0
+            int bL = pkBin, bH = pkBin
+            int nBins = h1.getAxis().getNBins()
+            while (bL > 0 && h1.getBinContent(bL) > halfMax) bL--
+            while (bH < nBins && h1.getBinContent(bH) > halfMax) bH++
+            double fwhm = h1.getAxis().getBinCenter(bH) - h1.getAxis().getBinCenter(bL)
+            double sigmaEst = (fwhm > 0) ? fwhm / 2.35 : sigma_fit
+            if (sigmaEst < 0.2) sigmaEst = 0.5
+            if (sigmaEst > 1.5) sigmaEst = 1.0
+            double localMax = 0
+            int bLo2 = h1.getAxis().getBin(mean_fit - 0.5)
+            int bHi2 = h1.getAxis().getBin(mean_fit + 0.5)
+            for (int b = bLo2; b <= bHi2; b++) {
+                if (h1.getBinContent(b) > localMax) localMax = h1.getBinContent(b)
+            }
+            if (localMax <= 0) localMax = height_fit
 
-			fout.setParameter(0, height_fit)
-			fout.setParameter(1, mean_fit)
-			fout.setParameter(2, sigma_fit)
+            double fitLow  = mean_fit - 1.0
+            double fitHigh = mean_fit + 1.0
 
-			fout.setLineColor(33)
-			fout.setLineWidth(10)
+            F1D fout = new F1D("fit:" + h1.getName(),
+                    "[amp]*crystalball(x,[mean],[sigma],[alpha],[n])+[cst]",
+                    fitLow, fitHigh)
+            fout.setLineColor(33)
+            fout.setLineWidth(10)
+
+            fout.setParameter(0, localMax)       // amp   → index 0
+            fout.setParameter(1, mean_fit)       // mean  → index 1
+            fout.setParameter(2, sigmaEst)       // sigma → index 2
+            fout.setParameter(3, -0.5)           // alpha → index 3
+            fout.setParameter(4, 2.0)            // n     → index 4
+            fout.setParameter(5, 0)              // cst   → index 5
+            fout.setParLimits(0, localMax * 0.9, localMax * 1.1)
+            fout.setParLimits(1, mean_fit - 0.5, mean_fit)
+            fout.setParLimits(2, 0.2, 1.5)
+            fout.setParLimits(3, -10.0, -0.3)
+            fout.setParLimits(4, 1.0, 5.0)
+            fout.setParLimits(5, 0, maxY * 0.5)
+            System.setOut(new PrintStream(OutputStream.nullOutputStream()))
+            DataFitter.fit(fout, h1, "RQ")
+            System.setOut(original)
 
 			return fout
 		}
