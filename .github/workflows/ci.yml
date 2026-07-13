@@ -193,10 +193,10 @@ jobs:
             -p web \
             --custom-pub \
             ${{matrix.args}}
+      - run: tree outfiles
       - name: dump charge
         if: ${{ matrix.type == 'physics' }}
-        run: util/dump-charges.rb outfiles/${{env.dataset}}/outdat/chargeTree.json
-      - run: tree outfiles
+        run: util/dump-charges.rb outfiles/${{env.dataset}}/timeline_physics_qa/outdat/chargeTree.json
       - name: summarize
         run: |
           echo "# Output File Tree" >> $GITHUB_STEP_SUMMARY
