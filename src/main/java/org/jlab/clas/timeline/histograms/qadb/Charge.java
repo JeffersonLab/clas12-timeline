@@ -3,7 +3,6 @@ package org.jlab.clas.timeline.histograms.qadb;
 import org.jlab.detector.qadb.QadbBin;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.hipo.HipoDataEvent;
-import org.jlab.jnp.hipo4.data.Event;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.groot.data.H1F;
 
