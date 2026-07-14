@@ -9,7 +9,40 @@ package org.jlab.clas.timeline.fitter
 import org.jlab.groot.fitter.DataFitter
 import org.jlab.groot.data.H1F
 import org.jlab.groot.math.F1D
+import org.jlab.groot.math.Func1D
 
+class CrystalBallFunc extends Func1D {
+
+    CrystalBallFunc(String name, double min, double max) {
+        super(name, 6, min, max)  // check constructor order!
+    }
+
+    @Override
+    double evaluate(double x) {
+        double amp   = getParameter(0)
+        double mean  = getParameter(1)
+        double sigma = getParameter(2)
+        double alpha = getParameter(3)
+        double n     = getParameter(4)
+        double cst   = getParameter(5)
+
+        double t = (x - mean) / sigma
+        double absAlpha = Math.abs(alpha)
+        double result
+
+        if (t > -absAlpha) {
+            result = Math.exp(-0.5 * t * t)
+        } else {
+            double A = Math.pow(n / absAlpha, n) * Math.exp(-0.5 * absAlpha * absAlpha)
+            double B = n / absAlpha - absAlpha
+            double arg = B - t
+            if (arg <= 0) arg = 1e-10
+            result = A * Math.pow(arg, -n)
+        }
+
+        return amp * result + cst
+    }
+}
 
 class ALERTFitter{
 
@@ -52,9 +85,7 @@ class ALERTFitter{
             double fitLow  = peak_location - 2.0
             double fitHigh = peak_location + 1.5
             
-            def f1 = new F1D("fit:" + h1.getName(),
-                    "[amp]*crystalball(x,[mean],[sigma],[alpha],[n])+[cst]",
-                    fitLow, fitHigh)
+            def f1 = new CrystalBallFunc("fit:" + h1.getName(), fitLow, fitHigh)
             f1.setLineColor(33);
             f1.setLineWidth(10);
             f1.setOptStat("1111");
@@ -70,7 +101,7 @@ class ALERTFitter{
             f1.setParLimits(4, 1.0, 50.0)               // n
             f1.setParLimits(5, 0.0, 0.1 * maxz)         // constant
 
-			double hMean, hRMS
+			//double hMean, hRMS
 			def originalOut = System.out
 			System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
 
@@ -208,9 +239,7 @@ class ALERTFitter{
             double fitLow  = mean_fit - 1.0
             double fitHigh = mean_fit + 1.0
 
-            F1D fout = new F1D("fit:" + h1.getName(),
-                    "[amp]*crystalball(x,[mean],[sigma],[alpha],[n])+[cst]",
-                    fitLow, fitHigh)
+            def fout = new CrystalBallFunc("fit:" + h1.getName(), fitLow, fitHigh)
             fout.setLineColor(33)
             fout.setLineWidth(10)
 
