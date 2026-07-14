@@ -114,7 +114,6 @@ class ALERTFitter{
 			//System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
             println "=== DEBUG BARS: before fit ==="
             println "  f1 class: ${f1.getClass().getName()}"
-            println "  f1 is Func1D: ${f1 instanceof Func1D}"
             println "  f1 is F1D: ${f1 instanceof F1D}"
             println "  amp before fit: ${f1.getParameter(0)}"
             println "  mean before fit: ${f1.getParameter(1)}"
@@ -293,7 +292,6 @@ class ALERTFitter{
             f1.setParLimits(5, 0, maxY * 0.5)
             println "=== DEBUG WEDGES ==="
             println "  f1 class: ${f1.getClass().getName()}"
-            println "  f1 is Func1D: ${f1 instanceof Func1D}"
             println "  f1 is F1D: ${f1 instanceof F1D}"
             println "  amp before fit: ${f1.getParameter(0)}"
             println "  mean before fit: ${f1.getParameter(1)}"
