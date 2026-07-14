@@ -102,13 +102,29 @@ class ALERTFitter{
             f1.setParLimits(5, 0.0, 0.1 * maxz)         // constant
 
 			//double hMean, hRMS
-			def originalOut = System.out
-			System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
+			//def originalOut = System.out
+			//System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
+            println "=== DEBUG: before fit ==="
+            println "  f1 class: ${f1.getClass().getName()}"
+            println "  f1 is Func1D: ${f1 instanceof Func1D}"
+            println "  f1 is F1D: ${f1 instanceof F1D}"
+            println "  amp before fit: ${f1.getParameter(0)}"
+            println "  mean before fit: ${f1.getParameter(1)}"
+            try {
+                DataFitter.fit(f1, h1, "")
+                println "  FIT SUCCEEDED"
+            } catch (Exception e) {
+                println "  FIT FAILED: ${e.getClass().getName()}: ${e.getMessage()}"
+            }
 
+            println "  amp after fit: ${f1.getParameter(0)}"
+            println "  mean after fit: ${f1.getParameter(1)}"
+            println "  sigma after fit: ${f1.getParameter(2)}"
+            println "=== END DEBUG ==="
 			// Code that prints to System.out
-			DataFitter.fit(f1, h1, "");
+//			DataFitter.fit(f1, h1, "");
 
-			System.setOut(originalOut)  // Restore the original output
+//			System.setOut(originalOut)  // Restore the original output
 
             return f1
 		}
@@ -255,9 +271,24 @@ class ALERTFitter{
             fout.setParLimits(3, -10.0, -0.0)
             fout.setParLimits(4, 1.0, 5.0)
             fout.setParLimits(5, 0, maxY * 0.5)
-            System.setOut(new PrintStream(OutputStream.nullOutputStream()))
-            DataFitter.fit(fout, h1, "RQ")
-            System.setOut(original)
+
+            println "=== DEBUG WEDGES ==="
+            println "  fout class: ${fout.getClass().getName()}"
+            println "  amp=${fout.getParameter(0)} mean=${fout.getParameter(1)} sigma=${fout.getParameter(2)}"
+            println "  fout.evaluate(${mean_fit}) = ${fout.evaluate(mean_fit)}"
+
+            try {
+                DataFitter.fit(fout, h1, "RQ")
+                println "  FIT SUCCEEDED"
+            } catch (Exception e) {
+                println "  FIT FAILED: ${e.getClass().getName()}: ${e.getMessage()}"
+            }
+
+            println "  AFTER FIT: amp=${fout.getParameter(0)} mean=${fout.getParameter(1)} sigma=${fout.getParameter(2)}"
+            println "=== END DEBUG ==="
+//            System.setOut(new PrintStream(OutputStream.nullOutputStream()))
+//            DataFitter.fit(fout, h1, "RQ")
+//        System.setOut(original)
 
 			return fout
 		}
