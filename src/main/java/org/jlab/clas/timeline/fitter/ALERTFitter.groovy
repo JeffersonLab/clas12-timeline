@@ -9,12 +9,18 @@ package org.jlab.clas.timeline.fitter
 import org.jlab.groot.fitter.DataFitter
 import org.jlab.groot.data.H1F
 import org.jlab.groot.math.F1D
-import org.jlab.groot.math.Func1D
 
-class CrystalBallFunc extends Func1D {
+class CrystalBallFunc extends F1D {
 
     CrystalBallFunc(String name, double min, double max) {
-        super(name, 6, min, max)  // check constructor order!
+        super(name)  // check constructor order!
+        setRange(min, max);
+        addParameter("amp");
+        addParameter("mean");
+        addParameter("sigma");
+        addParameter("alpha");
+        addParameter("n");
+        addParameter("cst");
     }
 
     @Override
@@ -68,6 +74,8 @@ class ALERTFitter{
 
 
 	static F1D atof_time_fitter(H1F h1, int component, double fit_min, double fit_max){
+           
+            String expression = "[amp]*(  (1/(1+exp(-50*(((x-[mean])/[sigma])+abs([alpha]))))) * exp(-0.5*((x-[mean])/[sigma])^2)  +  (1-(1/(1+exp(-50*(((x-[mean])/[sigma])+abs([alpha])))))) *  (([n]/abs([alpha]))^[n] * exp(-0.5*abs([alpha])^2)) *  (abs([n]/abs([alpha]) - abs([alpha]) - (x-[mean])/[sigma]))^(-[n])) + [cst]"
 		if(component>9){//bars
 			double maxz = h1.getBinContent(h1.getMaximumBin());
 			double peak_location = h1.getAxis().getBinCenter(h1.getMaximumBin());
@@ -85,7 +93,7 @@ class ALERTFitter{
             double fitLow  = peak_location - 2.0
             double fitHigh = peak_location + 1.5
             
-            def f1 = new CrystalBallFunc("fit:" + h1.getName(), fitLow, fitHigh)
+            def f1 = new CrystalBallFunc("fitCrystal:" + h1.getName(), fitLow, fitHigh)
             f1.setLineColor(33);
             f1.setLineWidth(10);
             f1.setOptStat("1111");
@@ -104,14 +112,16 @@ class ALERTFitter{
 			//double hMean, hRMS
 			//def originalOut = System.out
 			//System.setOut(new PrintStream(OutputStream.nullOutputStream()))  // Java 11+
-            println "=== DEBUG: before fit ==="
+            println "=== DEBUG BARS: before fit ==="
             println "  f1 class: ${f1.getClass().getName()}"
             println "  f1 is Func1D: ${f1 instanceof Func1D}"
             println "  f1 is F1D: ${f1 instanceof F1D}"
             println "  amp before fit: ${f1.getParameter(0)}"
             println "  mean before fit: ${f1.getParameter(1)}"
             try {
+                //System.setOut(new PrintStream(OutputStream.nullOutputStream()))
                 DataFitter.fit(f1, h1, "")
+                //System.setOut(originalOut)  // Restore the original output
                 println "  FIT SUCCEEDED"
             } catch (Exception e) {
                 println "  FIT FAILED: ${e.getClass().getName()}: ${e.getMessage()}"
@@ -120,13 +130,23 @@ class ALERTFitter{
             println "  amp after fit: ${f1.getParameter(0)}"
             println "  mean after fit: ${f1.getParameter(1)}"
             println "  sigma after fit: ${f1.getParameter(2)}"
-            println "=== END DEBUG ==="
+            println("Printing out f1...")
+            println(f1)
 			// Code that prints to System.out
 //			DataFitter.fit(f1, h1, "");
 
-//			System.setOut(originalOut)  // Restore the original output
+           def fout = new F1D("fit:" +  h1.getName(), expression, fitLow, fitHigh)//Use sigmoid to mock up the step function.
+           fout.setParameter(0, f1.getParameter(0))
+           fout.setParameter(1, f1.getParameter(1))
+           fout.setParameter(2, f1.getParameter(2))
+           fout.setParameter(3, f1.getParameter(3))
+           fout.setParameter(4, f1.getParameter(4))
+           fout.setParameter(5, f1.getParameter(5))
+           println("Printing out fout...")
+           println(fout)
+           println "=== END DEBUG BARS==="
 
-            return f1
+            return fout
 		}
 		else{//wedges
             PrintStream original = System.out
@@ -255,42 +275,59 @@ class ALERTFitter{
             double fitLow  = mean_fit - 1.0
             double fitHigh = mean_fit + 1.0
 
-            def fout = new CrystalBallFunc("fit:" + h1.getName(), fitLow, fitHigh)
-            fout.setLineColor(33)
-            fout.setLineWidth(10)
+            def f1 = new CrystalBallFunc("fitCrystal:" + h1.getName(), fitLow, fitHigh)
+            f1.setLineColor(33)
+            f1.setLineWidth(10)
 
-            fout.setParameter(0, localMax)       // amp   → index 0
-            fout.setParameter(1, mean_fit)       // mean  → index 1
-            fout.setParameter(2, sigmaEst)       // sigma → index 2
-            fout.setParameter(3, -0.5)           // alpha → index 3
-            fout.setParameter(4, 2.0)            // n     → index 4
-            fout.setParameter(5, 0)              // cst   → index 5
-            fout.setParLimits(0, localMax * 0.9, localMax * 1.1)
-            fout.setParLimits(1, mean_fit - 0.5, mean_fit)
-            fout.setParLimits(2, 0.1, 1.5)
-            fout.setParLimits(3, -10.0, -0.0)
-            fout.setParLimits(4, 1.0, 5.0)
-            fout.setParLimits(5, 0, maxY * 0.5)
-
+            f1.setParameter(0, localMax)       // amp   → index 0
+            f1.setParameter(1, mean_fit)       // mean  → index 1
+            f1.setParameter(2, sigmaEst)       // sigma → index 2
+            f1.setParameter(3, -0.5)           // alpha → index 3
+            f1.setParameter(4, 2.0)            // n     → index 4
+            f1.setParameter(5, 0)              // cst   → index 5
+            f1.setParLimits(0, localMax * 0.9, localMax * 1.1)
+            f1.setParLimits(1, mean_fit - 0.5, mean_fit)
+            f1.setParLimits(2, 0.1, 1.5)
+            f1.setParLimits(3, -10.0, -0.0)
+            f1.setParLimits(4, 1.0, 5.0)
+            f1.setParLimits(5, 0, maxY * 0.5)
             println "=== DEBUG WEDGES ==="
-            println "  fout class: ${fout.getClass().getName()}"
-            println "  amp=${fout.getParameter(0)} mean=${fout.getParameter(1)} sigma=${fout.getParameter(2)}"
-            println "  fout.evaluate(${mean_fit}) = ${fout.evaluate(mean_fit)}"
+            println "  f1 class: ${f1.getClass().getName()}"
+            println "  f1 is Func1D: ${f1 instanceof Func1D}"
+            println "  f1 is F1D: ${f1 instanceof F1D}"
+            println "  amp before fit: ${f1.getParameter(0)}"
+            println "  mean before fit: ${f1.getParameter(1)}"
 
             try {
-                DataFitter.fit(fout, h1, "RQ")
+                //System.setOut(new PrintStream(OutputStream.nullOutputStream()))
+                DataFitter.fit(f1, h1, "RQ")
+                //System.setOut(original)
                 println "  FIT SUCCEEDED"
             } catch (Exception e) {
                 println "  FIT FAILED: ${e.getClass().getName()}: ${e.getMessage()}"
             }
+            println "  amp after fit: ${f1.getParameter(0)}"
+            println "  mean after fit: ${f1.getParameter(1)}"
+            println "  sigma after fit: ${f1.getParameter(2)}"
+            println("Printing out f1...")
+            println(f1)
+            def fout = new F1D("fit:" +  h1.getName(), expression, fitLow, fitHigh)
+            fout.setParameter(0, f1.getParameter(0))
+            fout.setParameter(1, f1.getParameter(1))
+            fout.setParameter(2, f1.getParameter(2))
+            fout.setParameter(3, f1.getParameter(3))
+            fout.setParameter(4, f1.getParameter(4))
+            fout.setParameter(5, f1.getParameter(5))
+            println("Printing out fout...")
+            println(fout)
 
-            println "  AFTER FIT: amp=${fout.getParameter(0)} mean=${fout.getParameter(1)} sigma=${fout.getParameter(2)}"
-            println "=== END DEBUG ==="
+            println "=== END DEBUG WEDGES ==="
+
+            return fout
 //            System.setOut(new PrintStream(OutputStream.nullOutputStream()))
 //            DataFitter.fit(fout, h1, "RQ")
 //        System.setOut(original)
 
-			return fout
 		}
 	}
 
