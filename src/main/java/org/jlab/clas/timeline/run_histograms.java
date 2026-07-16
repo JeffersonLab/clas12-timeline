@@ -69,9 +69,16 @@ public class run_histograms {
     // instantiate QADB histograms and fill charge histograms
     QadbBinSequence<QadbBinHistograms> qa_seq = null;
     if(whichHistos.equals("all") || whichHistos.equals("qadb")) {
-      qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinHistograms(bin_num));
-      for(var qa_bin : qa_seq) {
-        qa_bin.data.charge.fillDSC2(qa_bin);
+      try {
+        qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinHistograms(bin_num));
+      }
+      catch (RuntimeException e) {
+        System.err.println("WARNING: Failed to construct QadbBinSequence: " + e.getMessage());
+      }
+      if(qa_seq != null) {
+        for(var qa_bin : qa_seq) {
+          qa_bin.data.charge.fillDSC2(qa_bin);
+        }
       }
     }
 

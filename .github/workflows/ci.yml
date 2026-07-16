@@ -56,6 +56,9 @@ jobs:
         include:
           - { type: detectors, schema: mon }
           - { type: physics,   schema: dst }
+          #
+          # FIXME: add 'qadb' test on 'dst' schema
+          #
     steps:
       - uses: actions/cache@v6
         id: cache
