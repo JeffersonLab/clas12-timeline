@@ -121,8 +121,10 @@ usageVerbose() {
        --focus-detectors   run histogramming for detector QA timelines only
 
        --focus-physics     run histogramming for physics QA timelines only
+                           - these timelines will be deprecated someday
 
        --focus-qadb        run histogramming for QADB timelines only
+                           - these are the new, refactored physics timelines
 
      *** MISCELLANEOUS OPTIONS
 

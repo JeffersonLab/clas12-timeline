@@ -90,7 +90,6 @@ public class run_histograms {
     helicity   ana_helicity = null;
     trigger    ana_trigger  = null;
 
-
     // instantiate histogramming classes
     if(whichHistos.equals("all")) {
       ana_mon      = new GeneralMon(runNum,outputDir,EB,useTB);

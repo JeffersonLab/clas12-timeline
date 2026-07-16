@@ -8,7 +8,7 @@ import org.jlab.groot.data.TDirectory;
  */
 public class QadbBinHistograms {
 
-  // class instances
+  // histogram class instances
   public Charge charge;
   private Electron electron;
   private Yield yield;

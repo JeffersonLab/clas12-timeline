@@ -10,6 +10,12 @@ class qadb {
   private def ana_qadb_charge = new qadb_charge()
   private def ana_qadb_yield = new qadb_yield()
 
+  // ----------------------------------------------------------------------------------
+
+  /**
+   * read the QADB binning scheme for all files
+   * @param histo_files the list of HIPO files to be analyzed
+   */
   public def start(histo_files) {
     histo_files.collect{it.replace(".hipo", ".dat")}.each { histo_file ->
       def run = Tools.getRunNumberForAnalysis(histo_file)

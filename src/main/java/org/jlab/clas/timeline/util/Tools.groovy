@@ -57,7 +57,7 @@ class Tools {
   // MATH //
   //////////
 
-  // safe ratio: if the denominator is not greater than zero, return zero
+  // safe ratio: if the denominator is zero, return zero
   static def safeRatio(a, b) {
     return Math.abs(b) > 1e-12 ? a / b : 0.0
   }
