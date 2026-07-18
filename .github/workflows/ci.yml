@@ -56,7 +56,7 @@ jobs:
         include:
           - { type: detectors, schema: mon }
           - { type: physics,   schema: dst }
-          - { type: qadb,      schema: dst } # FIXME(*): need `dst` schema, since `mon` test files are too small
+          - { type: qadb,      schema: dst } # FIXME(*): need `dst` schema, since `mon` test files lack scalers (are they too small?)
     steps:
       - uses: actions/cache@v6
         id: cache

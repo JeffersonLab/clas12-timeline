@@ -125,6 +125,7 @@ usageVerbose() {
 
        --focus-qadb        run histogramming for QADB timelines only
                            - these are the new, refactored physics timelines
+                           - \`--focus-detectors\` will also produce these
 
      *** MISCELLANEOUS OPTIONS
 
@@ -251,7 +252,7 @@ for key in focus-detectors focus-physics focus-qadb; do
   if ${modes[$key]}; then modes['focus-all']=false; fi
 done
 if ${modes['focus-qadb']}; then
-  modes['focus-detectors']=true; # FIXME: this is a hack, til we can get rid of 'focus-detectors' and 'focus-physics'
+  modes['focus-detectors']=true; # the new QADB timelines are a part of the 'detector' timelines
 fi
 if ${modes['swifjob']} && ${modes['focus-all']}; then
   printError "option --swifjob must be used with either --focus-detectors or --focus-physics"
