@@ -257,5 +257,5 @@ if(allow_timeline) {
   println("debug: "+engine.getClass().getSimpleName()+" ended")
 }
 else {
-  println("debug: "+engine.getClass().getSimpleName()+" was not produced, since all runs were excluded")
+  println("debug: "+engine.getClass().getSimpleName()+" was not produced, since all runs were excluded, or there were no histogram files")
 }

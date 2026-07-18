@@ -56,9 +56,7 @@ jobs:
         include:
           - { type: detectors, schema: mon }
           - { type: physics,   schema: dst }
-          #
-          # FIXME: add 'qadb' test on 'dst' schema
-          #
+          - { type: qadb,      schema: dst }
     steps:
       - uses: actions/cache@v6
         id: cache
@@ -90,7 +88,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        type: [ detectors, physics ]
+        type: [ detectors, physics, qadb ]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/cache/restore@v6
@@ -102,8 +100,7 @@ jobs:
         with:
           name: build_timeline
       - name: untar
-        run: ls *.tar.zst | xargs -I{} tar xavf {}
-      - run: tree
+        run: ls *.tar.zst | xargs -I{} tar xaf {}
       - name: qtl histogram
         run: |
           bin/qtl histogram \
@@ -136,7 +133,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        type: [ detectors, physics ]
+        type: [ detectors, physics, qadb ]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/cache/restore@v6
@@ -148,7 +145,7 @@ jobs:
         with:
           name: build_timeline
       - name: untar
-        run: ls *.tar.zst | xargs -I{} tar xavf {}
+        run: ls *.tar.zst | xargs -I{} tar xaf {}
       - run: tree
       - name: test swifjob
         run: |
@@ -170,10 +167,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        type: [ detectors, physics ]
+        type: [ detectors, physics, qadb ]
         include:
           - { type: detectors, qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya' }
           - { type: physics,   qtl_cmd: 'bin/qtl physics',  args: '' }
+          - { type: qadb,      qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya' }
     steps:
       - uses: actions/checkout@v7
       - name: download outfiles
@@ -187,8 +185,7 @@ jobs:
         with:
           name: build_timeline
       - name: untar
-        run: ls *.tar.zst | xargs -I{} tar xavf {}
-      - run: tree
+        run: ls *.tar.zst | xargs -I{} tar xaf {}
       - name: qtl analysis
         run: |
           ${{matrix.qtl_cmd}} \
@@ -208,11 +205,11 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@v7
         with:
-          name: outfiles_timelines_${{ matrix.type }}
+          name: outfiles_analysis_${{ matrix.type }}
           retention-days: 14
           path: outfiles
       - uses: actions/upload-artifact@v7
         with:
-          name: web_timelines_${{ matrix.type }}
+          name: web_${{ matrix.type }}
           retention-days: 14
           path: web

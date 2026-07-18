@@ -39,6 +39,20 @@ public class run_histograms {
     // get the dataset which contains this run number
     var dataset = RunDependentCut.findDataset(runNum);
 
+    // handle `whichHistos`, to decide which histograms to activate
+    boolean enableHistosQadb = false;
+    boolean enableHistosDet  = false;
+    if(whichHistos.equals("all")) {
+      enableHistosQadb = true;
+      enableHistosDet  = true;
+    } else if(whichHistos.equals("qadb")) {
+      enableHistosQadb = true;
+    } else if(whichHistos.equals("det")) {
+      enableHistosDet = true;
+    } else {
+      throw new RuntimeException("unknown 'whichHistos' setting '" + whichHistos + "'");
+    }
+
     // get list of input HIPO files
     List<String> input_file_list = new ArrayList<String>();
     File file = new File(filelist);
@@ -66,23 +80,8 @@ public class run_histograms {
     long previousTime = System.currentTimeMillis();
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
-    // instantiate QADB histograms and fill charge histograms
-    QadbBinSequence<QadbBinHistograms> qa_seq = null;
-    if(whichHistos.equals("all") || whichHistos.equals("qadb")) {
-      try {
-        qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinHistograms(bin_num));
-      }
-      catch (RuntimeException e) {
-        System.err.println("WARNING: Failed to construct QadbBinSequence: " + e.getMessage());
-      }
-      if(qa_seq != null) {
-        for(var qa_bin : qa_seq) {
-          qa_bin.data.charge.fillDSC2(qa_bin);
-        }
-      }
-    }
-
     // declare histogramming classes
+    QadbBinSequence<QadbBinHistograms> qa_seq = null;
     GeneralMon ana_mon      = null;
     DCandFTOF  ana_dc_ftof  = null;
     CTOF       ana_ctof     = null;
@@ -98,7 +97,16 @@ public class run_histograms {
     trigger    ana_trigger  = null;
 
     // instantiate histogramming classes
-    if(whichHistos.equals("all")) {
+    if(enableHistosQadb) {
+      try {
+        qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinHistograms(bin_num));
+      }
+      catch (RuntimeException e) {
+        System.err.println("WARNING: Failed to construct QadbBinSequence; reason: " + e.getMessage());
+        System.err.println("         If you're a chef, just notify Chris Dilks; this won't impact calibration timelines");
+      }
+    }
+    if(enableHistosDet) {
       ana_mon      = new GeneralMon(runNum,outputDir,EB,useTB);
       ana_dc_ftof  = new DCandFTOF(runNum,outputDir,useTB);
       ana_ctof     = new CTOF(runNum,outputDir,useTB);
@@ -112,6 +120,13 @@ public class run_histograms {
       ana_alert    = dataset == "rgl" ? new ALERT(runNum,outputDir,EB,useTB) : null;
       ana_helicity = new helicity();
       ana_trigger  = new trigger();
+    }
+
+    // fill QADB charge histograms
+    if(qa_seq != null) {
+      for(var qa_bin : qa_seq) {
+        qa_bin.data.charge.fillDSC2(qa_bin);
+      }
     }
 
     // loop over input HIPO files
