@@ -56,7 +56,7 @@ jobs:
         include:
           - { type: detectors, schema: mon }
           - { type: physics,   schema: dst }
-          - { type: qadb,      schema: dst }
+          - { type: qadb,      schema: dst } # FIXME(*): need `dst` schema, since `mon` test files are too small
     steps:
       - uses: actions/cache@v6
         id: cache
@@ -171,7 +171,7 @@ jobs:
         include:
           - { type: detectors, qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya' }
           - { type: physics,   qtl_cmd: 'bin/qtl physics',  args: '' }
-          - { type: qadb,      qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya' }
+          - { type: qadb,      qtl_cmd: 'bin/qtl analysis', args: '-j 4 --skip-mya -t qadb' } # see FIXME(*) above, for why 'qadb' is separate from 'detectors' for now
     steps:
       - uses: actions/checkout@v7
       - name: download outfiles
