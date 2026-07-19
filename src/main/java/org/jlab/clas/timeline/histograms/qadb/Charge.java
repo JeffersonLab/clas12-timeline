@@ -53,23 +53,24 @@ public class Charge {
    **/
   public Charge(int bin_num)
   {
+    // these are histograms, with one bin for each `enum` value; see the `enum`'s definitions for details
     dsc2_charge_hist = new H1F(
         "dsc2_charge_hist" + "_qa" + String.valueOf(bin_num),
-        "enum type",
+        "enum DSC2Type",
         "charge [nC]",
         DSC2Type.values().length,
         0,
         DSC2Type.values().length);
     struck_charge_hist = new H1F(
         "struck_charge_hist" + "_qa" + String.valueOf(bin_num),
-        "enum type",
+        "enum STRUCKType",
         "charge [nC]",
         STRUCKType.values().length,
         0,
         STRUCKType.values().length);
     struck_clock_hist = new H1F(
         "struck_clock_hist" + "_qa" + String.valueOf(bin_num),
-        "enum type",
+        "enum STRUCKType",
         "clock",
         STRUCKType.values().length,
         0,
@@ -150,7 +151,7 @@ public class Charge {
   /** @return mean livetime */
   public double getMeanLivetime()
   {
-    return dsc2_charge_hist.getBinContent(DSC2Type.ungated_int.ordinal());
+    return dsc2_charge_hist.getBinContent(DSC2Type.mean_livetime.ordinal());
   }
 
   // ----------------------------------------------------------------------------------
