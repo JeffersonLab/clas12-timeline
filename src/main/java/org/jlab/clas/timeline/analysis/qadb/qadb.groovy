@@ -19,10 +19,7 @@ class qadb {
    */
   public def start(histo_files) {
     if(histo_files.isEmpty()) {
-      // FIXME: for now, let this warning go to `stdout`, since we expect to have an upstream
-      // warning already in `stderr` from `run_histograms.java`, and I don't want chefs to
-      // be bothered by an additional warning here, until this new QADB code is stable
-      System.out.println "WARNING: `qadb.start` called with no input HIPO histogram files; no QADB timelines will be produced"
+      System.err.println "WARNING: `qadb.start` called with no input HIPO histogram files; no QADB timelines will be produced"
       return
     }
     histo_files.collect{it.replace(".hipo", ".dat")}.each { histo_file ->

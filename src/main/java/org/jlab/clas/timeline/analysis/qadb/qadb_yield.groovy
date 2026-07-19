@@ -15,10 +15,33 @@ class qadb_yield {
 
   // ----------------------------------------------------------------------------------
 
+  // the `data_map` data structure will be filled like so:
+  /*
+     data_map
+     |_ runnum 1
+     |  |
+     |  |__ charge
+     |  |   |_ 1 -> histograms from Charge.java for bin 1
+     |  |   :
+     |  |   |_ N -> histograms from Charge.java for bin N
+     |  |
+     |  |__ yield
+     |      |_ 1 -> histograms from Yield.java for bin 1
+     |      :
+     |      |_ N -> histograms from Yield.java for bin N
+     |
+     |_ runnum 2
+     |  |_ charge
+     |  |  |_ ...
+     |  |_ yield
+     |     |_ ...
+     :
+  */
   def processRun(dir, runnum, qa_map) {
     data_map[runnum] = [run:runnum, yield:[:], charge:[:]]
+    // loop over QA bins for this run
     qa_map[runnum].each { qa_bin ->
-      def yield = new Yield(qa_bin.getBinNum())
+      def yield  = new Yield(qa_bin.getBinNum())
       def charge = new Charge(qa_bin.getBinNum())
       yield.readHistograms(dir, qa_bin.getBinNum())
       charge.readHistograms(dir, qa_bin.getBinNum())
@@ -43,7 +66,9 @@ class qadb_yield {
       g.setTitleX 'Run Number'
       g
     }
-    def tl_fd_ele_nq = Tools.collectSectors{ s -> make_tl "FD_ele_sec${s}", 'FD Electron Yield N / Charge q [nC]' } // map: sector -> graph
+    def tl_fd_ele_nq = Tools.collectSectors{ s -> // `collectSectors` will build a map of sector number (`s`) -> graph returned by `make_tl`
+      make_tl "FD_ele_sec${s}", 'FD Electron Yield N / Charge q [nC]' // they all get the same title, since they'll be plotted on the same canvas; the graph name goes in the legend
+    }
     def tl_ft_ele_nq = make_tl "FT_ele", 'FT Electron Yield N / Charge q [nC]'
 
     // loop over runs, filling graphs
@@ -89,11 +114,14 @@ class qadb_yield {
       // calculate total charge for this run by summing over its QA bins' charges
       def q_run = 0.0
       run_data['charge'].each{ binnum, histos -> q_run += histos.getChargeGatedDSC2() }
+
       // fill timeline graphs
       def add_tl_point = { rn_n, tl_nq ->
-        def sum = 0.0
-        rn_n.getDataSize(0).times{ sum += rn_n.getDataY(it) }
-        tl_nq.addPoint runnum, Tools.safeRatio(sum,q_run), 0, 0
+        // get the total N for this run
+        def n_run = 0.0
+        rn_n.getDataSize(0).times{ n_run += rn_n.getDataY(it) }
+        // put total N / total q for this run onto the graph
+        tl_nq.addPoint runnum, Tools.safeRatio(n_run,q_run), 0, 0
       }
       Tools.eachSector{ s -> add_tl_point rn_fd_ele_n[s], tl_fd_ele_nq[s] }
       add_tl_point rn_ft_ele_n, tl_ft_ele_nq
@@ -120,7 +148,7 @@ class qadb_yield {
     tdir_ft_ele.cd    '/timelines'
     tdir_ft_ele.addDataSet tl_ft_ele_nq
 
-    // write HIPO
+    // write HIPO files
     tdir_fd_ele.writeFile 'qadb_yield_FD_electrons.hipo'
     tdir_ft_ele.writeFile 'qadb_yield_FT_electrons.hipo'
   }

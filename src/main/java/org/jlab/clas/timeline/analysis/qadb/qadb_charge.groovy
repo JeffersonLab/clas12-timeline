@@ -14,8 +14,23 @@ class qadb_charge {
 
   // ----------------------------------------------------------------------------------
 
+  // the `data_map` data structure will be filled like so:
+  /*
+     data_map
+     |_ runnum 1
+     |  |__ histos
+     |      |_ 1 -> histograms from Charge.java for bin 1
+     |      :
+     |      |_ N -> histograms from Charge.java for bin N
+     |
+     |_ runnum 2
+     |  |_ histos
+     |     |_ ...
+     :
+  */
   def processRun(dir, runnum, qa_map) {
     data_map[runnum] = [run:runnum, histos:[:]]
+    // loop over QA bins for this run
     qa_map[runnum].each { qa_bin ->
       def histos = new Charge(qa_bin.getBinNum())
       histos.readHistograms(dir, qa_bin.getBinNum())
@@ -35,12 +50,12 @@ class qadb_charge {
     // define timeline ('tl') graphs: charge vs. run number
     def make_tl = { name ->
       def g = new GraphErrors(name)
-      g.setTitle  'Charge q [nC]'
+      g.setTitle  'Charge q [nC]' // they all get the same title, since they're all plotted on one canvas
       g.setTitleY 'q [nC]'
       g.setTitleX 'Run Number'
       g
     }
-    def tl_dsc2_qg        = make_tl 'DSC2_qGated'
+    def tl_dsc2_qg        = make_tl 'DSC2_qGated' // these names appear in timeline legend, make them user-friendly
     def tl_dsc2_qu        = make_tl 'DSC2_qUngated'
     def tl_struck_helP_qg = make_tl 'STRUCK_helPositive_qGated'
     def tl_struck_hel0_qg = make_tl 'STRUCK_helUndefined_qGated'
@@ -51,7 +66,7 @@ class qadb_charge {
     // define cumulative timeline ('cutl') graphs: cumulative charge vs. run
     def make_cutl = { name ->
       def g = new GraphErrors(name)
-      g.setTitle  'Cumulative Charge q [mC]'
+      g.setTitle  'Cumulative Charge q [mC]' // use mC instead of nC, since cumulative charge will get large
       g.setTitleY 'Cumulative q [mC]'
       g.setTitleX 'Run Number'
       g
@@ -81,7 +96,7 @@ class qadb_charge {
     // loop over runs, filling graphs
     data_map.sort{it.key}.each { runnum, run_data ->
 
-      // define run graphs ('rn'): values vs. QA bin, for this run
+      // define run graphs ('rn'): various values vs. QA bin, for this run
       // NOTE: the front-end will order them alphabetically, so prefix their names with unique letters (`sort_prefix`)
       def make_rn = { sort_prefix, name, title, ytitle ->
         def g = new GraphErrors("${sort_prefix}__${name}__${runnum}")
@@ -119,7 +134,7 @@ class qadb_charge {
         def qg_struck_to_dsc2_unc = Tools.ratioPoissonUncertainty qg_struck_totl, histos.getChargeGatedDSC2()
         def qu_struck_to_dsc2     = Tools.safeRatio               qu_struck_totl, histos.getChargeUngatedDSC2()
         def qu_struck_to_dsc2_unc = Tools.ratioPoissonUncertainty qu_struck_totl, histos.getChargeUngatedDSC2()
-        // add charge points
+        // add charge points to 'rn' graphs
         rn_dsc2_qg.addPoint           binnum, histos.getChargeGatedDSC2(),     0, Math.sqrt(histos.getChargeGatedDSC2())
         rn_dsc2_qu.addPoint           binnum, histos.getChargeUngatedDSC2(),   0, Math.sqrt(histos.getChargeUngatedDSC2())
         rn_struck_helP_qg.addPoint    binnum, histos.getChargeGatedSTRUCK(1),  0, Math.sqrt(histos.getChargeGatedSTRUCK(1))
@@ -129,7 +144,7 @@ class qadb_charge {
         rn_struck_totl_qu.addPoint    binnum, qu_struck_totl,                  0, Math.sqrt(qu_struck_totl)
         rn_struck_to_dsc2_qg.addPoint binnum, qg_struck_to_dsc2,               0, qg_struck_to_dsc2_unc
         rn_struck_to_dsc2_qu.addPoint binnum, qu_struck_to_dsc2,               0, qu_struck_to_dsc2_unc
-        // add clock points
+        // add clock points to 'rn' graphs
         rn_struck_helP_cg.addPoint binnum, histos.getClockGatedSTRUCK(1),  0, Math.sqrt(histos.getClockGatedSTRUCK(1))
         rn_struck_hel0_cg.addPoint binnum, histos.getClockGatedSTRUCK(0),  0, Math.sqrt(histos.getClockGatedSTRUCK(0))
         rn_struck_helN_cg.addPoint binnum, histos.getClockGatedSTRUCK(-1), 0, Math.sqrt(histos.getClockGatedSTRUCK(-1))
@@ -159,7 +174,7 @@ class qadb_charge {
       add_tl_point rn_struck_totl_cu, cltl_struck_totl_cu
 
       // write charge run graphs for this run
-      [ tdir_tl, tdir_cutl ].each { tdir ->
+      [ tdir_tl, tdir_cutl ].each { tdir -> // both 'tl' and 'cutl' timelines will have these 'rn' graphs
         tdir.mkdir "/${runnum}"
         tdir.cd    "/${runnum}"
         tdir.addDataSet rn_dsc2_qg
@@ -200,7 +215,7 @@ class qadb_charge {
     fill_cutl cutl_struck_totl_qg, tl_struck_totl_qg
     fill_cutl cutl_struck_totl_qu, tl_struck_totl_qu
 
-    // write timelines
+    // write timeline graphs
     // charge per run
     tdir_tl.mkdir '/timelines'
     tdir_tl.cd    '/timelines'
@@ -230,7 +245,7 @@ class qadb_charge {
     tdir_cltl.addDataSet cltl_struck_totl_cg
     tdir_cltl.addDataSet cltl_struck_totl_cu
 
-    // write HIPO
+    // write HIPO files
     tdir_tl.writeFile   'qadb_charge_per_run.hipo'
     tdir_cutl.writeFile 'qadb_charge_cumulative.hipo'
     tdir_cltl.writeFile 'qadb_scaler_clock.hipo'
