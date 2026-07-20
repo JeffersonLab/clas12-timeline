@@ -17,7 +17,7 @@ SLURM_LOG=/farm_out/%u/%x-%A_%a
 # default options
 dataset=test_v0
 declare -A modes
-for key in findhipo rundir eachdir flatdir single series submit check-cache fast-ls swifjob focus-detectors focus-physics help; do
+for key in findhipo rundir eachdir flatdir single series submit check-cache fast-ls swifjob focus-detectors focus-physics focus-qadb help; do
   modes[$key]=false
 done
 outputDir=""
@@ -118,9 +118,14 @@ usageVerbose() {
          rather than the default of running everything; you may specify more
          than one
 
-       --focus-detectors   run histogramming for detector QA timelines
+       --focus-detectors   run histogramming for detector QA timelines only
 
-       --focus-physics     run histogramming for physics QA timelines
+       --focus-physics     run histogramming for physics QA timelines only
+                           - these timelines will be deprecated someday
+
+       --focus-qadb        run histogramming for QADB timelines only
+                           - these are the new, refactored physics timelines
+                           - \`--focus-detectors\` will also produce these
 
      *** MISCELLANEOUS OPTIONS
 
@@ -243,12 +248,21 @@ mkdir -p $outputDir
 
 # check focus options
 modes['focus-all']=true
-for key in focus-detectors focus-physics; do
+for key in focus-detectors focus-physics focus-qadb; do
   if ${modes[$key]}; then modes['focus-all']=false; fi
 done
+if ${modes['focus-qadb']}; then
+  modes['focus-detectors']=true; # the new QADB timelines are a part of the 'detector' timelines
+fi
 if ${modes['swifjob']} && ${modes['focus-all']}; then
   printError "option --swifjob must be used with either --focus-detectors or --focus-physics"
   exit 100
+fi
+
+# set `which_histos` (for `run_histograms`)
+whichHistos=all
+if ${modes['focus-qadb']}; then
+  whichHistos=qadb
 fi
 
 # print arguments
@@ -428,6 +442,7 @@ java $TIMELINE_JAVA_OPTS \\
     $runnum \\
     $outputSubDir \\
     $inputListFile \\
+    $whichHistos \\
     $ebeam
 
 # check output HIPO files

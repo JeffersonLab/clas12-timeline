@@ -2,6 +2,8 @@ package org.jlab.clas.timeline.util
 import org.jlab.clas.physics.LorentzVector
 import org.jlab.clas.physics.Vector3
 import org.jlab.io.hipo.HipoDataSource
+import org.jlab.io.base.DataBank
+import org.jlab.clas.physics.Particle
 import groovy.json.JsonOutput
 
 class Tools {
@@ -55,6 +57,11 @@ class Tools {
   // MATH //
   //////////
 
+  // safe ratio: if the denominator is zero, return zero
+  static def safeRatio(a, b) {
+    return Math.abs(b) > 1e-12 ? a / b : 0.0
+  }
+
   // calculate scalar product of 4-vectors
   def lorentzDot = { v1,v2 -> return v1.e()*v2.e() - v1.vect().dot(v2.vect()) }
 
@@ -72,7 +79,7 @@ class Tools {
     if(Math.abs(sgn)<0.00001) return -10000
     sgn /= Math.abs(sgn)
 
-    // calculate numerator and denominator 
+    // calculate numerator and denominator
     numer = crossAB.dot(crossCD) // (AxB).(CxD)
     denom = crossAB.mag() * crossCD.mag() // |AxB|*|CxD|
     if(Math.abs(denom)<0.00001) return -10000
@@ -92,8 +99,16 @@ class Tools {
     }
     return "0b"+str.reverse()
   }
-      
 
+  /**
+   * propagate uncertainty for a ratio, assuming Poisson statistics
+   * @param n the numerator
+   * @param d the denominator
+   * @return the uncertainty of {@code n/d}
+   */
+  static def ratioPoissonUncertainty(n, d) {
+    Tools.safeRatio(n,d) * Math.sqrt(Tools.safeRatio(1,n) + Tools.safeRatio(1,d))
+  }
 
   ///////////
   // TREES //
@@ -124,12 +139,12 @@ class Tools {
   //   the branches listed in the subsequent element of levelList; the last element of
   //   levelList refers to the leaves
   // - the leaves will be initialized with the result of the closure 'clos'
-  def buildTree = { trunkName, treeName, levelList, clos -> 
+  def buildTree = { trunkName, treeName, levelList, clos ->
     rec_buildTree( trunkName, [[treeName],*levelList], 0, clos )
   }
 
 
-  // get a leaf, following the path of branch names specified 
+  // get a leaf, following the path of branch names specified
   // by the list 'path'
   def getLeaf = { tree,path ->
     def node = tree
@@ -169,7 +184,7 @@ class Tools {
     // if the current node has branches, it is not a leaf; loop through the branches and
     // analyze their nodes
     if(node.getClass()==java.util.LinkedHashMap) {
-      node.each { 
+      node.each {
         path += it.key
         exeLeaves(it.value,clos,path)
         if(it.value.getClass()!=java.util.LinkedHashMap) it.value = leaf
@@ -227,5 +242,59 @@ class Tools {
     if(runnum<=0)
       System.err.println("[ERROR]: run number not found for file $infile")
     return runnum
+  }
+
+  /////////////
+  // SECTORS //
+  /////////////
+
+  /**
+   * loop over sectors, running a function on each
+   * @param ftn the function, with signature {@code ftn(sector)}
+   */
+  static def eachSector = { Closure ftn ->
+    (1..6).each { ftn it }
+  }
+
+  /**
+   * make a map of sector number to result of a function
+   * @param ftn the function, with signature {@code ftn(sector)}
+   * @return the map
+   */
+  static def collectSectors = { Closure ftn ->
+    (1..6).collectEntries { [it, ftn(it)] }
+  }
+
+  //////////
+  // MISC //
+  //////////
+
+  /**
+   * get run number from file's directory name (for `run_analysis` only!)
+   * @param fname the file name
+   * @return the run number
+   */
+  static def getRunNumberForAnalysis(fname) {
+    def dname = fname.split('/')[-2]
+    def m = dname =~ /\d+/
+    m[0].toInteger()
+  }
+
+  /**
+   * create a {@code Particle} object given a bank row
+   * @param bank the HIPO bank
+   * @param row the HIPO bank row
+   * @return the {@code Particle}
+   */
+  static Particle getParticle(DataBank bank, int row)
+  {
+    return new Particle(
+        bank.getInt("pid", row),
+        bank.getFloat("px", row),
+        bank.getFloat("py", row),
+        bank.getFloat("pz", row),
+        bank.getFloat("vx", row),
+        bank.getFloat("vy", row),
+        bank.getFloat("vz", row))
   }
 }

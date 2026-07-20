@@ -1,6 +1,8 @@
 package org.jlab.clas.timeline.analysis
-import org.jlab.clas.timeline.util.RunDependentCut
 
+import org.jlab.clas.timeline.util.RunDependentCut
+import org.jlab.clas.timeline.util.Tools
+import org.jlab.clas.timeline.analysis.qadb.qadb
 import org.jlab.groot.data.TDirectory
 
 // define timeline engines
@@ -164,6 +166,9 @@ def engines = [
   out_TRIGGER: [
     new trigger(),
   ],
+  out_QADB: [
+    new qadb(),
+  ],
 ]
 
 
@@ -199,6 +204,11 @@ inputDir.traverse {
     fnames.add(it.absolutePath)
 }
 
+// start QADB
+if(timelineArg == 'qadb') {
+  engine.start(fnames.sort())
+}
+
 // loop over input HIPO histogram files
 def allow_timeline = false
 fnames.sort().each{ fname ->
@@ -206,9 +216,7 @@ fnames.sort().each{ fname ->
     println("debug: "+engine.getClass().getSimpleName()+" started $fname")
 
     // get run number from directory name
-    def dname = fname.split('/')[-2]
-    def m = dname =~ /\d+/
-    def run = m[0].toInteger()
+    def run = Tools.getRunNumberForAnalysis fname
 
     // exclude certain run ranges from certain timelines
     def allow_run = true
@@ -249,5 +257,5 @@ if(allow_timeline) {
   println("debug: "+engine.getClass().getSimpleName()+" ended")
 }
 else {
-  println("debug: "+engine.getClass().getSimpleName()+" was not produced, since all runs were excluded")
+  println("debug: "+engine.getClass().getSimpleName()+" was not produced, since all runs were excluded, or there were no histogram files")
 }
