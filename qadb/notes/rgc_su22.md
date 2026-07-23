@@ -47,8 +47,8 @@ bin/qtl histogram -d rgc_su22_prescaled --skimdir --focus-physics $(ls -d /volat
 ```
 Alternatively, for `sidisdvcs` trains (which have better statistics for asymmetries):
 ```bash
-bin/qtl histogram --check-cache -d rgc_su22_sidisdvcs --skimdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
-bin/qtl histogram -d rgc_su22_sidisdvcs --skimdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
+bin/qtl histogram -d rgc_su22_sidisdvcs --check-cache --skimdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
+bin/qtl histogram -d rgc_su22_sidisdvcs --check-charge --submit --skimdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
 ```
 Cross check the train and DST run lists:
 ```bash

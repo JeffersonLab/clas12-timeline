@@ -30,7 +30,7 @@ bin/qtl histogram -d rge_sp24 --check-cache --dstdir --fast-ls --focus-physics $
 
 run:
 ```bash
-bin/qtl histogram -d rge_sp24 --dstdir --fast-ls --focus-physics $(ls -d /cache/clas12/rg-e/production/spring2024/pass1/*/*/dst/recon)
+bin/qtl histogram -d rge_sp24 --check-charge --submit --dstdir --fast-ls --focus-physics $(ls -d /cache/clas12/rg-e/production/spring2024/pass1/*/*/dst/recon)
 ```
 
 ## Double check that we have all the runs

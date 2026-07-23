@@ -14,8 +14,8 @@ for d in $(ls -d /mss/clas12/rg-c/production/fall22/pass1/*/dst); do echo "=====
 
 We will combine the targets' data into a single dataset named `rgc_fa22_prescaled`.
 ```bash
-bin/qtl histogram --check-cache -d rgc_fa22_sidisdvcs --skimdir --focus-physics $(ls -d /cache/clas12/rg-c/production/fall22/pass1/*/dst/train/sidisdvcs/)
-bin/qtl histogram -d rgc_fa22_sidisdvcs --skimdir --focus-physics $(ls -d /cache/clas12/rg-c/production/fall22/pass1/*/dst/train/sidisdvcs/)
+bin/qtl histogram -d rgc_fa22_sidisdvcs --check-cache --skimdir --focus-physics $(ls -d /cache/clas12/rg-c/production/fall22/pass1/*/dst/train/sidisdvcs/)
+bin/qtl histogram -d rgc_fa22_sidisdvcs --check-charge --submit --skimdir --focus-physics $(ls -d /cache/clas12/rg-c/production/fall22/pass1/*/dst/train/sidisdvcs/)
 ```
 
 ## Double check that we have all the runs

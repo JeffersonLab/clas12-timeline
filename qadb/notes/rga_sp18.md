@@ -110,10 +110,10 @@ then see files in `test_charge/`.
 
 ```bash
 # 10.6 GeV data
-bin/qtl histogram -d rga_sp18_outbending_nSidis --submit --skimdir --focus-physics /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_outbending_nSidis
-bin/qtl histogram -d rga_sp18_inbending_nSidis  --submit --skimdir --focus-physics /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_inbending_nSidis
+bin/qtl histogram -d rga_sp18_outbending_nSidis --check-charge --submit --skimdir --focus-physics /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_outbending_nSidis
+bin/qtl histogram -d rga_sp18_inbending_nSidis  --check-charge --submit --skimdir --focus-physics /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_inbending_nSidis
 # 6.4 GeV data
-bin/qtl histogram -d rga_sp18_6.4GeV_nSidis --submit --skimdir --focus-physics    \
+bin/qtl histogram -d rga_sp18_6.4GeV_nSidis --check-charge --submit --skimdir --focus-physics    \
   /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_outbending_nSidis    \
   /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_inbending_nSidis     \
   /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_outbending_lo_nSidis \

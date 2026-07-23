@@ -20,8 +20,8 @@ bin/qtl histogram -d rga_fa18_outbending_nSidis --check-cache --skimdir --focus-
 ```
 then run monitoring
 ```bash
-bin/qtl histogram -d rga_fa18_inbending_nSidis  --submit --skimdir --focus-physics /cache/clas12/rg-a/production/recon/fall2018/torus-1/pass2/main/train/nSidis
-bin/qtl histogram -d rga_fa18_outbending_nSidis --submit --skimdir --focus-physics /cache/clas12/rg-a/production/recon/fall2018/torus+1/pass2/train/nSidis
+bin/qtl histogram -d rga_fa18_inbending_nSidis  --check-charge --submit --skimdir --focus-physics /cache/clas12/rg-a/production/recon/fall2018/torus-1/pass2/main/train/nSidis
+bin/qtl histogram -d rga_fa18_outbending_nSidis --check-charge --submit --skimdir --focus-physics /cache/clas12/rg-a/production/recon/fall2018/torus+1/pass2/train/nSidis
 ```
 
 ## Double check that we have all the runs

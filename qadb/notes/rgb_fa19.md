@@ -22,7 +22,7 @@ bin/qtl histogram -d rgb_fa19_sidisdvcs --check-cache --skimdir --focus-physics 
 ```
 then run monitoring
 ```bash
-bin/qtl histogram -d rgb_fa19_sidisdvcs --submit --skimdir --focus-physics \
+bin/qtl histogram -d rgb_fa19_sidisdvcs --check-charge --submit --skimdir --focus-physics \
   /cache/clas12/rg-b/production/recon/fall2019/torus+1/pass2/v1/dst/train/sidisdvcs/ \
   /cache/clas12/rg-b/production/recon/fall2019/torus-1/pass2/v1/dst/train/sidisdvcs/
 ```
