@@ -17,7 +17,7 @@ declare -A REHEAT_METHODS=(
 
 # default options
 dataset=train
-coatjava_version=13.8.0 # 13.3.0: first version with rollover correction, used for RG-A Spring 2018 reheating
+coatjava_version=13.8.5 # 13.3.0: first version with rollover correction, used for RG-A Spring 2018 reheating
                         # 13.8.0: fix: avoid call to method that recalibrates already-calibrated dsc2
                         #         https://github.com/JeffersonLab/coatjava/pull/1153
 declare -A modes
@@ -37,7 +37,9 @@ usage() {
   $sep
 
   REQUIRED OPTIONS:
-     -i [INPUT_DIR]    input directory of HIPO files; all HIPO files will be reheated
+     -i [INPUT]        input: 1 HIPO file, or a directory of HIPO files
+                       - if a directory, all HIPO files within will be processed with SLURM
+                       - if 1 file, it will just be processed now
      -o [OUTPUT_DIR]   output directory
      -m [METHOD]       which reheating method to use, one of:
 $(for key in "${!REHEAT_METHODS[@]}"; do printf "%24s %-11s %-s\n" "" "$key" "${REHEAT_METHODS[$key]}"; done)
@@ -59,12 +61,12 @@ if [ $# -lt 1 ]; then
 fi
 
 # parse options
-inputDir=""
+inputObj=""
 outputDir=""
 mtd=""
 while getopts "i:o:m:d:c:h-:" opt; do
   case $opt in
-    i) inputDir=$OPTARG ;;
+    i) inputObj=$OPTARG ;;
     o) outputDir=$OPTARG ;;
     m)
       [ -z "${REHEAT_METHODS[$OPTARG]-}" ] && printError "unknown command '$OPTARG'" && exit 100
@@ -86,15 +88,23 @@ while getopts "i:o:m:d:c:h-:" opt; do
   esac
 done
 
-# check arguments
-[ -z "$inputDir" ] && printError "missing input directory argument" && exit 100
+# check required arguments
+[ -z "$inputObj" ] && printError "missing input argument" && exit 100
 [ -z "$outputDir" ] && printError "missing output directory argument" && exit 100
 [ -z "$mtd" ] && printError "missing method argument" && exit 100
 
 # get list of input files
-[ ! -d $inputDir ] && printError "input directory '$inputDir' not found" && exit 100
-inputFiles=($(find $inputDir -maxdepth 1 -name "*.hipo"))
-[ ${#inputFiles[@]} -eq 0 ] && printError "no HIPO files found within input directory" && exit 100
+useSlurm=false
+if [[ "$inputObj" == *.hipo ]]; then
+  [ ! -f "$inputObj" ] && printError "input file '$inputObj' not found" && exit 100
+  inputFiles=("$inputObj")
+  useSlurm=false
+else
+  [ ! -d "$inputObj" ] && printError "input directory '$inputObj' not found" && exit 100
+  inputFiles=($(find "$inputObj" -maxdepth 1 -name "*.hipo"))
+  [ ${#inputFiles[@]} -eq 0 ] && printError "no HIPO files found within input directory" && exit 100
+  useSlurm=true
+fi
 
 # make output directory
 mkdir -p $outputDir
@@ -178,10 +188,11 @@ EOF
   echo $jobScript >> $jobList
 done
 
-
-# now generate slurm descriptions and/or local scripts
-slurmScript=$(echo $jobList | sed 's;.list$;.slurm;')
-cat > $slurmScript << EOF
+# run the job(s)
+if $useSlurm; then
+  # generate slurm descriptions and/or local scripts
+  slurmScript=$(echo $jobList | sed 's;.list$;.slurm;')
+  cat > $slurmScript << EOF
 #!/bin/sh
 #SBATCH --ntasks=1
 #SBATCH --job-name=$jobName
@@ -196,17 +207,21 @@ cat > $slurmScript << EOF
 #SBATCH --ntasks=1
 srun \$(head -n\$SLURM_ARRAY_TASK_ID $jobList | tail -n1)
 EOF
-
-# submit
-echo """
-SLURM SCRIPT: $slurmScript
-JOB LIST:     $jobList
-"""
-if ${modes['submit']}; then
-  echo "Now submitting!"
-  sbatch $slurmScript
-else
-  echo """Run this command to submit:
-  sbatch $slurmScript
+  # submit slurm jobs
+  echo """
+  SLURM SCRIPT: $slurmScript
+  JOB LIST:     $jobList
   """
+  if ${modes['submit']}; then
+    echo "Now submitting!"
+    sbatch $slurmScript
+  else
+    echo """Run this command to submit:
+    sbatch $slurmScript
+    """
+  fi
+else
+  # if not using slurm, run now
+  chmod u+x $jobList
+  exec $jobList
 fi
