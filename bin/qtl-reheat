@@ -21,7 +21,7 @@ coatjava_version=13.8.5 # 13.3.0: first version with rollover correction, used f
                         # 13.8.0: fix: avoid call to method that recalibrates already-calibrated dsc2
                         #         https://github.com/JeffersonLab/coatjava/pull/1153
 declare -A modes
-for key in submit; do
+for key in submit series; do
   modes[$key]=false
 done
 
@@ -38,7 +38,7 @@ usage() {
 
   REQUIRED OPTIONS:
      -i [INPUT]        input: 1 HIPO file, or a directory of HIPO files
-                       - if a directory, all HIPO files within will be processed with SLURM
+                       - if a directory, all HIPO files within will be processed
                        - if 1 file, it will just be processed now
      -o [OUTPUT_DIR]   output directory
      -m [METHOD]       which reheating method to use, one of:
@@ -51,8 +51,11 @@ $(for key in "${!REHEAT_METHODS[@]}"; do printf "%24s %-11s %-s\n" "" "$key" "${
                        - version from coatjava env module
                        - absolute path to coatjava
                        default: $coatjava_version
-     --submit          submit the slurm jobs, rather than just
-                       printing the \`sbatch\` command
+
+     --submit          submit the slurm jobs now
+                       default: print the SLURM \`sbatch\` command
+     --series          run all jobs locally, one at a time; rather
+                       than running with slurm
   """ >&2
 }
 if [ $# -lt 1 ]; then
@@ -95,15 +98,18 @@ done
 
 # get list of input files
 useSlurm=false
-if [[ "$inputObj" == *.hipo ]]; then
+if [[ "$inputObj" == *.hipo ]]; then # if `inputObj` is a single HIPO file
   [ ! -f "$inputObj" ] && printError "input file '$inputObj' not found" && exit 100
   inputFiles=("$inputObj")
   useSlurm=false
-else
+else # assume `inputObj` is a directory of HIPO files
   [ ! -d "$inputObj" ] && printError "input directory '$inputObj' not found" && exit 100
   inputFiles=($(find "$inputObj" -maxdepth 1 -name "*.hipo"))
   [ ${#inputFiles[@]} -eq 0 ] && printError "no HIPO files found within input directory" && exit 100
   useSlurm=true
+fi
+if ${modes['series']}; then # if using `--series`
+  useSlurm=false
 fi
 
 # make output directory
@@ -216,8 +222,10 @@ EOF
     echo "Now submitting!"
     sbatch $slurmScript
   else
-    echo """Run this command to submit:
+    echo """Run this SLURM command to submit:
     sbatch $slurmScript
+
+    Alternatively, run with \'--series\' to run sequentially
     """
   fi
 else
