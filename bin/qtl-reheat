@@ -17,11 +17,11 @@ declare -A REHEAT_METHODS=(
 
 # default options
 dataset=train
-coatjava_version=13.8.0 # 13.3.0: first version with rollover correction, used for RG-A Spring 2018 reheating
+coatjava_version=13.8.5 # 13.3.0: first version with rollover correction, used for RG-A Spring 2018 reheating
                         # 13.8.0: fix: avoid call to method that recalibrates already-calibrated dsc2
                         #         https://github.com/JeffersonLab/coatjava/pull/1153
 declare -A modes
-for key in submit; do
+for key in submit series; do
   modes[$key]=false
 done
 
@@ -37,7 +37,9 @@ usage() {
   $sep
 
   REQUIRED OPTIONS:
-     -i [INPUT_DIR]    input directory of HIPO files; all HIPO files will be reheated
+     -i [INPUT]        input: 1 HIPO file, or a directory of HIPO files
+                       - if a directory, all HIPO files within will be processed
+                       - if 1 file, it will just be processed now
      -o [OUTPUT_DIR]   output directory
      -m [METHOD]       which reheating method to use, one of:
 $(for key in "${!REHEAT_METHODS[@]}"; do printf "%24s %-11s %-s\n" "" "$key" "${REHEAT_METHODS[$key]}"; done)
@@ -49,8 +51,11 @@ $(for key in "${!REHEAT_METHODS[@]}"; do printf "%24s %-11s %-s\n" "" "$key" "${
                        - version from coatjava env module
                        - absolute path to coatjava
                        default: $coatjava_version
-     --submit          submit the slurm jobs, rather than just
-                       printing the \`sbatch\` command
+
+     --submit          submit the slurm jobs now
+                       default: print the SLURM \`sbatch\` command
+     --series          run all jobs locally, one at a time; rather
+                       than running with slurm
   """ >&2
 }
 if [ $# -lt 1 ]; then
@@ -59,12 +64,12 @@ if [ $# -lt 1 ]; then
 fi
 
 # parse options
-inputDir=""
+inputObj=""
 outputDir=""
 mtd=""
 while getopts "i:o:m:d:c:h-:" opt; do
   case $opt in
-    i) inputDir=$OPTARG ;;
+    i) inputObj=$OPTARG ;;
     o) outputDir=$OPTARG ;;
     m)
       [ -z "${REHEAT_METHODS[$OPTARG]-}" ] && printError "unknown command '$OPTARG'" && exit 100
@@ -86,15 +91,26 @@ while getopts "i:o:m:d:c:h-:" opt; do
   esac
 done
 
-# check arguments
-[ -z "$inputDir" ] && printError "missing input directory argument" && exit 100
+# check required arguments
+[ -z "$inputObj" ] && printError "missing input argument" && exit 100
 [ -z "$outputDir" ] && printError "missing output directory argument" && exit 100
 [ -z "$mtd" ] && printError "missing method argument" && exit 100
 
 # get list of input files
-[ ! -d $inputDir ] && printError "input directory '$inputDir' not found" && exit 100
-inputFiles=($(find $inputDir -maxdepth 1 -name "*.hipo"))
-[ ${#inputFiles[@]} -eq 0 ] && printError "no HIPO files found within input directory" && exit 100
+useSlurm=false
+if [[ "$inputObj" == *.hipo ]]; then # if `inputObj` is a single HIPO file
+  [ ! -f "$inputObj" ] && printError "input file '$inputObj' not found" && exit 100
+  inputFiles=("$inputObj")
+  useSlurm=false
+else # assume `inputObj` is a directory of HIPO files
+  [ ! -d "$inputObj" ] && printError "input directory '$inputObj' not found" && exit 100
+  inputFiles=($(find "$inputObj" -maxdepth 1 -name "*.hipo"))
+  [ ${#inputFiles[@]} -eq 0 ] && printError "no HIPO files found within input directory" && exit 100
+  useSlurm=true
+fi
+if ${modes['series']}; then # if using `--series`
+  useSlurm=false
+fi
 
 # make output directory
 mkdir -p $outputDir
@@ -178,10 +194,11 @@ EOF
   echo $jobScript >> $jobList
 done
 
-
-# now generate slurm descriptions and/or local scripts
-slurmScript=$(echo $jobList | sed 's;.list$;.slurm;')
-cat > $slurmScript << EOF
+# run the job(s)
+if $useSlurm; then
+  # generate slurm descriptions and/or local scripts
+  slurmScript=$(echo $jobList | sed 's;.list$;.slurm;')
+  cat > $slurmScript << EOF
 #!/bin/sh
 #SBATCH --ntasks=1
 #SBATCH --job-name=$jobName
@@ -196,17 +213,23 @@ cat > $slurmScript << EOF
 #SBATCH --ntasks=1
 srun \$(head -n\$SLURM_ARRAY_TASK_ID $jobList | tail -n1)
 EOF
-
-# submit
-echo """
-SLURM SCRIPT: $slurmScript
-JOB LIST:     $jobList
-"""
-if ${modes['submit']}; then
-  echo "Now submitting!"
-  sbatch $slurmScript
-else
-  echo """Run this command to submit:
-  sbatch $slurmScript
+  # submit slurm jobs
+  echo """
+  SLURM SCRIPT: $slurmScript
+  JOB LIST:     $jobList
   """
+  if ${modes['submit']}; then
+    echo "Now submitting!"
+    sbatch $slurmScript
+  else
+    echo """Run this SLURM command to submit:
+    sbatch $slurmScript
+
+    Alternatively, run with \'--series\' to run sequentially
+    """
+  fi
+else
+  # if not using slurm, run now
+  chmod u+x $jobList
+  exec $jobList
 fi

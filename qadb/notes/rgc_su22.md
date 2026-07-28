@@ -23,7 +23,7 @@ start-workflow.sh rgc-a-su22*.json  ## check that this is the correct set of JSO
 <!--`-->
 
 > [!NOTE]
-> This runs one workflow per target; step 1's `--flatdir` option can take in multiple run directories,
+> This runs one workflow per target; step 1's `--skimdir` option can take in multiple run directories,
 > and output everything in a single `outfiles/$dataset` directory.
 
 ## Check prescaled trains
@@ -43,12 +43,12 @@ Assuming your output data are in
 ```
 and that this wildcard pattern does _not_ include any files you _don't_ want, you may run
 ```bash
-bin/qtl histogram -d rgc_su22_prescaled --flatdir --focus-physics $(ls -d /volatile/clas12/users/$LOGNAME/qa_rgc_su22_*/train/QA)
+bin/qtl histogram -d rgc_su22_prescaled --skimdir --focus-physics $(ls -d /volatile/clas12/users/$LOGNAME/qa_rgc_su22_*/train/QA)
 ```
 Alternatively, for `sidisdvcs` trains (which have better statistics for asymmetries):
 ```bash
-bin/qtl histogram --check-cache -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
-bin/qtl histogram -d rgc_su22_sidisdvcs --flatdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
+bin/qtl histogram -d rgc_su22_sidisdvcs --check-cache --skimdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
+bin/qtl histogram -d rgc_su22_sidisdvcs --check-charge --submit --skimdir --focus-physics $(ls -d /cache/clas12/rg-c/production/summer22/pass1/*/*/dst/train/sidisdvcs)
 ```
 Cross check the train and DST run lists:
 ```bash
