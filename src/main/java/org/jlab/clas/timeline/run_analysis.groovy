@@ -8,10 +8,8 @@ import org.jlab.groot.data.TDirectory
 // define timeline engines
 def engines = [
   out_ALERT: [
-    *(1..8).collect {ahdc_layer_number -> new alert_ahdc_adc (ahdc_layer_number) },
     *(1..8).collect {ahdc_layer_number -> new alert_ahdc_residual (ahdc_layer_number) },
     *(1..8).collect {ahdc_layer_number -> new alert_ahdc_residual_LR (ahdc_layer_number) },
-    *(1..8).collect {ahdc_layer_number -> new alert_ahdc_time (ahdc_layer_number) },
     new alert_atof_time(),
     *(0..<15).collectMany { s -> (0..<4).collect { l -> new alert_atof_time_sl(s, l) } },
     new alert_atof_z(),
