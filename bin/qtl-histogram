@@ -449,6 +449,7 @@ source $TIMELINESRC/libexec/environ.sh
 
 # run charge analysis
 if ${modes['check-charge']}; then
+  echo '[+++++] qtl xcharge'
   $TIMELINESRC/bin/qtl xcharge \\
     -m charge \\
     -i $rdir \\
@@ -456,6 +457,7 @@ if ${modes['check-charge']}; then
 fi
 
 # produce histograms
+echo '[+++++] run_histograms'
 java $TIMELINE_JAVA_OPTS \\
   org.jlab.clas.timeline.histograms.run_histograms \\
     $runnum \\
@@ -465,6 +467,7 @@ java $TIMELINE_JAVA_OPTS \\
     $ebeam
 
 # check output HIPO files
+echo '[+++++] hipo-check'
 $TIMELINESRC/libexec/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
 EOF
         ;;
@@ -487,6 +490,7 @@ source $TIMELINESRC/libexec/environ.sh
 
 # run charge analysis
 if ${modes['check-charge']}; then
+  echo '[+++++] qtl xcharge'
   $TIMELINESRC/bin/qtl xcharge \\
     -m charge \\
     -i $rdir \\
@@ -494,6 +498,7 @@ if ${modes['check-charge']}; then
 fi
 
 # produce histograms
+echo '[+++++] monitorRead'
 $TIMELINESRC/libexec/run-groovy-timeline.sh \\
   $TIMELINESRC/qa-physics/monitorRead.groovy \\
     $(realpath $rdir) \\
@@ -503,6 +508,7 @@ $TIMELINESRC/libexec/run-groovy-timeline.sh \\
     $ebeam
 
 # check output HIPO files
+echo '[+++++] hipo-check'
 $TIMELINESRC/libexec/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
 EOF
         ;;
