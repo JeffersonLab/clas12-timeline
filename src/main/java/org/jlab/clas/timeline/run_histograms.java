@@ -103,7 +103,6 @@ public class run_histograms {
       }
       catch (RuntimeException e) {
         System.err.println("WARNING: Failed to construct QadbBinSequence; reason: " + e.getMessage());
-        System.err.println("         If you're a chef, just notify Chris Dilks; this won't impact calibration timelines");
       }
     }
     if(enableHistosDet) {
