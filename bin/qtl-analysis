@@ -439,7 +439,13 @@ if $enableAna; then
   # remove any empty directories
   echo ">>> removing any empty directories..."
   for detDir in ${detDirs[@]}; do
-    [ -z "$(find $detDir -name '*.hipo')" ] && rm -rv $detDir
+    foundFiles=$(find $detDir -name '*.hipo')
+    findStatus=$?
+    if [ $findStatus -ne 0 ]; then
+      printWarning "\`find\` failed on $detDir, skipping removal"
+    elif [ -z "$foundFiles" ]; then
+      rm -rv $detDir
+    fi
   done
 
   echo ">>> done producing timelines..."
