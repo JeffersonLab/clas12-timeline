@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ALERTFitter
+import org.jlab.groot.math.F1D
 
 class alert_ahdc_residual {
 
@@ -39,12 +40,23 @@ int number_of_wires_per_timeline;
     (1..number_of_wires_this_layer).collect{wire_number->
       def h1 = dir.getObject(String.format("/ALERT/AHDC_RESIDUAL_layer%d_wire_number%02d", layer_number, wire_number))
       if(h1!=null) {
-        if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
+        if (h1.getBinContent(h1.getMaximumBin()) > 20 && h1.getEntries()>100){
           data[run].put(String.format('ahdc_residual_layer%d_wire_number%02d', layer_number, wire_number),  h1)
           def f1 = ALERTFitter.residual_fitter(h1)
           data[run].put(String.format("fit_ahdc_residual_layer%d_wire_number%02d", layer_number, wire_number),  f1)
           data[run].put(String.format("mean_ahdc_residual_layer%d_wire_number%02d", layer_number, wire_number),  f1.getParameter(1))
           data[run].put(String.format("width_ahdc_residual_layer%d_wire_number%02d", layer_number, wire_number),  f1.getParameter(2).abs())
+          has_data.set(true)
+        }
+        else{
+          data[run].put(String.format('ahdc_residual_layer%d_wire_number%02d', layer_number, wire_number),  h1)
+          def h1_mean = h1.getMean()
+          def h1_rms  = h1.getRMS()
+          def f1 = new F1D("fit:"+h1.getName(),"[cst]", h1_mean - h1_rms, h1_mean + h1_rms);
+          f1.setParameter(0, 1);
+          data[run].put(String.format("fit_ahdc_residual_layer%d_wire_number%02d", layer_number, wire_number), f1)
+          data[run].put(String.format("mean_ahdc_residual_layer%d_wire_number%02d", layer_number, wire_number),  -2 + h1_mean)//offset to help identify the poor statistics
+          data[run].put(String.format("width_ahdc_residual_layer%d_wire_number%02d", layer_number, wire_number), -2 + h1_rms)//offset to help identify the poor statistics
           has_data.set(true)
         }
       }

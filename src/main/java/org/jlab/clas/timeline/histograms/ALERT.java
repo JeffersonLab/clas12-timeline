@@ -119,11 +119,11 @@ public class ALERT {
           break;
         }
       }
-      AHDC_RESIDUAL[index] = new H1F(String.format("AHDC_RESIDUAL_layer%d_wire_number%02d", layer_number, wire_number), String.format("AHDC Residual layer%d wire number%02d", layer_number, wire_number), 200, -3.0f, 3.0f);
+      AHDC_RESIDUAL[index] = new H1F(String.format("AHDC_RESIDUAL_layer%d_wire_number%02d", layer_number, wire_number), String.format("AHDC Residual layer%d wire number%02d", layer_number, wire_number), 100, -3.0f, 3.0f);
       AHDC_RESIDUAL[index].setTitleX("AHDC RESIDUAL (mm)");
       AHDC_RESIDUAL[index].setTitleY("Counts");
       AHDC_RESIDUAL[index].setFillColor(4);
-      AHDC_RESIDUAL_LR[index] = new H1F(String.format("AHDC_RESIDUAL_LR_layer%d_wire_number%02d", layer_number, wire_number), String.format("AHDC Residual SL layer%d wire number%02d", layer_number, wire_number), 200, -3.0f, 3.0f);
+      AHDC_RESIDUAL_LR[index] = new H1F(String.format("AHDC_RESIDUAL_LR_layer%d_wire_number%02d", layer_number, wire_number), String.format("AHDC Residual SL layer%d wire number%02d", layer_number, wire_number), 100, -3.0f, 3.0f);
       AHDC_RESIDUAL_LR[index].setTitleX("AHDC RESIDUAL LR (mm)");
       AHDC_RESIDUAL_LR[index].setTitleY("Counts");
       AHDC_RESIDUAL_LR[index].setFillColor(4);
