@@ -17,7 +17,7 @@ SLURM_LOG=/farm_out/%u/%x-%A_%a
 # default options
 dataset=test_v0
 declare -A modes
-for key in findhipo rundir eachdir flatdir single series submit check-cache fast-ls swifjob focus-detectors focus-physics focus-qadb help; do
+for key in dstdir skimdir findhipo eachdir rundir flatdir single series submit check-cache check-charge fast-ls fast-runnum swifjob focus-detectors focus-physics focus-qadb help; do
   modes[$key]=false
 done
 outputDir=""
@@ -61,7 +61,7 @@ usageVerbose() {
                            specify the list of directories as well, if your shell
                            supports it
                          - for a directory of files, with one run per file (e.g.,
-                           SKIM files), use the option \`--flatdir\`
+                           SKIM files), use the option \`--skimdir\`
 
   $sep
 
@@ -76,26 +76,32 @@ usageVerbose() {
      *** INPUT FINDING OPTIONS: control how the input HIPO files are found;
          choose only one:
 
+       --dstdir       assume each specified [RUN_DIRECTORY] contains
+                      subdirectories named as just run numbers, e.g., like the DSTs
+                      - it is not recommended to use wildcards for this option
+                      - see also the \`--fast-ls\` option
+                      - legacy option name \`--rundir\` is equivalent
+                      **this is the DEFAULT option**
+
+       --skimdir      assume each specified [RUN_DIRECTORY] contains HIPO
+                      files, with one run per file; e.g., a directory of SKIM files
+                      - legacy option name \`--flatdir\` is equivalent
+
        --findhipo     use \`find\` to find all HIPO files in each
                       [RUN_DIRECTORY]; this is useful if you have a
                       directory tree, e.g., runs grouped by target
 
-       --rundir       assume each specified [RUN_DIRECTORY] contains
-                      subdirectories named as just run numbers;
-                      - it is not recommended to use wildcards for this option
-                      - see also the \`--fast-ls\` option
-                      **this is the DEFAULT option**
-
        --eachdir      assume each specified [RUN_DIRECTORY] is a single
                       run's directory full of HIPO files (e.g., DST files)
 
-       --flatdir      assume each specified [RUN_DIRECTORY] contains HIPO
-                      files, with one run per file; use this option for SKIM files
+     *** CHECK OPTIONS: run additional checks
 
-       --check-cache  cross check /cache directories with tape stub directories
-                      (/mss) and exit without creating or running any jobs; this is
-                      useful if you are running QA on older DSTs which may no longer be
-                      fully pinned on /cache
+       --check-cache    cross check /cache directories with tape stub directories
+                        (/mss) and exit WITHOUT creating or running any jobs; this is
+                        useful if you are running QA on older DSTs which may no longer be
+                        fully pinned on /cache
+
+       --check-charge   runs charge analysis for each run, using \`qtl xcharge\`
 
      *** EXECUTION CONTROL OPTIONS: choose only one, or the default will generate a
          Slurm job description and print out the suggested \`sbatch\` command
@@ -134,13 +140,18 @@ usageVerbose() {
                            may be much faster than the latter commands for tape dirs.
                            - WARNING: assumes you already tested \`--check-cache\`,
                                       since \`jasmine\` uses \`/mss\` stub files
-                           - useful for options such as \`--rundir\` for DST files
+                           - useful for options such as \`--dstdir\` for DST files
+
+       --fast-runnum       attempt to use the file or directory name to get the run number,
+                           rather than opening a HIPO file and looking at \`RUN::config\`;
+                           - this is faster, but less reliable (may get the wrong number)
+                           - if it gets no number, it will fallback to using \`RUN::config\`
 
   $sep
 
   EXAMPLES:
 
-  $  $0 -v v1.0.0 --submit --rundir /volatile/mon
+  $  $0 -v v1.0.0 --submit --dstdir /volatile/mon
        -> submit slurm jobs for all numerical subdirectories of /volatile/mon/,
           where each subdirectory should be a run number; this is the most common usage
 
@@ -182,14 +193,19 @@ if ${modes['help']}; then
 fi
 
 # set the input-finding method; use the DEFAULT one, if not set by user
+## handle legacy option names
+if ${modes['rundir']};  then modes['dstdir']=true;  fi
+if ${modes['flatdir']}; then modes['skimdir']=true; fi
+## count how many were set
 numTrueInputOpts=0
-for key in findhipo rundir eachdir flatdir; do
+for key in dstdir skimdir findhipo eachdir; do
   if ${modes[$key]}; then
     numTrueInputOpts=$((numTrueInputOpts+1))
   fi
 done
+## set a DEFAULT one, if none are set, or complain if more than one
 if [ $numTrueInputOpts -eq 0 ]; then
-  modes['rundir']=true # set the DEFAULT option
+  modes['dstdir']=true
 elif [ $numTrueInputOpts -gt 1 ]; then
   printError "more than one input-finding option set"
   exit 100
@@ -205,7 +221,7 @@ else
   for topdir in ${rdirsArgs[@]}; do
     [[ "$topdir" =~ ^- ]] && printError "option '$topdir' must be specified before run directories" && exit 100
   done
-  if ${modes['rundir']}; then
+  if ${modes['dstdir']}; then
     for topdir in ${rdirsArgs[@]}; do
       if [ -d $topdir ]; then
         for subdir in $(ls $topdir | grep -E "[0-9]+"); do
@@ -218,7 +234,7 @@ else
     done
   elif ${modes['eachdir']}; then
     rdirs=$@
-  elif ${modes['flatdir']}; then
+  elif ${modes['skimdir']}; then
     rdirs=$@
   elif ${modes['findhipo']}; then
     for topdir in ${rdirsArgs[@]}; do
@@ -287,8 +303,8 @@ if ${modes['check-cache']}; then
   exit $?
 fi
 
-# if `flatdir` mode, populate `rdirs` with the list of files, since our job loop will be over `rdirs` elements
-if ${modes['flatdir']}; then
+# if `skimdir` mode, populate `rdirs` with the list of files, since our job loop will be over `rdirs` elements
+if ${modes['skimdir']}; then
   rdirsIn=("${rdirs[@]}") # make a copy, since it will be overwritten
   rdirs=()
   for rdir in ${rdirsIn[@]}; do
@@ -322,18 +338,23 @@ done
 echo "Determining run number list..."
 declare -A runnumHash # `rdirs` element -> run number
 for rdir in ${rdirs[@]}; do
-  # get the run number, either from `rdir` basename (fast), or from `RUN::config` (slow)
   [[ ! -e $rdir ]] && printError "the run file/directory '$rdir' does not exist" && continue
-  runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" | tail -n1 || echo '') # first, try from run directory (or file) basename
-  if [ -z "$runnum" ] || ${modes['swifjob']}; then # otherwise, use RUN::config from a HIPO file (NOTE: assumes all HIPO files have the same run number)
-    if ${modes['flatdir']}; then
-      $TIMELINESRC/libexec/hipo-check.sh $rdir
+  runnum=''
+  # fast method: parse the `rdir` basename
+  if ${modes['fast-runnum']}; then
+    echo "... using \`--fast-runnum\` to get run number from '$rdir'"
+    runnum=$(basename $rdir | grep -m1 -o -E "[0-9]+" | tail -n1 || echo '')
+  fi
+  # slow method: open a HIPO file and check `RUN::config`
+  if [ -z "$runnum" ] || ${modes['swifjob']}; then
+    echo "... using \`RUN::config\` to get run number from; use \`--fast-runnum\` if this is too slow ..."
+    if ${modes['skimdir']}; then
+      # $TIMELINESRC/libexec/hipo-check.sh $rdir # this is slow, but run number retrieval will likely fail if the file is bad
       runnum=$($TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/libexec/get-run-number.groovy $rdir | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
     else
-      firstHipo=$(find $rdir -name "*.hipo" | head -n1)
+      firstHipo=$(find $rdir -name "*.hipo" | head -n1) # NOTE: assumes all HIPO files have the same run number
       [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number or create job" && continue
-      echo "using HIPO file $firstHipo to get run number for run directory '$rdir'"
-      $TIMELINESRC/libexec/hipo-check.sh $firstHipo
+      # $TIMELINESRC/libexec/hipo-check.sh $firstHipo # this is slow, but run number retrieval will likely fail if the file is bad
       runnum=$($TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/libexec/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
     fi
   fi
@@ -345,6 +366,7 @@ done
 echo "RUN NUMBERS = {"
 for rdir in "${!runnumHash[@]}"; do echo "  $rdir => ${runnumHash[$rdir]},"; done
 echo "}"
+[ -z "${runnumHash[@]+x}" ] && printError "list of run numbers is empty" && exit 100
 echo $sep
 
 # get beam energy for each run number
@@ -387,7 +409,7 @@ for rdir in ${rdirs[@]}; do
   # get list of input files, and append prefix for SWIF
   echo "..... getting its input files ....."
   inputListFile=$slurmDir/files.$dataset.$runnum.inputs.list
-  if ${modes['flatdir']}; then
+  if ${modes['skimdir']}; then
     realpath $rdir > $inputListFile
   else
     [[ "$(realpath $rdir)" =~ /mss/ ]] && swifPrefix="mss:" || swifPrefix="file:"
@@ -436,7 +458,17 @@ echo "RUN $runnum"
 # set env vars
 source $TIMELINESRC/libexec/environ.sh
 
+# run charge analysis
+if ${modes['check-charge']}; then
+  echo '[+++++] qtl xcharge'
+  $TIMELINESRC/bin/qtl xcharge \\
+    -m charge \\
+    -i $rdir \\
+    -o $outputSubDir/charge_analysis
+fi
+
 # produce histograms
+echo '[+++++] run_histograms'
 java $TIMELINE_JAVA_OPTS \\
   org.jlab.clas.timeline.histograms.run_histograms \\
     $runnum \\
@@ -446,12 +478,13 @@ java $TIMELINE_JAVA_OPTS \\
     $ebeam
 
 # check output HIPO files
+echo '[+++++] hipo-check'
 $TIMELINESRC/libexec/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
 EOF
         ;;
 
       physics)
-        if ${modes['flatdir']}; then
+        if ${modes['skimdir']}; then
           monitorReadType=skim
         else
           monitorReadType=dst
@@ -466,7 +499,17 @@ echo "RUN $runnum"
 # set env vars
 source $TIMELINESRC/libexec/environ.sh
 
+# run charge analysis
+if ${modes['check-charge']}; then
+  echo '[+++++] qtl xcharge'
+  $TIMELINESRC/bin/qtl xcharge \\
+    -m charge \\
+    -i $rdir \\
+    -o $outputSubDir/charge_analysis
+fi
+
 # produce histograms
+echo '[+++++] monitorRead'
 $TIMELINESRC/libexec/run-groovy-timeline.sh \\
   $TIMELINESRC/qa-physics/monitorRead.groovy \\
     $(realpath $rdir) \\
@@ -476,6 +519,7 @@ $TIMELINESRC/libexec/run-groovy-timeline.sh \\
     $ebeam
 
 # check output HIPO files
+echo '[+++++] hipo-check'
 $TIMELINESRC/libexec/hipo-check.sh \$(find $outputSubDir -name "*.hipo")
 EOF
         ;;

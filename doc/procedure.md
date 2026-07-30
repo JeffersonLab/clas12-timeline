@@ -30,7 +30,7 @@ Running it with no arguments will print the usage guide; use the `--help` option
 > This step is integrated in the chef's cooking workflow; see the [chef's guide](/doc/chef_guide.md) for more information.
 
 > [!NOTE]
-> If you are performing physics QA for QADB, consider using [**prescaled trains**](/qa-physics/prescaler) (and `qtl histogram` will need the `--flatdir` argument)
+> If you are performing physics QA for QADB, consider using [**prescaled trains**](/qa-physics/prescaler) (and `qtl histogram` will need the `--skimdir` argument)
 
 ### Example
 ```bash

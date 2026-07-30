@@ -71,7 +71,7 @@ mkdir -p $outputDir
 # run the script
 case $mtd in
   charge)
-    $TIMELINESRC/qa-physics/charge_analysis/analyze_charge.py $inputFile $outputDir $suffix
+    $TIMELINESRC/qa-physics/charge_analysis/analyze_charge.py $inputFile $outputDir "$suffix"
     ;;
   clock)
     $TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/qa-physics/charge_analysis/analyze_clock.groovy $inputFile $outputDir rollover_corr_disabled_$suffix 0

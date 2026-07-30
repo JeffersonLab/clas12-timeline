@@ -62,7 +62,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 
 - all data files _must_ be on `/cache`
 - use `qtl histogram` with the `--check-cache` option (see [timeline-production procedure](procedure.md) for details of `qtl`)
-    - use the `--flatdir` option if you are analyzing trains (most likely)
+    - use the `--skimdir` option if you are analyzing trains (most likely)
     - this will cross check the list of files on `/cache` with the list of stub files on `/mss`
     - if not all data are on `/cache`, this command will generate a `jcache` script
       - run it and wait
@@ -99,7 +99,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 - this is "step 1" of the [timeline-production procedure](procedure.md)
     - see also other [notes files](/qadb/notes) for examples
 - use the same `qtl histogram` command you used above, but without the `--check-cache` argument
-    - use the `--flatdir` option if you are analyzing trains (most likely)
+    - use the `--skimdir` option if you are analyzing trains (most likely)
 - the jobs will run on Slurm
     - be sure to monitor the output log and error files, in case something goes wrong; you may use `qtl error` to help with this
     - any warnings or errors should _not_ be ignored

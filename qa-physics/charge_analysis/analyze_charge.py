@@ -82,7 +82,7 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_PATH] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
         reader.define('HEL::scaler')
 
         while reader.next():
-            if counter % 10000 == 0 and counter > 0:
+            if counter % 100000 == 0 and counter > 0:
                 logger.info(f'Processing event # {counter}')
             counter += 1
 

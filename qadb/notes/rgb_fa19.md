@@ -16,13 +16,13 @@ bin/qtl xtrain /mss/clas12/rg-b/production/recon/fall2019/torus-1/pass2/v1/dst/t
 
 Make sure all skim files are cached:
 ```bash
-bin/qtl histogram -d rgb_fa19_sidisdvcs --check-cache --flatdir --focus-physics \
+bin/qtl histogram -d rgb_fa19_sidisdvcs --check-cache --skimdir --focus-physics \
   /cache/clas12/rg-b/production/recon/fall2019/torus+1/pass2/v1/dst/train/sidisdvcs/ \
   /cache/clas12/rg-b/production/recon/fall2019/torus-1/pass2/v1/dst/train/sidisdvcs/
 ```
 then run monitoring
 ```bash
-bin/qtl histogram -d rgb_fa19_sidisdvcs --submit --flatdir --focus-physics \
+bin/qtl histogram -d rgb_fa19_sidisdvcs --check-charge --submit --skimdir --focus-physics \
   /cache/clas12/rg-b/production/recon/fall2019/torus+1/pass2/v1/dst/train/sidisdvcs/ \
   /cache/clas12/rg-b/production/recon/fall2019/torus-1/pass2/v1/dst/train/sidisdvcs/
 ```

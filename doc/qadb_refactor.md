@@ -104,16 +104,16 @@ mvn clean install
 Run the histogramming classes with:
 ```bash
 # for 1 run
-bin/qtl histogram -d refactor --focus-qadb --flatdir --single /work/clas12b/users/dilks/dm/data-rga-sp19-subset
+bin/qtl histogram -d refactor --focus-qadb --skimdir --single /work/clas12b/users/dilks/dm/data-rga-sp19-subset
 # for all the runs, one at a time
-bin/qtl histogram -d refactor --focus-qadb --flatdir --series /work/clas12b/users/dilks/dm/data-rga-sp19-subset
+bin/qtl histogram -d refactor --focus-qadb --skimdir --series /work/clas12b/users/dilks/dm/data-rga-sp19-subset
 ```
 > [!NOTE]
 > - the dataset name is set to `refactor`, with the `-d` option; you may pick any name
 > - you may use a different data directory, if you prefer, since these commands are just examples;
 >   for testing purposes, it's recommended to create a directory with symbolic links to a few runs' skim files
 > - `--focus-qadb` is used to restrict the histogramming to the new QADB histogram classes only
-> - `--flatdir` assumes the data directory contains HIPO files, one for each run
+> - `--skimdir` assumes the data directory contains HIPO files, one for each run
 > - `--single` reads 1 single HIPO file, whereas `--series` reads all of them, one at a time
 
 ### Run Analysis
