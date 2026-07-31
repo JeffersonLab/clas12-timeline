@@ -6,17 +6,11 @@
 import numpy as np
 import os
 import sys
-import logging
 from glob import glob
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import hipolib
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 # plt.style.use('seaborn-darkgrid')
 
@@ -59,7 +53,7 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_PATH] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
     if not hipo_files:
         raise ValueError(f"No .hipo files found for input path: {hipo_path}")
 
-    logger.info(f"Found {len(hipo_files)} HIPO file(s) to process under: {hipo_path}")
+    print(f"Found {len(hipo_files)} HIPO file(s) to process under: {hipo_path}")
 
     reader = hipolib.hreader(f'{hipo_prefix}/lib')
 
@@ -74,7 +68,7 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_PATH] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
     counter = 0
     last_timestamp = 0
     for file_idx, hipo_file in enumerate(hipo_files):
-        logger.info(f"[{file_idx + 1}/{len(hipo_files)}] Processing file: {hipo_file}")
+        print(f"[{file_idx + 1}/{len(hipo_files)}] Processing file: {hipo_file}")
         reader.open_with_tag(hipo_file, 1)  # filter by tag at open time
         # Banks must be (re)declared for each newly opened file handle.
         reader.define('RUN::config')
@@ -83,7 +77,7 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_PATH] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
 
         while reader.next():
             if counter % 100000 == 0 and counter > 0:
-                logger.info(f'Processing event # {counter}')
+                print(f'Processing event # {counter}')
             counter += 1
 
             # Track the most recent config timestamp so HEL::scaler rows can be
@@ -104,7 +98,7 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_PATH] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
                     hel_fcupgateds.append(hel_fcg[r])
 
             if reader.getSize('RUN::config') == 0 or reader.getSize('RUN::scaler') == 0:
-                # logger.warning(f"Skipping empty bank at event {counter}")
+                # print(f"WARNING [analyze_charge]: Skipping empty bank at event {counter}", file=sys.stderr)
                 continue
 
             timestamp = reader.getEntry('RUN::config', 'timestamp')
@@ -117,8 +111,8 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_PATH] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
             fcupgateds.append(fcupgated[0])
             live_times.append(live_time[0])
 
-    logger.info(f"Processed {counter} events across {len(hipo_files)} file(s).")
-    logger.info(f"Collected {len(hel_helicities)} HEL::scaler rows.")
+    print(f"Processed {counter} events across {len(hipo_files)} file(s).")
+    print(f"Collected {len(hel_helicities)} HEL::scaler rows.")
 
     # Sort data by timestamps
     sorted_data = sorted(zip(timestamps, fcups, fcupgateds, live_times))
@@ -157,7 +151,7 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_PATH] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
             '+1': h_hel > 0,
             '0':  h_hel == 0,
         }
-        logger.info(
+        print(
             f"HEL::scaler rows by helicity: "
             f"-1={np.count_nonzero(hel_masks['-1'])}, "
             f"+1={np.count_nonzero(hel_masks['+1'])}, "
@@ -213,7 +207,7 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_PATH] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
         hel_tot['u']['total'] = float(h_fcup.sum())
         hel_tot['g']['total'] = float(h_fcupg.sum())
     else:
-        logger.warning("No HEL::scaler data found; helicity-latched panels will be skipped.")
+        print("WARNING [analyze_charge]: No HEL::scaler data found; helicity-latched panels will be skipped.", file=sys.stderr)
 
     # ---------- Plot 1: Per-event data (cols 1-2) + helicity-latched (cols 3-4) ----------
     fig1, axs1 = plt.subplots(2, 4, figsize=(24, 10))
@@ -368,9 +362,10 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_PATH] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
                 else:
                     skipped_in_chunk += 1
                     total_skipped += 1
-                    logger.warning(
-                        f"No valid positive LT neighbor at chunk {i}, local index {j}, "
-                        f"timestamp {timestamps[start+1+j]}"
+                    print(
+                        f"WARNING [analyze_charge]: No valid positive LT neighbor at chunk {i}, local index {j}, "
+                        f"timestamp {timestamps[start+1+j]}",
+                        file=sys.stderr
                     )
 
                 # ----- Case C: mean of ±20 neighbors -----
@@ -401,8 +396,8 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_PATH] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
         chunk_indices.append(i)
         skipped_counts.append(skipped_in_chunk)
 
-    logger.info(f"Computed chunked FCUP Gated values with neighbor handling (Cases A, B, C).")
-    logger.info(f"Total skipped events (no valid LT neighbor): {total_skipped}")
+    print(f"Computed chunked FCUP Gated values with neighbor handling (Cases A, B, C).")
+    print(f"Total skipped events (no valid LT neighbor): {total_skipped}")
 
     # ---------- Plot 2: Chunked FCUP Gated + Ratios + Helicity-Latched Charge + Asymmetry ----------
     fig2, (ax_top, ax_mid, ax_gatedrat, ax_hel, ax_asym) = plt.subplots(
@@ -495,4 +490,4 @@ USAGE: {sys.argv[0]} [INPUT_HIPO_PATH] [OUTPUT_DIR] [OUTPUT_FILE_SUFFIX]
 
 if __name__ == "__main__":
     main()
-    logger.info("HipoReader example completed.")
+    print("charge_analysis completed.")
