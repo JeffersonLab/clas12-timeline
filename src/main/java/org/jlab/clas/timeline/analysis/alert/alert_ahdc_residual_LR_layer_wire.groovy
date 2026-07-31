@@ -6,21 +6,18 @@ import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ALERTFitter
 import org.jlab.groot.math.F1D
 
-class alert_ahdc_residual_LR {
+class alert_ahdc_residual_LR_layer_wire {
 
-def data = new ConcurrentHashMap()
-def has_data = new AtomicBoolean(false)
+  def data = new ConcurrentHashMap()
+  def has_data = new AtomicBoolean(false)
+  
+  def layer_wires    = [47, 56, 56, 72, 72, 87, 87, 99]
+  int layer_number;
+  int number_of_wires_this_layer;
+  int number_of_wires_per_timeline;
 
-def layer_encoding = [11, 21, 22, 31, 32, 41, 42, 51]
-def layer_wires    = [47, 56, 56, 72, 72, 87, 87, 99]
-int layer_number;
-int layer;
-int number_of_wires_this_layer;
-int number_of_wires_per_timeline;
-
-  alert_ahdc_residual_LR(int ahdc_layer_number) {
+  alert_ahdc_residual_LR_layer_wire(int ahdc_layer_number) {
       this.layer_number                 = ahdc_layer_number
-      this.layer                        = layer_encoding[layer_number - 1];
       this.number_of_wires_this_layer   = layer_wires[layer_number - 1]
       this.number_of_wires_per_timeline = 15;
   }
@@ -33,10 +30,6 @@ int number_of_wires_per_timeline;
   def processRun(dir, run) {
 
     data[run] = [run:run]
-    def trigger = dir.getObject('/TRIGGER/bits')
-    def reference_trigger_bit = 0
-    // data[run].put('bits',  trigger)
-    float integral = 0;
     (1..number_of_wires_this_layer).collect{wire_number->
       def h1 = dir.getObject(String.format("/ALERT/AHDC_RESIDUAL_LR_layer%d_wire_number%02d", layer_number, wire_number))
       if(h1!=null) {
