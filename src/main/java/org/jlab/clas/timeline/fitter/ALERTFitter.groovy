@@ -269,24 +269,29 @@ class ALERTFitter{
     }
 
 
-    static F1D atof_z_fitter(H1F h1){
-        // Rebin a clone for fitting if low statistics; original h1 is not modified
-        H1F hfit = h1
-        int entries = (int) h1.getEntries()
-        if (entries < 400) {
-            int ngroup = (entries < 200) ? 4 : 2
-            int nbins = h1.getAxis().getNBins()
-            int newbins = nbins / ngroup
-            hfit = new H1F("hfit_rebin", newbins, h1.getAxis().min(), h1.getAxis().max())
-            for (int i = 0; i < newbins; i++) {
-                float sum = 0
-                for (int j = 0; j < ngroup; j++) sum += h1.getBinContent(i * ngroup + j)
-                hfit.setBinContent(i, sum)
-            }
+    static H1F rebinH1F(H1F h, int ngroup) {
+        int nbins = h.getAxis().getNBins()
+        int newbins = nbins / ngroup
+        def hr = new H1F(h.getName(), h.getTitle(), newbins, h.getAxis().min(), h.getAxis().max())
+        for (int i = 0; i < newbins; i++) {
+            double sum = 0
+            for (int j = 0; j < ngroup; j++) sum += h.getBinContent(i * ngroup + j)
+            hr.setBinContent(i, sum)
         }
+        hr.setTitleX(h.getTitleX())
+        hr.setTitleY(h.getTitleY())
+        hr.setFillColor(h.getFillColor())
+        return hr
+    }
 
-        double maxz = hfit.getBinContent(hfit.getMaximumBin())
-        double peak = hfit.getAxis().getBinCenter(hfit.getMaximumBin())
+    static List atof_z_fitter(H1F h1){
+        // Rebin for low statistics
+        int entries = (int) h1.getEntries()
+        if (entries < 200)      h1 = rebinH1F(h1, 4)
+        else if (entries < 400) h1 = rebinH1F(h1, 2)
+
+        double maxz = h1.getBinContent(h1.getMaximumBin())
+        double peak = h1.getAxis().getBinCenter(h1.getMaximumBin())
 
         def f1 = new F1D("fit:" + h1.getName(), "[amp]*gaus(x,[mean],[sigma])", peak - 75, peak + 75)
         f1.setLineColor(33)
@@ -301,12 +306,10 @@ class ALERTFitter{
 
         PrintStream original = System.out
         System.setOut(new PrintStream(OutputStream.nullOutputStream()))
-        DataFitter.fit(f1, hfit, "RQ")
+        DataFitter.fit(f1, h1, "RQ")
         System.setOut(original)
 
-        if (entries < 400) hfit = null
-
-        return f1
+        return [h1, f1]
     }
 
     static F1D residual_fitter(H1F h1){
