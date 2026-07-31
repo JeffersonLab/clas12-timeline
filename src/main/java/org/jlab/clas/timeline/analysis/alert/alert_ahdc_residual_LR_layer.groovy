@@ -16,23 +16,26 @@ class alert_ahdc_residual_LR_layer {
   def processRun(dir, run) {
 
     data[run] = [run:run]
-    def h_integrated = null
     (1..8).collect{layer_number->
+      def h_integrated = null
+      long integrated_entries = 0 // h_integrated.getEntires() returns zero. It should be a groot bug. I'm bypassing this.
       def number_of_wires_this_layer   = layer_wires[layer_number - 1]
       (1..number_of_wires_this_layer).collect{wire_number->
         def h1 = dir.getObject(String.format("/ALERT/AHDC_RESIDUAL_layer%d_wire_number%02d", layer_number, wire_number))
         if(h1!=null) {
+          integrated_entries += h1.getEntries()
           if (h_integrated == null) {
-            h_integrated = h1.histClone(String.format("ahdc_residual_LR_layer%d_integrated", layer_number))
+            h_integrated = h1.histClone(String.format("ahdc_residual_LR_layer%d", layer_number))
+            h_integrated.setTitle(String.format("AHDC Residual LR layer%d", layer_number))
           } else {
             h_integrated.add(h1)
           }
         }
       }
       if (h_integrated!=null) {
-        if (h_integrated.getBinContent(h_integrated.getMaximumBin()) > 20 && h_integrated.getEntries()>100){
+        if (h_integrated.getBinContent(h_integrated.getMaximumBin()) > 20 && integrated_entries>100){
           data[run].put(String.format('ahdc_residual_LR_layer%d', layer_number),  h_integrated)
-          def f_integrated = ALERTFitter.residual_LR_fitter(h_integrated)
+          def f_integrated = ALERTFitter.residual_fitter(h_integrated)
           data[run].put(String.format("fit_ahdc_residual_LR_layer%d", layer_number),  f_integrated)
           data[run].put(String.format("mean_ahdc_residual_LR_layer%d", layer_number),  f_integrated.getParameter(1))
           data[run].put(String.format("width_ahdc_residual_LR_layer%d", layer_number),  f_integrated.getParameter(2).abs())
