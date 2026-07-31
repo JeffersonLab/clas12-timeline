@@ -288,7 +288,7 @@ class ALERTFitter{
         double maxz = hfit.getBinContent(hfit.getMaximumBin())
         double peak = hfit.getAxis().getBinCenter(hfit.getMaximumBin())
 
-        def f1 = new F1D("fit:" + h1.getName(), "[amp]*gaus(x,[mean],[sigma])", peak - 100, peak + 100)
+        def f1 = new F1D("fit:" + h1.getName(), "[amp]*gaus(x,[mean],[sigma])", peak - 75, peak + 75)
         f1.setLineColor(33)
         f1.setLineWidth(10)
         f1.setOptStat("1111")
