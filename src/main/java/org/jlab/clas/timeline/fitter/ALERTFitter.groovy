@@ -270,28 +270,41 @@ class ALERTFitter{
 
 
     static F1D atof_z_fitter(H1F h1){
-        double maxz = h1.getBinContent(h1.getMaximumBin())
-        double peak = h1.getAxis().getBinCenter(h1.getMaximumBin())
-        int bin_low  = h1.getAxis().getBin(peak - 100.0)
-        int bin_high = h1.getAxis().getBin(peak + 100.0)
-        double sigma = ALERTFitter.getRestrictedRMS(h1, bin_low, bin_high)
-        if (sigma <= 0 || Double.isNaN(sigma)) sigma = 100.0
+        // Rebin a clone for fitting if low statistics; original h1 is not modified
+        H1F hfit = h1
+        int entries = (int) h1.getEntries()
+        if (entries < 400) {
+            int ngroup = (entries < 200) ? 4 : 2
+            int nbins = h1.getAxis().getNBins()
+            int newbins = nbins / ngroup
+            hfit = new H1F("hfit_rebin", newbins, h1.getAxis().min(), h1.getAxis().max())
+            for (int i = 0; i < newbins; i++) {
+                float sum = 0
+                for (int j = 0; j < ngroup; j++) sum += h1.getBinContent(i * ngroup + j)
+                hfit.setBinContent(i, sum)
+            }
+        }
 
-        def f1 = new F1D("fit:" + h1.getName(), "[amp]*gaus(x,[mean],[sigma])", peak - 2*sigma, peak + 2*sigma)
+        double maxz = hfit.getBinContent(hfit.getMaximumBin())
+        double peak = hfit.getAxis().getBinCenter(hfit.getMaximumBin())
+
+        def f1 = new F1D("fit:" + h1.getName(), "[amp]*gaus(x,[mean],[sigma])", peak - 100, peak + 100)
         f1.setLineColor(33)
         f1.setLineWidth(10)
         f1.setOptStat("1111")
         f1.setParameter(0, maxz)
         f1.setParameter(1, peak)
-        f1.setParameter(2, sigma)
+        f1.setParameter(2, 15.0)
         if (maxz > 0) f1.setParLimits(0, maxz * 0.5, maxz * 1.5)
         f1.setParLimits(1, peak - 50.0, peak + 50.0)
         f1.setParLimits(2, 0.01, 100.0)
 
         PrintStream original = System.out
         System.setOut(new PrintStream(OutputStream.nullOutputStream()))
-        DataFitter.fit(f1, h1, "RQ")
+        DataFitter.fit(f1, hfit, "RQ")
         System.setOut(original)
+
+        if (entries < 400) hfit = null
 
         return f1
     }
