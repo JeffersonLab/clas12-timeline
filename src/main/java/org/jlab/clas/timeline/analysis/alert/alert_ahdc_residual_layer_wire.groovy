@@ -28,12 +28,11 @@ class alert_ahdc_residual_layer_wire {
 
 
   def processRun(dir, run) {
-
     data[run] = [run:run]
     (1..number_of_wires_this_layer).collect{wire_number->
       def h1 = dir.getObject(String.format("/ALERT/AHDC_RESIDUAL_layer%d_wire_number%02d", layer_number, wire_number))
       if(h1!=null) {
-        if (h1.getBinContent(h1.getMaximumBin()) > 20 && h1.getEntries()>100){
+        if (h1.getBinContent(h1.getMaximumBin()) > 25 && h1.getEntries()>100){
           data[run].put(String.format('ahdc_residual_layer%d_wire_number%02d', layer_number, wire_number),  h1)
           def f1 = ALERTFitter.residual_fitter(h1)
           data[run].put(String.format("fit_ahdc_residual_layer%d_wire_number%02d", layer_number, wire_number),  f1)
