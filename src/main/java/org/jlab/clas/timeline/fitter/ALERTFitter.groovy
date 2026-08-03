@@ -299,16 +299,17 @@ class ALERTFitter{
         f1.setOptStat("1111")
         f1.setParameter(0, maxz)
         f1.setParameter(1, peak)
-        f1.setParameter(2, sigma)
+        f1.setParameter(2, 15)
         if (maxz > 0) f1.setParLimits(0, maxz * 0.5, maxz * 1.5)
         f1.setParLimits(1, peak - 50.0, peak + 50.0)
-        f1.setParLimits(2, 0.01, 100.0)
+        f1.setParLimits(2, 0.01, 200.0)
 
-        PrintStream original = System.out
-        System.setOut(new PrintStream(OutputStream.nullOutputStream()))
-        DataFitter.fit(f1, h1, "RQ")
-        System.setOut(original)
+//        PrintStream original = System.out
+//        System.setOut(new PrintStream(OutputStream.nullOutputStream()))
+//        DataFitter.fit(f1, h1, "RQ")
+//        System.setOut(original)
 
+        DataFitter.fit(f1, h1, "")
         return [h1, f1]
     }
 
