@@ -25,10 +25,10 @@ class alert_atof_z_c4_sl {
     data[run] = [run:run]
     def h1 = dir.getObject(String.format('/ALERT/ATOF_z_c4_sector%02d_layer%02d', sector, layer))
     if (h1 != null) {
-      if (h1.getBinContent(h1.getMaximumBin()) > 3 && h1.getEntries() > 10) {
+      if (h1.getBinContent(h1.getMaximumBin()) > 3 && h1.getEntries() > 50) {
         def name = String.format('atof_z_c4_sl_s%02d_l%d', sector, layer)
-        data[run].put(name, h1)
-        def f1 = ALERTFitter.atof_z_fitter(h1)
+        def (h1r, f1) = ALERTFitter.atof_z_fitter(h1)
+        data[run].put(name, h1r)
         data[run].put('fit_' + name, f1)
         data[run].put('peak_location_' + name, f1.getParameter(1))
         data[run].put('sigma_' + name, f1.getParameter(2).abs())

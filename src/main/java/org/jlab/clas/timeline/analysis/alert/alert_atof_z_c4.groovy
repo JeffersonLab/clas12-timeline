@@ -14,9 +14,9 @@ class alert_atof_z_c4 {
     data[run] = [run:run]
     def h1 = dir.getObject('/ALERT/ATOF_z_combined_c4')
     if (h1 != null) {
-      if (h1.getBinContent(h1.getMaximumBin()) > 3 && h1.getEntries() > 10) {
-        data[run].put('atof_z_c4_combined', h1)
-        def f1 = ALERTFitter.atof_z_fitter(h1)
+      if (h1.getBinContent(h1.getMaximumBin()) > 3 && h1.getEntries() > 50) {
+        def (h1r, f1) = ALERTFitter.atof_z_fitter(h1)
+        data[run].put('atof_z_c4_combined', h1r)
         data[run].put('fit_atof_z_c4_combined', f1)
         data[run].put('peak_location_atof_z_c4_combined', f1.getParameter(1))
         data[run].put('sigma_atof_z_c4_combined', f1.getParameter(2).abs())

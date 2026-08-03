@@ -269,31 +269,79 @@ class ALERTFitter{
     }
 
 
-    static F1D atof_z_fitter(H1F h1){
+    static H1F rebinH1F(H1F h, int ngroup) {
+        int nbins = h.getAxis().getNBins()
+        int newbins = nbins / ngroup
+        def hr = new H1F(h.getName(), h.getTitle(), newbins, h.getAxis().min(), h.getAxis().max())
+        for (int i = 0; i < newbins; i++) {
+            double sum = 0
+            for (int j = 0; j < ngroup; j++) sum += h.getBinContent(i * ngroup + j)
+            hr.setBinContent(i, sum)
+        }
+        hr.setTitleX(h.getTitleX())
+        hr.setTitleY(h.getTitleY())
+        hr.setFillColor(h.getFillColor())
+        return hr
+    }
+
+    static List atof_z_fitter(H1F h1){
+        // Rebin for low statistics
+        int entries = (int) h1.getEntries()
+        if (entries < 200)      h1 = rebinH1F(h1, 4)
+        else if (entries < 400) h1 = rebinH1F(h1, 2)
+
         double maxz = h1.getBinContent(h1.getMaximumBin())
         double peak = h1.getAxis().getBinCenter(h1.getMaximumBin())
-        int bin_low  = h1.getAxis().getBin(peak - 100.0)
-        int bin_high = h1.getAxis().getBin(peak + 100.0)
-        double sigma = ALERTFitter.getRestrictedRMS(h1, bin_low, bin_high)
-        if (sigma <= 0 || Double.isNaN(sigma)) sigma = 100.0
-
-        def f1 = new F1D("fit:" + h1.getName(), "[amp]*gaus(x,[mean],[sigma])", peak - 2*sigma, peak + 2*sigma)
+//        double sigma = ALERTFitter.getRestrictedRMS(h1, peak-75, peak+75)
+        def f1 = new F1D("fit:" + h1.getName(), "[amp]*gaus(x,[mean],[sigma])", peak - 75, peak + 75)
         f1.setLineColor(33)
         f1.setLineWidth(10)
         f1.setOptStat("1111")
         f1.setParameter(0, maxz)
         f1.setParameter(1, peak)
-        f1.setParameter(2, sigma)
+        f1.setParameter(2, 15)
         if (maxz > 0) f1.setParLimits(0, maxz * 0.5, maxz * 1.5)
         f1.setParLimits(1, peak - 50.0, peak + 50.0)
-        f1.setParLimits(2, 0.01, 100.0)
+        f1.setParLimits(2, 0.01, 200.0)
 
-        PrintStream original = System.out
-        System.setOut(new PrintStream(OutputStream.nullOutputStream()))
-        DataFitter.fit(f1, h1, "RQ")
-        System.setOut(original)
+//        PrintStream original = System.out
+//        System.setOut(new PrintStream(OutputStream.nullOutputStream()))
+//        DataFitter.fit(f1, h1, "RQ")
+//        System.setOut(original)
 
-        return f1
+        DataFitter.fit(f1, h1, "")
+
+        double fitted_mean  = f1.getParameter(1)
+        double fitted_sigma = f1.getParameter(2)
+        println(String.format("[atof_z_fit] %s: entries=%d nbins=%d maxbin=%.0f peak=%.1f -> mean=%.1f sigma=%.1f",
+            h1.getName(), entries, h1.getAxis().getNBins(), maxz, peak, fitted_mean, fitted_sigma))
+
+        if (Math.abs(fitted_sigma - 15.0) < 0.1) {
+            println(String.format("[atof_z_fit] %s: first fit failed, retrying with rebin x2", h1.getName()))
+            h1 = rebinH1F(h1, 2)
+            maxz = h1.getBinContent(h1.getMaximumBin())
+            peak = h1.getAxis().getBinCenter(h1.getMaximumBin())
+            f1 = new F1D("fit:" + h1.getName(), "[amp]*gaus(x,[mean],[sigma])", peak - 75, peak + 75)
+            f1.setLineColor(33)
+            f1.setLineWidth(10)
+            f1.setOptStat("1111")
+            f1.setParameter(0, maxz)
+            f1.setParameter(1, peak)
+            f1.setParameter(2, 15)
+            if (maxz > 0) f1.setParLimits(0, maxz * 0.5, maxz * 1.5)
+            f1.setParLimits(1, peak - 50.0, peak + 50.0)
+            f1.setParLimits(2, 0.01, 200.0)
+            DataFitter.fit(f1, h1, "")
+            fitted_mean  = f1.getParameter(1)
+            fitted_sigma = f1.getParameter(2)
+            println(String.format("[atof_z_fit] %s: retry entries=%d nbins=%d maxbin=%.0f peak=%.1f -> mean=%.1f sigma=%.1f",
+                h1.getName(), entries, h1.getAxis().getNBins(), maxz, peak, fitted_mean, fitted_sigma))
+            if (Math.abs(fitted_sigma - 15.0) < 0.1) {
+                println(String.format("[atof_z_fit] WARNING: %s fit failed even after rebin", h1.getName()))
+            }
+        }
+
+        return [h1, f1]
     }
 
     static F1D residual_fitter(H1F h1){
