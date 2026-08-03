@@ -313,10 +313,32 @@ class ALERTFitter{
 
         double fitted_mean  = f1.getParameter(1)
         double fitted_sigma = f1.getParameter(2)
-        println(String.format("[atof_z_fit] %s: mean=%.1f sigma=%.1f (init: peak=%.1f sigma=15)",
-            h1.getName(), fitted_mean, fitted_sigma, peak))
+        println(String.format("[atof_z_fit] %s: entries=%d nbins=%d maxbin=%.0f peak=%.1f -> mean=%.1f sigma=%.1f",
+            h1.getName(), entries, h1.getAxis().getNBins(), maxz, peak, fitted_mean, fitted_sigma))
+
         if (Math.abs(fitted_sigma - 15.0) < 0.1) {
-            println(String.format("[atof_z_fit] WARNING: %s sigma unchanged from default — fit likely failed", h1.getName()))
+            println(String.format("[atof_z_fit] %s: first fit failed, retrying with rebin x2", h1.getName()))
+            h1 = rebinH1F(h1, 2)
+            maxz = h1.getBinContent(h1.getMaximumBin())
+            peak = h1.getAxis().getBinCenter(h1.getMaximumBin())
+            f1 = new F1D("fit:" + h1.getName(), "[amp]*gaus(x,[mean],[sigma])", peak - 75, peak + 75)
+            f1.setLineColor(33)
+            f1.setLineWidth(10)
+            f1.setOptStat("1111")
+            f1.setParameter(0, maxz)
+            f1.setParameter(1, peak)
+            f1.setParameter(2, 15)
+            if (maxz > 0) f1.setParLimits(0, maxz * 0.5, maxz * 1.5)
+            f1.setParLimits(1, peak - 50.0, peak + 50.0)
+            f1.setParLimits(2, 0.01, 200.0)
+            DataFitter.fit(f1, h1, "")
+            fitted_mean  = f1.getParameter(1)
+            fitted_sigma = f1.getParameter(2)
+            println(String.format("[atof_z_fit] %s: retry entries=%d nbins=%d maxbin=%.0f peak=%.1f -> mean=%.1f sigma=%.1f",
+                h1.getName(), entries, h1.getAxis().getNBins(), maxz, peak, fitted_mean, fitted_sigma))
+            if (Math.abs(fitted_sigma - 15.0) < 0.1) {
+                println(String.format("[atof_z_fit] WARNING: %s fit failed even after rebin", h1.getName()))
+            }
         }
 
         return [h1, f1]
