@@ -292,7 +292,7 @@ class ALERTFitter{
 
         double maxz = h1.getBinContent(h1.getMaximumBin())
         double peak = h1.getAxis().getBinCenter(h1.getMaximumBin())
-        double sigma = ALERTFitter.getRestrictedRMS(h1, peak-75, peak+75)
+//        double sigma = ALERTFitter.getRestrictedRMS(h1, peak-75, peak+75)
         def f1 = new F1D("fit:" + h1.getName(), "[amp]*gaus(x,[mean],[sigma])", peak - 75, peak + 75)
         f1.setLineColor(33)
         f1.setLineWidth(10)
