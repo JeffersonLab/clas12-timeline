@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # copy timeline hipo files to output timelines area, staging them for deployment
 
-set -e
+set -euo pipefail
 
 if [ $# -ne 2 ]; then
   echo "USAGE: $0 [input_dir] [output_dir]" >&2
@@ -15,7 +15,14 @@ inputDir=$1/outmon
 outputDir=$2
 
 # check HIPO files
+set +o pipefail
 timelineFiles=$(find $inputDir -name "*.hipo" -type f | grep -v 'monitorElec')
+findStatus=${PIPESTATUS[0]}
+set -o pipefail
+if (( findStatus != 0 )); then
+  echo "ERROR: \`find\` failed in $inputDir" >&2
+  exit 1
+fi
 $TIMELINESRC/libexec/hipo-check.sh $timelineFiles
 
 # copy timelines to output directory
