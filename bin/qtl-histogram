@@ -347,12 +347,13 @@ for rdir in ${rdirs[@]}; do
   fi
   # slow method: open a HIPO file and check `RUN::config`
   if [ -z "$runnum" ] || ${modes['swifjob']}; then
-    echo "... using \`RUN::config\` to get run number from; use \`--fast-runnum\` if this is too slow ..."
+    echo "... using \`RUN::config\` to get run number from '$rdir'; use \`--fast-runnum\` if this is too slow ..."
     if ${modes['skimdir']}; then
       # $TIMELINESRC/libexec/hipo-check.sh $rdir # this is slow, but run number retrieval will likely fail if the file is bad
       runnum=$($TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/libexec/get-run-number.groovy $rdir | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
     else
-      firstHipo=$(find $rdir -name "*.hipo" | head -n1) # NOTE: assumes all HIPO files have the same run number
+      firstHipo=$(find $rdir -name "*.hipo" -print -quit) # NOTE: assumes all HIPO files have the same run number
+      echo "    ... from a HIPO file within, '$firstHipo'"
       [ -z "$firstHipo" ] && printError "no HIPO files in run directory '$rdir'; cannot get run number or create job" && continue
       # $TIMELINESRC/libexec/hipo-check.sh $firstHipo # this is slow, but run number retrieval will likely fail if the file is bad
       runnum=$($TIMELINESRC/libexec/run-groovy-timeline.sh $TIMELINESRC/libexec/get-run-number.groovy $firstHipo | tail -n1 | grep -m1 -o -E "[0-9]+" || echo '')
@@ -362,6 +363,7 @@ for rdir in ${rdirs[@]}; do
   [ $runnum -eq 0 ] && printError "unknown run number for '$rdir'; ignoring it!" && continue
   runnum=$((10#$runnum))
   runnumHash[$rdir]=$runnum
+  echo "    -> run number = $runnum"
 done
 echo "RUN NUMBERS = {"
 for rdir in "${!runnumHash[@]}"; do echo "  $rdir => ${runnumHash[$rdir]},"; done
