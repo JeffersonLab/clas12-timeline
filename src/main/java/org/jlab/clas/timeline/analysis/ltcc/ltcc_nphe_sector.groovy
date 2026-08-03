@@ -39,6 +39,12 @@ def write() {
     qa_cuts[3] = [12, 18]
     qa_cuts[5] = [12, 18]
   }
+  else if(dataset == 'rgl') {
+    qa_cuts[3] = [13.5, 16.5]
+    qa_cuts[5] = [13.5, 16.5]
+    // FIXME: RG-L would like to have cuts `[4, 7]` for outbending data; for now we set their preferred inbending cuts
+    // til the front-end code can support run-range dependent cuts
+  }
   else {
     qa_cuts[3] = [11, 14]
     qa_cuts[5] = [11, 14]
