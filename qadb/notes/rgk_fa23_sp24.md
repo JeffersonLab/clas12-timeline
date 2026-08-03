@@ -15,16 +15,16 @@ We will use DST files from 3 datasets; we will keep them separate, to be consist
 
 check cache:
 ```bash
-bin/qtl histogram -d rgk_fa23_6.4GeV --check-cache --dstdir --focus-physics /cache/clas12/rg-k/production/recon/fall2023/pass1/6395MeV/dst/recon
-bin/qtl histogram -d rgk_sp24_6.4GeV --check-cache --dstdir --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/6395MeV/dst/recon
-bin/qtl histogram -d rgk_sp24_8.5GeV --check-cache --dstdir --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/8477MeV/dst/recon
+bin/qtl histogram -d rgk_fa23_6.4GeV --dstdir --check-cache --focus-physics /cache/clas12/rg-k/production/recon/fall2023/pass1/6395MeV/dst/recon
+bin/qtl histogram -d rgk_sp24_6.4GeV --dstdir --check-cache --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/6395MeV/dst/recon
+bin/qtl histogram -d rgk_sp24_8.5GeV --dstdir --check-cache --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/8477MeV/dst/recon
 ```
 
 run:
 ```bash
-bin/qtl histogram -d rgk_fa23_6.4GeV --check-charge --submit --dstdir --focus-physics /cache/clas12/rg-k/production/recon/fall2023/pass1/6395MeV/dst/recon
-bin/qtl histogram -d rgk_sp24_6.4GeV --check-charge --submit --dstdir --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/6395MeV/dst/recon
-bin/qtl histogram -d rgk_sp24_8.5GeV --check-charge --submit --dstdir --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/8477MeV/dst/recon
+bin/qtl histogram -d rgk_fa23_6.4GeV --dstdir --check-charge --fast-ls --submit --focus-physics /cache/clas12/rg-k/production/recon/fall2023/pass1/6395MeV/dst/recon
+bin/qtl histogram -d rgk_sp24_6.4GeV --dstdir --check-charge --fast-ls --submit --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/6395MeV/dst/recon
+bin/qtl histogram -d rgk_sp24_8.5GeV --dstdir --check-charge --fast-ls --submit --focus-physics /cache/clas12/rg-k/production/recon/spring2024/pass1/8477MeV/dst/recon
 ```
 
 ## Checks
