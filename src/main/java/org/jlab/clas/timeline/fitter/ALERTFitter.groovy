@@ -310,6 +310,15 @@ class ALERTFitter{
 //        System.setOut(original)
 
         DataFitter.fit(f1, h1, "")
+
+        double fitted_mean  = f1.getParameter(1)
+        double fitted_sigma = f1.getParameter(2)
+        println(String.format("[atof_z_fit] %s: mean=%.1f sigma=%.1f (init: peak=%.1f sigma=15)",
+            h1.getName(), fitted_mean, fitted_sigma, peak))
+        if (Math.abs(fitted_sigma - 15.0) < 0.1) {
+            println(String.format("[atof_z_fit] WARNING: %s sigma unchanged from default — fit likely failed", h1.getName()))
+        }
+
         return [h1, f1]
     }
 
