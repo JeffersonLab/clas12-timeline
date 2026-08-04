@@ -28,8 +28,23 @@ bin/qtl histogram -d rgk_sp24_8.5GeV --dstdir --check-charge --fast-ls --submit 
 ```
 
 ## Checks
-- [ ] Inspect the charge plots, to see if we need to reheat
-- [ ] Double check that we have _all_ the runs, and that all DSTs are still there, in case any disappeared from `/cache` _while_ jobs were running
+
+### Inspect the Charge Analysis Plots
+
+Inspect the charge analysis plots (`.png` files), to see if we need to reheat.
+
+You can download the `.png` files to make this easier; _e.g._, `tar` them with
+```bash
+tar cavf outfiles/rgk_fa23_6.4GeV_charge_analysis.tar.gz $(find outfiles/rgk_fa23_6.4GeV -type f -name '*.png')
+tar cavf outfiles/rgk_sp24_6.4GeV_charge_analysis.tar.gz $(find outfiles/rgk_sp24_6.4GeV -type f -name '*.png')
+tar cavf outfiles/rgk_sp24_8.5GeV_charge_analysis.tar.gz $(find outfiles/rgk_sp24_8.5GeV -type f -name '*.png')
+```
+then `scp` them to your local machine.
+
+### Run List
+
+Double check that we have _all_ the runs, and that all DSTs are still there, in case any disappeared from `/cache` _while_ jobs were running; simply
+re-run the above `qtl histogram --check-cache` commands.
 
 ## Make timelines
 
