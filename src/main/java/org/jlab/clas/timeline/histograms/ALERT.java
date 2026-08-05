@@ -74,7 +74,7 @@ public class ALERT {
       ATOF_z[0].setTitleX("ATOF z (mm)");
       ATOF_z[0].setTitleY("Counts");
       ATOF_z[0].setFillColor(4);
-      ATOF_z_c4[0]= new H1F(String.format("ATOF_z_combined_c4"), String.format("ATOF z with c4"), 40,-200,200);
+      ATOF_z_c4[0]= new H1F(String.format("ATOF_z_combined_c4"), String.format("ATOF z with c4"), 80,-200,200);
       ATOF_z_c4[0].setTitleX("ATOF z (mm)");
       ATOF_z_c4[0].setTitleY("Counts");
       ATOF_z_c4[0].setFillColor(4);
@@ -86,7 +86,7 @@ public class ALERT {
               ATOF_z_sl[gsector].setTitleY("Counts");
               ATOF_z_sl[gsector].setFillColor(4);
 
-              ATOF_z_c4_sl[gsector] = new H1F(String.format("ATOF_z_c4_sector%02d_layer%02d", sector,layer), String.format("ATOF z with C4 sector%02d layer %2d", sector,layer), 40,-200,200);
+              ATOF_z_c4_sl[gsector] = new H1F(String.format("ATOF_z_c4_sector%02d_layer%02d", sector,layer), String.format("ATOF z with C4 sector%02d layer %2d", sector,layer), 80,-200,200);
               ATOF_z_c4_sl[gsector].setTitleX("ATOF z (mm)");
               ATOF_z_c4_sl[gsector].setTitleY("Counts");
               ATOF_z_c4_sl[gsector].setFillColor(4);
@@ -233,7 +233,7 @@ public class ALERT {
           ATOF_Time_sl[gcomponent].fill(time);
       }
 
-      if (component == 10 && Math.abs(time) < 10) {
+      if (component == 10 && Math.abs(time) < 2) {
         float z = atof_hits.getFloat("z", loop);
         ATOF_z[0].fill(z);
         ATOF_z_sl[gsector].fill(z);
