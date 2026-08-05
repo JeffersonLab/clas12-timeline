@@ -139,12 +139,35 @@ public class ALERT {
   }
 
   public void fillAHDC_hits(DataBank ahdc_kftrack, DataBank ahdc_hits) {
+    /**
+    * Fill the histograms related to AHDC::hits (ex) residual)
+    * for hits that satisfy `good_track` condition.
+    * A good track is associated with many hits.
+    * While how many is subject to more study, the RG-L's suggestions were 5 or 6
+    * —essentially the higest number that ensures a good amount of statistics.
+    * Here, we start with "6" being the lower bound of n_hits.
+    * `good_track`: the number of rows with the same AHDC::hits:trackid is greater than or equal to 7.
+    * Instead of looping over AHDC::hits:trackid, AHDC::kftrack:n_hits was used to define `good_track`.
+    * `track_matching`: AHDC::hits:trackid == `AHDC::kftrack:nhits
+    * Then, AHDC::hits:trackid == AHDC::kftrack:trackid is required for the sanity check.
+    * The dominant AHDC::hits entries are when AHDC::hits:trackid==-1, where there is no associated AHDC::kftrack.
+    * `exists_track`: AHDC::hits:trackid==-1
+    * The `no_track` condition is redundant because `good_track` ensures `~no_track`.
+    * But, for the first time commit, SL prefers to check `~no_track`
+    * SL also keeps `no_track_legacy`, which means that
+    * `no_track_legacy`: Both AHDC::hits:residual and AHDC::hits:residual_LR are nonzero.
+    * Note: `exists_track and `no_track_legacy` can be either removed or changed to assert statement, for more advanced AHDC reconstruction.
+    * 
+    * @param ahdc_kftrack AHDC::kftrack bank in the same event
+    * @param ahdc_hits    AHDC::hits bank in the same event
+    */
+
 
     int kftrack_rows = ahdc_kftrack.rows();
     for (int kftrack_loop = 0; kftrack_loop < kftrack_rows; kftrack_loop++) {
       int kftrack_n_hits  = ahdc_kftrack.getInt("n_hits", kftrack_loop);
       int kftrack_trackid = ahdc_kftrack.getInt("trackid", kftrack_loop);
-      if (kftrack_n_hits <= 6 ) continue; // cut on the number of hits per track
+      if (kftrack_n_hits <= 6 ) continue; // `good_track`
       int hit_rows = ahdc_hits.rows();
       for (int hit_loop = 0; hit_loop < hit_rows; hit_loop++) {
         int hit_layer       = ahdc_hits.getByte("layer", hit_loop);
@@ -152,8 +175,8 @@ public class ALERT {
         int hit_component   = ahdc_hits.getInt("wire", hit_loop);
         int hit_trackid     = ahdc_hits.getInt("trackid", hit_loop);
 
-        if (kftrack_trackid != hit_trackid) continue; // track id matching
-        if (hit_trackid == -1) continue; // if track id is -1, it is not associated with a track. Pass.
+        if (kftrack_trackid != hit_trackid) continue; // `track_matching`
+        if (hit_trackid == -1) continue; // `exists_track`
 
         float hit_residual  = (float) ahdc_hits.getDouble("residual", hit_loop);
         float hit_residual_LR  = (float) ahdc_hits.getDouble("residual_LR", hit_loop);
@@ -164,7 +187,7 @@ public class ALERT {
         int hit_layer_number = Arrays.asList(boxed_encoding).indexOf(hit_layer) + 1;
         index = hit_component - 1 + layer_wires_cumulative[hit_layer_number - 1];
     
-        if (Math.signum(hit_residual) * Math.signum(hit_residual_LR) == 0) continue; // Track-associated residuals must be non-zero but just in case, cut if zero.
+        if (Math.signum(hit_residual) * Math.signum(hit_residual_LR) == 0) continue; // `no_track_legacy`
         AHDC_RESIDUAL[index].fill(hit_residual);
         AHDC_RESIDUAL_LR[index].fill(hit_residual_LR);
       }
