@@ -4,22 +4,34 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.ALERTFitter
+import org.jlab.groot.math.F1D
 
-class alert_ahdc_residual_LR {
+/**
+ * Produces the timeline of `mean` and `width` of residual per layer per wire.
+ * When the `good_statistics` condition is satisfied, the histogram is fitted with Gaussian
+ * If not, the histogram's mean and width achieved by its own `getMean()` and `getRMS()` methods.
+ * An artificial, arbitrary offset of -2 is given to not `good_statistics` histograms for visualization purpose.
+ * While `good_statistics` condition is subject to refinement,
+ * it is defined as follows.
+ * (1) the histogram's peak is higher than 25.
+ * (2) the histogram's total entry is larger than 100.
+ * When I tried peak height of 20, it stalled for run 22003, layer 4
+ * 
+ * @author Sangbaek Lee
+*/
 
-def data = new ConcurrentHashMap()
-def has_data = new AtomicBoolean(false)
+class alert_ahdc_residual_LR_layer_wire {
 
-def layer_encoding = [11, 21, 22, 31, 32, 41, 42, 51]
-def layer_wires    = [47, 56, 56, 72, 72, 87, 87, 99]
-int layer_number;
-int layer;
-int number_of_wires_this_layer;
-int number_of_wires_per_timeline;
+  def data = new ConcurrentHashMap()
+  def has_data = new AtomicBoolean(false)
+  
+  def layer_wires    = [47, 56, 56, 72, 72, 87, 87, 99]
+  int layer_number;
+  int number_of_wires_this_layer;
+  int number_of_wires_per_timeline;
 
-  alert_ahdc_residual_LR(int ahdc_layer_number) {
+  alert_ahdc_residual_LR_layer_wire(int ahdc_layer_number) {
       this.layer_number                 = ahdc_layer_number
-      this.layer                        = layer_encoding[layer_number - 1];
       this.number_of_wires_this_layer   = layer_wires[layer_number - 1]
       this.number_of_wires_per_timeline = 15;
   }
@@ -32,19 +44,26 @@ int number_of_wires_per_timeline;
   def processRun(dir, run) {
 
     data[run] = [run:run]
-    def trigger = dir.getObject('/TRIGGER/bits')
-    def reference_trigger_bit = 0
-    // data[run].put('bits',  trigger)
-    float integral = 0;
     (1..number_of_wires_this_layer).collect{wire_number->
       def h1 = dir.getObject(String.format("/ALERT/AHDC_RESIDUAL_LR_layer%d_wire_number%02d", layer_number, wire_number))
       if(h1!=null) {
-        if (h1.getBinContent(h1.getMaximumBin()) > 30 && h1.getEntries()>300){
+        if (h1.getBinContent(h1.getMaximumBin()) > 25 && h1.getEntries()>100){ //`good_statistics`
           data[run].put(String.format('ahdc_residual_LR_layer%d_wire_number%02d', layer_number, wire_number),  h1)
           def f1 = ALERTFitter.residual_fitter(h1)
           data[run].put(String.format("fit_ahdc_residual_LR_layer%d_wire_number%02d", layer_number, wire_number),  f1)
           data[run].put(String.format("mean_ahdc_residual_LR_layer%d_wire_number%02d", layer_number, wire_number),  f1.getParameter(1))
           data[run].put(String.format("width_ahdc_residual_LR_layer%d_wire_number%02d", layer_number, wire_number),  f1.getParameter(2).abs())
+          has_data.set(true)
+        }
+        else{ //not `good_statistics`
+          data[run].put(String.format('ahdc_residual_LR_layer%d_wire_number%02d', layer_number, wire_number),  h1)
+          def h1_mean = h1.getMean()
+          def h1_rms  = h1.getRMS()
+          def f1 = new F1D("fit:"+h1.getName(),"[cst]", h1_mean - h1_rms, h1_mean + h1_rms);
+          f1.setParameter(0, 1);
+          data[run].put(String.format("fit_ahdc_residual_LR_layer%d_wire_number%02d", layer_number, wire_number), f1)
+          data[run].put(String.format("mean_ahdc_residual_LR_layer%d_wire_number%02d", layer_number, wire_number), -2.0 + h1_mean)//offset
+          data[run].put(String.format("width_ahdc_residual_LR_layer%d_wire_number%02d", layer_number, wire_number), -2.0 + h1_rms)//ofset
           has_data.set(true)
         }
       }

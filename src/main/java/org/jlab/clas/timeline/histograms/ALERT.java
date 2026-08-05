@@ -27,7 +27,7 @@ public class ALERT {
 
   //Hodoscope
   public H1F[] ATOF_Time, ATOF_Time_sl, ATOF_z, ATOF_z_sl, ATOF_z_c4, ATOF_z_c4_sl;
-  public H1F[] ADC, AHDC_RESIDUAL, AHDC_RESIDUAL_LR, AHDC_TIME;//AHDC-related-histograms
+  public H1F[] AHDC_RESIDUAL, AHDC_RESIDUAL_LR;//AHDC-related-histograms
   private H1F bits;
 
   public IndexedTable rfTable;
@@ -105,10 +105,8 @@ public class ALERT {
 
 
     //AHDC ADC Histograms
-    ADC           = new H1F[576];
     AHDC_RESIDUAL = new H1F[576];
     AHDC_RESIDUAL_LR = new H1F[576];
-    AHDC_TIME     = new H1F[576];
 
     for (int index = 0; index<576; index++) {
       int layer_number = 0;
@@ -121,19 +119,11 @@ public class ALERT {
           break;
         }
       }
-      ADC[index] = new H1F(String.format("ADC_layer%d_wire_number%02d", layer_number, wire_number), String.format("ADC layer%d wire number%02d", layer_number, wire_number), 516, 0.0, 3612.0);
-      ADC[index].setTitleX("ADC");
-      ADC[index].setTitleY("Counts");
-      ADC[index].setFillColor(4);
-      AHDC_TIME[index] = new H1F(String.format("AHDC_TIME_layer%d_wire_number%02d", layer_number, wire_number), String.format("AHDC Time layer %d wire number%02d", layer_number, wire_number), 450, -10.f, 440.0f);
-      AHDC_TIME[index].setTitleX("AHDC TIME (ns)");
-      AHDC_TIME[index].setTitleY("Counts");
-      AHDC_TIME[index].setFillColor(4);
-      AHDC_RESIDUAL[index] = new H1F(String.format("AHDC_RESIDUAL_layer%d_wire_number%02d", layer_number, wire_number), String.format("AHDC Residual layer%d wire number%02d", layer_number, wire_number), 200, -7.0f, 3.0f);
+      AHDC_RESIDUAL[index] = new H1F(String.format("AHDC_RESIDUAL_layer%d_wire_number%02d", layer_number, wire_number), String.format("AHDC Residual layer%d wire number%02d", layer_number, wire_number), 100, -3.0f, 3.0f);
       AHDC_RESIDUAL[index].setTitleX("AHDC RESIDUAL (mm)");
       AHDC_RESIDUAL[index].setTitleY("Counts");
       AHDC_RESIDUAL[index].setFillColor(4);
-      AHDC_RESIDUAL_LR[index] = new H1F(String.format("AHDC_RESIDUAL_LR_layer%d_wire_number%02d", layer_number, wire_number), String.format("AHDC Residual SL layer%d wire number%02d", layer_number, wire_number), 200, -5.0f, 5.0f);
+      AHDC_RESIDUAL_LR[index] = new H1F(String.format("AHDC_RESIDUAL_LR_layer%d_wire_number%02d", layer_number, wire_number), String.format("AHDC Residual SL layer%d wire number%02d", layer_number, wire_number), 100, -3.0f, 3.0f);
       AHDC_RESIDUAL_LR[index].setTitleX("AHDC RESIDUAL LR (mm)");
       AHDC_RESIDUAL_LR[index].setTitleY("Counts");
       AHDC_RESIDUAL_LR[index].setFillColor(4);
@@ -148,39 +138,59 @@ public class ALERT {
 
   }
 
-  public void fillAHDC(DataBank ahdc_adc) {
-    int rows = ahdc_adc.rows();
-    for (int loop = 0; loop < rows; loop++) {
-      int layer        = ahdc_adc.getInt("layer", loop);
-      int component    = ahdc_adc.getInt("component", loop);
-      int adc          = ahdc_adc.getInt("ADC", loop);
-      int index = 0;
+  public void fillAHDC_hits(DataBank ahdc_kftrack, DataBank ahdc_hits) {
+    /**
+    * Fill the histograms related to AHDC::hits (ex) residual)
+    * for hits that satisfy `good_track` condition.
+    * A good track is associated with many hits.
+    * While how many is subject to more study, the RG-L's suggestions were 5 or 6
+    * —essentially the higest number that ensures a good amount of statistics.
+    * Here, we start with "6" being the lower bound of n_hits.
+    * `good_track`: the number of rows with the same AHDC::hits:trackid is greater than or equal to 7.
+    * Instead of looping over AHDC::hits:trackid, AHDC::kftrack:n_hits was used to define `good_track`.
+    * `track_matching`: AHDC::hits:trackid == `AHDC::kftrack:nhits
+    * Then, AHDC::hits:trackid == AHDC::kftrack:trackid is required for the sanity check.
+    * The dominant AHDC::hits entries are when AHDC::hits:trackid==-1, where there is no associated AHDC::kftrack.
+    * `exists_track`: AHDC::hits:trackid==-1
+    * The `no_track` condition is redundant because `good_track` ensures `~no_track`.
+    * But, for the first time commit, SL prefers to check `~no_track`
+    * SL also keeps `no_track_legacy`, which means that
+    * `no_track_legacy`: Both AHDC::hits:residual and AHDC::hits:residual_LR are nonzero.
+    * Note: `exists_track and `no_track_legacy` can be either removed or changed to assert statement, for more advanced AHDC reconstruction.
+    * 
+    * @param ahdc_kftrack AHDC::kftrack bank in the same event
+    * @param ahdc_hits    AHDC::hits bank in the same event
+    */
 
-      int layer_number = Arrays.asList(boxed_encoding).indexOf(layer) + 1;
-      index = component - 1 + layer_wires_cumulative[layer_number - 1];
 
-      ADC[index].fill(adc);
-    }
-  }
+    int kftrack_rows = ahdc_kftrack.rows();
+    for (int kftrack_loop = 0; kftrack_loop < kftrack_rows; kftrack_loop++) {
+      int kftrack_n_hits  = ahdc_kftrack.getInt("n_hits", kftrack_loop);
+      int kftrack_trackid = ahdc_kftrack.getInt("trackid", kftrack_loop);
+      if (kftrack_n_hits <= 6 ) continue; // `good_track`
+      int hit_rows = ahdc_hits.rows();
+      for (int hit_loop = 0; hit_loop < hit_rows; hit_loop++) {
+        int hit_layer       = ahdc_hits.getByte("layer", hit_loop);
+        int hit_superlayer  = ahdc_hits.getByte("superlayer", hit_loop);
+        int hit_component   = ahdc_hits.getInt("wire", hit_loop);
+        int hit_trackid     = ahdc_hits.getInt("trackid", hit_loop);
 
-  public void fillAHDC_hits(DataBank ahdc_hits) {
-    int rows = ahdc_hits.rows();
-    for (int loop = 0; loop < rows; loop++) {
-      int layer       = ahdc_hits.getByte("layer", loop);
-      int superlayer  = ahdc_hits.getByte("superlayer", loop);
-      int component   = ahdc_hits.getInt("wire", loop);
-      float time      = (float) ahdc_hits.getDouble("time", loop);
-      float residual  = (float) ahdc_hits.getDouble("residual", loop);
-      float residual_LR  = (float) ahdc_hits.getDouble("residual_LR", loop);
-      int index = 0;
+        if (kftrack_trackid != hit_trackid) continue; // `track_matching`
+        if (hit_trackid == -1) continue; // `exists_track`
 
-      layer = superlayer * 10 + layer;
-      int layer_number = Arrays.asList(boxed_encoding).indexOf(layer) + 1;
-      index = component - 1 + layer_wires_cumulative[layer_number - 1];
-
-      if (Math.signum(residual) != 0) AHDC_RESIDUAL[index].fill(residual);
-      if (Math.signum(residual_LR) != 0) AHDC_RESIDUAL_LR[index].fill(residual_LR);
-      AHDC_TIME[index].fill(time);
+        float hit_residual  = (float) ahdc_hits.getDouble("residual", hit_loop);
+        float hit_residual_LR  = (float) ahdc_hits.getDouble("residual_LR", hit_loop);
+        
+        int index = 0;
+    
+        hit_layer = hit_superlayer * 10 + hit_layer;
+        int hit_layer_number = Arrays.asList(boxed_encoding).indexOf(hit_layer) + 1;
+        index = hit_component - 1 + layer_wires_cumulative[hit_layer_number - 1];
+    
+        if (Math.signum(hit_residual) * Math.signum(hit_residual_LR) == 0) continue; // `no_track_legacy`
+        AHDC_RESIDUAL[index].fill(hit_residual);
+        AHDC_RESIDUAL_LR[index].fill(hit_residual_LR);
+      }
     }
   }
 
@@ -240,8 +250,8 @@ public class ALERT {
     DataBank recBankEB = null;
     DataBank recEvenEB = null;
     DataBank runConfig = null;
-    DataBank atof_hits  = null;
-    DataBank ahdc_adc  = null;
+    DataBank atof_hits = null;
+    DataBank ahdc_kftrack = null;
     DataBank ahdc_hits = null;
 
     if (event.hasBank("REC::Particle")) {
@@ -256,8 +266,8 @@ public class ALERT {
     if (event.hasBank("ATOF::hits")) {
       atof_hits = event.getBank("ATOF::hits");
     }
-    if (event.hasBank("AHDC::adc")) {
-      ahdc_adc = event.getBank("AHDC::adc");
+    if (event.hasBank("AHDC::kftrack")){
+      ahdc_kftrack = event.getBank("AHDC::kftrack");
     }
     if (event.hasBank("AHDC::hits")){
       ahdc_hits = event.getBank("AHDC::hits");
@@ -287,12 +297,8 @@ public class ALERT {
       fillATOF_hits(atof_hits);
     }
 
-    if (ahdc_adc != null) {
-      fillAHDC(ahdc_adc);
-    }
-
-    if (ahdc_hits != null) {
-      fillAHDC_hits(ahdc_hits);
+    if (ahdc_kftrack != null && ahdc_hits != null) {
+      fillAHDC_hits(ahdc_kftrack, ahdc_hits);
     }
 
   }
@@ -314,7 +320,7 @@ public class ALERT {
       dirout.addDataSet(ATOF_Time_sl[gcomponent]);
     }
     for (int index = 0; index < 576; index++) {
-      dirout.addDataSet(ADC[index], AHDC_TIME[index], AHDC_RESIDUAL[index], AHDC_RESIDUAL_LR[index]);
+      dirout.addDataSet(AHDC_RESIDUAL[index], AHDC_RESIDUAL_LR[index]);
     }
 
     dirout.mkdir("/TRIGGER/");

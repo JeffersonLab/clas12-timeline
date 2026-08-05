@@ -345,7 +345,7 @@ class ALERTFitter{
     }
 
     static F1D residual_fitter(H1F h1){
-        def f1 =new F1D("fit:"+h1.getName(),"[amp]*gaus(x,[mean],[sigma])+[cst]", -5.0, 5.0);
+        def f1 =new F1D("fit:"+h1.getName(),"[amp]*gaus(x,[mean],[sigma])", -3.0, 3.0);
         f1.setLineColor(33);
         f1.setLineWidth(10);
         f1.setOptStat("1111");
@@ -355,9 +355,7 @@ class ALERTFitter{
         f1.setParameter(0,maxz-h1.getBinContent(0));
         f1.setParameter(1, peak_location);
         f1.setParameter(2, 0.2);
-        f1.setParameter(3, h1.getBinContent(0));
-        if (maxz>0) f1.setParLimits(0, maxz*0.9,maxz*1.1);
-        f1.setParLimits(3, 0.0, 0.1*maxz);
+        if (maxz>0) f1.setParLimits(0, maxz*0.5,maxz*1.5);
 
         double hMean, hRMS
         def originalOut = System.out
@@ -367,30 +365,6 @@ class ALERTFitter{
         DataFitter.fit(f1, h1, "");
 
         System.setOut(originalOut)  // Restore the original output
-
-        return f1
-    }
-    static F1D time_fitter_rising(H1F h1, float t0){
-        def f1 =new F1D("fit:"+h1.getName(),"[cst]", -5.0, 5.0);
-        def maxz = h1.getBinContent(h1.getMaximumBin());
-        f1.setRange(t0 - 2, t0 + 2);
-        f1.setParameter(0, 0.25*maxz);
-
-        return f1
-    }
-    static F1D time_fitter_falling(H1F h1, float tmax){
-        def f1 =new F1D("fit:"+h1.getName(),"[cst]", -5.0, 5.0);
-        def maxz = h1.getBinContent(h1.getMaximumBin());
-        f1.setRange(tmax - 2, tmax + 2);
-        f1.setParameter(0, 0.25*maxz);
-
-        return f1
-    }
-    static F1D time_fitter_width(H1F h1, float t0, float tmax){
-        def f1 =new F1D("fit:"+h1.getName(),"[cst]", -5.0, 5.0);
-        def maxz = h1.getBinContent(h1.getMaximumBin());
-        f1.setRange(t0, tmax);
-        f1.setParameter(0, 0.25*maxz);
 
         return f1
     }
