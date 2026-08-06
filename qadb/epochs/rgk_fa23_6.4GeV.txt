@@ -1,0 +1,13 @@
+19204 19208 # trigger studies
+19209 19209 # lumi scan: 10 nA
+19210 19210 # lumi scan: 20 nA
+19211 19212 # lumi scan: 30 nA
+19213 19213 # lumi scan: 40 nA
+19214 19214 # lumi scan: 50 nA
+19215 19215 # lumi scan: 60 nA
+19216 19217 # lumi scan: 75 nA
+19218 19218 # lumi scan: 90 nA
+19219 19244 # production: mostly 40 nA
+19245 19248 # production: 60 nA
+19249 19252 # 75-90 nA
+19253 19260 # trigger studies
