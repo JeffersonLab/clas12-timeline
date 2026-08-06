@@ -1,0 +1,18 @@
+19660 19660 # lumi scan: 10 nA
+19662 19662 # lumi scan: 30 nA
+19663 19663 # lumi scan: 50 nA
+19664 19664 # lumi scan: 65 nA
+19665 19671 # production: 75 nA
+19676 19747 # production, N/q increased
+19748 19772 # N/q decreased
+19773 19779 # N/q increased
+19780 19807 # N/q decreased
+19810 19813 # N/q decreased for some sectors
+19814 19822 # empty target
+19823 19823 # lumi scan: 5 nA
+19824 19824 # lumi scan: 30 nA
+19825 19825 # lumi scan: 50 nA
+19826 19848 # production: 75 nA
+19849 19852 # test runs
+19853 19857 # production, but N/q is decreasing each run
+19860 19893 # production; note the first few runs have poor beam quality and higher N/q
