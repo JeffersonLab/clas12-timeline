@@ -10,3 +10,26 @@ PossiblyNoBeam:
   max_num_events: 200000
   max_num_electrons: 100
   max_FC_charge: 300
+
+# tighten some epochs
+Overrides:
+  - epoch: 3
+    sectors: [ 1, 2, 3, 4, 5, 6 ]
+    detector: FD
+    OutlierFD:
+      IQR_cut_factor: 1.5
+  - epoch: 4
+    sectors: [ 1, 2, 3, 4, 5, 6 ]
+    detector: FD
+    OutlierFD:
+      IQR_cut_factor: 1.5
+  - epoch: 10
+    sectors: [ 1, 2, 3, 4, 5, 6 ]
+    detector: FD
+    OutlierFD:
+      IQR_cut_factor: 1.0
+  - epoch: 11
+    sectors: [ 1, 2, 3, 4, 5, 6 ]
+    detector: FD
+    OutlierFD:
+      IQR_cut_factor: 1.5
