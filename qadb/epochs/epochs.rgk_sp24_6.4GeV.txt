@@ -3,7 +3,8 @@
 19325 19326 # 70.5 nA
 19327 19329 # 40 nA
 19330 19367 # production: 65 nA
-19382 19540 # production, N/q increased
+19382 19420 # production, N/q increased
+19421 19540 # production, N/q increased a bit in sectors 1 and 2
 19541 19550 # empty target
 19551 19603 # production
 19604 19604 # empty target
