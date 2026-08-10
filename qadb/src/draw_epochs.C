@@ -1,10 +1,10 @@
 // called by draw_epochs.sh
 //
-void draw_epochs(TString dataset, TString datfile, TString epochsfile) {
+void draw_epochs(TString dataset, TString datfile, TString epochsfile, Float_t maxNQoverride=0) {
 
   /////////////////////////////
   // SETTINGS
-  Int_t NBINS = 400; // number of N/F bins (default=200)
+  Int_t const NBINS = 400; // number of N/q bins (default=200)
   /////////////////////////////
 
   // open root file
@@ -18,7 +18,51 @@ void draw_epochs(TString dataset, TString datfile, TString epochsfile) {
   tr->ReadFile(datfile,cols);
   Double_t maxLineY = 16000;
 
-  // draw epoch lines
+  // get bounds for histograms
+  Int_t minRun = 1000000;
+  Int_t maxRun = 0;
+  Float_t minNQ = 100000;
+  Float_t maxNQ = 0;
+  Float_t minQ = 100000;
+  Float_t maxQ = 0;
+  Int_t runnum;
+  Float_t nElec,fcstart,fcstop,ufcstart,ufcstop,Q,NQ,UQ;
+  Double_t Qtot,UQtot;
+  Int_t sector;
+  Qtot=UQtot=0;
+  tr->SetBranchAddress("runnum",&runnum);
+  tr->SetBranchAddress("nElec",&nElec);
+  tr->SetBranchAddress("fcstart",&fcstart);
+  tr->SetBranchAddress("fcstop",&fcstop);
+  tr->SetBranchAddress("ufcstart",&ufcstart);
+  tr->SetBranchAddress("ufcstop",&ufcstop);
+  tr->SetBranchAddress("sector",&sector);
+  for(int x=0; x<tr->GetEntries(); x++) {
+    tr->GetEntry(x);
+    Q = fcstop - fcstart;
+    UQ = ufcstop - ufcstart;
+    if(Q>0) {
+      NQ = nElec / Q;
+      minRun = runnum < minRun ? runnum : minRun;
+      maxRun = runnum > maxRun ? runnum : maxRun;
+      minNQ = NQ < minNQ ? NQ : minNQ;
+      maxNQ = NQ > maxNQ ? NQ : maxNQ;
+      minQ = Q < minQ ? Q : minQ;
+      maxQ = Q > maxQ ? Q : maxQ;
+    };
+    if(sector==1) {
+      if(Q>0) Qtot += Q;
+      if(UQ>0) UQtot += UQ;
+    };
+  };
+  if(maxNQoverride > 0)
+    maxNQ = maxNQoverride;
+  printf("--------------------------------------------\n");
+  printf("total gated FC charge = %.1f mC\n",Qtot*1e-6);
+  printf("total ungated FC charge = %.1f mC\n",UQtot*1e-6);
+  printf("--------------------------------------------\n");
+
+  // epoch lines
   // - green line is start of epoch
   // - red line is end of epoch 
   // - lines are shifted so they are drawn in bin centers
@@ -34,85 +78,41 @@ void draw_epochs(TString dataset, TString datfile, TString epochsfile) {
   for(int x=0; x<etr->GetEntries(); x++) {
     etr->GetEntry(x);
     for(int j=0; j<2; j++) {
-      eLine[j][n] = new TLine(e[j]+0.5,0,e[j]+0.5,maxLineY);
+      auto ypos = j==0 ? e[j] - 0.4 : e[j] + 0.4; // slightly shift overlapping lb and ub lines so they're visible
+      eLine[j][n] = new TLine(ypos,0,ypos,maxNQ);
       eLine[j][n]->SetLineColor(color[j]);
       eLine[j][n]->SetLineWidth(3);
     };
     n++;
   };
 
-
-  // get bounds for histograms
-  Int_t minRun = 1000000;
-  Int_t maxRun = 0;
-  Float_t minNF = 100000;
-  Float_t maxNF = 0;
-  Float_t minF = 100000;
-  Float_t maxF = 0;
-  Int_t runnum;
-  Float_t nElec,fcstart,fcstop,ufcstart,ufcstop,F,NF,UF;
-  Double_t Ftot,UFtot;
-  Int_t sector;
-  Ftot=UFtot=0;
-  tr->SetBranchAddress("runnum",&runnum);
-  tr->SetBranchAddress("nElec",&nElec);
-  tr->SetBranchAddress("fcstart",&fcstart);
-  tr->SetBranchAddress("fcstop",&fcstop);
-  tr->SetBranchAddress("ufcstart",&ufcstart);
-  tr->SetBranchAddress("ufcstop",&ufcstop);
-  tr->SetBranchAddress("sector",&sector);
-  for(int x=0; x<tr->GetEntries(); x++) {
-    tr->GetEntry(x);
-    F = fcstop - fcstart;
-    UF = ufcstop - ufcstart;
-    if(F>0) {
-      NF = nElec / F;
-      minRun = runnum < minRun ? runnum : minRun;
-      maxRun = runnum > maxRun ? runnum : maxRun;
-      minNF = NF < minNF ? NF : minNF;
-      maxNF = NF > maxNF ? NF : maxNF;
-      minF = F < minF ? F : minF;
-      maxF = F > maxF ? F : maxF;
-    };
-    if(sector==1) {
-      if(F>0) Ftot += F;
-      if(UF>0) UFtot += UF;
-    };
-  };
-  maxNF = 6; // override maxNF
-  printf("--------------------------------------------\n");
-  printf("total gated FC charge = %.1f mC\n",Ftot*1e-6);
-  printf("total ungated FC charge = %.1f mC\n",UFtot*1e-6);
-  printf("--------------------------------------------\n");
-
-
   // draw everything
   gStyle->SetPalette(kBrownCyan);
   TH2D * h[6];
   TProfile * hp[6];
   TCanvas * c[6];
-  TString hN,cN,cut,rundrawNF,rundrawF;
+  TString hN,cN,cut,rundrawNQ,rundrawQ;
   for(int s=0; s<6; s++) {
 
     hN = Form("sector%d",s+1);
-    h[s] = new TH2D(hN,hN+" N/F vs. runnum;runnum;N/F",
-      maxRun-minRun, minRun, maxRun, NBINS, minNF, maxNF );
+    h[s] = new TH2D(hN,hN+" N/q vs. runnum;runnum;N/q",
+      maxRun-minRun+1, minRun-0.5, maxRun+0.5, NBINS, minNQ, maxNQ );
     cut = Form("sector==%d && fcstop-fcstart>0",s+1);
-    rundrawNF = "nElec/(fcstop-fcstart):runnum";
-    rundrawF = "fcstop-fcstart:runnum";
+    rundrawNQ = "nElec/(fcstop-fcstart):runnum";
+    rundrawQ = "fcstop-fcstart:runnum";
 
     cN = hN+"canv";
     c[s] = new TCanvas(cN,cN,800,800);
 
     c[s]->SetGrid(1,1);
-    tr->Project(hN,rundrawNF,cut);
+    tr->Project(hN,rundrawNQ,cut);
     h[s]->Draw("colz");
     // hp[s] = h[s]->ProfileX();
     // hp[s]->SetLineColor(kRed);
     // hp[s]->SetLineWidth(5);
     // hp[s]->Draw("same");
     for(int k=0; k<n; k++) for(int j=0; j<2; j++) eLine[j][k]->Draw("same");
-    //c[s]->SetLogz();
+    c[s]->SetLogz();
 
     /*
     c[s]->Divide(2,2);
@@ -120,13 +120,13 @@ void draw_epochs(TString dataset, TString datfile, TString epochsfile) {
     c[s]->cd(1);
       tr->Draw("nElec/(fcstop-fcstart):binnum",cut,"*");
     c[s]->cd(2);
-      tr->Draw(rundrawNF,cut,"colz");
+      tr->Draw(rundrawNQ,cut,"colz");
       c[s]->GetPad(2)->SetLogz();
       for(int k=0; k<n; k++) for(int j=0; j<2; j++) eLine[j][k]->Draw("same");
     c[s]->cd(3);
       tr->Draw("fcstop-fcstart:binnum",cut,"*");
     c[s]->cd(4);
-      tr->Draw(rundrawF,cut,"colz");
+      tr->Draw(rundrawQ,cut,"colz");
       c[s]->GetPad(4)->SetLogz();
       for(int k=0; k<n; k++) for(int j=0; j<2; j++) eLine[j][k]->Draw("same");
       */
