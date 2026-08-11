@@ -119,9 +119,9 @@ outputDir=$(realpath $outputDir)
 # start job lists
 jobName=reheat.$mtd.$dataset
 slurmDir=./slurm
+mkdir -p $slurmDir/scripts
 jobList=$slurmDir/job.$jobName.list
 > $jobList
-mkdir -p $slurmDir/scripts
 
 # loop over input files, building the job list
 echo """
