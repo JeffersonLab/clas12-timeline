@@ -15,4 +15,5 @@
 19826 19848 # production: 75 nA
 19849 19852 # test runs
 19853 19857 # production, but N/q is decreasing each run
-19860 19893 # production; note the first few runs have poor beam quality and higher N/q
+19860 19864 # production, N/q is higher
+19865 19893 # production, N/q is lower
