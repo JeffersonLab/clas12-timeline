@@ -4,7 +4,7 @@ void draw_epochs(TString dataset, TString datfile, TString epochsfile, Float_t m
 
   /////////////////////////////
   // SETTINGS
-  Int_t const NBINS = 400; // number of N/q bins (default=200)
+  Int_t const NBINS = 400; // number of N/q bins (default=400)
   /////////////////////////////
 
   // open root file
