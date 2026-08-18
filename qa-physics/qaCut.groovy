@@ -303,7 +303,8 @@ def splitGraph = { g ->
 // define 'epoch plots', which are time-ordered concatenations of all the plots,
 // and put them in the epochPlotTree
 def defineEpochPlot = { name,ytitle,s,e ->
-  def g = new GraphErrors("${name}_s${s}_e${e}")
+  def e_str = e < 10 ? "0${e}" : "${e}"
+  def g = new GraphErrors("${name}_s${s}_e${e_str}")
   if(useFT) g.setTitle(ytitle+" vs. bin index -- epoch $e")
   else      g.setTitle(ytitle+" vs. bin index -- Sector $s, epoch $e")
   g.setTitleY(ytitle)

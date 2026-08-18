@@ -7,4 +7,4 @@ if [ $# -ne 1 ]; then
 fi
 cachedir=$1
 ls $(echo $cachedir | sed 's/^\/cache/\/mss/g')/*.hipo > tmp/jlist.txt
-jcache get $(cat tmp/jlist.txt)
+jcache get -D 10 $(cat tmp/jlist.txt)
