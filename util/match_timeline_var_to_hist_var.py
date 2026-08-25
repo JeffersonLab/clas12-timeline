@@ -16,15 +16,18 @@ class timeline_hists:
     self.construct_analysis_engines()
     self.construct_histogram_var_list()
     self.rows = []
+    self.histogram_scripts = {}
     for key in self.engines:
       self.rows.extend(self.find_histogram_candidates(key))
     columns = ["timeline script", "timeline line number",
-               "histogram script", "histogram line number"]
+               "histogram script", "histogram line number",
+               "histogram field", "histogram field declaration line number"]
     if self.raw:
       columns += ["timeline line", "histogram line"]
     self.df = pd.DataFrame(self.rows, columns=columns)
     self.df["timeline line number"] = self.df["timeline line number"].astype("Int64")
     self.df["histogram line number"] = self.df["histogram line number"].astype("Int64")
+    self.df["histogram field declaration line number"] = self.df["histogram field declaration line number"].astype("Int64")
 
   def construct_analysis_engines(self):
     '''
@@ -78,8 +81,8 @@ class timeline_hists:
     self.engines['GeneralMon'] = self.engines.pop('monitor')
     self.engines['DCandFTOF'] = self.engines.pop('TOF')
 
-  def _top_level_split_plus(self, text):
-    '''split text on '+' at paren/bracket depth 0, outside quotes'''
+  def _top_level_split(self, text, sep):
+    '''split text on `sep` at paren/bracket depth 0, outside quotes'''
     parts = []
     depth = 0
     in_str = None
@@ -105,7 +108,7 @@ class timeline_hists:
         elif c in ')]}':
           depth -= 1
           cur.append(c)
-        elif c == '+' and depth == 0:
+        elif c == sep and depth == 0:
           parts.append(''.join(cur))
           cur = []
         else:
@@ -133,7 +136,7 @@ class timeline_hists:
     # top-level '+' concatenation: recurse on each piece, then join -
     # this is what lets "a" + var + "b" + var2 correctly become "a#b#"
     # instead of corrupting quote-pairing with a single whole-string regex
-    parts = self._top_level_split_plus(expr)
+    parts = self._top_level_split(expr, '+')
     if len(parts) > 1:
       skeleton = ''.join(self.name_expr_to_skeleton(p) for p in parts)
       return re.sub(r"#+", "#", skeleton)
@@ -198,6 +201,68 @@ class timeline_hists:
         return m.group(1).strip()
     return None
 
+  def _iter_declared_fields(self, java_lines):
+    '''
+    walk a histogram class's source top-to-bottom, yielding
+    (line_no, type_str, field_name) for every H1F/H2F/H3F field
+    declaration - splitting comma-grouped declarations
+    (`public H1F[] foo, bar;`) into one tuple per field, in source order.
+    shared by find_field_declarations (line-number lookup) and
+    print_annotated_declarations (full rewrite with usage annotations).
+    '''
+    decl_re = re.compile(r"^\s*(public\s+|private\s+)?(H[123]F(?:\[\])*)\s+(.+);")
+    list_re = re.compile(r"^\s*(public\s+|private\s+)?((?:Array)?List<H[123]Fb?>)\s+(\w+)\s*[=;]")
+    for i, l in enumerate(java_lines):
+      m = decl_re.match(l)
+      if m:
+        modifier, type_str, names_part = m.group(1) or '', m.group(2), re.sub(r"//.*", "", m.group(3))
+        for name in self._top_level_split(names_part, ','):
+          name = name.split("=")[0]
+          name = re.sub(r"\[[^\]]*\]", "", name).strip()
+          if name and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name):
+            yield i + 1, modifier.strip(), type_str, name
+        continue
+      m = list_re.match(l)
+      if m:
+        modifier = m.group(1) or ''
+        yield i + 1, modifier.strip(), m.group(2), m.group(3)
+
+  def find_field_declarations(self, java_lines):
+    '''
+    scan a histogram class's source for H1F/H2F/H3F field declarations -
+    `public H1F[] foo, bar;`, `H2F[][] baz;`, `H1F hboard;`,
+    `List<H1F> hiNphePMTOneHit = ...` - returning { field_name: line_no }
+    for the line where each field was first declared (its type
+    declaration), not where it's later constructed via `new H1F(...)`.
+    '''
+    declarations = {}
+    for line_no, modifier, type_str, name in self._iter_declared_fields(java_lines):
+      if name not in declarations:
+        declarations[name] = line_no
+    return declarations
+
+  def extract_lhs_field(self, line):
+    '''
+    given a line that constructs a histogram (`new H1F(...)`), find the
+    java field it's being stored into - the LHS of a plain assignment
+    (`H_dt[m-1] = new H1F(...)` -> "H_dt"), or the receiver of an
+    `.add(new H1F(...))` call (`hiNphePMTOneHit.add(new H1F(...))` ->
+    "hiNphePMTOneHit"). returns None if neither pattern is found.
+    '''
+    m = re.search(r"([A-Za-z_][A-Za-z0-9_]*)\.add\s*\(\s*new\s+H[123]F", line)
+    if m:
+      return m.group(1)
+    m = re.match(r"\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?:\[[^\]]*\])*\s*=[^=]", line)
+    if m:
+      return m.group(1)
+    return None
+
+  def _resolve_field(self, line, field_declarations):
+    '''returns (field_name, field_declaration_line_no), either may be None'''
+    field_name = self.extract_lhs_field(line)
+    field_line = field_declarations.get(field_name) if field_name else None
+    return field_name, field_line
+
   def find_histogram_candidates(self, key):
     '''
     for a given key, turn each collected getObject() entry into a skeleton
@@ -215,6 +280,7 @@ class timeline_hists:
       if os.path.basename(f).lower() == "{}.java".format(key).lower()
     ]
     histogram_script = histogram_file_matches[0] if histogram_file_matches else None
+    self.histogram_scripts[key] = histogram_script
     if histogram_script is None:
       print("WARNING: no histogram file found for key '{}' ({}.java)".format(key, key))
 
@@ -223,7 +289,9 @@ class timeline_hists:
       with open(histogram_script, "r") as file:
         java_lines = file.readlines()
 
-      # each entry: (line_no, name_skeleton)
+      field_declarations = self.find_field_declarations(java_lines)
+
+      # each entry: (line_no, name_skeleton, field_name, field_decl_line_no)
       for i, l in enumerate(java_lines):
         # require "new " before H1F/H1Fb/H2F/H3F so we only catch actual
         # instantiations, not the class's own constructor declaration
@@ -257,7 +325,8 @@ class timeline_hists:
           if resolved is not None:
             name_arg = resolved
 
-        name_defs.append((i + 1, l, self.name_expr_to_skeleton(name_arg)))
+        name_defs.append((i + 1, l, self.name_expr_to_skeleton(name_arg),
+                           *self._resolve_field(l, field_declarations)))
 
     rows = []
     for entry in self.histogram_var_list.get(key, []):
@@ -265,15 +334,18 @@ class timeline_hists:
       if not go_match:
         continue
       go_skeleton = self.name_expr_to_skeleton(go_match.group(1).strip())
-      matches = [(no, l) for no, l, skel in name_defs if self.skeletons_match(go_skeleton, skel)]
+      matches = [(no, l, field, field_line) for no, l, skel, field, field_line in name_defs
+                 if self.skeletons_match(go_skeleton, skel)]
       if not matches:
-        matches = [(None, None)]
-      for no, java_line in matches:
+        matches = [(None, None, None, None)]
+      for no, java_line, field_name, field_line in matches:
         row = {
           "timeline script": os.path.relpath(entry['timeline_script'], self.default_timeline_dir),
           "timeline line number": entry['line_no'],
           "histogram script": os.path.relpath(histogram_script, self.default_histogram_dir) if histogram_script else None,
           "histogram line number": no,
+          "histogram field": field_name,
+          "histogram field declaration line number": field_line,
         }
         if self.raw:
           row["timeline line"] = entry['line'].rstrip("\n")
@@ -310,6 +382,45 @@ class timeline_hists:
                 "line": line,
               })
 
+  def print_annotated_declarations(self):
+    '''
+    one-time summary, meant to be printed at the end: for each histogram
+    java file, print every H1F/H2F/H3F field declaration on its own line
+    (splitting out from the original comma-grouped declarations),
+    annotated with the timeline script(s) that reference it, or
+    `// unused` if none do.
+    '''
+    # field usage: histogram_script (relpath) -> field_name -> sorted class names
+    usage = {}
+    for row in self.rows:
+      script, field = row["histogram script"], row["histogram field"]
+      if script is None or field is None:
+        continue
+      class_name = os.path.splitext(os.path.basename(row["timeline script"]))[0]
+      usage.setdefault(script, {}).setdefault(field, set()).add(class_name)
+
+    seen_scripts = set()
+    for key, histogram_script in self.histogram_scripts.items():
+      if histogram_script is None or histogram_script in seen_scripts:
+        continue
+      seen_scripts.add(histogram_script)
+      relpath = os.path.relpath(histogram_script, self.default_histogram_dir)
+      field_usage = usage.get(relpath, {})
+
+      print("// {}".format(relpath))
+      with open(histogram_script, "r") as file:
+        java_lines = file.readlines()
+      decl_lines = []
+      for line_no, modifier, type_str, name in self._iter_declared_fields(java_lines):
+        related = sorted(field_usage.get(name, []))
+        comment = "// related timeline: {}".format(related) if related else "// unused"
+        prefix = "{} ".format(modifier) if modifier else ""
+        decl_lines.append(("  {}{} {};".format(prefix, type_str, name), comment))
+      width = max((len(d) for d, _ in decl_lines), default=0) + 1
+      for decl, comment in decl_lines:
+        print("{} {}".format(decl.ljust(width), comment))
+      print()
+
 
 if __name__ == "__main__":
   import argparse
@@ -319,3 +430,4 @@ if __name__ == "__main__":
 
   timeline_histograms = timeline_hists(raw=args.raw)
   print(timeline_histograms.df.to_string(index=False))
+  timeline_histograms.print_annotated_declarations()
