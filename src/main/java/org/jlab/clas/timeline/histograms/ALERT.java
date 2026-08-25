@@ -6,12 +6,14 @@ import org.jlab.groot.data.H1F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.groot.data.TDirectory;
-import org.jlab.utils.groups.IndexedTable;
-import org.jlab.detector.calib.utils.ConstantsManager;
 /**
  *
  * @author sangbaek
  */
+
+// Issue 510: Removed unused histograms to save only called by timeline step.
+// For the full version, please refer to the previous version, such as e1b4bf2d0f70ade26bf70f67bab26554a62e6511.
+
 public class ALERT {
 
   boolean userTimeBased;
@@ -27,9 +29,6 @@ public class ALERT {
   public H1F[] ATOF_z_c4_sl;      // related timeline: ['alert_atof_z_c4_sl']
   public H1F[] AHDC_RESIDUAL;     // related timeline: ['alert_ahdc_residual_LR_layer', 'alert_ahdc_residual_layer', 'alert_ahdc_residual_layer_wire']
   public H1F[] AHDC_RESIDUAL_LR;  // related timeline: ['alert_ahdc_residual_LR_layer_wire']
-
-
-  public ConstantsManager ccdb;
   
   private int[] layer_wires_cumulative  = {0, 47, 103, 159, 231, 303, 390, 477, 576};// private int[] layer_wires = {47,  56,  56,  72,  72,  87,  87,  99};
   private int[] layer_encoding          = {11, 21, 22, 31, 32, 41, 42, 51};

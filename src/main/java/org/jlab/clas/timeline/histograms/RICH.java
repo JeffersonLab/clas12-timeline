@@ -14,6 +14,9 @@ import org.jlab.groot.ui.PaveText;
 import org.jlab.groot.base.PadAttributes;
 import java.util.ArrayList;
 
+// Issue 510: Removed unused histograms to save only called by timeline step.
+// For the full version, please refer to the previous version, such as e1b4bf2d0f70ade26bf70f67bab26554a62e6511.
+
 public class RICH{
   boolean userTimeBased;
   int runNum;
@@ -48,28 +51,23 @@ public class RICH{
   public PaveText statBox = null;
   public PadAttributes attr1;
 
-  public H2F[] H_dt_channel = new H2F[nMODULES];
-  public H1F[] H_dt = new H1F[nMODULES];
-  public H1F[] H_dt_RMS = new H1F[nMODULES];
-  public H1F[] H_dt_MEAN = new H1F[nMODULES];
-  public H1F[][] H_dt_PMT = new H1F[nPMTS][nMODULES];
-
-  public H2F[][] H_detac_tile = new H2F[nMODULES][nTOP];
-  public H2F[][] H_npho_tile = new H2F[nMODULES][nTOP];
-  public H1F[] H_trk_match = new H1F[nMODULES];
+  public H1F[] H_dt = new H1F[nMODULES];// related timeline: ['rich_dt_m']
+  public H2F[][] H_detac_tile = new H2F[nMODULES][nTOP];// related timeline: ['rich_etac_dir_m', 'rich_etac_plan_m', 'rich_etac_sphe_m']
+  public H2F[][] H_npho_tile = new H2F[nMODULES][nTOP]; // related timeline: ['rich_npho_dir_m', 'rich_npho_plan_m', 'rich_npho_sphe_m']
+  public H1F[] H_trk_match = new H1F[nMODULES];         // related timeline: ['rich_trk_m']
 
   public int Ntrig = 0;
 
-  public H1F H_npip_tile[] = new H1F[nMODULES];
-  public H1F H_npim_tile[] = new H1F[nMODULES];
-  public H1F H_nkp_tile[] = new H1F[nMODULES];
-  public H1F H_nkm_tile[] = new H1F[nMODULES];
-  public H1F H_npro_tile[] = new H1F[nMODULES];
-  public H1F H_npbar_tile[] = new H1F[nMODULES];
+  public H1F H_npip_tile[] = new H1F[nMODULES];  // related timeline: ['rich_npip_m']
+  public H1F H_npim_tile[] = new H1F[nMODULES];  // related timeline: ['rich_npim_m']
+  public H1F H_nkp_tile[] = new H1F[nMODULES];   // related timeline: ['rich_nkp_m']
+  public H1F H_nkm_tile[] = new H1F[nMODULES];   // related timeline: ['rich_nkm_m']
+  public H1F H_npro_tile[] = new H1F[nMODULES];  // related timeline: ['rich_npro_m']
+  public H1F H_npbar_tile[] = new H1F[nMODULES]; // related timeline: ['rich_npbar_m']
 
-  public H1F H_ntrigele;
+  public H1F H_ntrigele; // related timeline: ['rich_nkm_m', 'rich_nkp_m', 'rich_npbar_m', 'rich_npim_m', 'rich_npip_m', 'rich_npro_m']
 
-  public H1F H_setup;
+  public H1F H_setup;    // related timeline: ['rich_dt_m', 'rich_etac_dir_m', 'rich_etac_plan_m', 'rich_etac_sphe_m', 'rich_nkm_m', 'rich_nkp_m', 'rich_npbar_m', 'rich_npho_dir_m', 'rich_npho_plan_m', 'rich_npho_sphe_m', 'rich_npim_m', 'rich_npip_m', 'rich_npro_m', 'rich_trk_m']
 
   public int eventN;
 
@@ -442,8 +440,6 @@ public class RICH{
 
         H_dt_RMS[m-1].reset();
         H_dt_MEAN[m-1].reset();
-        H2F H_dt_channel_rb = H_dt_channel[m-1].rebinX(nANODES);
-        ArrayList<H1F> H_dt_PMT_AL = H_dt_channel_rb.getSlicesX();
 
         for (int p=0; p<nPMTS; p++) {
           H_dt_PMT[p][m-1] = H_dt_PMT_AL.get(p);
