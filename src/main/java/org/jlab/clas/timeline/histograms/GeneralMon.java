@@ -13,6 +13,9 @@ import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 import org.jlab.clas.timeline.util.RunDependentCut;
 
+// Issue 510: Removed unused histograms to save only called by timeline step.
+// For the full version, please refer to the previous version, such as e1b4bf2d0f70ade26bf70f67bab26554a62e6511.
+
 /**
  * General Monitoring histograms (a.k.a. General Monolith)
  */
@@ -93,124 +96,62 @@ public class GeneralMon {
   public GraphErrors G_FCcur_evn, G_gatedFCcur_evn, G_FC_live_ratio, G_accCharge;
   public GraphErrors G_Clock_evn, G_gatedClock_evn, G_Clock_ratio;
 
-  public H1F[][] H_trig_phi_theta_S;
-  public H1F[] H_trig_PCAL_vt_S, H_trig_ECIN_vt_S, H_trig_ECOU_vt_S;
-  public H2F[] H_trig_theta_mom_S, H_trig_phi_mom_S, H_trig_theta_phi_S, H_trig_vz_mom_S, H_trig_vy_vz_S, H_trig_vz_theta_S;
-  public H2F[] H_trig_ECALsampl_S, H_trig_PCALECAL_S, H_trig_HTCCn_theta_S, H_trig_LTCCn_theta_S;
-  public H2F[] H_trig_ECAL_pos_S, H_trig_TOF_pos_S, H_trig_HTCC_pos_S, H_trig_DCR1_pos_S, H_trig_DCR2_pos_S, H_trig_DCR3_pos_S;
-  public H1F[] H_trig_S_HTCC_theta;
-
-  public H2F[] H_e_theta_mom_S;
-  public H1F[] H_e_W_S;
-  public H1F[] H_e_Q2_S;
-  public H2F[] H_e_W_phi_S;
-  public H2F H_e_theta_phi, H_e_theta_mom, H_e_phi_mom, H_XY_ECal, H_ESampl_ECal, H_e_LTCC_xy, H_e_HTCC_xy, H_e_HTCC_txy, H_e_HTCC_nphe_txy, H_e_vxy, H_e_vz_phi, H_e_vz_p, H_e_vz_theta, H_e_TOF_xy, H_e_TOF_t_path;
-  public H2F H_e_xB_Q2, H_e_W_Q2, H_e_xB_W;
-  public H1F H_e_W, H_e_Q2, H_e_xB, H_e_vz, H_e_LTCC_nphe, H_e_HTCC_nphe, H_e_vt1, H_e_vt2;
-
-  public H2F[] H_muontrig_theta_mom_S;
-  public H2F H_muontrig_theta_phi, H_muontrig_theta_mom, H_muontrig_phi_mom, H_muontrig_XY_ECal, H_muontrig_ESampl_ECal, H_muontrig_LTCC_xy, H_muontrig_HTCC_xy, H_muontrig_HTCC_txy;
-  public H2F H_muontrig_HTCC_nphe_txy, H_muontrig_vxy, H_muontrig_vz_phi, H_muontrig_vz_p, H_muontrig_vz_theta, H_muontrig_TOF_xy, H_muontrig_TOF_t_path;
-  public H1F H_muontrig_vz, H_muontrig_LTCC_nphe, H_muontrig_HTCC_nphe;
-  public H1F[] H_muontrig_ecal_en_neg_S, H_muontrig_ecal_en_pos_S, H_muontrig_pcal_en_neg_S, H_muontrig_pcal_en_pos_S;
-  public H2F[] H_muontrig_ECECOUT_en_S;
-
-  public H2F H_positive_theta_mom, H_negative_theta_mom, H_electron_theta_mom;
-
-  public H1F H_e_vz_S1, H_e_vz_S2, H_e_vz_S3, H_e_vz_S4, H_e_vz_S5, H_e_vz_S6;
-  public H1F H_e_FMMvz_S1, H_e_FMMvz_S2, H_e_FMMvz_S3, H_e_FMMvz_S4, H_e_FMMvz_S5, H_e_FMMvz_S6;
-  public H2F[][] H_e_FMMmom_mom, H_e_FMMtheta_theta, H_e_FMMphi_phi, H_e_FMMvz_vz;
-  public H2F H_o_TOF;
-  public H1F H_o_vt;
-
-  public H2F H_dcm_theta_phi, H_dcm_theta_mom, H_dcm_phi_mom, H_dcm_vz_phi, H_dcm_vz_p, H_dcm_vz_theta, H_dcm_phiK_mom;
-  public H2F H_dcm_R1th_R1ph, H_dcm_R1the_mom, H_dcm_R1ph_mom, H_dcm_pvz_phi, H_dcm_pvz_p, H_dcm_pvz_theta, H_dcm_pvt_pvz;
-  public H2F H_dcp_theta_phi, H_dcp_theta_mom, H_dcp_phi_mom, H_dcp_vz_phi, H_dcp_vz_p, H_dcp_vz_theta, H_dcp_phiK_mom;
-  public H2F H_dcp_R1th_R1ph, H_dcp_R1the_mom, H_dcp_R1ph_mom, H_dcp_pvz_phi, H_dcp_pvz_p, H_dcp_pvz_theta, H_dcp_pvt_pvz;
-  public H2F H2_dcm_vz_phi, H2_dcp_vz_phi;
-  public H1F H_dcm_W, H_dcm_W_zoom;
-
-  public H1F H_negHBTrk_sect, H_posHBTrk_sect, H_negRECHB_sect, H_posRECHB_sect;
-  public H1F H_negTBTrk_sect, H_posTBTrk_sect, H_negREC_sect, H_posREC_sect;
-
-  public H1F[] H_dcm_vz, H_dcm_chi2;
-  public H2F[] H_R1_dcm_XY, H_R2_dcm_XY, H_R3_dcm_XY, H_R1_dcm_uXY, H_R2_dcm_uXY, H_R3_dcm_uXY;
-  public H2F[] H_R1phiDm_mom;
-
-  public H1F[] H_dcp_vz, H_dcp_chi2;
-  public H2F[] H_R1_dcp_XY, H_R2_dcp_XY, H_R3_dcp_XY, H_R1_dcp_uXY, H_R2_dcp_uXY, H_R3_dcp_uXY;
-  public H2F[] H_R1phiDp_mom;
-
-  public H1F[] H_dce_chi2;
-  public GraphErrors g_m_ESampl_ECal, g_s_ESampl_ECal;
-
-  public H2F H_gg_open_a, H_g1_tf, H_g2_tf, H_g1_te, H_g2_te;
-  public H1F H_gg_m;
-
-  public H2F H_CVT_ft, H_CVT_pt, H_CVT_pf, H_CVT_zf, H_CVT_zp, H_CVT_zt;
-  public H1F H_CVT_p, H_CVT_t, H_CVT_f, H_CVT_z, H_CVT_chi2, H_CVT_ndf, H_CVT_pathlength;
-  public H1F H_CVT_z_pos, H_CVT_z_neg, H_CVT_d0_pos, H_CVT_d0_neg, H_CVT_absd0_pos, H_CVT_absd0_neg, H_CVT_chi2_pos, H_CVT_chi2_neg;
-  public H1F H_CVT_d0, H_CVT_charge;
-  public H2F H_CVT_vz_mom, H_CVT_vz_phi, H_CVT_vz_theta, H_CVT_vx_vy, H_CVT_vx_vz, H_CVT_vz_vy;
-  public H1F H_CVT_mom, H_CVT_theta, H_CVT_phi, H_CVT_vz, H_CVT_vx, H_CVT_vy;
-  public H1F H_CD_vx, H_CD_vy, H_CD_vz;
-  public H2F H_CD_vz_mom, H_CD_vz_phi, H_CD_vz_theta, H_CD_vx_vy, H_CD_vx_vz, H_CD_vz_vy; 
-
-  public H1F[] H_MM_epip_Spip, H_MM_epip_Se;
-  public H1F H_MM_epip, H_MM_epip_zoom, H_pip_vtd, H_pip_vz_ve_diff, H_pip_Dphi;
-  public H1F H_pim_vtd;
-  public H2F H_pip_theta_phi, H_pip_theta_mom, H_pip_phi_mom, H_pip_vz_phi, H_pip_vz_theta, H_pip_vz_mom, H_pip_e_vt, H_pip_vz_ve;
-  public H2F H_pip_vz_ve_diff_mom, H_pip_vz_ve_diff_theta, H_pip_vz_ve_diff_phi, H_pip_vz_ve_diff_Dphi;
-  public H2F H_MM_epip_phi, H_pip_beta_p, H_pip_beta2_p, H_pip_vtd_mom, H_pip_vtd_theta, H_pip_vtd_phi;
-  public H2F H_epip_e_theta_phi, H_epip_e_theta_mom, H_epip_e_phi_mom, H_epip_xB_Q2, H_epip_e_W_Q2, H_epip_e_t_phi;
-
-  public H1F H_rho_IM, H_rho_MM;
-  public H2F H_rho_Q2_xB, H_rho_Q2_W;
-  public H2F H_rho_prot, H_rho_pip_beta, H_rho_pim_beta;
-
-  public H1F H_trig_sector_count, H_trig_sector_elec, H_trig_sector_elec_rat, H_rand_trig_sector_count;
-  public H1F H_muon_trig_sector_count, H_trig_sector_muon, H_trig_sector_muon_rat, H_trig_sector_muontrack, H_trig_sector_muontrack_rat;
-  public H1F H_trig_sector_prot, H_trig_sector_piplus, H_trig_sector_piminus, H_trig_sector_kplus, H_trig_sector_kminus, H_trig_sector_photon, H_trig_sector_neutron, H_trig_sector_deut;
-  public H1F H_trig_sector_prot_rat, H_trig_sector_piplus_rat, H_trig_sector_piminus_rat, H_trig_sector_kplus_rat, H_trig_sector_kminus_rat, H_trig_sector_photon_rat, H_trig_sector_neutron_rat, H_trig_sector_deut_rat;
-  public H1F H_trig_sector_positive_rat, H_trig_sector_negative_rat, H_trig_sector_neutral_rat;
-  public H1F H_Nclust_ev, H_clust1_E, H_clust2_E;
-  public H1F H_trig_S1_ETOT_E, H_trig_S1_ECAL_E, H_trig_S1_PCAL_E, H_trig_S1_HTCC_n, H_trig_S1_HTCC_N, H_trig_S1_HTCC_N_track;
-  public H1F H_trig_S2_ETOT_E, H_trig_S2_ECAL_E, H_trig_S2_PCAL_E, H_trig_S2_HTCC_n, H_trig_S2_HTCC_N, H_trig_S2_HTCC_N_track;
-  public H1F H_trig_S3_ETOT_E, H_trig_S3_ECAL_E, H_trig_S3_PCAL_E, H_trig_S3_HTCC_n, H_trig_S3_HTCC_N, H_trig_S3_HTCC_N_track;
-  public H1F H_trig_S4_ETOT_E, H_trig_S4_ECAL_E, H_trig_S4_PCAL_E, H_trig_S4_HTCC_n, H_trig_S4_HTCC_N, H_trig_S4_HTCC_N_track;
-  public H1F H_trig_S5_ETOT_E, H_trig_S5_ECAL_E, H_trig_S5_PCAL_E, H_trig_S5_HTCC_n, H_trig_S5_HTCC_N, H_trig_S5_HTCC_N_track;
-  public H1F H_trig_S6_ETOT_E, H_trig_S6_ECAL_E, H_trig_S6_PCAL_E, H_trig_S6_HTCC_n, H_trig_S6_HTCC_N, H_trig_S6_HTCC_N_track;
-  public H2F H_trig_S1_PCAL_XY, H_trig_S1_HTCC_XY;
-  public H2F H_trig_S2_PCAL_XY, H_trig_S2_HTCC_XY;
-  public H2F H_trig_S3_PCAL_XY, H_trig_S3_HTCC_XY;
-  public H2F H_trig_S4_PCAL_XY, H_trig_S4_HTCC_XY;
-  public H2F H_trig_S5_PCAL_XY, H_trig_S5_HTCC_XY;
-  public H2F H_trig_S6_PCAL_XY, H_trig_S6_HTCC_XY;
-  public H2F missTrig_S1_ft, missTrig_S1_mt, missTrig_S1_mf;
-  public H2F missTrig_S2_ft, missTrig_S2_mt, missTrig_S2_mf;
-  public H2F missTrig_S3_ft, missTrig_S3_mt, missTrig_S3_mf;
-  public H2F missTrig_S4_ft, missTrig_S4_mt, missTrig_S4_mf;
-  public H2F missTrig_S5_ft, missTrig_S5_mt, missTrig_S5_mf;
-  public H2F missTrig_S6_ft, missTrig_S6_mt, missTrig_S6_mf;
-  public H1F PCAL_Thresh_S1, PCAL_Thresh_S2, PCAL_Thresh_S3, PCAL_Thresh_S4, PCAL_Thresh_S5, PCAL_Thresh_S6;
-  public H2F ETOT_Sampl_S1, ETOT_Sampl_S2, ETOT_Sampl_S3, ETOT_Sampl_S4, ETOT_Sampl_S5, ETOT_Sampl_S6;
-
-  public H1F H_TOF_vt_S1m, H_TOF_vt_S2m, H_TOF_vt_S3m, H_TOF_vt_S4m, H_TOF_vt_S5m, H_TOF_vt_S6m;
-  public H2F H_TOF_vt_mom_S1m, H_TOF_vt_mom_S2m, H_TOF_vt_mom_S3m, H_TOF_vt_mom_S4m, H_TOF_vt_mom_S5m, H_TOF_vt_mom_S6m;
-  public H1F H_TOF_vt_S1p, H_TOF_vt_S2p, H_TOF_vt_S3p, H_TOF_vt_S4p, H_TOF_vt_S5p, H_TOF_vt_S6p;
-  public H2F H_TOF_vt_mom_S1p, H_TOF_vt_mom_S2p, H_TOF_vt_mom_S3p, H_TOF_vt_mom_S4p, H_TOF_vt_mom_S5p, H_TOF_vt_mom_S6p;
-
-  public H2F H_CVT_e_corr_vz, H_CVT_e_corr_phi, H_CVT_corr_e_theta;
-  public H2F H_elast_e_p_th, H_elast_W_sect, H_CVT_corr_e_mom;
-  public H1F H_CVT_e_vz_diff, H_CVT_e_phi_diff, H_elast_W;
-
-  public H1F[] H_e_RFtime1_FD_S , H_pip_RFtime1_FD_S, H_pim_RFtime1_FD_S, H_p_RFtime1_FD_S;
-  public H1F H_pip_RFtime1_CD, H_pim_RFtime1_CD, H_p_RFtime1_CD;
-  public H1F  H_RFtimediff, H_RFtimediff_corrected;
-
-  public H1F hbstOccupancy,hbmtOccupancy,htrks,hpostrks,hnegtrks,hndf,hchi2norm,hp,hpt,hpathlen,hbstOnTrkLayers,hbmtOnTrkLayers;
-  public H1F hpostrks_rat, hnegtrks_rat;
-  public H1F H_trig_central_prot_rat, H_trig_central_deut_rat, H_trig_central_piplus_rat,H_trig_central_piminus_rat,H_trig_central_kplus_rat,H_trig_central_kminus_rat;
+  public H1F[] H_trig_PCAL_vt_S;           // related timeline: ['ec_pcal_time']
+  public H1F[] H_trig_ECIN_vt_S;           // related timeline: ['ec_ecin_time']
+  public H1F[] H_trig_ECOU_vt_S;           // related timeline: ['ec_ecou_time']
+  public H2F[] H_trig_vz_mom_S;            // related timeline: ['forward_Tracking_EleVz']
+  public H2F[] H_trig_ECALsampl_S;         // related timeline: ['ec_Sampl']
+  public H2F[] H_trig_LTCCn_theta_S;       // related timeline: ['ltcc_nphe_sector']
+  public H1F[] H_dcm_vz;                   // related timeline: ['forward_Tracking_NegVz']
+  public H1F[] H_dcm_chi2;                 // related timeline: ['forward_Tracking_Negchi2', 'forward_Tracking_Poschi2']
+  public H1F[] H_dcp_vz;                   // related timeline: ['forward_Tracking_PosVz']
+  public H1F[] H_dce_chi2;                 // related timeline: ['forward_Tracking_Elechi2']
+  public H1F H_gg_m;                       // related timeline: ['ec_gg_m']
+  public H1F H_CVT_chi2;                   // related timeline: ['cvt_chi2_elec']
+  public H1F H_CVT_z_pos;                  // related timeline: ['cvt_Vz_positive']
+  public H1F H_CVT_z_neg;                  // related timeline: ['cvt_Vz_negative']
+  public H1F H_CVT_d0_pos;                 // related timeline: ['cvt_d0_mean_pos', 'cvt_d0_sigma_pos']
+  public H1F H_CVT_absd0_pos;              // related timeline: ['cvt_d0_max_pos']
+  public H1F H_CVT_chi2_pos;               // related timeline: ['cvt_chi2_pos']
+  public H1F H_CVT_chi2_neg;               // related timeline: ['cvt_chi2_neg']
+  public H1F H_trig_sector_elec_rat;       // related timeline: ['rat_elec_num']
+  public H1F H_trig_sector_muon_rat;       // related timeline: ['rat_muon_num']
+  public H1F H_trig_sector_prot_rat;       // related timeline: ['rat_prot_num']
+  public H1F H_trig_sector_piplus_rat;     // related timeline: ['rat_pip_num']
+  public H1F H_trig_sector_piminus_rat;    // related timeline: ['rat_pim_num']
+  public H1F H_trig_sector_kplus_rat;      // related timeline: ['rat_Kp_num']
+  public H1F H_trig_sector_kminus_rat;     // related timeline: ['rat_Km_num']
+  public H1F H_trig_sector_positive_rat;   // related timeline: ['rat_pos_num']
+  public H1F H_trig_sector_negative_rat;   // related timeline: ['rat_neg_num']
+  public H1F H_trig_sector_neutral_rat;    // related timeline: ['rat_neu_num']
+  public H1F[] H_e_RFtime1_FD_S;           // related timeline: ['rftime_elec_FD']
+  public H1F[] H_pip_RFtime1_FD_S;         // related timeline: ['rftime_pip_FD']
+  public H1F[] H_pim_RFtime1_FD_S;         // related timeline: ['rftime_pim_FD']
+  public H1F[] H_p_RFtime1_FD_S;           // related timeline: ['rftime_prot_FD']
+  public H1F H_pip_RFtime1_CD;             // related timeline: ['rftime_pip_CD']
+  public H1F H_pim_RFtime1_CD;             // related timeline: ['rftime_pim_CD']
+  public H1F H_p_RFtime1_CD;               // related timeline: ['rftime_prot_CD']
+  public H1F H_RFtimediff;                 // related timeline: ['rftime_diff']
+  public H1F H_RFtimediff_corrected;       // related timeline: ['rftime_diff_corrected']
+  public H1F hbstOccupancy;                // related timeline: ['bst_Occupancy']
+  public H1F hbmtOccupancy;                // related timeline: ['bmt_Occupancy']
+  public H1F htrks;                        // related timeline: ['cvt_trks']
+  public H1F hpostrks;                     // related timeline: ['cvt_trks_pos']
+  public H1F hnegtrks;                     // related timeline: ['cvt_trks_neg']
+  public H1F hndf;                         // related timeline: ['cvt_ndf']
+  public H1F hchi2norm;                    // related timeline: ['cvt_chi2norm']
+  public H1F hp;                           // related timeline: ['cvt_p']
+  public H1F hpt;                          // related timeline: ['cvt_pt']
+  public H1F hpathlen;                     // related timeline: ['cvt_pathlen']
+  public H1F hbstOnTrkLayers;              // related timeline: ['bst_OnTrkLayers']
+  public H1F hbmtOnTrkLayers;              // related timeline: ['bmt_OnTrkLayers']
+  public H1F hpostrks_rat;                 // related timeline: ['cvt_trks_pos_rat']
+  public H1F hnegtrks_rat;                 // related timeline: ['cvt_trks_neg_rat']
+  public H1F H_trig_central_prot_rat;      // related timeline: ['central_prot_num']
+  public H1F H_trig_central_piplus_rat;    // related timeline: ['central_pip_num']
+  public H1F H_trig_central_piminus_rat;   // related timeline: ['central_pim_num']
+  public H1F H_trig_central_kplus_rat;     // related timeline: ['central_Kp_num']
+  public H1F H_trig_central_kminus_rat;    // related timeline: ['central_Km_num']
 
   public IndexedTable InverseTranslationTable;
   public IndexedTable calibrationTranslationTable;

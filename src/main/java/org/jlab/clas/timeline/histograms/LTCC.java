@@ -10,6 +10,10 @@ import org.jlab.groot.data.TDirectory;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
+
+// Issue 510: Removed unused histograms to save only called by timeline step.
+// For the full version, please refer to the previous version, such as e1b4bf2d0f70ade26bf70f67bab26554a62e6511.
+
 public class LTCC{
   boolean userTimeBased;
   int runNum;
@@ -27,15 +31,8 @@ public class LTCC{
   public float e_DCR1_uX, e_DCR1_uY, e_DCR1_uZ, e_DCR2_uX, e_DCR2_uY, e_DCR2_uZ, e_DCR3_uX, e_DCR3_uY, e_DCR3_uZ;
   public float e_DCR2_the, e_DCR2_phi;
 
-  public H2F[] H_e_theta_mom, H_e_phi_mom, H_e_theta_phi, H_e_vz, H_e_sampl, H_e_vtime, H_e_trk_chi2, H_e_LTCC;
-  public H2F[] H_e_Ring_theta, H_e_side_phi;
-  public H1F[] H_LTCC_adc, H_LTCC_nphe, H_LTCC2_nphe;
-  public H2F[] H_pion_nphePMT, H_e_nphePMT; 
-  public H2F H_e_nphe0_LTCC_XY, H_e_nphe2_LTCC_XY, H_pi_nphe0_LTCC_XY, H_pi_nphe2_LTCC_XY;
-  public H1F[] H_LTCC_PMTocc;
-  public H1F H_Particle_PiPlus_Phi, H_Particle_PiPlus_Phi_LTCC, H_Particle_PiPlus_Mom, H_Particle_PiPlus_Mom_LTCC, H_Particle_PiPlus_nphe_LTCC;
-  public H1F H_Particle_PiMinus_Phi, H_Particle_PiMinus_Phi_LTCC, H_Particle_PiMinus_Mom, H_Particle_PiMinus_Mom_LTCC, H_Particle_PiMinus_nphe_LTCC;
-  public H1F[] H_Particle_PiPlus_nphe_LTCC_S, H_Particle_PiMinus_nphe_LTCC_S;
+  public H1F[] H_Particle_PiPlus_nphe_LTCC_S;   // related timeline: ['ltcc_had_nphe_sector']
+  public H1F[] H_Particle_PiMinus_nphe_LTCC_S;  // related timeline: ['ltcc_had_nphe_sector']
 
   public IndexedTable InverseTranslationTable;
   public IndexedTable calibrationTranslationTable;

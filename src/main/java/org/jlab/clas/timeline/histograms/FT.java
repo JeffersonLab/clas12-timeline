@@ -15,6 +15,9 @@ import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
+// Issue 510: Removed unused histograms to save only called by timeline step.
+// For the full version, please refer to the previous version, such as e1b4bf2d0f70ade26bf70f67bab26554a62e6511.
+
 public class FT {
 
     boolean userTimeBased;
@@ -31,23 +34,19 @@ public class FT {
     public int rf_large_integer;
 
     //Hodoscope
-    public H1F[] hi_hodo_eall, hi_hodo_ematch, hi_hodo_tmatch;
-    public F1D[] f_charge_landau;
-    public H2F[] hi_hodo_ematch_2D, hi_hodo_tmatch_2D;
+    public H1F[] hi_hodo_ematch;        // related timeline: ['fth_MIPS_energy', 'fth_MIPS_energy_board']
+    public H1F[] hi_hodo_tmatch;        // related timeline: ['fth_MIPS_time', 'fth_MIPS_time_board']
 
     //Hodoscope by mezzanine board
-    public H1F[] hi_hodo_ematch_board, hi_hodo_tmatch_board;
-    public F1D[] f_charge_landau_board;
+    public H1F[] hi_hodo_ematch_board;  // related timeline: ['fth_MIPS_energy', 'fth_MIPS_energy_board']
+    public H1F[] hi_hodo_tmatch_board;  // related timeline: ['fth_MIPS_time', 'fth_MIPS_time_board']
 
     //Calorimeter
-    public H1F hi_cal_nclusters, hi_cal_clsize, hi_cal_clsize_ch, hi_cal_e_all, hi_cal_e_ch, hi_cal_e_neu, hi_cal_theta_ch, hi_cal_phi_ch, hi_cal_time_ch, hi_cal_time_cut_ch, hi_cal_time_neu, hi_cal_time_cut_neu;
-    public H2F hi_cal_clsize_en, hi_cal_time_e_ch, hi_cal_time_theta_ch, hi_cal_time_e_neu, hi_cal_time_theta_neu;
-    public F1D ftime_ch, ftime_neu;
+    public H1F hi_cal_time_ch;          // related timeline: ['ftc_time_charged']
+    public H1F hi_cal_time_neu;         // related timeline: ['ftc_time_neutral']
 
     //pi0
-    public H1F hpi0sum;
-    public F1D fpi0;
-    public H2F hmassangle;
+    public H1F hpi0sum;                 // related timeline: ['ftc_pi0_mass']
 
     public IndexedTable InverseTranslationTable;
     public IndexedTable calibrationTranslationTable;

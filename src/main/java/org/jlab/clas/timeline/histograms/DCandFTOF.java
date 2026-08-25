@@ -13,6 +13,9 @@ import org.jlab.groot.data.TDirectory;
 import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 
+// Issue 510: Removed unused histograms to save only called by timeline step.
+// For the full version, please refer to the previous version, such as e1b4bf2d0f70ade26bf70f67bab26554a62e6511.
+
 public class DCandFTOF {
   boolean userTimeBased;
   public int runNum;
@@ -24,27 +27,25 @@ public class DCandFTOF {
   public int[] nev;
   public int rf_large_integer;
   public int e_part_ind;
-  public H2F p1a_pad_occ, p1b_pad_occ, p2_pad_occ;
-  public H2F p1a_pad_XY, p1b_pad_XY, p2_pad_XY;
-  public H2F[] p1a_pad_vt, p1b_pad_vt, p2_pad_vt;
-  public H2F[] p1a_pad_edep, p1b_pad_edep, p2_pad_edep;
-  public H1F[][] p1a_edep, p1b_edep;
-  public H1F[] p2_edep, p1a_tdcadc_dt, p1b_tdcadc_dt, p2_tdcadc_dt;
-  public H1F[] ftof_ctof_vtdiff;
-  public H2F[] p1a_pad_dt, p1b_pad_dt, p2_pad_dt;
-  public H2F[] p1a_pad_dt_calib, p1b_pad_dt_calib, p2_pad_dt_calib, p1a_pad_dt_4nstrack, p1b_pad_dt_4nstrack;
-  public H1F[] p1a_dt_calib_all, p1b_dt_calib_all, p2_dt_calib_all, p1a_dt_4nstrack_all, p1b_dt_4nstrack_all;
-  public H2F[][] DC_residuals_trkDoca;
-  public H1F[][] DC_residuals, DC_time, DC_time_even, DC_time_odd;
-  public H2F[][] DC_residuals_trkDoca_nocut;
-  public H1F[][] DC_residuals_nocut, DC_time_nocut;
-  public H2F[][] DC_residuals_trkDoca_rescut;
-  public H1F[][] DC_residuals_rescut, DC_time_rescut;
-  public H2F DC_jitterzero_sec_sl, DC_jitterone_sec_sl, DC_jittertwo_sec_sl;
-  public H2F DC_hits_even_ts_sec_sl, DC_hits_odd_ts_sec_sl;
-  public H1F DC_jitterdist;
-  public F1D[][] f_time_invertedS;
-
+  public H1F[][] p1a_edep;                     // related timeline: ['ftof_edep_p1a_largeangles', 'ftof_edep_p1a_midangles', 'ftof_edep_p1a_smallangles']
+  public H1F[][] p1b_edep;                     // related timeline: ['ftof_edep_p1b_largeangles', 'ftof_edep_p1b_midangles', 'ftof_edep_p1b_smallangles']
+  public H1F[] p2_edep;                        // related timeline: ['ftof_edep_p2']
+  public H1F[] p1a_tdcadc_dt;                  // related timeline: ['ftof_tdcadc_p1a']
+  public H1F[] p1b_tdcadc_dt;                  // related timeline: ['ftof_tdcadc_p1b']
+  public H1F[] p2_tdcadc_dt;                   // related timeline: ['ftof_tdcadc_p2']
+  public H1F[] ftof_ctof_vtdiff;               // related timeline: ['ftof_ctof_vtdiff']
+  public H1F[] p1a_dt_calib_all;               // related timeline: ['ftof_time_p1a']
+  public H1F[] p1b_dt_calib_all;               // related timeline: ['ftof_time_p1b']
+  public H1F[] p2_dt_calib_all;                // related timeline: ['ftof_time_p2']
+  public H2F[][] DC_residuals_trkDoca;         // related timeline: ['dc_residuals_sec', 'dc_residuals_sec_sl', 'dc_residuals_sec_sl_rescut']
+  public H1F[][] DC_residuals;                 // related timeline: ['dc_residuals_sec', 'dc_residuals_sec_sl', 'dc_residuals_sec_sl_rescut']
+  public H1F[][] DC_time;                      // related timeline: ['dc_t0_even_sec_sl', 'dc_t0_odd_sec_sl', 'dc_t0_sec_sl', 'dc_tmax_sec_sl']
+  public H1F[][] DC_time_even;                 // related timeline: ['dc_t0_even_sec_sl', 'dc_t0_sec_sl', 'dc_tmax_sec_sl']
+  public H1F[][] DC_time_odd;                  // related timeline: ['dc_t0_odd_sec_sl', 'dc_t0_sec_sl', 'dc_tmax_sec_sl']
+  public H2F[][] DC_residuals_trkDoca_nocut;   // related timeline: ['dc_residuals_sec', 'dc_residuals_sec_sl']
+  public H1F[][] DC_time_nocut;                // related timeline: ['dc_t0_sec_sl', 'dc_tmax_sec_sl']
+  public H2F[][] DC_residuals_trkDoca_rescut;  // related timeline: ['dc_residuals_sec', 'dc_residuals_sec_sl', 'dc_residuals_sec_sl_rescut']
+  public H1F[][] DC_time_rescut;               // related timeline: ['dc_t0_sec_sl', 'dc_tmax_sec_sl']
   public float p1a_counter_thickness, p1b_counter_thickness, p2_counter_thickness;
   public int phase_offset;
   public long timestamp;
