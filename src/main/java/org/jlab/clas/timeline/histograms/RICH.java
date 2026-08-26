@@ -302,7 +302,7 @@ public class RICH{
 
   public void getPhotons(DataBank part, DataBank hadr, DataBank phot){
     float p_min = 2.0f;
-    int pmt, anode, sector, module;
+    int sector, module;
     int layers, compos, use;
     int nrefl, refl1, topology;
     double DTimeCorr, etac, beta, mass;
@@ -346,8 +346,6 @@ public class RICH{
 
       /* channel info */
       sector = phot.getInt("sector", j);
-      pmt = phot.getInt("pmt", j);
-      anode = phot.getInt("anode", j);
       DTimeCorr = phot.getFloat("dtime", j);
       etac = phot.getFloat("etaC", j);
       layers = phot.getInt("layers", j);
