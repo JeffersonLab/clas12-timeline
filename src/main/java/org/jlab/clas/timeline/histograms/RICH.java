@@ -12,7 +12,6 @@ import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 import org.jlab.groot.ui.PaveText;
 import org.jlab.groot.base.PadAttributes;
-import java.util.ArrayList;
 
 // Issue 510: Removed unused histograms to save only called by timeline step.
 // For the full version, please refer to the previous version, such as e1b4bf2d0f70ade26bf70f67bab26554a62e6511.
@@ -303,7 +302,7 @@ public class RICH{
 
   public void getPhotons(DataBank part, DataBank hadr, DataBank phot){
     float p_min = 2.0f;
-    int pmt, anode, absChannel, sector, module;
+    int pmt, anode, sector, module;
     int layers, compos, use;
     int nrefl, refl1, topology;
     double DTimeCorr, etac, beta, mass;

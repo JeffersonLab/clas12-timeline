@@ -4,9 +4,6 @@ import java.util.*;
 import org.jlab.clas.pdg.PhysicsConstants;
 
 import org.jlab.groot.data.H1F;
-import org.jlab.groot.data.H2F;
-import org.jlab.groot.math.F1D;
-import org.jlab.groot.fitter.DataFitter;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.groot.data.TDirectory;
@@ -143,42 +140,12 @@ public class FT {
             int hodoS = HodoHits.getByte("sector", i);
             int hodoL = HodoHits.getByte("layer", i);
             int component = HodoHits.getShort("component", i);
-            int tile = -1;
             int slot = InverseTranslationTable.getIntValue("slot", hodoS, hodoL, component);
             int board = slot - 3; //mezzanine board number = slot-3
             if (slot > 12) {
                 board = board - 2; //slot skips 10->13.
-            }            // System.out.println(String.format("%d\t%d\t%d\t%d\t%d",board,slot,hodoS, hodoL, component )); // debuggin line
-            int counter = 15 * hodoL - 15 + board; //board runs from 0 to 14.
-            switch (hodoS) {
-                case 1:
-                    tile = component + 0;
-                    break;
-                case 2:
-                    tile = component + 9;
-                    break;
-                case 3:
-                    tile = component + 29;
-                    break;
-                case 4:
-                    tile = component + 38;
-                    break;
-                case 5:
-                    tile = component + 58;
-                    break;
-                case 6:
-                    tile = component + 67;
-                    break;
-                case 7:
-                    tile = component + 87;
-                    break;
-                case 8:
-                    tile = component + 96;
-                    break;
-                default:
-                    tile = -1;
-                    break;
             }
+            int counter = 15 * hodoL - 15 + board; //board runs from 0 to 14.
             double hodoHitE = HodoHits.getFloat("energy", i);
             double hodoHitT = HodoHits.getFloat("time", i);
             double hodoHitX = HodoHits.getFloat("x", i);
