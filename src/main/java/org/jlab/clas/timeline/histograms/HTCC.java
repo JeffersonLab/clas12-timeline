@@ -40,7 +40,6 @@ public class HTCC {
       hiTimePMTOneHit.get(t).setTitle("S" + sector + " HS " + hs + " R " + ring);
     }
 
-
     npheAll = new H1F("npheAll", "npheAll", 50, 0, 50);
     npheAll.setOptStat(110);
   }
@@ -124,7 +123,6 @@ public class HTCC {
                 pmt = returnPMT(ring, halfSector);
                 hiNphePMTOneHit.get(pmt - 1).fill(nphe);
                 hiTimePMTOneHit.get(pmt - 1).fill(deltaTimeCC);
-                timeAll.fill(deltaTimeCC);
                 npheAll.fill(nphe);
               }
             }
@@ -144,7 +142,7 @@ public class HTCC {
     for (int s = 0; s < 48; s++) {
       dirout.addDataSet(hiNphePMTOneHit.get(s),hiTimePMTOneHit.get(s));
     }
-    dirout.addDataSet(timeAll, npheAll);
+    dirout.addDataSet(npheAll);
 
     if(runNumber>0) dirout.writeFile(outputDir+"/out_HTCC_"+runNumber+".hipo");
     else            dirout.writeFile(outputDir+"/out_HTCC.hipo");
