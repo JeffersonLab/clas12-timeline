@@ -348,7 +348,6 @@ public class RICH{
       sector = phot.getInt("sector", j);
       pmt = phot.getInt("pmt", j);
       anode = phot.getInt("anode", j);
-      absChannel = anode + (pmt-1)*nANODES;
       DTimeCorr = phot.getFloat("dtime", j);
       etac = phot.getFloat("etaC", j);
       layers = phot.getInt("layers", j);
