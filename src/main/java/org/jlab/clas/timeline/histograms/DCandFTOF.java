@@ -41,7 +41,7 @@ public class DCandFTOF {
   public H1F[][] DC_time;                      // related timeline: ['dc_time_sec_sl', 'dc_t0_sec_sl', 'dc_tmax_sec_sl']
   public H1F[][] DC_time_even;                 // related timeline: ['dc_t0_even_sec_sl']
   public H1F[][] DC_time_odd;                  // related timeline: ['dc_t0_odd_sec_sl']
-  public H2F[][] DC_residuals_trkDoca_rescut;  // related timeline: ['dc_residuals_sec_rescut', 'dc_residuals_sec_sl_rescut']
+  public H2F[][] DC_residuals_trkDoca_rescut;  // related timeline: ['dc_residuals_sec_sl_rescut']
   public float p1a_counter_thickness, p1b_counter_thickness, p2_counter_thickness;
   public int phase_offset;
   public long timestamp;
