@@ -137,7 +137,6 @@ def engines = [
     new ftof_ctof_vtdiff(),
     new dc_residuals_sec(),
     new dc_residuals_sec_sl(),
-    //new dc_residuals_sec_rescut(),
     new dc_residuals_sec_sl_rescut(),
     new dc_t0_sec_sl(),
     new dc_t0_even_sec_sl(),
