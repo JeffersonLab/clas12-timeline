@@ -5,8 +5,6 @@ import org.jlab.clas.pdg.PhysicsConstants;
 
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.math.F1D;
-import org.jlab.groot.fitter.DataFitter;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.groot.data.TDirectory;
@@ -214,7 +212,6 @@ public class DCandFTOF {
       float trkDoca = DCB.getFloat("trkDoca",r);
       float timeResidual = DCB.getFloat("timeResidual",r);
       float time = DCB.getFloat("time",r);
-      int jitter = DCB.getInt("jitter",r);
       double betacutvalue = 0.9;
       double fitresidualcut = 1000; //microns
 
@@ -322,7 +319,6 @@ public class DCandFTOF {
           if (sc.getShort("pindex",j)==k) {
             if (sc.getByte("detector",j)==12 && e_part_ind != -1) {
               float dedx = scextras.getFloat("dedx",j);
-              int pad = sc.getInt("component", j);
               int sector = sc.getInt("sector",j);
               float time = sc.getFloat("time", j);
               float pathlength = sc.getFloat("path",j);
@@ -480,7 +476,6 @@ public class DCandFTOF {
 
         public void fillTOFHists(DataBank tofB, DataBank DCB){
           for(int r=0;r<tofB.rows();r++){
-            int layer = tofB.getInt("layer", r);
             float thisTime = tofB.getFloat("time", r) - tofB.getFloat("pathLength", r)/29.98f - RFTime;
             thisTime = (thisTime+(rf_large_integer+0.5f)*rfPeriod) % rfPeriod;
             thisTime = thisTime - rfPeriod/2;

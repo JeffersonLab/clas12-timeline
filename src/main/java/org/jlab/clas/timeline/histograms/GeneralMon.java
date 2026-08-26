@@ -205,11 +205,6 @@ public class GeneralMon {
     }
 
     //Initialiing Two-sector trigger histograms
-    H_muontrig_ecal_en_neg_S = new H1F[6];
-    H_muontrig_ecal_en_pos_S = new H1F[6];
-    H_muontrig_pcal_en_neg_S = new H1F[6];
-    H_muontrig_pcal_en_pos_S = new H1F[6];
-    H_muontrig_ECECOUT_en_S = new H2F[6];
     for (int i = 0; i < 6; i++) {
       H_muontrig_ecal_en_neg_S[i] = new H1F(String.format("H_muontrig_ECAL_Energy_NegS%d", i + 1), String.format("H_muontrig_ECAL_Energy_NegS%d", i + 1), 1000, -0.5, 200.5);
       H_muontrig_ecal_en_neg_S[i].setTitle(String.format("Two-Sector Trig ECAL_En Neg, S%d", i + 1));
