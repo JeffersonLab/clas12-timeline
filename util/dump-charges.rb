@@ -5,17 +5,16 @@
 require 'json'
 
 # number of decimal places to print
-PRECISION = 2
+PRECISION = 8
 
 # args
 print_mode = 'sum'
 if ARGV.empty?
-  $stderr.puts """USAGE #{$0} [chargeTree.json file] <MODE>
+  abort """USAGE #{$0} [chargeTree.json file] <MODE>
   MODE may be one of (default='#{print_mode}'):
     sum     sum charge over all bins for each run
     fine    print charge for each bin
   """
-  exit 2
 end
 charge_tree = JSON.parse File.read(ARGV[0])
 print_mode  = ARGV[1] if ARGV.size > 1
@@ -33,13 +32,13 @@ COL_NAMES = [
 ]
 
 # print a general row
-def row(cols)
+def print_row(cols)
   puts cols.map{ |c| c.to_s.ljust 12+PRECISION}.join(' ')
 end
 
 # print a row of values from a hash
-def row_vals(col_hash)
-  row col_hash.map{ |k,v|
+def print_row_vals(col_hash)
+  print_row col_hash.map{ |k,v|
     if ['runnum', 'runnum_bin', 'num_bins'].include? k
       v
     else
@@ -49,7 +48,7 @@ def row_vals(col_hash)
 end
 
 # print the header row
-row COL_NAMES
+print_row COL_NAMES
 
 # loop over run numbers
 charge_tree.each do |runnum, bins|
@@ -79,7 +78,7 @@ charge_tree.each do |runnum, bins|
       q_out['struck_helN_qg'] += b['fcChargeHelicity']['-1']
     end
     q_out['struck_totl_qg'] = q_out['struck_helP_qg'] + q_out['struck_hel0_qg'] + q_out['struck_helN_qg']
-    row_vals q_out
+    print_row_vals q_out
   when 'fine'
     bins.each do |binnum, b|
       q_out['runnum_bin']     = "#{runnum}_#{binnum}"
@@ -89,10 +88,10 @@ charge_tree.each do |runnum, bins|
       q_out['struck_hel0_qg'] = b['fcChargeHelicity']['0']
       q_out['struck_helN_qg'] = b['fcChargeHelicity']['-1']
       q_out['struck_totl_qg'] = q_out['struck_helP_qg'] + q_out['struck_hel0_qg'] + q_out['struck_helN_qg']
-      row_vals q_out
+      print_row_vals q_out
     end
   else
-    raise "unknown MODE '#{print_mode}'"
+    abort "ERROR: unknown MODE '#{print_mode}'"
   end
 
 end
