@@ -95,7 +95,7 @@ bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_6.4GeV_inbending_lo_nSidis  -o 
 for f in /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis/*.hipo; do bin/qtl xcharge -m charge -i $f -o test_charge -s original; done
 
 # after reheat
-for f in ~/v/reheat/rga_sp18_6.4GeV_outbending_nSidis/*.hipo; do bin/qtl xcharge -m charge -i $f -o test_charge -s original; done
+for f in ~/v/reheat/rga_sp18_6.4GeV_outbending_nSidis/*.hipo; do bin/qtl xcharge -m charge -i $f -o test_charge -s reheated; done
 ```
 then see files in `test_charge/`.
 
