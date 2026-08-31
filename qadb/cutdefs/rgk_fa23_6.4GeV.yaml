@@ -58,3 +58,10 @@ Overrides:
     detector: FD
     OutlierFD:
       IQR_cut_factor: 1.5
+
+# Epoch 11, run 19236 is clearly an outlier, with N/q too low; the epoch is only 4 runs; omit 19236 from IQR calculation
+RecalculateIQR:
+  - epoch: 11
+    sectors: [ 1, 2, 3, 4, 5, 6 ]
+    detector: FD
+    within_range: [ 25, 100 ]
