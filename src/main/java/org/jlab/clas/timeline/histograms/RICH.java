@@ -12,7 +12,9 @@ import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 import org.jlab.groot.ui.PaveText;
 import org.jlab.groot.base.PadAttributes;
-import java.util.ArrayList;
+
+// Issue 510: Removed unused histograms to save only called by timeline step.
+// For the full version, please refer to the previous version, such as e1b4bf2d0f70ade26bf70f67bab26554a62e6511.
 
 public class RICH{
   boolean userTimeBased;
@@ -48,28 +50,23 @@ public class RICH{
   public PaveText statBox = null;
   public PadAttributes attr1;
 
-  public H2F[] H_dt_channel = new H2F[nMODULES];
-  public H1F[] H_dt = new H1F[nMODULES];
-  public H1F[] H_dt_RMS = new H1F[nMODULES];
-  public H1F[] H_dt_MEAN = new H1F[nMODULES];
-  public H1F[][] H_dt_PMT = new H1F[nPMTS][nMODULES];
-
-  public H2F[][] H_detac_tile = new H2F[nMODULES][nTOP];
-  public H2F[][] H_npho_tile = new H2F[nMODULES][nTOP];
-  public H1F[] H_trk_match = new H1F[nMODULES];
+  public H1F[] H_dt = new H1F[nMODULES];// related timeline: ['rich_dt_m']
+  public H2F[][] H_detac_tile = new H2F[nMODULES][nTOP];// related timeline: ['rich_etac_dir_m', 'rich_etac_plan_m', 'rich_etac_sphe_m']
+  public H2F[][] H_npho_tile = new H2F[nMODULES][nTOP]; // related timeline: ['rich_npho_dir_m', 'rich_npho_plan_m', 'rich_npho_sphe_m']
+  public H1F[] H_trk_match = new H1F[nMODULES];         // related timeline: ['rich_trk_m']
 
   public int Ntrig = 0;
 
-  public H1F H_npip_tile[] = new H1F[nMODULES];
-  public H1F H_npim_tile[] = new H1F[nMODULES];
-  public H1F H_nkp_tile[] = new H1F[nMODULES];
-  public H1F H_nkm_tile[] = new H1F[nMODULES];
-  public H1F H_npro_tile[] = new H1F[nMODULES];
-  public H1F H_npbar_tile[] = new H1F[nMODULES];
+  public H1F H_npip_tile[] = new H1F[nMODULES];  // related timeline: ['rich_npip_m']
+  public H1F H_npim_tile[] = new H1F[nMODULES];  // related timeline: ['rich_npim_m']
+  public H1F H_nkp_tile[] = new H1F[nMODULES];   // related timeline: ['rich_nkp_m']
+  public H1F H_nkm_tile[] = new H1F[nMODULES];   // related timeline: ['rich_nkm_m']
+  public H1F H_npro_tile[] = new H1F[nMODULES];  // related timeline: ['rich_npro_m']
+  public H1F H_npbar_tile[] = new H1F[nMODULES]; // related timeline: ['rich_npbar_m']
 
-  public H1F H_ntrigele;
+  public H1F H_ntrigele; // related timeline: ['rich_nkm_m', 'rich_nkp_m', 'rich_npbar_m', 'rich_npim_m', 'rich_npip_m', 'rich_npro_m']
 
-  public H1F H_setup;
+  public H1F H_setup;    // related timeline: ['rich_dt_m', 'rich_etac_dir_m', 'rich_etac_plan_m', 'rich_etac_sphe_m', 'rich_nkm_m', 'rich_nkp_m', 'rich_npbar_m', 'rich_npho_dir_m', 'rich_npho_plan_m', 'rich_npho_sphe_m', 'rich_npim_m', 'rich_npip_m', 'rich_npro_m', 'rich_trk_m']
 
   public int eventN;
 
@@ -103,8 +100,6 @@ public class RICH{
         ModuleInSector[s-1] = setupTable.getIntValue("module", s, 0, 0);
       }
     }
-    //System.out.println(String.format("  mod[1]=" + ModuleInSector[0] + "  mod[4]=" + ModuleInSector[3]));
-
 
     for (int m=1; m<=nMODULES; m++) {
       aerogelTable = ccdb.getConstants(runNum, rich_aerogel[m-1]);
@@ -116,11 +111,9 @@ public class RICH{
           if (aerogelTable.hasEntry(sector, layer, t)) {
             AerogelRefIndex[m-1][l][t] = (float)aerogelTable.getDoubleValue("n400", sector, layer, t);
             LastTile[m-1][l] = t;
-            //System.out.println(String.format(" " + m + " " + sector + " " + layer + " " + t + " " + AerogelRefIndex[m-1][l][t]));
 
           }
           else {
-            //System.out.println(String.format("ERROR missing entry for m=" + m + " sector=" + sector + "  layer=" + layer + " tile=" + t));
             AerogelRefIndex[m-1][l][t] = 1;
           }
         }
@@ -141,29 +134,6 @@ public class RICH{
       H_dt[m-1].setTitleX("T_meas - T_calc (ns)");
       H_dt[m-1].setTitleY("counts");
       H_dt[m-1].setOptStat("1111111");
-
-      histitle = String.format("RICH Module %d, DeltaT vs channel", m);
-      histname = String.format("H_RICH_dt_channel_m%d", m);
-      H_dt_channel[m-1] = new H2F(histname, histitle, nPMTS*nANODES, 0.5, 0.5+nPMTS*nANODES, 500, -150, 50);
-      H_dt_channel[m-1].setTitle(histitle);
-      H_dt_channel[m-1].setTitleX("channel");
-      H_dt_channel[m-1].setTitleY("T_meas - T_calc (ns)");
-
-      histitle = String.format("RICH Module %d, MEAN of DeltaT within BINWINDOW bins around the Max", m);
-      histname = String.format("H_RICH_dt_MEAN_m%d", m);
-      H_dt_MEAN[m-1] = new H1F(histname, histitle, nPMTS, 0.5, 0.5+nPMTS);
-      H_dt_MEAN[m-1].setTitle(histitle);
-      H_dt_MEAN[m-1].setTitleX("PMT number");
-      H_dt_MEAN[m-1].setTitleY("MEAN of (T_meas - T_calc) (ns)");
-      H_dt_MEAN[m-1].setOptStat("1111111");
-
-      histitle = String.format("RICH Module %d, RMS of DeltaT within BINWINDOW bins around the Max", m);
-      histname = String.format("H_RICH_dt_RMS_m%d", m);
-      H_dt_RMS[m-1] = new H1F(histname, histitle, nPMTS, 0.5, 0.5+nPMTS);
-      H_dt_RMS[m-1].setTitle(histitle);
-      H_dt_RMS[m-1].setTitleX("PMT number");
-      H_dt_RMS[m-1].setTitleY("RMS of (T_meas - T_calc) (ns)");
-      H_dt_RMS[m-1].setOptStat("1111111");
 
 
       for (int top=1; top<=nTOP; top++) {
@@ -332,7 +302,7 @@ public class RICH{
 
   public void getPhotons(DataBank part, DataBank hadr, DataBank phot){
     float p_min = 2.0f;
-    int pmt, anode, absChannel, sector, module;
+    int sector, module;
     int layers, compos, use;
     int nrefl, refl1, topology;
     double DTimeCorr, etac, beta, mass;
@@ -370,17 +340,12 @@ public class RICH{
 
       if (rich_pid == 0) continue;
 
-      //mass = GetMass(rich_pid);
       mass = GetMass(pid);
       beta = P3.mag() / Math.sqrt(P3.mag()*P3.mag() + mass*mass);
 
-      //System.out.println(String.format("j="+j+"  hypo="+part_hypo+"   pid="+pid));
 
       /* channel info */
       sector = phot.getInt("sector", j);
-      pmt = phot.getInt("pmt", j);
-      anode = phot.getInt("anode", j);
-      absChannel = anode + (pmt-1)*nANODES;
       DTimeCorr = phot.getFloat("dtime", j);
       etac = phot.getFloat("etaC", j);
       layers = phot.getInt("layers", j);
@@ -400,7 +365,6 @@ public class RICH{
 
         if ( (0 < module) && (module <= nMODULES) ) {
           H_dt[module-1].fill(DTimeCorr);
-          H_dt_channel[module-1].fill(absChannel, DTimeCorr);	
 
           if ( (layer >= 0) & (tile >= 1) && (use == RICHUSEDFLAG) && ( (1 <= topology) && (topology <= nTOP) ) ) {
             double DEtaC = 1000 * (etac - Math.acos(1. / (beta*AerogelRefIndex[module-1][layer][tile]) ) );
@@ -435,44 +399,6 @@ public class RICH{
 
     }    
 
-    public void FillTimeHistogram() {
-      int npeakMin = 20;
-
-      for (int m=1; m<=nMODULES; m++) {
-
-        H_dt_RMS[m-1].reset();
-        H_dt_MEAN[m-1].reset();
-        H2F H_dt_channel_rb = H_dt_channel[m-1].rebinX(nANODES);
-        ArrayList<H1F> H_dt_PMT_AL = H_dt_channel_rb.getSlicesX();
-
-        for (int p=0; p<nPMTS; p++) {
-          H_dt_PMT[p][m-1] = H_dt_PMT_AL.get(p);
-          H_dt_PMT[p][m-1].setTitle(String.format("dT, Module %d, PMT=%d",m, p+1));
-          H_dt_PMT[p][m-1].setTitleX("dT (ns)");
-          H_dt_PMT[p][m-1].setTitleY("counts");
-          H_dt_PMT[p][m-1].setOptStat("1111111");
-          int binM = (int) H_dt_PMT[p][m-1].getMaximumBin();
-          int binL = binM - BINWINDOW/2;
-          int binH = binM + BINWINDOW/2;
-          float rms = 0;
-          float mean = 0;
-
-          int nentries = getHistoEntries(H_dt_PMT[p][m-1]);
-
-          if (nentries >= npeakMin) {
-            mean =  getMEAN(H_dt_PMT[p][m-1], binL, binH);
-            rms =  getRMS(H_dt_PMT[p][m-1], binL, binH);
-          }
-
-          H_dt_RMS[m-1].fill(p+1,rms);
-          H_dt_MEAN[m-1].fill(p+1,mean);
-
-        }
-
-      }
-
-
-    }
 
     public void processEvent(DataEvent event){
       if(event.hasBank("RUN::config")){
@@ -498,7 +424,6 @@ public class RICH{
         if(event.hasBank("RICH::Ring")) photBank = event.getBank("RICH::Ring");
         if(event.hasBank("RICH::Particle")) hadrBank = event.getBank("RICH::Particle");
 
-        //if( (trigger_bits[1] || trigger_bits[2] || trigger_bits[3] || trigger_bits[4] || trigger_bits[5] || trigger_bits[6]) && partBank!=null)e_part_ind = makeElectron(partBank);
         if (eventBank!=null) {
           if ((eventBank.rows() > 0) && (confbank.rows() > 0)) {
 
@@ -537,21 +462,13 @@ public class RICH{
       }
     }
 
-    public void postProcess(){
-      this.FillTimeHistogram();
-      this.CalcCounters();
-    }
 
     public void write() {
-      postProcess();
       TDirectory dirout = new TDirectory();
       dirout.mkdir("/RICH/");
       dirout.cd("/RICH/");
 
       dirout.addDataSet(H_dt);
-      //dirout.addDataSet(H_dt_channel);
-      dirout.addDataSet(H_dt_RMS);
-      dirout.addDataSet(H_dt_MEAN);
 
       for (int m=1; m<=nMODULES; m++) {
         for (int top=1; top<=nTOP; top++) {
@@ -621,39 +538,6 @@ public class RICH{
       }
       return entries;
     }
-
-
-    public void CalcCounters(){
-
-      Ntrig = (int)H_ntrigele.getEntries();
-
-      for (int m=1; m<=nMODULES; m++) {
-
-        float npip = 0f;
-        float npim = 0f;
-        float nkp = 0f;
-        float nkm = 0f;
-        float npro = 0f;
-        float npbar = 0f;
-
-        if (Ntrig > 0) {
-          npip = (float)H_npip_tile[m-1].getEntries() / Ntrig;
-          npim = (float)H_npim_tile[m-1].getEntries() / Ntrig;
-          nkp = (float)H_nkp_tile[m-1].getEntries() / Ntrig;
-          nkm = (float)H_nkm_tile[m-1].getEntries() / Ntrig;
-          npro = (float)H_npro_tile[m-1].getEntries() / Ntrig;
-          npbar = (float)H_npbar_tile[m-1].getEntries() / Ntrig;
-        }
-        if (verbose) {
-          System.out.println(String.format("RUN Counters module " + m));
-          System.out.println(String.format("RUN  "+runNum+"  "+npip+" "+npim+" "+nkp+" "+nkm+" "+npro+" "+npbar));
-        }
-
-      }
-
-      return;
-    }
-
 
 
     public int GetSector(int module){
