@@ -71,16 +71,6 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] reheat the data, if necessary</summary>
-
-- see [RG-A Spring 2018](/qadb/notes/rga_sp18.md) and [RG-K Fall 2018](/qadb/notes/rgk_fa18.md) for details
-- basically:
-  - use `qtl xcharge` to check the charge
-  - if reheating is needed, use `qtl reheat`
-  - use `qtl xcharge` afterward to check the reheated charge
-</details>
-
-<details>
 <summary>- [ ] verify run-dependent settings are correct for these data</summary>
 
 - the script [`monitorRead.groovy`](/qa-physics/monitorRead.groovy) contains some run-dependent settings
@@ -100,6 +90,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
     - see also other [notes files](/qadb/notes) for examples
 - use the same `qtl histogram` command you used above, but without the `--check-cache` argument
     - use the `--skimdir` option if you are analyzing trains (most likely)
+    - use the `--check-charge` option to produce various plots for the FC charge
 - the jobs will run on Slurm
     - be sure to monitor the output log and error files, in case something goes wrong; you may use `qtl error` to help with this
     - any warnings or errors should _not_ be ignored
@@ -114,6 +105,22 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 - the beam energy that was used was also printed when you ran `qtl histogram`; it comes from RCDB
 - we have had cases in the past where the beam energy from RCDB was incorrect
 - either have RCDB corrected (preferred), or correct the beam energy yourself (not preferred)
+</details>
+
+<details>
+<summary>- [ ] make sure all data are still cached</summary>
+
+- double check all data files are be on `/cache`, to confirm none were auto-deleted while running `qtl histogram`
+</details>
+
+<details>
+<summary>- [ ] do the data need to be reheated?</summary>
+
+- check the charge analysis plots, which were produced by `qtl histogram --check-charge`
+- see [RG-A Spring 2018](/qadb/notes/rga_sp18.md) and [RG-K Fall 2018](/qadb/notes/rgk_fa18.md) for details
+- if reheating is needed:
+    - use `qtl reheat`, then re-run `qtl histogram` using the reheated data as input
+    - verify the charge analysis plots look okay; if not, further investigation is needed
 </details>
 
 <details>
