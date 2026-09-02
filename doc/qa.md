@@ -117,6 +117,11 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 <summary>- [ ] do the data need to be reheated?</summary>
 
 - check the charge analysis plots, which were produced by `qtl histogram --check-charge`
+    - you can download the `.png` files to make this easier; _e.g._, `tar` them with
+      ```bash
+      tar cavf outfiles/${DATASET}_charge_analysis.tar.gz $(find outfiles/$DATASET -type f -name '*.png')
+      ```
+      then `scp` them to your local machine
 - see [RG-A Spring 2018](/qadb/notes/rga_sp18.md) and [RG-K Fall 2018](/qadb/notes/rgk_fa18.md) for details
 - if reheating is needed:
     - use `qtl reheat`, then re-run `qtl histogram` using the reheated data as input
