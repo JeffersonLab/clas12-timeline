@@ -168,6 +168,7 @@ def engines = [
   ],
   out_QADB: [
     new qadb(),
+    new epics_q_asym(),
   ],
 ]
 
