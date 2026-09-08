@@ -3,6 +3,9 @@ import org.apache.groovy.dateutil.extensions.DateUtilExtensions
 
 class MYQuery {
 
+  // controls whether or not to actually query MYA; useful for the GitHub CI case where MYA is inaccessible
+  static boolean skipMYA = System.getenv('TIMELINE_SKIP_MYA') == 'true'
+
   // MYA URL
   private def dbURL = 'https://epicsweb.jlab.org/myquery/interval'
 
@@ -33,6 +36,9 @@ class MYQuery {
 
   // get run start and stop times
   public def getRunTimeStamps(java.util.ArrayList runlist) {
+    if(skipMYA) {
+      return runlist.collect{[it, 0, 0]} // [run, startEpoch, endEpoch]
+    }
 
     // query RCDB
     def result = REST.get("https://clas12mon.jlab.org/rcdb/runs/time?runmin=${runlist.min()}&runmax=${runlist.max()}")
@@ -50,6 +56,10 @@ class MYQuery {
 
   // query MYA database
   public def query(String pvName) {
+    if(skipMYA) {
+      System.out.println("used `--skip-mya` -> returning empty payload for MYA query of PV='$pvName'")
+      return []
+    }
     // try 'ops' deployment; if that fails, retry with 'history'
     def exceptionList = []
     try {
@@ -70,6 +80,7 @@ class MYQuery {
     exceptionList.each{it.printStackTrace()}
     throw new Exception("Cannot find PV='$pvName' in range '$t0str' to '$t1str' in MYA DB")
   }
+
   private def queryDeployment(String pvName, String deployment) {
 
     // build query URL
