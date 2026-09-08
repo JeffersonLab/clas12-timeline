@@ -83,7 +83,7 @@ usageVerbose() {
 
     --list              dump the list of timelines and exit
 
-    --skip-mya          skip timelines which require MYA (needed if running offsite or on CI)
+    --skip-mya          skip timelines which require MYA (needed if running offsite or on GitHub CI)
 
     --debug             enable debug mode: run a single timeline with stderr and stdout printed to screen;
                         use this with the '-t' option to debug specific timeline issues
@@ -148,12 +148,13 @@ run_analysis_script="org.jlab.clas.timeline.analysis.run_analysis"
 # grep which exits zero when no match is found
 grep_zero() { grep $1 || true; }
 
-# build list of timelines
+# handle `--skip-mya`
 if ${modes['skip-mya']}; then
-  timelineList=($(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | grep -vE '^epics_' | sort | grep_zero $match))
-else
-  timelineList=($(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | sort | grep_zero $match))
+  export TIMELINE_SKIP_MYA='true'
 fi
+
+# build list of timelines
+timelineList=($(java $TIMELINE_JAVA_OPTS $run_analysis_script --timelines | sort | grep_zero $match))
 if [ ${#timelineList[@]} -eq 0 ]; then
   printError "empty 'timelineList'; most likely your argument '-m $match' does not match any timelines; try '--list' to see the list of all available timelines"
   exit 100
