@@ -1,15 +1,20 @@
 package org.jlab.clas.timeline.analysis.qadb
 
+import org.rcdb.*
+
 import java.util.concurrent.ConcurrentHashMap
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.GraphErrors
 import org.jlab.groot.data.H1F
 
+import org.jlab.clas.timeline.analysis.MYQuery
+import org.jlab.clas.timeline.analysis.EpicsTools
 import org.jlab.clas.timeline.util.Tools
 import org.jlab.clas.timeline.histograms.qadb.Charge
 
 class qadb_beam_charge_asym {
 
+  def runlist  = []
   def data_map = new ConcurrentHashMap()
 
   // ----------------------------------------------------------------------------------
@@ -29,6 +34,7 @@ class qadb_beam_charge_asym {
      :
   */
   def processRun(dir, runnum, qa_map) {
+    runlist.push(runnum)
     data_map[runnum] = [run:runnum, histos:[:]]
     // loop over QA bins for this run
     qa_map[runnum].each { qa_bin ->
@@ -42,6 +48,39 @@ class qadb_beam_charge_asym {
 
   def write(qa_map) {
 
+    // PVs: obtained from `clas12-epics` -> `beam_charge_asym.stc`
+    // FIXME: errors may be accessible from changing `q_asym` -> `d_asym`, but not sure if they're actually in MYA history
+    def pvNames = [
+      EPICS_SLM_qAsym:   'q_asym_3',
+      EPICS_FCUP_qAsym:  'q_asym_7',
+      // EPICS_2C21A_qAsym: 'q_asym_16', // all zero, at least for RG-C
+      // EPICS_2C24A_qAsym: 'q_asym_20', // all zero, at least for RG-C
+      // EPICS_2H01_qAsym:  'q_asym_24', // all zero, at least for RG-C
+    ]
+
+    // connect to RCDB
+    def rcdbURL = System.getenv('RCDB_CONNECTION')
+    if(rcdbURL==null)
+      throw new Exception("RCDB_CONNECTION not set")
+    def rcdbProvider = RCDB.createProvider(rcdbURL)
+    try {
+      rcdbProvider.connect()
+    }
+    catch(Exception e) {
+      System.err.println "ERROR: unable to connect to RCDB"
+      System.out.println ''
+      System.exit(100)
+    }
+
+    // query MYA for EPICS data
+    def MYQ               = new MYQuery()
+    def mya_timestamps    = MYQ.getRunTimeStamps    runlist
+    def mya_data_unsorted = EpicsTools.queryEpics   MYQ,               pvNames
+    def mya_data_sorted   = EpicsTools.mergeAndSort mya_data_unsorted, mya_timestamps
+    def mya_data          = EpicsTools.segmentByRun mya_data_sorted,   pvNames
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     // start ouput `TDirectory`
     TDirectory tdir = new TDirectory()
 
@@ -53,12 +92,14 @@ class qadb_beam_charge_asym {
       g.setTitleX 'Run Number'
       g
     }
-    def tl_asym_struck_qg = make_tl 'STRUCK_qGated'
-    def tl_asym_struck_qu = make_tl 'STRUCK_qUnated'
+    def tl_asym_struck_qg = make_tl 'STRUCK_gated'
+    def tl_asym_struck_qu = make_tl 'STRUCK_ungated'
     def tl_asym_epics_fc  = make_tl 'EPICS_FCUP'
     def tl_asym_epics_slm = make_tl 'EPICS_SLM'
 
-    // loop over runs, filling graphs
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    // loop over runs, filling graphs for STRUCK scalers
     data_map.sort{it.key}.each { runnum, run_data ->
 
       // define run graphs ('rn'): various values vs. QA bin, for this run
@@ -70,15 +111,15 @@ class qadb_beam_charge_asym {
         g.setTitleX 'QA Bin'
         g
       }
-      def rn_asym_struck_qg = make_rn 'a1', 'STRUCK_qGated',               'A_FC from STRUCK q_gated',          'A_FC [%]'
-      def rn_asym_struck_qu = make_rn 'a2', 'STRUCK_qUngated',             'A_FC from STRUCK q_ungated',        'A_FC [%]'
+      def rn_asym_struck_qg = make_rn 'a1', 'STRUCK_gated',                'A_FC from STRUCK q_gated',          'A_FC [%]'
+      def rn_asym_struck_qu = make_rn 'a2', 'STRUCK_ungated',              'A_FC from STRUCK q_ungated',        'A_FC [%]'
       def rn_struck_helP_qg = make_rn 'b1', 'STRUCK_helPositive_qGated',   'STRUCK helicity=+1 q_gated [nC]',   'q [nC]'
       def rn_struck_helN_qg = make_rn 'c1', 'STRUCK_helNegative_qGated',   'STRUCK helicity=-1 q_gated [nC]',   'q [nC]'
       def rn_struck_helP_qu = make_rn 'b2', 'STRUCK_helPositive_qUngated', 'STRUCK helicity=+1 q_ungated [nC]', 'q [nC]'
       def rn_struck_helN_qu = make_rn 'c2', 'STRUCK_helNegative_qUngated', 'STRUCK helicity=-1 q_ungated [nC]', 'q [nC]'
 
-      // calculate an asymmetry
-      def calc_asym = { p, n -> Tools.safeRatio p-n, p+n }
+      // calculate an asymmetry [%]
+      def calc_asym = { p, n -> 100.0 * Tools.safeRatio(p-n, p+n) }
 
       // fill run graphs: loop over each QA bin's histograms (`Charge` objects), read the charge etc., calculate asymmetries
       run_data['histos'].each { binnum, histos ->
@@ -113,12 +154,51 @@ class qadb_beam_charge_asym {
 
     } // end loop over runs
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    // loop over runs again, this time for the MYA EPICS data
+    mya_data.each{ runnum, vals ->
+
+      // get HWP position
+      def hwp_cond = rcdbProvider.getCondition(runnum, 'half_wave_plate') // 0=IN, 1=OUT
+      if(hwp_cond == null) {
+        System.err.println "ERROR: cannot find run $runnum in RCDB, thus cannot get HWP status"
+        System.exit(100)
+      }
+      def hwp = hwp_cond.toLong()
+      // System.out.println("HWP: $runnum $hwp")
+
+      // define HWP correction
+      def hwp_corr       = { val -> val * (hwp==0 ? 1 : -1) } // HWP: 0=IN, 1=OUT
+      def hwp_corr_title = '(HWP==IN ? +1 : -1)'
+
+      // fill histograms
+      def mya_hists = pvNames.collectEntries{ pv_title, pv_name ->
+        def entries = vals.collect{it[pv_title]}
+        [ pv_title, EpicsTools.quantileHist("z_$pv_title$runnum", "$pv_title * $hwp_corr_title;$pv_title [%]", entries) ]
+      }
+      vals.each{
+        mya_hists.each{ name, hist -> hist.fill(hwp_corr(it[name])) }
+      }
+
+      // fill timeline graphs
+      tl_asym_epics_fc.addPoint  runnum, mya_hists['EPICS_FCUP_qAsym'].getMean(), 0, 0
+      tl_asym_epics_slm.addPoint runnum, mya_hists['EPICS_SLM_qAsym'].getMean(),  0, 0
+
+      // write out
+      tdir.cd("/$runnum")
+      mya_hists.each{ name, hist -> tdir.addDataSet(hist) }
+    }
+
+
     // write timeline graphs
     // charge per run
     tdir.mkdir '/timelines'
     tdir.cd    '/timelines'
     tdir.addDataSet tl_asym_struck_qg
     tdir.addDataSet tl_asym_struck_qu
+    tdir.addDataSet tl_asym_epics_fc
+    tdir.addDataSet tl_asym_epics_slm
 
     // write HIPO files
     tdir.writeFile 'qadb_beam_charge_asymmetry.hipo'

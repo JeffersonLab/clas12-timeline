@@ -166,7 +166,6 @@ def engines = [
   ],
   out_QADB: [
     new qadb(),
-    new epics_q_asym(),
     new epics_xy(), // FIXME: move this back to where it was
     new epics_hall_weather(), // FIXME: move this back to where it was
   ],
