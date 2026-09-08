@@ -37,7 +37,7 @@ class MYQuery {
   // get run start and stop times
   public def getRunTimeStamps(java.util.ArrayList runlist) {
     if(skipMYA) {
-      return runlist.collect{[it, 0, 0]} // [run, startEpoch, endEpoch]
+      return runlist.collect{[it, 0, 0]}
     }
 
     // query RCDB
