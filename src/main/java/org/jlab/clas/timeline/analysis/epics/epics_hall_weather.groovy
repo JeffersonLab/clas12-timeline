@@ -23,18 +23,16 @@ class epics_hall_weather {
     ]
 
     def hallDUnitConversion = 4.015 // HallB pressure units = hallDUnitConversion * HallD pressure units
-
-    def MYQ     = new MYQuery()
-    def ts      = MYQ.getRunTimeStamps(runlist)
-    def epics   = EpicsTools.queryEpics(MYQ, pvNames) { name, val -> name == 'pressure_hall_D' ? val * hallDUnitConversion : val }
-    def data    = EpicsTools.mergeAndSort(epics, ts)
-    def rundata = EpicsTools.segmentByRun(data, pvNames)
+    def myq = new MYQuery()
+    def epics_data = EpicsTools.queryEpics(runlist, myq, pvNames) { name, val ->
+      name == 'pressure_hall_D' ? val * hallDUnitConversion : val
+    }
 
     def out = new TDirectory()
 
     def timelineGraphs = pvNames.collectEntries{ name, pv -> [name, new GraphErrors(name)] }
 
-    rundata.each{run, vals->
+    epics_data.each{run, vals->
       out.mkdir("/$run")
       out.cd("/$run")
 
