@@ -36,9 +36,9 @@ class epics_xy {
       i: 'IPM2H01',
     ]
 
-    def myq = new MYQuery()
+    def myq = new MYQuery(runlist)
     myq.querySettings['l'] = "${1000*runlist.size()}" // downsample the payload, since it's too big for a full run period
-    def epics_data = EpicsTools.queryEpics runlist, myq, pvNames
+    def epics_data = EpicsTools.queryEpics myq, pvNames
 
     def out = new TDirectory()
 
@@ -50,7 +50,7 @@ class epics_xy {
 
       // weight each reading by elapsed time * beam intensity
       def (hx, hy) = ['x','y'].collect{ax->
-        def entries = vals.collectMany{[it[ax]]*(it.time*it.i/1000 as int)}
+        def entries = vals.collectMany{[it[ax]]*(it.time*it.i/1000 as int)}.sort()
         EpicsTools.quantileHist("h$ax$run", "$ax for run $run;$ax", entries)
       }
 

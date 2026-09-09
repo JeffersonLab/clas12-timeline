@@ -10,13 +10,12 @@ class EpicsTools {
 
   /**
    * Query MYA for each EPICS PV in {@code pv_names}
-   * @param runlist the list of run numbers
    * @param myq {@code MYQuery} instance, created externally so the caller can configure it before using it here
    * @param pv_names map of timeline name (a custom PV name, local to here) to actual PV name
    * @param value_transform if defined, apply this transformation to the PV values; signature: {@code pvName, pvVal -> pvValTransformed}
    * @return the MYA data
    */
-  static def queryEpics(java.util.ArrayList runlist, MYQuery myq, Map pv_names, Closure value_transform = null) {
+  static def queryEpics(MYQuery myq, Map pv_names, Closure value_transform = null) {
     // query MYA DB
     System.out.println('MYA query started')
     def mya_data_unsorted = [:].withDefault{[:]}
@@ -32,10 +31,9 @@ class EpicsTools {
     }
     System.out.println('MYA query finished')
     // merge and sort readings
-    def run_time_stamps = myq.getRunTimeStamps runlist
     def mya_data_sorted =
       mya_data_unsorted.collect{ timestamp, pvDict -> [ts:timestamp] + pvDict } +
-      run_time_stamps.collectMany{[
+      myq.getRunTimeStamps().collectMany{[
         [run:it[0], ts:(((long)it[1])*1000)],
         [run:it[0], ts:(((long)it[2])*1000)]
       ]}
@@ -68,18 +66,17 @@ class EpicsTools {
    * Build a 1D histogram with a quantile-based range from a raw list of values.
    * @param name the histogram name
    * @param title the histogram title
-   * @param entries the list of values
+   * @param entries the list of values, which MUST be sorted
    * @return the new histogram
    */
   static H1F quantileHist(String name, String title, List entries) {
     // compute the median and IQR
-    entries             = entries.sort()
     def nlen            = entries.size()
     def (nq1, nq2, nq3) = [nlen/4 as int, nlen/2 as int, nlen*3/4 as int]
     def (q1, q2, q3)    = [entries[nq1], entries[nq2], entries[nq3]]
     def (med, iqr)      = [q2, q3-q1]
     // create the histogram
-    new H1F(name, title, 200, med-3*iqr, med+3*iqr)
+    return new H1F(name, title, 200, med-3*iqr, med+3*iqr)
   }
 
 }

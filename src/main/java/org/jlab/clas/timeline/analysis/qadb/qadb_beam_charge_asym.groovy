@@ -73,8 +73,8 @@ class qadb_beam_charge_asym {
     }
 
     // query MYA for EPICS data
-    def myq        = new MYQuery()
-    def epics_data = EpicsTools.queryEpics runlist, myq, pvNames
+    def myq        = new MYQuery(runlist)
+    def epics_data = EpicsTools.queryEpics(myq, pvNames) { name, val -> val / 100.0 } // convert percent to decimal units
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -171,12 +171,11 @@ class qadb_beam_charge_asym {
 
       // fill histograms
       def epics_hists = pvNames.collectEntries{ pv_title, pv_name ->
-        def entries = vals.collect{it[pv_title]}
+        def entries = vals.collect{hwp_corr(it[pv_title])}.sort()
         [ pv_title, EpicsTools.quantileHist("z_$pv_title$runnum", "$pv_title * $hwp_corr_title;$pv_title", entries) ]
       }
       vals.each{
-        def val = hwp_corr(it[name]) / 100.0 // apply HWP correction and convert percent units to decimal
-        epics_hists.each{ name, hist -> hist.fill val }
+        epics_hists.each{ name, hist -> hist.fill(hwp_corr(it[name])) }
       }
 
       // fill timeline graphs
