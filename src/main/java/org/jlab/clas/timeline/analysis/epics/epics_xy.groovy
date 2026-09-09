@@ -36,19 +36,15 @@ class epics_xy {
       i: 'IPM2H01',
     ]
 
-    def MYQ = new MYQuery()
-    MYQ.querySettings['l'] = "${1000*runlist.size()}" // downsample the payload, since it's too big for a full run period
-
-    def ts      = MYQ.getRunTimeStamps(runlist)
-    def epics   = EpicsTools.queryEpics(MYQ, pvNames)
-    def data    = EpicsTools.mergeAndSort(epics, ts)
-    def rundata = EpicsTools.segmentByRun(data, pvNames)
+    def myq = new MYQuery()
+    myq.querySettings['l'] = "${1000*runlist.size()}" // downsample the payload, since it's too big for a full run period
+    def epics_data = EpicsTools.queryEpics runlist, myq, pvNames
 
     def out = new TDirectory()
 
     def (grx, gry) = [new GraphErrors('2H01.xpos'), new GraphErrors('2H01.ypos')]
 
-    rundata.each{run,vals->
+    epics_data.each{run,vals->
       out.mkdir("/$run")
       out.cd("/$run")
 
