@@ -8,15 +8,17 @@ import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.groot.data.TDirectory;
 
+// Issue 510: Removed unused histograms to save only called by timeline step.
+// For the full version, please refer to the previous version, such as e1b4bf2d0f70ade26bf70f67bab26554a62e6511.
+
 public class HTCC {
 
   public int runNumber;
   public String outputDir;
   int ring, sector, hs;
-  List<H1F> hiNphePMTOneHit = new ArrayList<H1F>();
-  List<H1F> hiTimePMTOneHit = new ArrayList<H1F>();
-  H1F timeAll;
-  H1F npheAll;
+  List<H1F> hiNphePMTOneHit;  // related timeline: ['htcc_nphe_ring_sector', 'htcc_nphe_sector']
+  List<H1F> hiTimePMTOneHit;  // related timeline: ['htcc_vtimediff', 'htcc_vtimediff_sector', 'htcc_vtimediff_sector_ring']
+  H1F npheAll;                // related timeline: ['htcc_npheAll', 'htcc_nphe_ring_sector', 'htcc_nphe_sector']
   static int nBinsTime = 300;
   static double lowTime = -15; //Apr2023 changed limits from -500, 500 ns to -15 to 15 ns per D. Carman's request
   static double highTime = 15;
@@ -37,11 +39,6 @@ public class HTCC {
       hiTimePMTOneHit.get(t).setTitle("S" + sector + " HS " + hs + " R " + ring);
       hiTimePMTOneHit.get(t).setTitle("S" + sector + " HS " + hs + " R " + ring);
     }
-
-    timeAll = new H1F("timeAll", 2000, -4, 4);
-    timeAll.setOptStat(110);
-    timeAll.setTitle("Combined HTCC timing");
-    timeAll.setTitleX("Time, ns");
 
     npheAll = new H1F("npheAll", "npheAll", 50, 0, 50);
     npheAll.setOptStat(110);
@@ -126,7 +123,6 @@ public class HTCC {
                 pmt = returnPMT(ring, halfSector);
                 hiNphePMTOneHit.get(pmt - 1).fill(nphe);
                 hiTimePMTOneHit.get(pmt - 1).fill(deltaTimeCC);
-                timeAll.fill(deltaTimeCC);
                 npheAll.fill(nphe);
               }
             }
@@ -146,7 +142,7 @@ public class HTCC {
     for (int s = 0; s < 48; s++) {
       dirout.addDataSet(hiNphePMTOneHit.get(s),hiTimePMTOneHit.get(s));
     }
-    dirout.addDataSet(timeAll, npheAll);
+    dirout.addDataSet(npheAll);
 
     if(runNumber>0) dirout.writeFile(outputDir+"/out_HTCC_"+runNumber+".hipo");
     else            dirout.writeFile(outputDir+"/out_HTCC.hipo");

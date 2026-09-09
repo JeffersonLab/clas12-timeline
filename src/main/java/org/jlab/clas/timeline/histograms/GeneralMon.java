@@ -13,6 +13,9 @@ import org.jlab.utils.groups.IndexedTable;
 import org.jlab.detector.calib.utils.ConstantsManager;
 import org.jlab.clas.timeline.util.RunDependentCut;
 
+// Issue 510: Removed unused histograms to save only called by timeline step.
+// For the full version, please refer to the previous version, such as e1b4bf2d0f70ade26bf70f67bab26554a62e6511.
+
 /**
  * General Monitoring histograms (a.k.a. General Monolith)
  */
@@ -90,127 +93,64 @@ public class GeneralMon {
   public int CVT_ndf;
   public LorentzVector VB, VT, Ve, VG1, VG2, VPI0, VPIP, VPIM;
 
-  public GraphErrors G_FCcur_evn, G_gatedFCcur_evn, G_FC_live_ratio, G_accCharge;
-  public GraphErrors G_Clock_evn, G_gatedClock_evn, G_Clock_ratio;
+  public H1F H_trig_sector_count;          // used in ratio_to_trigger()
 
-  public H1F[][] H_trig_phi_theta_S;
-  public H1F[] H_trig_PCAL_vt_S, H_trig_ECIN_vt_S, H_trig_ECOU_vt_S;
-  public H2F[] H_trig_theta_mom_S, H_trig_phi_mom_S, H_trig_theta_phi_S, H_trig_vz_mom_S, H_trig_vy_vz_S, H_trig_vz_theta_S;
-  public H2F[] H_trig_ECALsampl_S, H_trig_PCALECAL_S, H_trig_HTCCn_theta_S, H_trig_LTCCn_theta_S;
-  public H2F[] H_trig_ECAL_pos_S, H_trig_TOF_pos_S, H_trig_HTCC_pos_S, H_trig_DCR1_pos_S, H_trig_DCR2_pos_S, H_trig_DCR3_pos_S;
-  public H1F[] H_trig_S_HTCC_theta;
-
-  public H2F[] H_e_theta_mom_S;
-  public H1F[] H_e_W_S;
-  public H1F[] H_e_Q2_S;
-  public H2F[] H_e_W_phi_S;
-  public H2F H_e_theta_phi, H_e_theta_mom, H_e_phi_mom, H_XY_ECal, H_ESampl_ECal, H_e_LTCC_xy, H_e_HTCC_xy, H_e_HTCC_txy, H_e_HTCC_nphe_txy, H_e_vxy, H_e_vz_phi, H_e_vz_p, H_e_vz_theta, H_e_TOF_xy, H_e_TOF_t_path;
-  public H2F H_e_xB_Q2, H_e_W_Q2, H_e_xB_W;
-  public H1F H_e_W, H_e_Q2, H_e_xB, H_e_vz, H_e_LTCC_nphe, H_e_HTCC_nphe, H_e_vt1, H_e_vt2;
-
-  public H2F[] H_muontrig_theta_mom_S;
-  public H2F H_muontrig_theta_phi, H_muontrig_theta_mom, H_muontrig_phi_mom, H_muontrig_XY_ECal, H_muontrig_ESampl_ECal, H_muontrig_LTCC_xy, H_muontrig_HTCC_xy, H_muontrig_HTCC_txy;
-  public H2F H_muontrig_HTCC_nphe_txy, H_muontrig_vxy, H_muontrig_vz_phi, H_muontrig_vz_p, H_muontrig_vz_theta, H_muontrig_TOF_xy, H_muontrig_TOF_t_path;
-  public H1F H_muontrig_vz, H_muontrig_LTCC_nphe, H_muontrig_HTCC_nphe;
-  public H1F[] H_muontrig_ecal_en_neg_S, H_muontrig_ecal_en_pos_S, H_muontrig_pcal_en_neg_S, H_muontrig_pcal_en_pos_S;
-  public H2F[] H_muontrig_ECECOUT_en_S;
-
-  public H2F H_positive_theta_mom, H_negative_theta_mom, H_electron_theta_mom;
-
-  public H1F H_e_vz_S1, H_e_vz_S2, H_e_vz_S3, H_e_vz_S4, H_e_vz_S5, H_e_vz_S6;
-  public H1F H_e_FMMvz_S1, H_e_FMMvz_S2, H_e_FMMvz_S3, H_e_FMMvz_S4, H_e_FMMvz_S5, H_e_FMMvz_S6;
-  public H2F[][] H_e_FMMmom_mom, H_e_FMMtheta_theta, H_e_FMMphi_phi, H_e_FMMvz_vz;
-  public H2F H_o_TOF;
-  public H1F H_o_vt;
-
-  public H2F H_dcm_theta_phi, H_dcm_theta_mom, H_dcm_phi_mom, H_dcm_vz_phi, H_dcm_vz_p, H_dcm_vz_theta, H_dcm_phiK_mom;
-  public H2F H_dcm_R1th_R1ph, H_dcm_R1the_mom, H_dcm_R1ph_mom, H_dcm_pvz_phi, H_dcm_pvz_p, H_dcm_pvz_theta, H_dcm_pvt_pvz;
-  public H2F H_dcp_theta_phi, H_dcp_theta_mom, H_dcp_phi_mom, H_dcp_vz_phi, H_dcp_vz_p, H_dcp_vz_theta, H_dcp_phiK_mom;
-  public H2F H_dcp_R1th_R1ph, H_dcp_R1the_mom, H_dcp_R1ph_mom, H_dcp_pvz_phi, H_dcp_pvz_p, H_dcp_pvz_theta, H_dcp_pvt_pvz;
-  public H2F H2_dcm_vz_phi, H2_dcp_vz_phi;
-  public H1F H_dcm_W, H_dcm_W_zoom;
-
-  public H1F H_negHBTrk_sect, H_posHBTrk_sect, H_negRECHB_sect, H_posRECHB_sect;
-  public H1F H_negTBTrk_sect, H_posTBTrk_sect, H_negREC_sect, H_posREC_sect;
-
-  public H1F[] H_dcm_vz, H_dcm_chi2;
-  public H2F[] H_R1_dcm_XY, H_R2_dcm_XY, H_R3_dcm_XY, H_R1_dcm_uXY, H_R2_dcm_uXY, H_R3_dcm_uXY;
-  public H2F[] H_R1phiDm_mom;
-
-  public H1F[] H_dcp_vz, H_dcp_chi2;
-  public H2F[] H_R1_dcp_XY, H_R2_dcp_XY, H_R3_dcp_XY, H_R1_dcp_uXY, H_R2_dcp_uXY, H_R3_dcp_uXY;
-  public H2F[] H_R1phiDp_mom;
-
-  public H1F[] H_dce_chi2;
-  public GraphErrors g_m_ESampl_ECal, g_s_ESampl_ECal;
-
-  public H2F H_gg_open_a, H_g1_tf, H_g2_tf, H_g1_te, H_g2_te;
-  public H1F H_gg_m;
-
-  public H2F H_CVT_ft, H_CVT_pt, H_CVT_pf, H_CVT_zf, H_CVT_zp, H_CVT_zt;
-  public H1F H_CVT_p, H_CVT_t, H_CVT_f, H_CVT_z, H_CVT_chi2, H_CVT_ndf, H_CVT_pathlength;
-  public H1F H_CVT_z_pos, H_CVT_z_neg, H_CVT_d0_pos, H_CVT_d0_neg, H_CVT_absd0_pos, H_CVT_absd0_neg, H_CVT_chi2_pos, H_CVT_chi2_neg;
-  public H1F H_CVT_d0, H_CVT_charge;
-  public H2F H_CVT_vz_mom, H_CVT_vz_phi, H_CVT_vz_theta, H_CVT_vx_vy, H_CVT_vx_vz, H_CVT_vz_vy;
-  public H1F H_CVT_mom, H_CVT_theta, H_CVT_phi, H_CVT_vz, H_CVT_vx, H_CVT_vy;
-  public H1F H_CD_vx, H_CD_vy, H_CD_vz;
-  public H2F H_CD_vz_mom, H_CD_vz_phi, H_CD_vz_theta, H_CD_vx_vy, H_CD_vx_vz, H_CD_vz_vy; 
-
-  public H1F[] H_MM_epip_Spip, H_MM_epip_Se;
-  public H1F H_MM_epip, H_MM_epip_zoom, H_pip_vtd, H_pip_vz_ve_diff, H_pip_Dphi;
-  public H1F H_pim_vtd;
-  public H2F H_pip_theta_phi, H_pip_theta_mom, H_pip_phi_mom, H_pip_vz_phi, H_pip_vz_theta, H_pip_vz_mom, H_pip_e_vt, H_pip_vz_ve;
-  public H2F H_pip_vz_ve_diff_mom, H_pip_vz_ve_diff_theta, H_pip_vz_ve_diff_phi, H_pip_vz_ve_diff_Dphi;
-  public H2F H_MM_epip_phi, H_pip_beta_p, H_pip_beta2_p, H_pip_vtd_mom, H_pip_vtd_theta, H_pip_vtd_phi;
-  public H2F H_epip_e_theta_phi, H_epip_e_theta_mom, H_epip_e_phi_mom, H_epip_xB_Q2, H_epip_e_W_Q2, H_epip_e_t_phi;
-
-  public H1F H_rho_IM, H_rho_MM;
-  public H2F H_rho_Q2_xB, H_rho_Q2_W;
-  public H2F H_rho_prot, H_rho_pip_beta, H_rho_pim_beta;
-
-  public H1F H_trig_sector_count, H_trig_sector_elec, H_trig_sector_elec_rat, H_rand_trig_sector_count;
-  public H1F H_muon_trig_sector_count, H_trig_sector_muon, H_trig_sector_muon_rat, H_trig_sector_muontrack, H_trig_sector_muontrack_rat;
-  public H1F H_trig_sector_prot, H_trig_sector_piplus, H_trig_sector_piminus, H_trig_sector_kplus, H_trig_sector_kminus, H_trig_sector_photon, H_trig_sector_neutron, H_trig_sector_deut;
-  public H1F H_trig_sector_prot_rat, H_trig_sector_piplus_rat, H_trig_sector_piminus_rat, H_trig_sector_kplus_rat, H_trig_sector_kminus_rat, H_trig_sector_photon_rat, H_trig_sector_neutron_rat, H_trig_sector_deut_rat;
-  public H1F H_trig_sector_positive_rat, H_trig_sector_negative_rat, H_trig_sector_neutral_rat;
-  public H1F H_Nclust_ev, H_clust1_E, H_clust2_E;
-  public H1F H_trig_S1_ETOT_E, H_trig_S1_ECAL_E, H_trig_S1_PCAL_E, H_trig_S1_HTCC_n, H_trig_S1_HTCC_N, H_trig_S1_HTCC_N_track;
-  public H1F H_trig_S2_ETOT_E, H_trig_S2_ECAL_E, H_trig_S2_PCAL_E, H_trig_S2_HTCC_n, H_trig_S2_HTCC_N, H_trig_S2_HTCC_N_track;
-  public H1F H_trig_S3_ETOT_E, H_trig_S3_ECAL_E, H_trig_S3_PCAL_E, H_trig_S3_HTCC_n, H_trig_S3_HTCC_N, H_trig_S3_HTCC_N_track;
-  public H1F H_trig_S4_ETOT_E, H_trig_S4_ECAL_E, H_trig_S4_PCAL_E, H_trig_S4_HTCC_n, H_trig_S4_HTCC_N, H_trig_S4_HTCC_N_track;
-  public H1F H_trig_S5_ETOT_E, H_trig_S5_ECAL_E, H_trig_S5_PCAL_E, H_trig_S5_HTCC_n, H_trig_S5_HTCC_N, H_trig_S5_HTCC_N_track;
-  public H1F H_trig_S6_ETOT_E, H_trig_S6_ECAL_E, H_trig_S6_PCAL_E, H_trig_S6_HTCC_n, H_trig_S6_HTCC_N, H_trig_S6_HTCC_N_track;
-  public H2F H_trig_S1_PCAL_XY, H_trig_S1_HTCC_XY;
-  public H2F H_trig_S2_PCAL_XY, H_trig_S2_HTCC_XY;
-  public H2F H_trig_S3_PCAL_XY, H_trig_S3_HTCC_XY;
-  public H2F H_trig_S4_PCAL_XY, H_trig_S4_HTCC_XY;
-  public H2F H_trig_S5_PCAL_XY, H_trig_S5_HTCC_XY;
-  public H2F H_trig_S6_PCAL_XY, H_trig_S6_HTCC_XY;
-  public H2F missTrig_S1_ft, missTrig_S1_mt, missTrig_S1_mf;
-  public H2F missTrig_S2_ft, missTrig_S2_mt, missTrig_S2_mf;
-  public H2F missTrig_S3_ft, missTrig_S3_mt, missTrig_S3_mf;
-  public H2F missTrig_S4_ft, missTrig_S4_mt, missTrig_S4_mf;
-  public H2F missTrig_S5_ft, missTrig_S5_mt, missTrig_S5_mf;
-  public H2F missTrig_S6_ft, missTrig_S6_mt, missTrig_S6_mf;
-  public H1F PCAL_Thresh_S1, PCAL_Thresh_S2, PCAL_Thresh_S3, PCAL_Thresh_S4, PCAL_Thresh_S5, PCAL_Thresh_S6;
-  public H2F ETOT_Sampl_S1, ETOT_Sampl_S2, ETOT_Sampl_S3, ETOT_Sampl_S4, ETOT_Sampl_S5, ETOT_Sampl_S6;
-
-  public H1F H_TOF_vt_S1m, H_TOF_vt_S2m, H_TOF_vt_S3m, H_TOF_vt_S4m, H_TOF_vt_S5m, H_TOF_vt_S6m;
-  public H2F H_TOF_vt_mom_S1m, H_TOF_vt_mom_S2m, H_TOF_vt_mom_S3m, H_TOF_vt_mom_S4m, H_TOF_vt_mom_S5m, H_TOF_vt_mom_S6m;
-  public H1F H_TOF_vt_S1p, H_TOF_vt_S2p, H_TOF_vt_S3p, H_TOF_vt_S4p, H_TOF_vt_S5p, H_TOF_vt_S6p;
-  public H2F H_TOF_vt_mom_S1p, H_TOF_vt_mom_S2p, H_TOF_vt_mom_S3p, H_TOF_vt_mom_S4p, H_TOF_vt_mom_S5p, H_TOF_vt_mom_S6p;
-
-  public H2F H_CVT_e_corr_vz, H_CVT_e_corr_phi, H_CVT_corr_e_theta;
-  public H2F H_elast_e_p_th, H_elast_W_sect, H_CVT_corr_e_mom;
-  public H1F H_CVT_e_vz_diff, H_CVT_e_phi_diff, H_elast_W;
-
-  public H1F[] H_e_RFtime1_FD_S , H_pip_RFtime1_FD_S, H_pim_RFtime1_FD_S, H_p_RFtime1_FD_S;
-  public H1F H_pip_RFtime1_CD, H_pim_RFtime1_CD, H_p_RFtime1_CD;
-  public H1F  H_RFtimediff, H_RFtimediff_corrected;
-
-  public H1F hbstOccupancy,hbmtOccupancy,htrks,hpostrks,hnegtrks,hndf,hchi2norm,hp,hpt,hpathlen,hbstOnTrkLayers,hbmtOnTrkLayers;
-  public H1F hpostrks_rat, hnegtrks_rat;
-  public H1F H_trig_central_prot_rat, H_trig_central_deut_rat, H_trig_central_piplus_rat,H_trig_central_piminus_rat,H_trig_central_kplus_rat,H_trig_central_kminus_rat;
+  public H1F[] H_trig_PCAL_vt_S;           // related timeline: ['ec_pcal_time']
+  public H1F[] H_trig_ECIN_vt_S;           // related timeline: ['ec_ecin_time']
+  public H1F[] H_trig_ECOU_vt_S;           // related timeline: ['ec_ecou_time']
+  public H2F[] H_trig_vz_mom_S;            // related timeline: ['forward_Tracking_EleVz']
+  public H2F[] H_trig_ECALsampl_S;         // related timeline: ['ec_Sampl']
+  public H2F[] H_trig_LTCCn_theta_S;       // related timeline: ['ltcc_nphe_sector']
+  public H1F[] H_dcm_vz;                   // related timeline: ['forward_Tracking_NegVz']
+  public H1F[] H_dcm_chi2;                 // related timeline: ['forward_Tracking_Negchi2', 'forward_Tracking_Poschi2']
+  public H1F[] H_dcp_vz;                   // related timeline: ['forward_Tracking_PosVz']
+  public H1F[] H_dce_chi2;                 // related timeline: ['forward_Tracking_Elechi2']
+  public H1F H_gg_m;                       // related timeline: ['ec_gg_m']
+  public H1F H_CVT_chi2;                   // related timeline: ['cvt_chi2_elec']
+  public H1F H_CVT_z_pos;                  // related timeline: ['cvt_Vz_positive']
+  public H1F H_CVT_z_neg;                  // related timeline: ['cvt_Vz_negative']
+  public H1F H_CVT_d0_pos;                 // related timeline: ['cvt_d0_mean_pos', 'cvt_d0_sigma_pos']
+  public H1F H_CVT_absd0_pos;              // related timeline: ['cvt_d0_max_pos']
+  public H1F H_CVT_chi2_pos;               // related timeline: ['cvt_chi2_pos']
+  public H1F H_CVT_chi2_neg;               // related timeline: ['cvt_chi2_neg']
+  public H1F H_trig_sector_elec_rat;       // related timeline: ['rat_elec_num']
+  public H1F H_trig_sector_muon_rat;       // related timeline: ['rat_muon_num']
+  public H1F H_trig_sector_prot_rat;       // related timeline: ['rat_prot_num']
+  public H1F H_trig_sector_piplus_rat;     // related timeline: ['rat_pip_num']
+  public H1F H_trig_sector_piminus_rat;    // related timeline: ['rat_pim_num']
+  public H1F H_trig_sector_kplus_rat;      // related timeline: ['rat_Kp_num']
+  public H1F H_trig_sector_kminus_rat;     // related timeline: ['rat_Km_num']
+  public H1F H_trig_sector_positive_rat;   // related timeline: ['rat_pos_num']
+  public H1F H_trig_sector_negative_rat;   // related timeline: ['rat_neg_num']
+  public H1F H_trig_sector_neutral_rat;    // related timeline: ['rat_neu_num']
+  public H1F[] H_e_RFtime1_FD_S;           // related timeline: ['rftime_elec_FD']
+  public H1F[] H_pip_RFtime1_FD_S;         // related timeline: ['rftime_pip_FD']
+  public H1F[] H_pim_RFtime1_FD_S;         // related timeline: ['rftime_pim_FD']
+  public H1F[] H_p_RFtime1_FD_S;           // related timeline: ['rftime_prot_FD']
+  public H1F H_pip_RFtime1_CD;             // related timeline: ['rftime_pip_CD']
+  public H1F H_pim_RFtime1_CD;             // related timeline: ['rftime_pim_CD']
+  public H1F H_p_RFtime1_CD;               // related timeline: ['rftime_prot_CD']
+  public H1F H_RFtimediff;                 // related timeline: ['rftime_diff']
+  public H1F H_RFtimediff_corrected;       // related timeline: ['rftime_diff_corrected']
+  public H1F hbstOccupancy;                // related timeline: ['bst_Occupancy']
+  public H1F hbmtOccupancy;                // related timeline: ['bmt_Occupancy']
+  public H1F htrks;                        // related timeline: ['cvt_trks']
+  public H1F hpostrks;                     // related timeline: ['cvt_trks_pos']
+  public H1F hnegtrks;                     // related timeline: ['cvt_trks_neg']
+  public H1F hndf;                         // related timeline: ['cvt_ndf']
+  public H1F hchi2norm;                    // related timeline: ['cvt_chi2norm']
+  public H1F hp;                           // related timeline: ['cvt_p']
+  public H1F hpt;                          // related timeline: ['cvt_pt']
+  public H1F hpathlen;                     // related timeline: ['cvt_pathlen']
+  public H1F hbstOnTrkLayers;              // related timeline: ['bst_OnTrkLayers']
+  public H1F hbmtOnTrkLayers;              // related timeline: ['bmt_OnTrkLayers']
+  public H1F hpostrks_rat;                 // related timeline: ['cvt_trks_pos_rat']
+  public H1F hnegtrks_rat;                 // related timeline: ['cvt_trks_neg_rat']
+  public H1F H_trig_central_prot_rat;      // related timeline: ['central_prot_num']
+  public H1F H_trig_central_piplus_rat;    // related timeline: ['central_pip_num']
+  public H1F H_trig_central_piminus_rat;   // related timeline: ['central_pim_num']
+  public H1F H_trig_central_kplus_rat;     // related timeline: ['central_Kp_num']
+  public H1F H_trig_central_kminus_rat;    // related timeline: ['central_Km_num']
 
   public IndexedTable InverseTranslationTable;
   public IndexedTable calibrationTranslationTable;
@@ -263,30 +203,6 @@ public class GeneralMon {
       System.out.println(String.format("RF2 offset from ccdb for run %d: %f",runNum,rfoffset2));
     }
 
-    //Initialiing Two-sector trigger histograms
-    H_muontrig_ecal_en_neg_S = new H1F[6];
-    H_muontrig_ecal_en_pos_S = new H1F[6];
-    H_muontrig_pcal_en_neg_S = new H1F[6];
-    H_muontrig_pcal_en_pos_S = new H1F[6];
-    H_muontrig_ECECOUT_en_S = new H2F[6];
-    for (int i = 0; i < 6; i++) {
-      H_muontrig_ecal_en_neg_S[i] = new H1F(String.format("H_muontrig_ECAL_Energy_NegS%d", i + 1), String.format("H_muontrig_ECAL_Energy_NegS%d", i + 1), 1000, -0.5, 200.5);
-      H_muontrig_ecal_en_neg_S[i].setTitle(String.format("Two-Sector Trig ECAL_En Neg, S%d", i + 1));
-      H_muontrig_ecal_en_neg_S[i].setTitleX("E_ecal (MeV)");
-      H_muontrig_ecal_en_pos_S[i] = new H1F(String.format("H_muontrig_ECAL_Energy_PosS%d", i + 1), String.format("H_muontrig_ECAL_Energy_Pos_S%d", i + 1), 1000, -0.5, 200.5);
-      H_muontrig_ecal_en_pos_S[i].setTitle(String.format("Two-Sector Trig ECAL_En Pos, S%d", i + 1));
-      H_muontrig_ecal_en_pos_S[i].setTitleX("E_ecal (MeV)");
-      H_muontrig_pcal_en_neg_S[i] = new H1F(String.format("H_muontrig_PCAL_Energy_NegS%d", i + 1), String.format("H_muontrig_PCAL_Energy_NegS%d", i + 1), 1000, -0.5, 100.5);
-      H_muontrig_pcal_en_neg_S[i].setTitle(String.format("Two-Sector Trig PCAL_En Neg, S%d", i + 1));
-      H_muontrig_pcal_en_neg_S[i].setTitleX("E_pcal (MeV)");
-      H_muontrig_pcal_en_pos_S[i] = new H1F(String.format("H_muontrig_PCAL_Energy_PosS%d", i + 1), String.format("H_muontrig_PCAL_Energy_PosS%d", i + 1), 1000, -0.5, 100.5);
-      H_muontrig_pcal_en_pos_S[i].setTitle(String.format("Two-Sector Trig PCAL_En Pos, S%d", i + 1));
-      H_muontrig_pcal_en_pos_S[i].setTitleX("E_pcal (MeV)");
-      H_muontrig_ECECOUT_en_S[i] = new H2F("H_muontrig_EC-ECOUT_en_S", "H_muontrig_EC-ECOUT_en_S", 200, 0, 400, 200, 0, 200);
-      H_muontrig_ECECOUT_en_S[i].setTitle("ECout vs EC");
-      H_muontrig_ECECOUT_en_S[i].setTitleX("EC_energy (MeV)");
-      H_muontrig_ECECOUT_en_S[i].setTitleY("ECout_energy (MeV)");
-    }
 
     //Initializing rf histograms.
     H_RFtimediff = new H1F("H_RFtimediff","H_RFtimediff",5000,-5.,5.);
@@ -323,137 +239,16 @@ public class GeneralMon {
     H_p_RFtime1_CD.setTitle("CD prot vertex_t - RF1_t");
     H_p_RFtime1_CD.setTitleX("v_t-RF1_t (ns)");
 
-    H_TOF_vt_S1m = new H1F("H_TOF_vt_S1n","H_TOF_vt_S1n",100,tofvt1,tofvt2);
-    H_TOF_vt_S1m.setTitle("S1 neg TOF vert t");
-    H_TOF_vt_S1m.setTitleX("vert t (ns)");
-    H_TOF_vt_S2m = new H1F("H_TOF_vt_S2n","H_TOF_vt_S2n",100,tofvt1,tofvt2);
-    H_TOF_vt_S2m.setTitle("S2 neg TOF vert t");
-    H_TOF_vt_S2m.setTitleX("vert t (ns)");
-    H_TOF_vt_S3m = new H1F("H_TOF_vt_S3n","H_TOF_vt_S3n",100,tofvt1,tofvt2);
-    H_TOF_vt_S3m.setTitle("S3 neg TOF vert t");
-    H_TOF_vt_S3m.setTitleX("vert t (ns)");
-    H_TOF_vt_S4m = new H1F("H_TOF_vt_S4n","H_TOF_vt_S4n",100,tofvt1,tofvt2);
-    H_TOF_vt_S4m.setTitle("S4 neg TOF vert t");
-    H_TOF_vt_S4m.setTitleX("vert t (ns)");
-    H_TOF_vt_S5m = new H1F("H_TOF_vt_S5n","H_TOF_vt_S5n",100,tofvt1,tofvt2);
-    H_TOF_vt_S5m.setTitle("S5 neg TOF vert t");
-    H_TOF_vt_S5m.setTitleX("vert t (ns)");
-    H_TOF_vt_S6m = new H1F("H_TOF_vt_S6n","H_TOF_vt_S6n",100,tofvt1,tofvt2);
-    H_TOF_vt_S6m.setTitle("S6 neg TOF vert t");
-    H_TOF_vt_S6m.setTitleX("vert t (ns)");
-    H_TOF_vt_mom_S1m = new H2F("H_TOF_vt_mom_S1n","H_TOF_vt_mom_S1n",100,0,EB,100,tofvt1,tofvt2);
-    H_TOF_vt_mom_S1m.setTitle("S1 neg TOF vert t vs mom");
-    H_TOF_vt_mom_S1m.setTitleX("p (GeV)");
-    H_TOF_vt_mom_S1m.setTitleY("vert t (ns)");
-    H_TOF_vt_mom_S2m = new H2F("H_TOF_vt_mom_S2n","H_TOF_vt_mom_S2n",100,0,EB,100,tofvt1,tofvt2);
-    H_TOF_vt_mom_S2m.setTitle("S2 neg TOF vert t vs mom");
-    H_TOF_vt_mom_S2m.setTitleX("p (GeV)");
-    H_TOF_vt_mom_S2m.setTitleY("vert t (ns)");
-    H_TOF_vt_mom_S3m = new H2F("H_TOF_vt_mom_S3n","H_TOF_vt_mom_S3n",100,0,EB,100,tofvt1,tofvt2);
-    H_TOF_vt_mom_S3m.setTitle("S3 neg TOF vert t vs mom");
-    H_TOF_vt_mom_S3m.setTitleX("p (GeV)");
-    H_TOF_vt_mom_S3m.setTitleY("vert t (ns)");
-    H_TOF_vt_mom_S4m = new H2F("H_TOF_vt_mom_S4n","H_TOF_vt_mom_S4n",100,0,EB,100,tofvt1,tofvt2);
-    H_TOF_vt_mom_S4m.setTitle("S4 neg TOF vert t vs mom");
-    H_TOF_vt_mom_S4m.setTitleX("p (GeV)");
-    H_TOF_vt_mom_S4m.setTitleY("vert t (ns)");
-    H_TOF_vt_mom_S5m = new H2F("H_TOF_vt_mom_S5n","H_TOF_vt_mom_S5n",100,0,EB,100,tofvt1,tofvt2);
-    H_TOF_vt_mom_S5m.setTitle("S5 neg TOF vert t vs mom");
-    H_TOF_vt_mom_S5m.setTitleX("p (GeV)");
-    H_TOF_vt_mom_S5m.setTitleY("vert t (ns)");
-    H_TOF_vt_mom_S6m = new H2F("H_TOF_vt_mom_S6n","H_TOF_vt_mom_S6n",100,0,EB,100,tofvt1,tofvt2);
-    H_TOF_vt_mom_S6m.setTitle("S6 neg TOF vert t vs mom");
-    H_TOF_vt_mom_S6m.setTitleX("p (GeV)");
-    H_TOF_vt_mom_S6m.setTitleY("vert t (ns)");
 
-    H_TOF_vt_S1p = new H1F("H_TOF_vt_S1p","H_TOF_vt_S1p",100,tofvt1,tofvt2);
-    H_TOF_vt_S1p.setTitle("S1 pos TOF vert t");
-    H_TOF_vt_S1p.setTitleX("vert t (ns)");
-    H_TOF_vt_S2p = new H1F("H_TOF_vt_S2p","H_TOF_vt_S2p",100,tofvt1,tofvt2);
-    H_TOF_vt_S2p.setTitle("S2 pos TOF vert t");
-    H_TOF_vt_S2p.setTitleX("vert t (ns)");
-    H_TOF_vt_S3p = new H1F("H_TOF_vt_S3p","H_TOF_vt_S3p",100,tofvt1,tofvt2);
-    H_TOF_vt_S3p.setTitle("S3 pos TOF vert t");
-    H_TOF_vt_S3p.setTitleX("vert t (ns)");
-    H_TOF_vt_S4p = new H1F("H_TOF_vt_S4p","H_TOF_vt_S4p",100,tofvt1,tofvt2);
-    H_TOF_vt_S4p.setTitle("S4 pos TOF vert t");
-    H_TOF_vt_S4p.setTitleX("vert t (ns)");
-    H_TOF_vt_S5p = new H1F("H_TOF_vt_S5p","H_TOF_vt_S5p",100,tofvt1,tofvt2);
-    H_TOF_vt_S5p.setTitle("S5 pos TOF vert t");
-    H_TOF_vt_S5p.setTitleX("vert t (ns)");
-    H_TOF_vt_S6p = new H1F("H_TOF_vt_S6p","H_TOF_vt_S6p",100,tofvt1,tofvt2);
-    H_TOF_vt_S6p.setTitle("S6 pos TOF vert t");
-    H_TOF_vt_S6p.setTitleX("vert t (ns)");
-    H_TOF_vt_mom_S1p = new H2F("H_TOF_vt_mom_S1p","H_TOF_vt_mom_S1p",100,0,EB,100,tofvt1,tofvt2);
-    H_TOF_vt_mom_S1p.setTitle("S1 pos TOF vert t vs mom");
-    H_TOF_vt_mom_S1p.setTitleX("p (GeV)");
-    H_TOF_vt_mom_S1p.setTitleY("vert t (ns)");
-    H_TOF_vt_mom_S2p = new H2F("H_TOF_vt_mom_S2p","H_TOF_vt_mom_S2p",100,0,EB,100,tofvt1,tofvt2);
-    H_TOF_vt_mom_S2p.setTitle("S2 pos TOF vert t vs mom");
-    H_TOF_vt_mom_S2p.setTitleX("p (GeV)");
-    H_TOF_vt_mom_S2p.setTitleY("vert t (ns)");
-    H_TOF_vt_mom_S3p = new H2F("H_TOF_vt_mom_S3p","H_TOF_vt_mom_S3p",100,0,EB,100,tofvt1,tofvt2);
-    H_TOF_vt_mom_S3p.setTitle("S3 pos TOF vert t vs mom");
-    H_TOF_vt_mom_S3p.setTitleX("p (GeV)");
-    H_TOF_vt_mom_S3p.setTitleY("vert t (ns)");
-    H_TOF_vt_mom_S4p = new H2F("H_TOF_vt_mom_S4p","H_TOF_vt_mom_S4p",100,0,EB,100,tofvt1,tofvt2);
-    H_TOF_vt_mom_S4p.setTitle("S4 pos TOF vert t vs mom");
-    H_TOF_vt_mom_S4p.setTitleX("p (GeV)");
-    H_TOF_vt_mom_S4p.setTitleY("vert t (ns)");
-    H_TOF_vt_mom_S5p = new H2F("H_TOF_vt_mom_S5p","H_TOF_vt_mom_S5p",100,0,EB,100,tofvt1,tofvt2);
-    H_TOF_vt_mom_S5p.setTitle("S5 pos TOF vert t vs mom");
-    H_TOF_vt_mom_S5p.setTitleX("p (GeV)");
-    H_TOF_vt_mom_S5p.setTitleY("vert t (ns)");
-    H_TOF_vt_mom_S6p = new H2F("H_TOF_vt_mom_S6p","H_TOF_vt_mom_S6p",100,0,EB,100,tofvt1,tofvt2);
-    H_TOF_vt_mom_S6p.setTitle("S6 pos TOF vert t vs mom");
-    H_TOF_vt_mom_S6p.setTitleX("p (GeV)");
-    H_TOF_vt_mom_S6p.setTitleY("vert t (ns)");
-
-    H_Nclust_ev = new H1F("H_Nclust_ev","H_Nclust_ev",11,-0.5,10.5);
-    H_Nclust_ev.setTitle("N clust events");
-    H_Nclust_ev.setTitleX("N clust");
-    H_clust1_E = new H1F("H_clust1_E","H_clust1_E",100,0,1.5);
-    H_clust1_E.setTitle("1st cluster energy");
-    H_clust1_E.setTitleX("E (GeV)");
-    H_clust2_E = new H1F("H_clust2_E","H_clust2_E",100,0,1.5);
-    H_clust2_E.setTitle("2nd cluster energy");
-    H_clust2_E.setTitleX("E (GeV)");
     H_trig_sector_count = new H1F("H_trig_sector_count","H_trig_sector_count",6,0.5,6.5);
     H_trig_sector_count.setTitle("N trigs per sect");
     H_trig_sector_count.setTitleX("Sector number");
-    H_muon_trig_sector_count = new H1F("H_muon_trig_sector_count","H_muon_trig_sector_count",3,0.5,3.5);
-    H_muon_trig_sector_count.setTitle("N muon trigs per sect-pair");
-    H_muon_trig_sector_count.setTitleX("Sector-pair number");
-    H_rand_trig_sector_count = new H1F("H_rand_trig_sector_count","H_rand_trig_sector_count",7,0.5,7.5);
-    H_rand_trig_sector_count.setTitle("N rand trigs per sect");
-    H_rand_trig_sector_count.setTitleX("Sector number");
-    H_trig_sector_elec = new H1F("H_trig_sector_elec","H_trig_sector_elec",6,0.5,6.5);
-    H_trig_sector_elec.setTitle("N elec per sect");
-    H_trig_sector_elec.setTitleX("Sector number");
-    H_trig_sector_muon = new H1F("H_trig_sector_muon","H_trig_sector_muon",3,0.5,3.5);
-    H_trig_sector_muon.setTitle("N muon per sect");
-    H_trig_sector_muon.setTitleX("Sector number");
-    H_trig_sector_muontrack = new H1F("H_trig_sector_muontrack","H_trig_sector_muontrack",3,0.5,3.5);
-    H_trig_sector_muontrack.setTitle("N muonpairs trigger per sect");
-    H_trig_sector_muontrack.setTitleX("Sector number");
     H_trig_sector_elec_rat = new H1F("H_trig_sector_elec_rat","H_trig_sector_elec_rat",6,0.5,6.5);
     H_trig_sector_elec_rat.setTitle("N elec / trig vs sector");
     H_trig_sector_elec_rat.setTitleX("Sector number");
     H_trig_sector_muon_rat = new H1F("H_trig_sector_muon_rat","H_trig_sector_muon_rat",3,0.5,3.5);
     H_trig_sector_muon_rat.setTitle("N muon / trig vs sector");
     H_trig_sector_muon_rat.setTitleX("Sector-pair number");
-    H_trig_sector_muontrack_rat = new H1F("H_trig_sector_muontrack_rat","H_trig_sector_muontrack_rat",3,0.5,3.5);
-    H_trig_sector_muontrack_rat.setTitle("N muon trig / N muon vs sector");
-    H_trig_sector_muontrack_rat.setTitleX("Sector-pair number");
-
-    H_trig_sector_prot = new H1F("H_trig_sector_prot","H_trig_sector_prot",6,0.5,6.5);
-    H_trig_sector_piplus = new H1F("H_trig_sector_piplus","H_trig_sector_piplus",6,0.5,6.5);
-    H_trig_sector_piminus = new H1F("H_trig_sector_piminus","H_trig_sector_piminus",6,0.5,6.5);
-    H_trig_sector_kplus = new H1F("H_trig_sector_kplus","H_trig_sector_kplus",6,0.5,6.5);
-    H_trig_sector_kminus = new H1F("H_trig_sector_kminus","H_trig_sector_kminus",6,0.5,6.5);
-    H_trig_sector_photon = new H1F("H_trig_sector_photon","H_trig_sector_photon",6,0.5,6.5);
-    H_trig_sector_neutron = new H1F("H_trig_sector_neutron","H_trig_sector_neutron",6,0.5,6.5);
-    H_trig_sector_deut = new H1F("H_trig_sector_deuteron","H_trig_sector_deuteron",6,0.5,6.5);
     H_trig_sector_prot_rat = new H1F("H_trig_sector_prot_rat","H_trig_sector_prot_rat",6,0.5,6.5);
     H_trig_sector_prot_rat.setTitle("FD prot / trig per sect");
     H_trig_sector_prot_rat.setTitleX("Sector number");
@@ -469,13 +264,6 @@ public class GeneralMon {
     H_trig_sector_kminus_rat = new H1F("H_trig_sector_kminus_rat","H_trig_sector_kminus_rat",6,0.5,6.5);
     H_trig_sector_kminus_rat.setTitle("FD K- / trig per sect");
     H_trig_sector_kminus_rat.setTitleX("Sector number");
-    H_trig_sector_photon_rat = new H1F("H_trig_sector_photon_rat","H_trig_sector_photon_rat",6,0.5,6.5);
-    H_trig_sector_photon_rat.setTitle("FD #gamma / trig per sect");
-    H_trig_sector_photon_rat.setTitleX("Sector number");
-    H_trig_sector_neutron_rat = new H1F("H_trig_sector_neutron_rat","H_trig_sector_neutron_rat",6,0.5,6.5);
-    H_trig_sector_deut_rat = new H1F("H_trig_sector_deut_rat","H_trig_sector_deut_rat",6,0.5,6.5);
-    H_trig_sector_deut_rat.setTitle("FD deut / trig per sect");
-    H_trig_sector_deut_rat.setTitleX("Sector number");
     H_trig_sector_positive_rat = new H1F("H_trig_sector_positive_rat","H_trig_sector_positive_rat",6,0.5,6.5);
     H_trig_sector_positive_rat.setTitle("FD positive / trig per sect");
     H_trig_sector_positive_rat.setTitleX("Sector number");
@@ -501,541 +289,8 @@ public class GeneralMon {
     H_trig_central_kminus_rat = new H1F("H_trig_central_kminus_rat","H_trig_central_kminus_rat",1,0.5,1.5);
     H_trig_central_kminus_rat.setTitle("CD K- / trig");
     H_trig_central_kminus_rat.setTitleX("All sectors");
-    H_trig_central_deut_rat = new H1F("H_trig_central_deut_rat","H_trig_central_deut_rat",1,0.5,1.5);
-    H_trig_central_deut_rat.setTitle("CD deut / trig");
-    H_trig_central_deut_rat.setTitleX("All sectors");
 
-    H_CD_vz_mom = new H2F("H_CD_vz_mom","H_CD_vz_mom",100,0,3.5,100,-25.,25.);
-    H_CD_vz_mom.setTitle("CD z vertex vs mom");
-    H_CD_vz_mom.setTitleX("p (GeV/c");
-    H_CD_vz_mom.setTitleY("z (cm)");
-    H_CD_vz_theta = new H2F("H_CD_vz_theta","H_CD_vz_theta",100,0,180.,100, -25., 25.);
-    H_CD_vz_theta.setTitle("CD z vertex vs theta");
-    H_CD_vz_theta.setTitleX("#theta (^o)");
-    H_CD_vz_theta.setTitleY("z (cm)");
-    H_CD_vz_phi = new H2F("H_CD_vz_phi", "H_CD_vz_phi", 200, -180., 180., 100, -25., 25.);
-    H_CD_vz_phi.setTitle("CD z vertex vs phi");
-    H_CD_vz_phi.setTitleX("#phi (^o)");
-    H_CD_vz_phi.setTitleY("z (cm)");
-    H_CD_vx = new H1F("H_CD_vx", 200, -10., 10.);
-    H_CD_vx.setTitle("CD particle x vertex");
-    H_CD_vx.setTitleX("x (cm)");
-    H_CD_vz = new H1F("H_CD_vz", 200, -25., 25.);
-    H_CD_vz.setTitle("CD particle z vertex");
-    H_CD_vz.setTitleX("z (cm)");
-    H_CD_vy = new H1F("H_CD_vy", 200, -10., 10.);
-    H_CD_vy.setTitle("CD particle y vertex");
-    H_CD_vy.setTitleX("y (cm)");
-    H_CD_vx_vy = new H2F("H_CD_vx_vy", "H_CD_vx_vy", 100, -25., 25, 100, -25., 25.);
-    H_CD_vx_vy.setTitle("CD particle vertex vy vs vx");
-    H_CD_vx_vy.setTitleX("x (cm)");
-    H_CD_vx_vy.setTitleY("y (cm)");
-    H_CD_vx_vz = new H2F("H_CD_vx_vz", "H_CD_vx_vz", 100, -25., 25, 100, -25., 25.);
-    H_CD_vx_vz.setTitle("CD particle vertex vz vs vx");
-    H_CD_vx_vz.setTitleX("x (cm)");
-    H_CD_vx_vz.setTitleY("z (cm)");
-    H_CD_vz_vy = new H2F("H_CD_vz_vy", "H_CD_vz_vy", 100, -25., 25, 100, -25., 25.);
-    H_CD_vz_vy.setTitle("CD particle vertex vz vs vy");
-    H_CD_vz_vy.setTitleX("y (cm)");
-    H_CD_vz_vy.setTitleY("z (cm)");
 
-    H_CVT_vz_mom = new H2F("H_CVT_vz_mom", "H_CVT_vz_mom", 100, 0, 3.5, 100, -25., 25.);
-    H_CVT_vz_mom.setTitle("CVT z vertex vs mom");
-    H_CVT_vz_mom.setTitleX("p (GeV/c");
-    H_CVT_vz_mom.setTitleY("z (cm)");
-    H_CVT_vz_theta = new H2F("H_CVT_vz_theta", "H_CVT_vz_theta", 100, 0, 180., 100, -25., 25.);
-    H_CVT_vz_theta.setTitle("CVT z vertex vs theta");
-    H_CVT_vz_theta.setTitleX("#theta (^o)");
-    H_CVT_vz_theta.setTitleY("z (cm)");
-    H_CVT_vz_phi = new H2F("H_CVT_vz_phi", "H_CVT_vz_phi", 200, -180., 180., 100, -25., 25.);
-    H_CVT_vz_phi.setTitle("CVT z vertex vs phi");
-    H_CVT_vz_phi.setTitleX("#phi (^o)");
-    H_CVT_vz_phi.setTitleY("z (cm)");
-    H_CVT_vx = new H1F("H_CVT_vx", 200, -5., 5.);
-    H_CVT_vx.setTitle("CVT x vertex");
-    H_CVT_vx.setTitleX("x (cm)");
-    H_CVT_vz = new H1F("H_CVT_vz", 200, -25., 25.);
-    H_CVT_vz.setTitle("CVT z vertex");
-    H_CVT_vz.setTitleX("z (cm)");
-    H_CVT_vy = new H1F("H_CVT_vy", 200, -5., 5.);
-    H_CVT_vy.setTitle("CVT y vertex");
-    H_CVT_vy.setTitleX("y (cm)");
-    H_CVT_vx_vy = new H2F("H_CVT_vx_vy", "H_CVT_vx_vy", 100, -25., 25, 100, -25., 25.);
-    H_CVT_vx_vy.setTitle("CVT vertex  y vs x");
-    H_CVT_vx_vy.setTitleX("x (cm)");
-    H_CVT_vx_vy.setTitleY("y (cm)");
-    H_CVT_vx_vz = new H2F("H_CVT_vx_vz", "H_CVT_vx_vz", 100, -25., 25, 100, -25., 25.);
-    H_CVT_vx_vz.setTitle("CVT vertex z vs x");
-    H_CVT_vx_vz.setTitleX("x (cm)");
-    H_CVT_vx_vz.setTitleY("z (cm)");
-    H_CVT_vz_vy = new H2F("H_CVT_vz_vy", "H_CVT_vz_vy", 100, -25., 25, 100, -25., 25.);
-    H_CVT_vz_vy.setTitle("CVT vertex z vs y");
-    H_CVT_vz_vy.setTitleX("y (cm)");
-    H_CVT_vz_vy.setTitleY("z (cm)");
-
-    PCAL_Thresh_S1 = new H1F("PCAL_Thresh_S1","PCAL_Thresh_S1",100,0,0.5);
-    PCAL_Thresh_S1.setTitle("PCAL E S1");
-    PCAL_Thresh_S1.setTitleX("E (GeV)");
-    PCAL_Thresh_S2 = new H1F("PCAL_Thresh_S2","PCAL_Thresh_S2",100,0,0.5);
-    PCAL_Thresh_S2.setTitle("PCAL E S2");
-    PCAL_Thresh_S2.setTitleX("E (GeV)");
-    PCAL_Thresh_S3 = new H1F("PCAL_Thresh_S3","PCAL_Thresh_S3",100,0,0.5);
-    PCAL_Thresh_S3.setTitle("PCAL E S3");
-    PCAL_Thresh_S3.setTitleX("E (GeV)");
-    PCAL_Thresh_S4 = new H1F("PCAL_Thresh_S4","PCAL_Thresh_S4",100,0,0.5);
-    PCAL_Thresh_S4.setTitle("PCAL E S4");
-    PCAL_Thresh_S4.setTitleX("E (GeV)");
-    PCAL_Thresh_S5 = new H1F("PCAL_Thresh_S5","PCAL_Thresh_S5",100,0,0.5);
-    PCAL_Thresh_S5.setTitle("PCAL E S5");
-    PCAL_Thresh_S5.setTitleX("E (GeV)");
-    PCAL_Thresh_S6 = new H1F("PCAL_Thresh_S6","PCAL_Thresh_S6",100,0,0.5);
-    PCAL_Thresh_S6.setTitle("PCAL E S6");
-    PCAL_Thresh_S6.setTitleX("E (GeV)");
-    ETOT_Sampl_S1 = new H2F("ETOT_Sampl_S1","ETOT_Sampl_S1",100,0,EB,100,0,0.5);
-    ETOT_Sampl_S1.setTitle("ETOT sampling S1");
-    ETOT_Sampl_S1.setTitleX("p (GeV)");
-    ETOT_Sampl_S1.setTitleY("ETOT/p");
-    ETOT_Sampl_S2 = new H2F("ETOT_Sampl_S2","ETOT_Sampl_S2",100,0,EB,100,0,0.5);
-    ETOT_Sampl_S2.setTitle("ETOT sampling S2");
-    ETOT_Sampl_S2.setTitleX("p (GeV)");
-    ETOT_Sampl_S2.setTitleY("ETOT/p");
-    ETOT_Sampl_S3 = new H2F("ETOT_Sampl_S3","ETOT_Sampl_S3",100,0,EB,100,0,0.5);
-    ETOT_Sampl_S3.setTitle("ETOT sampling S3");
-    ETOT_Sampl_S3.setTitleX("p (GeV)");
-    ETOT_Sampl_S3.setTitleY("ETOT/p");
-    ETOT_Sampl_S4 = new H2F("ETOT_Sampl_S4","ETOT_Sampl_S4",100,0,EB,100,0,0.5);
-    ETOT_Sampl_S4.setTitle("ETOT sampling S4");
-    ETOT_Sampl_S4.setTitleX("p (GeV)");
-    ETOT_Sampl_S4.setTitleY("ETOT/p");
-    ETOT_Sampl_S5 = new H2F("ETOT_Sampl_S5","ETOT_Sampl_S5",100,0,EB,100,0,0.5);
-    ETOT_Sampl_S5.setTitle("ETOT sampling S5");
-    ETOT_Sampl_S5.setTitleX("p (GeV)");
-    ETOT_Sampl_S5.setTitleY("ETOT/p");
-    ETOT_Sampl_S6 = new H2F("ETOT_Sampl_S6","ETOT_Sampl_S6",100,0,EB,100,0,0.5);
-    ETOT_Sampl_S6.setTitle("ETOT sampling S6");
-    ETOT_Sampl_S6.setTitleX("p (GeV)");
-    ETOT_Sampl_S6.setTitleY("ETOT/p");
-
-    missTrig_S1_ft = new H2F("missTrig_S1_ft","missTrig_S1_ft",100,-180,180,100,0,40);
-    missTrig_S1_ft.setTitle("Miss trig S1");
-    missTrig_S1_ft.setTitleX("#phi");
-    missTrig_S1_ft.setTitleY("#theta");
-    missTrig_S2_ft = new H2F("missTrig_S2_ft","missTrig_S2_ft",100,-180,180,100,0,40);
-    missTrig_S2_ft.setTitle("Miss trig S2");
-    missTrig_S2_ft.setTitleX("#phi");
-    missTrig_S2_ft.setTitleY("#theta");
-    missTrig_S3_ft = new H2F("missTrig_S3_ft","missTrig_S3_ft",100,-180,180,100,0,40);
-    missTrig_S3_ft.setTitle("Miss trig S3");
-    missTrig_S3_ft.setTitleX("#phi");
-    missTrig_S3_ft.setTitleY("#theta");
-    missTrig_S4_ft = new H2F("missTrig_S4_ft","missTrig_S4_ft",100,-180,180,100,0,40);
-    missTrig_S4_ft.setTitle("Miss trig S4");
-    missTrig_S4_ft.setTitleX("#phi");
-    missTrig_S4_ft.setTitleY("#theta");
-    missTrig_S5_ft = new H2F("missTrig_S5_ft","missTrig_S5_ft",100,-180,180,100,0,40);
-    missTrig_S5_ft.setTitle("Miss trig S5");
-    missTrig_S5_ft.setTitleX("#phi");
-    missTrig_S5_ft.setTitleY("#theta");
-    missTrig_S6_ft = new H2F("missTrig_S6_ft","missTrig_S6_ft",100,-180,180,100,0,40);
-    missTrig_S6_ft.setTitle("Miss trig S6");
-    missTrig_S6_ft.setTitleX("#phi");
-    missTrig_S6_ft.setTitleY("#theta");
-    missTrig_S1_mt = new H2F("missTrig_S1_mt","missTrig_S1_mt",100,0,EB,100,0,40);
-    missTrig_S1_mt.setTitle("Miss trig S1");
-    missTrig_S1_mt.setTitleX("p (GeV)");
-    missTrig_S1_mt.setTitleY("#theta");
-    missTrig_S2_mt = new H2F("missTrig_S2_mt","missTrig_S2_mt",100,0,EB,100,0,40);
-    missTrig_S2_mt.setTitle("Miss trig S2");
-    missTrig_S2_mt.setTitleX("p (GeV)");
-    missTrig_S2_mt.setTitleY("#theta");
-    missTrig_S3_mt = new H2F("missTrig_S3_mt","missTrig_S3_mt",100,0,EB,100,0,40);
-    missTrig_S3_mt.setTitle("Miss trig S3");
-    missTrig_S3_mt.setTitleX("p (GeV)");
-    missTrig_S3_mt.setTitleY("#theta");
-    missTrig_S4_mt = new H2F("missTrig_S4_mt","missTrig_S4_mt",100,0,EB,100,0,40);
-    missTrig_S4_mt.setTitle("Miss trig S4");
-    missTrig_S4_mt.setTitleX("p (GeV)");
-    missTrig_S4_mt.setTitleY("#theta");
-    missTrig_S5_mt = new H2F("missTrig_S5_mt","missTrig_S5_mt",100,0,EB,100,0,40);
-    missTrig_S5_mt.setTitle("Miss trig S5");
-    missTrig_S5_mt.setTitleX("p (GeV)");
-    missTrig_S5_mt.setTitleY("#theta");
-    missTrig_S6_mt = new H2F("missTrig_S6_mt","missTrig_S6_mt",100,0,EB,100,0,40);
-    missTrig_S6_mt.setTitle("Miss trig S6");
-    missTrig_S6_mt.setTitleX("p (GeV)");
-    missTrig_S6_mt.setTitleY("#theta");
-    missTrig_S1_mf = new H2F("missTrig_S1_mf","missTrig_S1_mf",100,0,EB,100,-180,180);
-    missTrig_S1_mf.setTitle("Miss Trig S1");
-    missTrig_S1_mf.setTitleX("p (GeV)");
-    missTrig_S1_mf.setTitleY("#phi");
-    missTrig_S2_mf = new H2F("missTrig_S2_mf","missTrig_S2_mf",100,0,EB,100,-180,180);
-    missTrig_S2_mf.setTitle("Miss Trig S2");
-    missTrig_S2_mf.setTitleX("p (GeV)");
-    missTrig_S2_mf.setTitleY("#phi");
-    missTrig_S3_mf = new H2F("missTrig_S3_mf","missTrig_S3_mf",100,0,EB,100,-180,180);
-    missTrig_S3_mf.setTitle("Miss Trig S3");
-    missTrig_S3_mf.setTitleX("p (GeV)");
-    missTrig_S3_mf.setTitleY("#phi");
-    missTrig_S4_mf = new H2F("missTrig_S4_mf","missTrig_S4_mf",100,0,EB,100,-180,180);
-    missTrig_S4_mf.setTitle("Miss Trig S4");
-    missTrig_S4_mf.setTitleX("p (GeV)");
-    missTrig_S4_mf.setTitleY("#phi");
-    missTrig_S5_mf = new H2F("missTrig_S5_mf","missTrig_S5_mf",100,0,EB,100,-180,180);
-    missTrig_S5_mf.setTitle("Miss Trig S5");
-    missTrig_S5_mf.setTitleX("p (GeV)");
-    missTrig_S5_mf.setTitleY("#phi");
-    missTrig_S6_mf = new H2F("missTrig_S6_mf","missTrig_S6_mf",100,0,EB,100,-180,180);
-    missTrig_S6_mf.setTitle("Miss Trig S6");
-    missTrig_S6_mf.setTitleX("p (GeV)");
-    missTrig_S6_mf.setTitleY("#phi");
-
-    H_trig_S1_ETOT_E = new H1F("H_trig_S1_ETOT_E","H_trig_S1_ETOT_E",100,0,0.75);
-    H_trig_S1_ETOT_E.setTitle("ETOT E S1 trig bit");
-    H_trig_S1_ETOT_E.setTitleX("E_{ETOT} (GeV)");
-    H_trig_S2_ETOT_E = new H1F("H_trig_S2_ETOT_E","H_trig_S2_ETOT_E",100,0,0.75);
-    H_trig_S2_ETOT_E.setTitle("ETOT E S2 trig bit");
-    H_trig_S2_ETOT_E.setTitleX("E_{ETOT} (GeV)");
-    H_trig_S3_ETOT_E = new H1F("H_trig_S3_ETOT_E","H_trig_S3_ETOT_E",100,0,0.75);
-    H_trig_S3_ETOT_E.setTitle("ETOT E S3 trig bit");
-    H_trig_S3_ETOT_E.setTitleX("E_{ETOT} (GeV)");
-    H_trig_S4_ETOT_E = new H1F("H_trig_S4_ETOT_E","H_trig_S4_ETOT_E",100,0,0.75);
-    H_trig_S4_ETOT_E.setTitle("ETOT E S4 trig bit");
-    H_trig_S4_ETOT_E.setTitleX("E_{ETOT} (GeV)");
-    H_trig_S5_ETOT_E = new H1F("H_trig_S5_ETOT_E","H_trig_S5_ETOT_E",100,0,0.75);
-    H_trig_S5_ETOT_E.setTitle("ETOT E S5 trig bit");
-    H_trig_S5_ETOT_E.setTitleX("E_{ETOT} (GeV)");
-    H_trig_S6_ETOT_E = new H1F("H_trig_S6_ETOT_E","H_trig_S6_ETOT_E",100,0,0.75);
-    H_trig_S6_ETOT_E.setTitle("ETOT E S6 trig bit");
-    H_trig_S6_ETOT_E.setTitleX("E_{ETOT} (GeV)");
-    H_trig_S1_ECAL_E = new H1F("H_trig_S1_ECAL_E","H_trig_S1_ECAL_E",100,0,0.25);
-    H_trig_S1_ECAL_E.setTitle("ECAL E S1 trig bit");
-    H_trig_S1_ECAL_E.setTitleX("E_{ECAL} (GeV)");
-    H_trig_S2_ECAL_E = new H1F("H_trig_S2_ECAL_E","H_trig_S2_ECAL_E",100,0,0.25);
-    H_trig_S2_ECAL_E.setTitle("ECAL E S2 trig bit");
-    H_trig_S2_ECAL_E.setTitleX("E_{ECAL} (GeV)");
-    H_trig_S3_ECAL_E = new H1F("H_trig_S3_ECAL_E","H_trig_S3_ECAL_E",100,0,0.25);
-    H_trig_S3_ECAL_E.setTitle("ECAL E S3 trig bit");
-    H_trig_S3_ECAL_E.setTitleX("E_{ECAL} (GeV)");
-    H_trig_S4_ECAL_E = new H1F("H_trig_S4_ECAL_E","H_trig_S4_ECAL_E",100,0,0.25);
-    H_trig_S4_ECAL_E.setTitle("ECAL E S4 trig bit");
-    H_trig_S4_ECAL_E.setTitleX("E_{ECAL} (GeV)");
-    H_trig_S5_ECAL_E = new H1F("H_trig_S5_ECAL_E","H_trig_S5_ECAL_E",100,0,0.25);
-    H_trig_S5_ECAL_E.setTitle("ECAL E S5 trig bit");
-    H_trig_S5_ECAL_E.setTitleX("E_{ECAL} (GeV)");
-    H_trig_S6_ECAL_E = new H1F("H_trig_S6_ECAL_E","H_trig_S6_ECAL_E",100,0,0.25);
-    H_trig_S6_ECAL_E.setTitle("ECAL E S6 trig bit");
-    H_trig_S6_ECAL_E.setTitleX("E_{ECAL} (GeV)");
-    H_trig_S1_PCAL_E = new H1F("H_trig_S1_PCAL_E","H_trig_S1_PCAL_E",100,0,0.5);
-    H_trig_S1_PCAL_E.setTitle("PCAL E S1 trig bit");
-    H_trig_S1_PCAL_E.setTitleX("E_{ECAL} (GeV)");
-    H_trig_S2_PCAL_E = new H1F("H_trig_S2_PCAL_E","H_trig_S2_PCAL_E",100,0,0.5);
-    H_trig_S2_PCAL_E.setTitle("PCAL E S2 trig bit");
-    H_trig_S2_PCAL_E.setTitleX("E_{PCAL} (GeV)");
-    H_trig_S3_PCAL_E = new H1F("H_trig_S3_PCAL_E","H_trig_S3_PCAL_E",100,0,0.5);
-    H_trig_S3_PCAL_E.setTitle("PCAL E S3 trig bit");
-    H_trig_S3_PCAL_E.setTitleX("E_{PCAL} (GeV)");
-    H_trig_S4_PCAL_E = new H1F("H_trig_S4_PCAL_E","H_trig_S4_PCAL_E",100,0,0.5);
-    H_trig_S4_PCAL_E.setTitle("PCAL E S4 trig bit");
-    H_trig_S4_PCAL_E.setTitleX("E_{PCAL} (GeV)");
-    H_trig_S5_PCAL_E = new H1F("H_trig_S5_PCAL_E","H_trig_S5_PCAL_E",100,0,0.5);
-    H_trig_S5_PCAL_E.setTitle("PCAL E S5 trig bit");
-    H_trig_S5_PCAL_E.setTitleX("E_{PCAL} (GeV)");
-    H_trig_S6_PCAL_E = new H1F("H_trig_S6_PCAL_E","H_trig_S6_PCAL_E",100,0,0.5);
-    H_trig_S6_PCAL_E.setTitle("PCAL E S6 trig bit");
-    H_trig_S6_PCAL_E.setTitleX("E_{PCAL} (GeV)");
-    H_trig_S1_HTCC_n = new H1F("H_trig_S1_HTCC_n","H_trig_S1_HTCC_n",300,0,30);
-    H_trig_S1_HTCC_n.setTitle("HTCC nphe S1 trig bit");
-    H_trig_S1_HTCC_n.setTitleX("nphe");
-    H_trig_S2_HTCC_n = new H1F("H_trig_S2_HTCC_n","H_trig_S2_HTCC_n",300,0,30);
-    H_trig_S2_HTCC_n.setTitle("HTCC nphe S2 trig bit");
-    H_trig_S2_HTCC_n.setTitleX("nphe");
-    H_trig_S3_HTCC_n = new H1F("H_trig_S3_HTCC_n","H_trig_S3_HTCC_n",300,0,30);
-    H_trig_S3_HTCC_n.setTitle("HTCC nphe S3 trig bit");
-    H_trig_S3_HTCC_n.setTitleX("nphe");
-    H_trig_S4_HTCC_n = new H1F("H_trig_S4_HTCC_n","H_trig_S4_HTCC_n",300,0,30);
-    H_trig_S4_HTCC_n.setTitle("HTCC nphe S4 trig bit");
-    H_trig_S4_HTCC_n.setTitleX("nphe");
-    H_trig_S5_HTCC_n = new H1F("H_trig_S5_HTCC_n","H_trig_S5_HTCC_n",300,0,30);
-    H_trig_S5_HTCC_n.setTitle("HTCC nphe S5 trig bit");
-    H_trig_S5_HTCC_n.setTitleX("nphe");
-    H_trig_S6_HTCC_n = new H1F("H_trig_S6_HTCC_n","H_trig_S6_HTCC_n",300,0,30);
-    H_trig_S6_HTCC_n.setTitle("HTCC nphe S6 trig bit");
-    H_trig_S6_HTCC_n.setTitleX("nphe");
-    H_trig_S1_HTCC_N = new H1F("H_trig_S1_HTCC_N","H_trig_S1_HTCC_N",300,0,30);
-    H_trig_S1_HTCC_N.setTitle("HTCC nphe (hig) S1 trig bit");
-    H_trig_S1_HTCC_N.setTitleX("nphe");
-    H_trig_S2_HTCC_N = new H1F("H_trig_S2_HTCC_N","H_trig_S2_HTCC_N",300,0,30);
-    H_trig_S2_HTCC_N.setTitle("HTCC nphe (hig) S2 trig bit");
-    H_trig_S2_HTCC_N.setTitleX("nphe");
-    H_trig_S3_HTCC_N = new H1F("H_trig_S3_HTCC_N","H_trig_S3_HTCC_N",300,0,30);
-    H_trig_S3_HTCC_N.setTitle("HTCC nphe (hig) S3 trig bit");
-    H_trig_S3_HTCC_N.setTitleX("nphe");
-    H_trig_S4_HTCC_N = new H1F("H_trig_S4_HTCC_N","H_trig_S4_HTCC_N",300,0,30);
-    H_trig_S4_HTCC_N.setTitle("HTCC nphe (hig) S4 trig bit");
-    H_trig_S4_HTCC_N.setTitleX("nphe");
-    H_trig_S5_HTCC_N = new H1F("H_trig_S5_HTCC_N","H_trig_S5_HTCC_N",300,0,30);
-    H_trig_S5_HTCC_N.setTitle("HTCC nphe (hig) S5 trig bit");
-    H_trig_S5_HTCC_N.setTitleX("nphe");
-    H_trig_S6_HTCC_N = new H1F("H_trig_S6_HTCC_N","H_trig_S6_HTCC_N",300,0,30);
-    H_trig_S6_HTCC_N.setTitle("HTCC nphe (hig) S6 trig bit");
-    H_trig_S6_HTCC_N.setTitleX("nphe");
-    H_trig_S1_HTCC_N_track = new H1F("H_trig_S1_HTCC_N_track","H_trig_S1_HTCC_N_track",300,0,30);
-    H_trig_S1_HTCC_N_track.setTitle("HTCC nphe (hig+trk) S1 trig bit");
-    H_trig_S1_HTCC_N_track.setTitleX("nphe");
-    H_trig_S2_HTCC_N_track = new H1F("H_trig_S2_HTCC_N_track","H_trig_S2_HTCC_N_track",300,0,30);
-    H_trig_S2_HTCC_N_track.setTitle("HTCC nphe (hig+trk) S2 trig bit");
-    H_trig_S2_HTCC_N_track.setTitleX("nphe");
-    H_trig_S3_HTCC_N_track = new H1F("H_trig_S3_HTCC_N_track","H_trig_S3_HTCC_N_track",300,0,30);
-    H_trig_S3_HTCC_N_track.setTitle("HTCC nphe (hig+trk) S3 trig bit");
-    H_trig_S3_HTCC_N_track.setTitleX("nphe");
-    H_trig_S4_HTCC_N_track = new H1F("H_trig_S4_HTCC_N_track","H_trig_S4_HTCC_N_track",300,0,30);
-    H_trig_S4_HTCC_N_track.setTitle("HTCC nphe (hig+trk) S4 trig bit");
-    H_trig_S4_HTCC_N_track.setTitleX("nphe");
-    H_trig_S5_HTCC_N_track = new H1F("H_trig_S5_HTCC_N_track","H_trig_S5_HTCC_N_track",300,0,30);
-    H_trig_S5_HTCC_N_track.setTitle("HTCC nphe (hig+trk) S5 trig bit");
-    H_trig_S5_HTCC_N_track.setTitleX("nphe");
-    H_trig_S6_HTCC_N_track = new H1F("H_trig_S6_HTCC_N_track","H_trig_S6_HTCC_N_track",300,0,30);
-    H_trig_S6_HTCC_N_track.setTitle("HTCC nphe (hig+trk) S6 trig bit");
-    H_trig_S6_HTCC_N_track.setTitleX("nphe");
-    H_trig_S1_PCAL_XY = new H2F("H_trig_S1_PCAL_XY","H_trig_S1_PCAL_XY",100,-400,400,100,-400,400);
-    H_trig_S1_PCAL_XY.setTitle("PCAL XY S1 trig bit");
-    H_trig_S1_PCAL_XY.setTitleX("X (cm)");
-    H_trig_S1_PCAL_XY.setTitleY("Y (cm)");
-    H_trig_S2_PCAL_XY = new H2F("H_trig_S2_PCAL_XY","H_trig_S2_PCAL_XY",100,-400,400,100,-400,400);
-    H_trig_S2_PCAL_XY.setTitle("PCAL XY S2 trig bit");
-    H_trig_S2_PCAL_XY.setTitleX("X (cm)");
-    H_trig_S2_PCAL_XY.setTitleY("Y (cm)");
-    H_trig_S3_PCAL_XY = new H2F("H_trig_S3_PCAL_XY","H_trig_S3_PCAL_XY",100,-400,400,100,-400,400);
-    H_trig_S3_PCAL_XY.setTitle("PCAL XY S3 trig bit");
-    H_trig_S3_PCAL_XY.setTitleX("X (cm)");
-    H_trig_S3_PCAL_XY.setTitleY("Y (cm)");
-    H_trig_S4_PCAL_XY = new H2F("H_trig_S4_PCAL_XY","H_trig_S4_PCAL_XY",100,-400,400,100,-400,400);
-    H_trig_S4_PCAL_XY.setTitle("PCAL XY S4 trig bit");
-    H_trig_S4_PCAL_XY.setTitleX("X (cm)");
-    H_trig_S4_PCAL_XY.setTitleY("Y (cm)");
-    H_trig_S5_PCAL_XY = new H2F("H_trig_S5_PCAL_XY","H_trig_S5_PCAL_XY",100,-400,400,100,-400,400);
-    H_trig_S5_PCAL_XY.setTitle("PCAL XY S5 trig bit");
-    H_trig_S5_PCAL_XY.setTitleX("X (cm)");
-    H_trig_S5_PCAL_XY.setTitleY("Y (cm)");
-    H_trig_S6_PCAL_XY = new H2F("H_trig_S6_PCAL_XY","H_trig_S6_PCAL_XY",100,-400,400,100,-400,400);
-    H_trig_S6_PCAL_XY.setTitle("PCAL XY S6 trig bit");
-    H_trig_S6_PCAL_XY.setTitleX("X (cm)");
-    H_trig_S6_PCAL_XY.setTitleY("Y (cm)");
-    H_trig_S1_HTCC_XY = new H2F("H_trig_S1_HTCC_XY","H_trig_S1_HTCC_XY",50,-120,120,50,-120,120);
-    H_trig_S1_HTCC_XY.setTitle("HTCC XY S1 trig bit");
-    H_trig_S1_HTCC_XY.setTitleX("X (cm)");
-    H_trig_S1_HTCC_XY.setTitleY("Y (cm)");
-    H_trig_S2_HTCC_XY = new H2F("H_trig_S2_HTCC_XY","H_trig_S2_HTCC_XY",50,-120,120,50,-120,120);
-    H_trig_S2_HTCC_XY.setTitle("HTCC XY S2 trig bit");
-    H_trig_S2_HTCC_XY.setTitleX("X (cm)");
-    H_trig_S2_HTCC_XY.setTitleY("Y (cm)");
-    H_trig_S3_HTCC_XY = new H2F("H_trig_S3_HTCC_XY","H_trig_S3_HTCC_XY",50,-120,120,50,-120,120);
-    H_trig_S3_HTCC_XY.setTitle("HTCC XY S3 trig bit");
-    H_trig_S3_HTCC_XY.setTitleX("X (cm)");
-    H_trig_S3_HTCC_XY.setTitleY("Y (cm)");
-    H_trig_S4_HTCC_XY = new H2F("H_trig_S4_HTCC_XY","H_trig_S4_HTCC_XY",50,-120,120,50,-120,120);
-    H_trig_S4_HTCC_XY.setTitle("HTCC XY S4 trig bit");
-    H_trig_S4_HTCC_XY.setTitleX("X (cm)");
-    H_trig_S4_HTCC_XY.setTitleY("Y (cm)");
-    H_trig_S5_HTCC_XY = new H2F("H_trig_S5_HTCC_XY","H_trig_S5_HTCC_XY",50,-120,120,50,-120,120);
-    H_trig_S5_HTCC_XY.setTitle("HTCC XY S5 trig bit");
-    H_trig_S5_HTCC_XY.setTitleX("X (cm)");
-    H_trig_S5_HTCC_XY.setTitleY("Y (cm)");
-    H_trig_S6_HTCC_XY = new H2F("H_trig_S6_HTCC_XY","H_trig_S6_HTCC_XY",50,-120,120,50,-120,120);
-    H_trig_S6_HTCC_XY.setTitle("HTCC XY S6 trig bit");
-    H_trig_S6_HTCC_XY.setTitleX("X (cm)");
-    H_trig_S6_HTCC_XY.setTitleY("Y (cm)");
-
-    H_pip_vz_ve = new H2F("H_pip_vz_ve","H_pip_vz_ve",100,-5,15,100,-10,20);
-    H_pip_vz_ve.setTitle("#pi^+ vz vs e vz");
-    H_pip_vz_ve.setTitleX("e vz (cm)");
-    H_pip_vz_ve.setTitleY("#pi^+ vz (cm)");
-    H_pip_vz_ve_diff = new H1F("H_pip_vz_ve_diff","H_pip_vz_ve_diff",100,-10,20);
-    H_pip_vz_ve_diff.setTitle("#pi^+ e vz diff");
-    H_pip_vz_ve_diff.setTitleX("#Delta vz (cm)");
-    H_pip_vz_ve_diff_mom = new H2F("H_pip_vz_ve_diff_mom","H_pip_vz_ve_diff_mom",100,0,6,100,-10,20);
-    H_pip_vz_ve_diff_mom.setTitle("#pi^+ e vz diff vs mom");
-    H_pip_vz_ve_diff_mom.setTitleX("#pi^+ mom (GeV)");
-    H_pip_vz_ve_diff_mom.setTitleY("#Delta vz (cm)");
-    H_pip_vz_ve_diff_theta = new H2F("H_pip_vz_ve_diff_theta","H_pip_vz_ve_diff_theta",100,0,40,100,-10,20);
-    H_pip_vz_ve_diff_theta.setTitle("#pi^+ e vz diff vs #theta");
-    H_pip_vz_ve_diff_theta.setTitleX("#theta (^o)");
-    H_pip_vz_ve_diff_theta.setTitleY("#Delta vz (cm)");
-    H_pip_vz_ve_diff_phi = new H2F("H_pip_vz_ve_diff_phi","H_pip_vz_ve_diff_phi",100,-180,180,100,-10,20);
-    H_pip_vz_ve_diff_phi.setTitle("#pi^+ e vz diff vs #phi");
-    H_pip_vz_ve_diff_phi.setTitleX("#phi (^o)");
-    H_pip_vz_ve_diff_phi.setTitleY("#Delta vz (cm)");
-    H_pip_vz_ve_diff_Dphi = new H2F("H_pip_vz_ve_diff_Dphi","H_pip_vz_ve_diff_Dphi",100,-180,180,100,-10,20);
-    H_pip_vz_ve_diff_Dphi.setTitle("#pi^+ e vz diff vs #Delta#phi");
-    H_pip_vz_ve_diff_Dphi.setTitleX("#Delta#phi (^o)");
-    H_pip_vz_ve_diff_Dphi.setTitleY("#Delta vz (cm)");
-    H_pip_Dphi = new H1F("H_pip_Dphi","H_pip_Dphi",100,-180,180);
-    H_pip_Dphi.setTitle("#pi^+ e #Delta#phi");
-    H_pip_Dphi.setTitleX("#Delta#phi (^o)");
-
-    H_MM_epip_Spip = new H1F[6];
-    H_MM_epip_Se = new H1F[6];
-    for(int i=0;i<6;i++){
-      H_MM_epip_Spip[i] = new H1F(String.format("H_MM_epip_Spip%d",i+1),String.format("H_MM_epip_Spip%d",i+1),100,0,4);
-      H_MM_epip_Spip[i].setTitle(String.format("pi^+ S%d MM #pi^+ vs #phi",i+1));
-      H_MM_epip_Spip[i].setTitleX("MM_{e#pi^+} (GeV)");
-      H_MM_epip_Se[i] = new H1F(String.format("H_MM_epip_Se%d",i+1),String.format("H_MM_epip_Se%d",i+1),100,0,4);
-      H_MM_epip_Se[i].setTitle(String.format("e S%d MM #pi^+ vs #phi",i+1));
-      H_MM_epip_Se[i].setTitleX("MM_{e#pi^+} (GeV)");
-    }
-    H_pip_vtd = new H1F("H_pip_vtd","H_pip_vtd",100,-5,5);
-    H_pip_vtd.setTitle("Vertex time difference e #pi^+");
-    H_pip_vtd.setTitleX("#Delta t_{v} (ns)");
-    H_pim_vtd = new H1F("H_pim_vtd","H_pim_vtd",100,-5,5);
-    H_pim_vtd.setTitle("Vertex time difference e #pi^-");
-    H_pim_vtd.setTitleX("#Delta t_{v} (ns)");
-    H_MM_epip_phi = new H2F("H_MM_epip_phi","H_MM_epip_phi",100,-180,180,100,-1,5);
-    H_MM_epip_phi.setTitle("Missing mass #pi^+ vs #phi");
-    H_MM_epip_phi.setTitleX("#phi (^o)");
-    H_MM_epip_phi.setTitleY("MM_{e#pi^+} (GeV)");
-    H_pip_beta_p = new H2F("H_pip_beta_p","H_pip_beta_p",100,0,EB,100,0.9,1.1);
-    H_pip_beta_p.setTitle("#pi^+ #beta vs momentum");
-    H_pip_beta_p.setTitleX("p (GeV)");
-    H_pip_beta_p.setTitleY("#beta");
-    H_pip_beta2_p = new H2F("H_pip_beta2_p","H_pip_beta2_p",100,0,EB,100,0.9,1.1);
-    H_pip_beta2_p.setTitle("#pi^+ #beta vs momentum");
-    H_pip_beta2_p.setTitleX("p (GeV)");
-    H_pip_beta2_p.setTitleY("#beta");
-    H_pip_vtd_mom = new H2F("H_pip_vtd_mom","H_pip_vtd_mom",100,0,EB,100,-2,2);
-    H_pip_vtd_mom.setTitle("#pi^+ time diff e #pi^+ vs mom");
-    H_pip_vtd_mom.setTitleX("p (GeV)");
-    H_pip_vtd_mom.setTitleY("#Delta t_{v} (ns)");
-    H_pip_vtd_theta = new H2F("H_pip_vtd_theta","H_pip_vtd_theta",100,0,40,100,-2,2);
-    H_pip_vtd_theta.setTitle("#pi^+ time diff e #pi^+ vs #theta");
-    H_pip_vtd_theta.setTitleX("#theta (^o)");
-    H_pip_vtd_theta.setTitleY("#Delta t_{v} (ns)");
-    H_pip_vtd_phi = new H2F("H_pip_vtd_phi","H_pip_vtd_phi",100,-180,180,100,-2,2);
-    H_pip_vtd_phi.setTitle("#pi^+ time diff e #pi^+ vs #phi");
-    H_pip_vtd_phi.setTitleX("#phi (^o)");
-    H_pip_vtd_phi.setTitleY("#Delta t_{v} (ns)");
-
-    H_pip_theta_phi = new H2F("H_pip_theta_phi","H_pip_theta_phi",100,-180,180,100,0,40);
-    H_pip_theta_phi.setTitle("#pi^+ #theta vs #phi");
-    H_pip_theta_phi.setTitleX("#phi (^o)");
-    H_pip_theta_phi.setTitleY("#theta (^o)");
-    H_pip_theta_mom = new H2F("H_pip_theta_mom","H_pip_theta_mom",100,0,EB,100,0,40);
-    H_pip_theta_mom.setTitle("#pi^+ #theta vs mom");
-    H_pip_theta_mom.setTitleX("p (GeV)");
-    H_pip_theta_mom.setTitleY("#theta");
-    H_pip_phi_mom = new H2F("H_pip_phi_mom","H_pip_phi_mom",100,0,EB,100,-180,180);
-    H_pip_phi_mom.setTitle("#pi^+ #phi vs mom");
-    H_pip_phi_mom.setTitleX("p (GeV)");
-    H_pip_phi_mom.setTitleY("#phi (^o)");
-    H_pip_vz_phi = new H2F("H_pip_vz_phi","H_pip_vz_phi",100,-180,180,100,-20,20);
-    H_pip_vz_phi.setTitle("#pi^+ vz vs #phi");
-    H_pip_vz_phi.setTitleX("#phi (^o)");
-    H_pip_vz_phi.setTitleY("vz (cm)");
-    H_pip_vz_theta = new H2F("H_pip_vz_theta","H_pip_vz_theta",100,0,40,100,-20,20);
-    H_pip_vz_theta.setTitle("#pi^+ vz vs #theta");
-    H_pip_vz_theta.setTitleX("#theta (^o)");
-    H_pip_vz_theta.setTitleY("vz (cm)");
-    H_pip_vz_mom = new H2F("H_pip_vz_mom","H_pip_vz_mom",100,0,EB,100,-20,20);
-    H_pip_vz_mom.setTitle("#pi^+ vz vs mom");
-    H_pip_vz_mom.setTitleX("p (GeV)");
-    H_pip_vz_mom.setTitleY("vz (cm)");
-    H_pip_e_vt = new H2F("H_pip_e_vt","H_pip_e_vt",100,525,600,100,525,600);
-    H_pip_e_vt.setTitle("#pi^+ vs e vertex times");
-    H_pip_e_vt.setTitleX("e t_{v} (ns)");
-    H_pip_e_vt.setTitleY("#pi^+ t_{v} (ns)");
-    H_epip_e_theta_phi = new H2F("H_epip_e_theta_phi","H_epip_e_theta_phi",100,-180,180,100,0,40);
-    H_epip_e_theta_phi.setTitle("e #theta vs #phi");
-    H_epip_e_theta_phi.setTitleX("#phi (^o)");
-    H_epip_e_theta_phi.setTitleY("#theta (^o)");
-    H_epip_e_theta_mom = new H2F("H_epip_e_theta_mom","H_epip_e_theta_mom",100,0,EB,100,0,40);
-    H_epip_e_theta_mom.setTitle("e #theta vs mom");
-    H_epip_e_theta_mom.setTitleX("p (GeV)");
-    H_epip_e_theta_mom.setTitleY("#theta (^o)");
-    H_epip_e_phi_mom = new H2F("H_epip_e_phi_mom","H_epip_e_phi_mom",100,0,EB,100,-180,180);
-    H_epip_e_phi_mom.setTitle("e #phi vs mom");
-    H_epip_e_phi_mom.setTitleX("p (GeV)");
-    H_epip_e_phi_mom.setTitleY("#phi (^o)");
-    H_epip_xB_Q2 = new H2F("H_epip_xB_Q2","H_epip_xB_Q2",100,0,1,100,0,EB);
-    H_epip_xB_Q2.setTitle("Q^2 vs x_B");
-    H_epip_xB_Q2.setTitleX("x_B");
-    H_epip_xB_Q2.setTitleY("Q^2");
-    H_epip_e_W_Q2 = new H2F("H_epip_e_W_Q2","H_epip_e_W_Q2",100,0,5,100,0,EB);
-    H_epip_e_W_Q2.setTitle("Q^2 vs W");
-    H_epip_e_W_Q2.setTitleX("W");
-    H_epip_e_W_Q2.setTitleY("Q^2");
-    H_epip_e_t_phi = new H2F("H_epip_e_t_phi","H_epip_e_t_phi",100,-180,180,100,0,5);
-    H_epip_e_t_phi.setTitle("-t vs #phi");
-    H_epip_e_t_phi.setTitleX("#phi (^o)");
-    H_epip_e_t_phi.setTitleY("-t (GeV)");
-    H_MM_epip_zoom = new H1F("H_MM_epip_phi_zoom","H_MM_epip_phi_zoom",100,0,2);
-    H_MM_epip_zoom.setTitle("Missing mass e#pi^+");
-    H_MM_epip_zoom.setTitleX("MM_{e#pi^+} (GeV)");
-    H_MM_epip = new H1F("H_MM_epip","H_MM_epip",100,-1,5);
-    H_MM_epip.setTitle("Missing Mass e#pi^+");
-    H_MM_epip.setTitleX("MM_{e#pi^+} (GeV)");
-
-    H_rho_prot = new H2F("H_rho_prot","H_rho_prot",100,0,2,100,0,4);
-    H_rho_prot.setTitle("MM e#pi^+#pi^- vs IM #pi^+#pi^-");
-    H_rho_prot.setTitleX("IM #pi^+#pi^-");
-    H_rho_prot.setTitleY("MM e#pi^+#pi^-");
-    H_rho_pip_beta = new H2F("H_rho_pip_beta","H_rho_pip_beta",100,0,8,100,0.9,1.2);
-    H_rho_pip_beta.setTitle("#pi^+ #beta vs p");
-    H_rho_pip_beta.setTitleX("p (GeV)");
-    H_rho_pip_beta.setTitleY("#beta");
-    H_rho_pim_beta = new H2F("H_rho_pim_beta","H_rho_pim_beta",100,0,8,100,0.9,1.2);
-    H_rho_pim_beta.setTitle("#pi^- #beta vs p");
-    H_rho_pim_beta.setTitleX("p (GeV)");
-    H_rho_pim_beta.setTitleY("#beta");
-    H_rho_IM = new H1F("H_rho_IM","H_rho_IM",100,0,2);
-    H_rho_IM.setTitle("IM #pi^+#pi^-");
-    H_rho_IM.setTitleX("IM (GeV)");
-    H_rho_MM = new H1F("H_rho_IM","H_rho_IM",100,0,4);
-    H_rho_MM.setTitle("MM #pi^+#pi^-");
-    H_rho_MM.setTitleX("MM (GeV)");
-    H_rho_Q2_xB = new H2F("H_rho_Q2_xB", "H_rho_Q2_xB", 100, 0, 1, 100, 0, EB);
-    H_rho_Q2_xB.setTitle("Q^2 vs xB");
-    H_rho_Q2_xB.setTitleX("Q^2 (GeV^2)");
-    H_rho_Q2_xB.setTitleY("xB");
-    H_rho_Q2_W = new H2F("H_rho_Q2_W", "H_rho_Q2_W", 100, 0, 5, 100, 0, EB);
-    H_rho_Q2_W.setTitle("Q^2 vs W");
-    H_rho_Q2_W.setTitleX("W (GeV)");
-    H_rho_Q2_W.setTitleY("Q^2 (GeV^2)");
-
-    H_CVT_ft = new H2F("H_CVT_ft","H_CVT_ft",100,-180,180,100,0,180);
-    H_CVT_ft.setTitle("CVT #phi vs #theta");
-    H_CVT_ft.setTitleX("#phi (^o)");
-    H_CVT_ft.setTitleY("#theta (^o)");
-    H_CVT_pt = new H2F("H_CVT_pt","H_CVT_pt",100,0,180,100,0,3.5);
-    H_CVT_pt.setTitle("CVT p vs #theta");
-    H_CVT_pt.setTitleX("#theta (^o)");
-    H_CVT_pt.setTitleY("p (GeV)");
-    H_CVT_pf = new H2F("H_CVT_pf","H_CVT_pf",100,-180,180,100,0,3.5);
-    H_CVT_pf.setTitle("CVT p vs #phi");
-    H_CVT_pf.setTitleX("#phi (^o)");
-    H_CVT_pf.setTitleY("p (GeV)");
-    H_CVT_zf = new H2F("H_CVT_zf","H_CVT_zf",100,-180,180,100,-25,25);
-    H_CVT_zf.setTitle("CVT z vs #phi");
-    H_CVT_zf.setTitleX("#phi (^o)");
-    H_CVT_zf.setTitleY("z (cm)");
-    H_CVT_zp = new H2F("H_CVT_zp","H_CVT_zp",100,0,3.5,100,-25,25);
-    H_CVT_zp.setTitle("CVT z vs p");
-    H_CVT_zp.setTitleX("p (GeV)");
-    H_CVT_zp.setTitleY("z (cm)");
-    H_CVT_zt = new H2F("H_CVT_zt","H_CVT_zt",100,0,180,100,-25,25);
-    H_CVT_zt.setTitle("CVT z vs #theta");
-    H_CVT_zt.setTitleX("#theta (^o)");
-    H_CVT_zt.setTitleY("z (cm)");
-    H_CVT_p = new H1F("H_CVT_p","H_CVT_p",100,0,3.5);
-    H_CVT_p.setTitle("CVT p");
-    H_CVT_p.setTitleX("p (GeV)");
-    H_CVT_t = new H1F("H_CVT_t","H_CVT_t",100,0,180);
-    H_CVT_t.setTitle("CVT #theta");
-    H_CVT_t.setTitleX("#theta (^o)");
-    H_CVT_f = new H1F("H_CVT_f","H_CVT_f",100,-180,180);
-    H_CVT_f.setTitle("CVT #phi");
-    H_CVT_f.setTitleX("#phi (^o)");
-    H_CVT_z = new H1F("H_CVT_z","H_CVT_z",100,-25,25);
-    H_CVT_z.setTitle("CVT z vertex");
-    H_CVT_z.setTitleX("z (cm)");
     H_CVT_z_pos = new H1F("H_CVT_z_pos","H_CVT_z_pos",100,-25,25);
     H_CVT_z_pos.setTitle("CVT z vertex for positives");
     H_CVT_z_pos.setTitleX("z (cm)");
@@ -1045,33 +300,9 @@ public class GeneralMon {
     H_CVT_d0_pos = new H1F("H_CVT_d0_pos","H_CVT_d0_pos",200,-1.0, 1.0);
     H_CVT_d0_pos.setTitle("CVT d0 vertex for positives");
     H_CVT_d0_pos.setTitleX("d0 (cm)");
-    H_CVT_d0_neg = new H1F("H_CVT_d0_neg","H_CVT_d0_neg",200,-1.0, 1.0);
-    H_CVT_d0_neg.setTitle("CVT d0 vertex for negatives");
-    H_CVT_d0_neg.setTitleX("d0 (cm)");
     H_CVT_absd0_pos = new H1F("H_CVT_absd0_pos","H_CVT_absd0_pos",400, 0.0, 2.0);
     H_CVT_absd0_pos.setTitle("CVT |d0| vertex for positives");
     H_CVT_absd0_pos.setTitleX("|d0| (cm)");
-    H_CVT_absd0_neg = new H1F("H_CVT_absd0_neg","H_CVT_absd0_neg",400, 0.0, 2.0);
-    H_CVT_absd0_neg.setTitle("CVT |d0| vertex for negatives");
-    H_CVT_absd0_neg.setTitleX("|d0| (cm)");
-    H_CVT_e_corr_vz = new H2F("H_CVT_e_corr_vz","H_CVT_e_corr_vz",100,-25,25,100,-25,25);
-    H_CVT_e_corr_vz.setTitle("Vertex correlation");
-    H_CVT_e_corr_vz.setTitleX("vz e (cm)");
-    H_CVT_e_corr_vz.setTitleY("vz CVT (cm)");
-    H_CVT_e_corr_phi = new H2F("H_CVT_e_corr_phi","H_CVT_e_corr_phi",100,-180,180,100,-180,180);
-    H_CVT_e_corr_phi.setTitle("#phi correlation");
-    H_CVT_e_corr_phi.setTitleX("#phi e (^o)");
-    H_CVT_e_corr_phi.setTitleY("#phi CVT (^o)");
-    H_CVT_e_vz_diff = new H1F("H_CVT_e_vz_diff","H_CVT_e_vz_diff",100,-25,25);
-    H_CVT_e_vz_diff.setTitle("e CVT #Delta vz");
-    H_CVT_e_vz_diff.setTitleX("#Delta vz (cm)");
-    H_CVT_e_phi_diff = new H1F("H_CVT_e_phi_diff","H_CVT_e_phi_diff",100,-90,90);
-    H_CVT_e_phi_diff.setTitle("e CVT #Delta#phi");
-    H_CVT_e_phi_diff.setTitleX("#Delta#phi (^o)");
-    H_CVT_corr_e_theta = new H2F("H_CVT_e_corr_theta","H_CVT_e_corr_theta",100,20,100,100,0,15);
-    H_CVT_corr_e_theta.setTitle("e CVT #theta correlations");
-    H_CVT_corr_e_theta.setTitleX("CVT #theta (^o)");
-    H_CVT_corr_e_theta.setTitleY("e #theta (^o)");
     H_CVT_chi2 = new H1F("H_CVT_chi2","H_CVT_chi2",100,0,200);
     H_CVT_chi2.setTitle("CVT #chi^2 for electrons");
     H_CVT_chi2.setTitleX("#chi^2");
@@ -1081,187 +312,31 @@ public class GeneralMon {
     H_CVT_chi2_neg = new H1F("H_CVT_chi2_neg","H_CVT_chi2_neg",100,0,200);
     H_CVT_chi2_neg.setTitle("CVT #chi^2 for negatives");
     H_CVT_chi2_neg.setTitleX("#chi^2");
-    H_CVT_d0 = new H1F("H_CVT_d0", "H_CVT_d0", 100, 0, 0.5);
-    H_CVT_d0.setTitle("CVTRec::Track d0, All tracks ");
-    H_CVT_d0.setTitleX("d0 (cm)");
-    H_CVT_charge = new H1F("H_CVT_charge", "H_CVT_charge", 10, -5.5, 5.5);
-    H_CVT_charge.setTitle("CVT track charge");
-    H_CVT_charge.setTitleX("q/e");
-    H_CVT_vz_mom = new H2F("H_CVT_vz_mom", "H_CVT_vz_mom", 100, 0, 3.5, 100, -25., 25.);
-    H_CVT_vz_mom.setTitle("CVT z vertex vs mom");
-    H_CVT_vz_mom.setTitleX("p (GeV/c");
-    H_CVT_vz_mom.setTitleY("z (cm)");
-    H_CVT_vz_theta = new H2F("H_CVT_vz_theta", "H_CVT_vz_theta", 100, 0, 180., 100, -25., 25.);
-    H_CVT_vz_theta.setTitle("CVT z vertex vs theta");
-    H_CVT_vz_theta.setTitleX("#theta (^o)");
-    H_CVT_vz_theta.setTitleY("z (cm)");
-    H_CVT_vz_phi = new H2F("H_CVT_vz_phi", "H_CVT_vz_phi", 200, -180., 180., 100, -25., 25.);
-    H_CVT_vz_phi.setTitle("CVT z vertex vs phi");
-    H_CVT_vz_phi.setTitleX("#phi (^o)");
-    H_CVT_vz_phi.setTitleY("z (cm)");
-    H_CVT_phi = new H1F("H_CVT_phi", "H_CVT_phi", 100, -180, 180);
-    H_CVT_phi.setTitle("CVT #phi");
-    H_CVT_phi.setTitleX("#phi (^o)");
-    H_CVT_theta = new H1F("H_CVT_theta", "H_CVT_theta", 100, 0, 180);
-    H_CVT_theta.setTitle("CVT #theta");
-    H_CVT_theta.setTitleX("#theta (^o)");
 
-    H_CVT_ndf = new H1F("H_CVT_ndf","H_CVT_ndf",10,0.5,10.5);
-    H_CVT_ndf.setTitle("CVT NDF");
-    H_CVT_ndf.setTitleX("NDF");
-    H_CVT_pathlength = new H1F("H_CVT_pathlength","H_CVT_pathlength",100,20,75);
-    H_CVT_pathlength.setTitle("CVT pathlegnth");
-    H_CVT_pathlength.setTitleX("path (cm)");
-    H_elast_e_p_th = new H2F("H_elast_e_p_th","H_elast_e_p_th",100,0,EB,100,0,25);
-    H_elast_e_p_th.setTitle("e elastic #theta vs p");
-    H_elast_e_p_th.setTitleX("p (GeV)");
-    H_elast_e_p_th.setTitleY("#theta (^o)");
-    H_elast_W_sect = new H2F("H_elast_W_sect","H_elast_W_sect",6,0.5,6.5,100,0,2);
-    H_elast_W_sect.setTitle("elastic W vs sect");
-    H_elast_W_sect.setTitleX("e sect");
-    H_elast_W_sect.setTitleY("W (GeV)");
-    H_elast_W = new H1F("H_elast_W","H_elast_W",100,0,2);
-    H_elast_W.setTitle("elastic W");
-    H_elast_W.setTitleX("W (GeV)");
-    H_CVT_corr_e_mom = new H2F("H_CVT_corr_e_mom","H_CVT_corr_e_mom",100,EB/2,EB,100,EB/2,EB);
-    H_CVT_corr_e_mom.setTitle("e mom rec vs calc");
-    H_CVT_corr_e_mom.setTitleX("e mom calc (GeV)");
-    H_CVT_corr_e_mom.setTitleY("e mom mes (GeV)");
-
-    H_g1_tf = new H2F("H_g1_tf","H_g1_tf",100,-180,180,100,0,40);
-    H_g1_tf.setTitle("#gamma1 #theta vs #phi");
-    H_g1_tf.setTitleX("#phi (^o)");
-    H_g1_tf.setTitleY("#theta (^o)");
-    H_g2_tf = new H2F("H_g2_tf","H_g2_tf",100,-180,180,100,0,40);
-    H_g2_tf.setTitle("#gamma2 #theta vs #phi");
-    H_g2_tf.setTitleX("#phi (^o)");
-    H_g2_tf.setTitleY("#theta (^o)");
-    H_g1_te = new H2F("H_g1_te","H_g1_te",100,0,EB/2,100,0,40);
-    H_g1_te.setTitle("#gamma1 #theta vs E");
-    H_g1_te.setTitleX("E (GeV)");
-    H_g1_te.setTitleY("#theta (^o)");
-    H_g2_te = new H2F("H_g2_te","H_g2_te",100,0,EB/2,100,0,40);
-    H_g2_te.setTitle("#gamma2 #theta vs E");
-    H_g2_te.setTitleX("E (GeV)");
-    H_g2_te.setTitleY("#theta (^o)");
-    H_gg_open_a = new H2F("H_gg_open_a","H_gg_open_a",100,0,EB,100,0,30);
-    H_gg_open_a.setTitle("#gamma#gamma opening angle vs E");
-    H_gg_open_a.setTitleY("#theta_{#gamma#gamma} (^o)");
-    H_gg_open_a.setTitleX("E_{#gamma#gamma} (GeV)");
     H_gg_m = new H1F("H_gg_m","H_gg_m",100,0,0.7);
     H_gg_m.setTitle("#gamma#gamma invariant mass");
     H_gg_m.setTitleX("m_{#gamma#gamma} (GeV)");
-    H_e_TOF_xy = new H2F("H_e_TOF_xy","H_e_TOF_xy",100,-400,400,100,-400,400);
-    H_e_TOF_xy.setTitle("electron TOF Y vs X");
-    H_e_TOF_xy.setTitleX("X (cm)");
-    H_e_TOF_xy.setTitleY("Y (cm)");
-    H_e_TOF_t_path = new H2F("H_e_TOF_t_path","H_e_TOF_t_path",100,tofvt1+24,tofvt2+24,100,600,775);
-    H_e_TOF_t_path.setTitle("electron path vs TOF");
-    H_e_TOF_t_path.setTitleX("TOF (ns)");
-    H_e_TOF_t_path.setTitleY("path (cm)");
-    H_e_vt1 = new H1F("H_e_vt1","H_e_vt1",100,-1,1);
-    H_e_vt1.setTitle("electron vertex time");
-    H_e_vt1.setTitleX("t (ns)");
-    H_e_vt2 = new H1F("H_e_vt2","H_e_vt2",100,-1,1);
-    H_e_vt2.setTitle("electron vertex time");
-    H_e_vt2.setTitleX("t (ns)");
-    H_o_TOF = new H2F("H_o_TOF","H_o_TOF",500,tofvt1,tofvt2,500,tofvt1,tofvt2);
-    H_o_TOF.setTitle("vertex time others vs electron");
-    H_o_TOF.setTitleX("elec v_t");
-    H_o_TOF.setTitleY("others v_t");
-    H_o_vt = new H1F("H_o_vt","H_o_vt",10000,-10,10);
-    H_o_vt.setTitle("others vertex time");
-    H_o_vt.setTitleX("t (ns)");
 
     VB = new LorentzVector(0,0,Ebeam,Ebeam);
     VT = new LorentzVector(0,0,0,0.93827);
-    H_e_theta_phi = new H2F("H_e_theta_phi","H_e_theta_phi",100,-180,180,100,0,40);
-    H_e_theta_phi.setTitle("electron theta vs phi");
-    H_e_theta_phi.setTitleX("#phi (^o)");
-    H_e_theta_phi.setTitleY("#theta (^o)");
-    H_e_theta_mom_S = new H2F[6];
-    H_trig_theta_mom_S = new H2F[6];
-    H_trig_phi_mom_S = new H2F[6];
-    H_trig_phi_theta_S = new H1F[7][10];
-    H_trig_theta_phi_S = new H2F[6];
     H_trig_vz_mom_S = new H2F[6];
-    H_trig_vy_vz_S = new H2F[6];
-    H_trig_vz_theta_S = new H2F[6];
     H_trig_ECALsampl_S = new H2F[6];
     H_trig_PCAL_vt_S = new H1F[6];
     H_trig_ECIN_vt_S = new H1F[6];
     H_trig_ECOU_vt_S = new H1F[6];
-    H_trig_PCALECAL_S = new H2F[6];
-    H_trig_HTCCn_theta_S = new H2F[6];
     H_trig_LTCCn_theta_S = new H2F[6];
-    H_trig_ECAL_pos_S = new H2F[7];
-    H_trig_TOF_pos_S = new H2F[7];
-    H_trig_HTCC_pos_S = new H2F[7];
-    H_trig_DCR1_pos_S = new H2F[7];
-    H_trig_DCR2_pos_S = new H2F[7];
-    H_trig_DCR3_pos_S = new H2F[7];
-    H_trig_S_HTCC_theta = new H1F[6];
-    H_e_W_S = new H1F[6];
-    H_e_Q2_S = new H1F[6];
-    H_e_W_phi_S = new H2F[6];
 
     for(int s=0;s<7;s++){
       for(int it=0;it<10;it++){
         float thetaMin = 5+2.0f*it;
         float thetaMax = 5+2.0f*(it+1);
-        H_trig_phi_theta_S[s][it] = new H1F(String.format("H_trig_phi_theta_t%d_S%d",it+1,s+1),String.format("H_trig_phi_theta_t%d_S%d",it+1,s+1),100,-45,45);
-        H_trig_phi_theta_S[s][it].setTitle(String.format("e sect %d, %.1f<#theta<%.1f",s+1,thetaMin,thetaMax));
-        H_trig_phi_theta_S[s][it].setTitleX("#phi DCR1 (^o)");
       }
     }
     for(int s=0;s<6;s++){
-      H_trig_S_HTCC_theta[s] = new H1F(String.format("H_trig_S_HTCC_theta_%d",s+1),String.format("H_trig_S_HTCC_theta_%d",s+1),100,0,30);
-      H_trig_S_HTCC_theta[s].setTitle(String.format("HTCC #theta S%d",s+1));
-      H_trig_S_HTCC_theta[s].setTitle("HTCC #theta (^o)");
-      H_e_theta_mom_S[s] = new H2F(String.format("H_e_theta_mom_S%d",s+1),String.format("H_e_theta_mom_S%d",s+1),100,0.75,EB,100,0,40);
-      H_e_theta_mom_S[s].setTitle(String.format("electron theta vs mom S%d",s+1));
-      H_e_theta_mom_S[s].setTitleX("p (GeV/c)");
-      H_e_theta_mom_S[s].setTitleY("#theta (^o)");
-      H_e_W_S[s] = new H1F(String.format("H_e_W_S%d",s+1),String.format("H_e_W_S%d",s+1),100,0.5,EB/2.5);
-      if(EB==7.0f)H_e_W_S[s] = new H1F(String.format("H_e_W_S%d",s+1),String.format("H_e_W_S%d",s+1),100,0.5,3.2);
-      if(EB==6.0f)H_e_W_S[s] = new H1F(String.format("H_e_W_S%d",s+1),String.format("H_e_W_S%d",s+1),100,0.5,3.5);
-      if(EB==2.5f)H_e_W_S[s] = new H1F(String.format("H_e_W_S%d",s+1),String.format("H_e_W_S%d",s+1),100,0.5,2);
-      H_e_W_S[s].setTitle(String.format("e W S%d",s+1));
-      H_e_W_S[s].setTitleX("W (GeV)");
-      H_e_Q2_S[s] = new H1F(String.format("H_e_Q2_S%d",s+1),String.format("H_e_Q2_S%d",s+1),100,0.,EB*1.0f);
-      H_e_Q2_S[s].setTitle(String.format("e Q^2 S%d",s+1));
-      H_e_Q2_S[s].setTitleX("Q^22 (GeV^2)");
-      H_e_W_phi_S[s] = new H2F(String.format("H_e_W_phi_S%d",s+1),String.format("H_e_W_phi_S%d",s+1),100,-45,45,100,0.5,EB/2.5);
-      if(EB==7.0f)H_e_W_phi_S[s] = new H2F(String.format("H_e_W_S%d",s+1),String.format("H_e_W_S%d",s+1),100,-45,45,100,0.5,3.2);
-      if(EB==6.0f)H_e_W_phi_S[s] = new H2F(String.format("H_e_W_S%d",s+1),String.format("H_e_W_S%d",s+1),100,-45,45,100,0.5,3.5);
-      if(EB==2.5f)H_e_W_phi_S[s] = new H2F(String.format("H_e_W_S%d",s+1),String.format("H_e_W_S%d",s+1),100,-45,45,100,0.5,2);
-      H_e_W_phi_S[s].setTitle(String.format("e W vs #phi S%d",s+1));
-      H_e_W_phi_S[s].setTitleX("#phi (^o)");
-      H_e_W_phi_S[s].setTitleY("W (GeV)");
-      H_trig_theta_mom_S[s] = new H2F(String.format("H_trig_theta_mom_S%d",s+1),String.format("H_trig_theta_mom_S%d",s+1),100,0,EB,100,0,45);
-      H_trig_theta_mom_S[s].setTitle(String.format("e sect %d",s+1));
-      H_trig_theta_mom_S[s].setTitleX("p (GeV)");
-      H_trig_theta_mom_S[s].setTitleY("#theta (^o)");
-      H_trig_phi_mom_S[s] = new H2F(String.format("H_trig_phi_mom_S%d",s+1),String.format("H_trig_phi_mom_S%d",s+1),100,0,EB,100,-45,45);
-      H_trig_phi_mom_S[s].setTitle(String.format("e sect %d",s+1));
-      H_trig_phi_mom_S[s].setTitleX("p (GeV)");
-      H_trig_phi_mom_S[s].setTitleY("#phi (^o)");
-      H_trig_theta_phi_S[s] = new H2F(String.format("H_trig_theta_phi_S%d",s+1),String.format("H_trig_theta_phi_S%d",s+1),100,-45,45,100,0,45);
-      H_trig_theta_phi_S[s].setTitle(String.format("e sect %d",s+1));
-      H_trig_theta_phi_S[s].setTitleX("#phi (^o)");
-      H_trig_theta_phi_S[s].setTitleY("#theta (^o)");
       H_trig_vz_mom_S[s] = new H2F(String.format("H_trig_vz_mom_S%d",s+1),String.format("H_trig_vz_mom_S%d",s+1),100,0,EB,200,-50,50);
       H_trig_vz_mom_S[s].setTitle(String.format("e sect %d",s+1));
       H_trig_vz_mom_S[s].setTitleX("p (GeV)");
       H_trig_vz_mom_S[s].setTitleY("vz (cm)");
-      H_trig_vy_vz_S[s] = new H2F(String.format("H_trig_vy_vz_S%d",s+1),String.format("H_trig_vy_vz_S%d",s+1),100,-25,50,100,-10,10);
-      H_trig_vy_vz_S[s].setTitle(String.format("e sect %d",s+1));
-      H_trig_vy_vz_S[s].setTitleX("vz (cm)");
-      H_trig_vy_vz_S[s].setTitleY("vy (cm)");
-      H_trig_vz_theta_S[s] = new H2F(String.format("H_trig_vz_theta_S%d",s+1),String.format("H_trig_vz_theta_S%d",s+1),100,0,45,100,-25,50);
-      H_trig_vz_theta_S[s].setTitle(String.format("e sect %d",s+1));
-      H_trig_vz_theta_S[s].setTitleX("#theta (^o)");
-      H_trig_vz_theta_S[s].setTitleY("vz (cm)");
       H_trig_ECALsampl_S[s] = new H2F(String.format("H_trig_ECALsampl_S%d",s+1),String.format("H_trig_ECALsampl_S%d",s+1),100,0,EB,100,0,0.5);
       H_trig_ECALsampl_S[s].setTitle(String.format("e sect %d",s+1));
       H_trig_ECALsampl_S[s].setTitleX("p (GeV)");
@@ -1279,73 +354,11 @@ public class GeneralMon {
       H_trig_ECOU_vt_S[s].setTitle(String.format("e sect %d",s+1));
       H_trig_ECOU_vt_S[s].setTitleX("e- ecou residual (ns)");
 
-      H_trig_PCALECAL_S[s] = new H2F(String.format("H_trig_PCALECAL_S%d", s + 1), String.format("H_trig_PCALECAL_S%d", s + 1), 100, 0, 1.5, 100, 0, 1.5);
-      H_trig_PCALECAL_S[s].setTitle(String.format("e sect %d", s + 1));
-      H_trig_PCALECAL_S[s].setTitleX("E PCAL (GeV)");
-      H_trig_PCALECAL_S[s].setTitleY("E ECAL (GeV)");
-      H_trig_HTCCn_theta_S[s] = new H2F(String.format("H_trig_HTCCn_theta_S%d", s + 1), String.format("H_trig_HTCCn_theta_S%d", s + 1), 100, 0, 45, 100, 0, 100);
-      H_trig_HTCCn_theta_S[s].setTitle(String.format("e sect %d", s + 1));
-      H_trig_HTCCn_theta_S[s].setTitleX("#theta (^o)");
-      H_trig_HTCCn_theta_S[s].setTitleY("HTCC nphe");
       H_trig_LTCCn_theta_S[s] = new H2F(String.format("H_trig_LTCCn_theta_S%d",s+1),String.format("H_trig_LTCCn_theta_S%d",s+1),100,0,45,100,0,100);
       H_trig_LTCCn_theta_S[s].setTitle(String.format(String.format("e sect %d",s+1)));
       H_trig_LTCCn_theta_S[s].setTitleX("#theta (^o)");
       H_trig_LTCCn_theta_S[s].setTitleY("LTCC nphe");
     }
-    for (int s = 0; s < 7; s++) {
-      H_trig_ECAL_pos_S[s] = new H2F(String.format("H_trig_ECAL_pos_S%d", s + 1), String.format("H_trig_ECAL_pos_S%d", s + 1), 100, 0, 400, 100, -200, 200);
-      H_trig_ECAL_pos_S[s].setTitle(String.format("PCAL e sect %d", s + 1));
-      H_trig_ECAL_pos_S[s].setTitleX("X (cm)");
-      H_trig_ECAL_pos_S[s].setTitleY("Y (cm)");
-      H_trig_TOF_pos_S[s] = new H2F(String.format("H_trig_TOF_pos_S%d", s + 1), String.format("H_trig_TOF_pos_S%d", s + 1), 100, 0, 400, 100, -200, 200);
-      H_trig_TOF_pos_S[s].setTitle(String.format("FTOF e sect %d", s + 1));
-      H_trig_TOF_pos_S[s].setTitleX("X (cm)");
-      H_trig_TOF_pos_S[s].setTitleY("Y (cm)");
-      H_trig_HTCC_pos_S[s] = new H2F(String.format("H_trig_HTCC_pos_S%d", s + 1), String.format("H_trig_HTCC_pos_S%d", s + 1), 30, 0, 120, 30, -60, 60);
-      H_trig_HTCC_pos_S[s].setTitle(String.format("HTCC e sect %d", s + 1));
-      H_trig_HTCC_pos_S[s].setTitleX("X (cm)");
-      H_trig_HTCC_pos_S[s].setTitleY("Y (cm)");
-      H_trig_DCR1_pos_S[s] = new H2F(String.format("H_trig_DCR1_pos_S%d", s + 1), String.format("H_trig_DCR1_pos_S%d", s + 1), 100, 0, 400, 100, -200, 200);
-      H_trig_DCR1_pos_S[s].setTitle(String.format("DCR1 e sect %d", s + 1));
-      H_trig_DCR1_pos_S[s].setTitleX("X (cm)");
-      H_trig_DCR1_pos_S[s].setTitleY("Y (cm)");
-      H_trig_DCR2_pos_S[s] = new H2F(String.format("H_trig_DCR2_pos_S%d", s + 1), String.format("H_trig_DCR2_pos_S%d", s + 1), 100, 0, 100, 100, -50, 50);
-      H_trig_DCR2_pos_S[s].setTitle(String.format("DCR2 e sect %d", s + 1));
-      H_trig_DCR2_pos_S[s].setTitleX("X (cm)");
-      H_trig_DCR2_pos_S[s].setTitleY("Y (cm)");
-      H_trig_DCR3_pos_S[s] = new H2F(String.format("H_trig_DCR3_pos_S%d", s + 1), String.format("H_trig_DCR3_pos_S%d", s + 1), 100, 0, 400, 100, -200, 200);
-      H_trig_DCR3_pos_S[s].setTitle(String.format("DCR3 e sect %d", s + 1));
-      H_trig_DCR3_pos_S[s].setTitleX("X (cm)");
-      H_trig_DCR3_pos_S[s].setTitleY("Y (cm)");
-    }
-    H_e_theta_mom = new H2F("H_e_theta_mom","H_e_theta_mom",100,0.75,EB,100,0,40);
-    H_e_theta_mom.setTitle("electron theta vs mom");
-    H_e_theta_mom.setTitleX("p (GeV/c)");
-    H_e_theta_mom.setTitleY("#theta (^o)");
-    H_e_phi_mom = new H2F("H_e_phi_mom","H_e_phi_mom",100,0.75,EB,100,-180,180);
-    H_e_phi_mom.setTitle("electron #phi vs mom");
-    H_e_phi_mom.setTitleX("p (GeV/c)");
-    H_e_phi_mom.setTitleY("#phi (^o)");
-    H_positive_theta_mom = new H2F("H_positive_theta_mom", "H_positive_theta_mom", 100, 0.75, EB, 150, 0, 60);
-    H_positive_theta_mom.setTitle("positive particles' theta vs mom");
-    H_positive_theta_mom.setTitleX("p (GeV/c)");
-    H_positive_theta_mom.setTitleY("#theta (^o)");
-    H_negative_theta_mom = new H2F("H_negative_theta_mom", "H_negative_theta_mom", 100, 0.75, EB, 150, 0, 60);
-    H_negative_theta_mom.setTitle("negative particles' theta vs mom");
-    H_negative_theta_mom.setTitleX("p (GeV/c)");
-    H_negative_theta_mom.setTitleY("#theta (^o)");
-    H_electron_theta_mom = new H2F("H_electron_theta_mom", "H_electron_theta_mom", 100, 0.75, EB, 150, 0, 60);
-    H_electron_theta_mom.setTitle("Electron particles' theta vs mom");
-    H_electron_theta_mom.setTitleX("p (GeV/c)");
-    H_electron_theta_mom.setTitleY("#theta (^o)");
-    H_XY_ECal = new H2F("H_XY_ECal", "H_XY_ECal", 100, -400, 400, 100, -400, 400);
-    H_XY_ECal.setTitle("Electron ECAL POS");
-    H_XY_ECal.setTitleX("X (cm)");
-    H_XY_ECal.setTitleY("Y (cm)");
-    H_ESampl_ECal = new H2F("H_ESampl_ECal", "H_ESampl_ECal", 100, 0.75, EB, 100, 0, 0.5);
-    H_ESampl_ECal.setTitle("Electron ECAL Sampling Fraction");
-    H_ESampl_ECal.setTitleX("p (GeV/c)");
-    H_ESampl_ECal.setTitleY("Edep/p");
     H_e_LTCC_nphe = new H1F("H_e_LTCC_nphe","H_e_LTCC_nphe",100,0,100);
     H_e_LTCC_nphe.setTitle("electron LTCC nphe");
     H_e_LTCC_nphe.setTitleX("nphe");
@@ -1475,18 +488,10 @@ public class GeneralMon {
     H_e_vxy.setTitle("electron transverse vertex");
     H_e_vxy.setTitleX("v_{x} (cm)");
     H_e_vxy.setTitleY("v_{y} (cm)");
-    H_e_vz_phi = new H2F("H_e_vz_phi","H_e_vz_phi",100,-180,180,100,-25,50);
-    H_e_vz_phi.setTitle("electron vz vs #phi");
-    H_e_vz_phi.setTitleX("#phi");
-    H_e_vz_phi.setTitleY("v_{z} (cm)");
     H_e_vz_p = new H2F("H_e_vz_p","H_e_vz_p",100,0,11,100,-25,50);
     H_e_vz_p.setTitle("electron vz vs #p");
     H_e_vz_p.setTitleX("p (GeV/c)");
     H_e_vz_p.setTitleY("v_{z} (cm)");
-    H_e_vz_theta = new H2F("H_e_vz_theta","H_e_vz_theta",100,0,40,100,-25,50);
-    H_e_vz_theta.setTitle("electron vz vs #theta");
-    H_e_vz_theta.setTitleX("#theta");
-    H_e_vz_theta.setTitleY("v_{z} (cm)");
 
     H_dcm_theta_phi = new H2F("H_dcm_theta_phi","H_dcm_theta_phi",100,-180,180,100,0,40);
     H_dcm_theta_phi.setTitle("DC neg theta vs phi");
@@ -1854,18 +859,6 @@ public class GeneralMon {
       float mom = (float) Math.sqrt(px * px + py * py + pz * pz);
       float theta = (float) Math.toDegrees(Math.atan2(Math.sqrt(px * px + py * py), pz));
       int status = bank.getShort("status", k);
-      boolean Forward = (status < 4000);
-      if (Forward) {
-        if (bank.getByte("charge", k) > 0) {
-          H_positive_theta_mom.fill(mom, theta);
-        }
-        else if (bank.getByte("charge", k) < 0) {
-          H_negative_theta_mom.fill(mom, theta);
-        }
-        if (bank.getInt("pid", k) == 11) {
-          H_electron_theta_mom.fill(mom, theta);
-        }
-      }
     }
   }
 
@@ -3032,7 +2025,6 @@ public class GeneralMon {
         else if(sect==4 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S4_HTCC_n.fill(nphe);H_trig_S4_HTCC_N.fill(NPHE);H_trig_S4_HTCC_XY.fill(x,y);}
         else if(sect==5 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S5_HTCC_n.fill(nphe);H_trig_S5_HTCC_N.fill(NPHE);H_trig_S5_HTCC_XY.fill(x,y);}
         else if(sect==6 && testTriggerSector(sect) && NhitsSect[sect-1]==1){H_trig_S6_HTCC_n.fill(nphe);H_trig_S6_HTCC_N.fill(NPHE);H_trig_S6_HTCC_XY.fill(x,y);}
-        if(sect>0)H_trig_S_HTCC_theta[sect-1].fill(trig_HTCC_theta);
         if(sect==1 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S1_HTCC_N_track.fill(NPHE);}
         else if(sect==2 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S2_HTCC_N_track.fill(NPHE);}
         else if(sect==3 && testTriggerSector(sect) && NhitsSect[sect-1]==1 && TrkSect[sect-1] ){H_trig_S3_HTCC_N_track.fill(NPHE);}
@@ -3474,58 +2466,15 @@ public class GeneralMon {
           H_trig_theta_phi_S[e_sect - 1].fill(elec_phi_sect, e_theta);
           H_e_W_phi_S[e_sect - 1].fill(elec_phi_sect, e_W);
           H_trig_vz_mom_S[e_sect - 1].fill(e_mom, e_vz);
-          H_trig_vy_vz_S[e_sect - 1].fill(e_Ivz, e_Ivy);
-          H_trig_vz_theta_S[e_sect - 1].fill(e_theta, e_vz);
           H_trig_ECALsampl_S[e_sect - 1].fill(e_mom, e_ecal_E / e_mom);
           H_trig_PCAL_vt_S[e_sect - 1].fill(e_ecal_T_PCAL);
           H_trig_ECIN_vt_S[e_sect - 1].fill(e_ecal_T_ECIN);
           H_trig_ECOU_vt_S[e_sect - 1].fill(e_ecal_T_ECOU);
-          H_trig_PCALECAL_S[e_sect - 1].fill(e_pcal_e, e_etot_e);
-          H_trig_HTCCn_theta_S[e_sect - 1].fill(e_theta, e_HTCC);
           if (hasLTCC == 1) {
             H_trig_LTCCn_theta_S[e_sect - 1].fill(e_theta, e_LTCC);
           }
-
-          Vector3 vECALpos = new Vector3(e_ecal_X, e_ecal_Y, e_ecal_Z);
-          vECALpos.rotateZ(-3.141597f * (e_sect - 1) / 3f);
-          H_trig_ECAL_pos_S[e_sect - 1].fill(vECALpos.x(), vECALpos.y());
-          H_trig_ECAL_pos_S[6].fill(vECALpos.x(), vECALpos.y(), 0.166f);
-
-          Vector3 vFTOFpos = new Vector3(e_TOF_X, e_TOF_Y, e_TOF_Z);
-          vFTOFpos.rotateZ(-3.141597f * (e_sect - 1) / 3f);
-          H_trig_TOF_pos_S[e_sect - 1].fill(vFTOFpos.x(), vFTOFpos.y());
-          H_trig_TOF_pos_S[6].fill(vFTOFpos.x(), vFTOFpos.y(), 0.166f);
-
-          Vector3 vHTCCpos = new Vector3(e_HTCC_X, e_HTCC_Y, e_HTCC_Z);
-          vHTCCpos.rotateZ(-3.141597f * (e_sect - 1) / 3f);
-          H_trig_HTCC_pos_S[e_sect - 1].fill(vHTCCpos.x(), vHTCCpos.y());
-          H_trig_HTCC_pos_S[6].fill(vHTCCpos.x(), vHTCCpos.y(), 0.166f);
-
-          Vector3 vDCR1pos = new Vector3(e_DCR1_X, e_DCR1_Y, e_DCR1_Z);
-          vDCR1pos.rotateZ(-3.141597f * (e_sect - 1) / 3f);
-          H_trig_DCR1_pos_S[e_sect - 1].fill(vDCR1pos.x(), vDCR1pos.y());
-          H_trig_DCR1_pos_S[6].fill(vDCR1pos.x(), vDCR1pos.y(), 0.166f);
-
-          Vector3 vDCR2pos = new Vector3(e_DCR2_X, e_DCR2_Y, e_DCR2_Z);
-          vDCR2pos.rotateZ(-3.141597f * (e_sect - 1) / 3f);
-          H_trig_DCR2_pos_S[e_sect - 1].fill(vDCR2pos.x(), vDCR2pos.y());
-          H_trig_DCR2_pos_S[6].fill(vDCR2pos.x(), vDCR2pos.y(), 0.166f);
-
-          Vector3 vDCR3pos = new Vector3(e_DCR3_X, e_DCR3_Y, e_DCR3_Z);
-          vDCR3pos.rotateZ(-3.141597f * (e_sect - 1) / 3f);
-          H_trig_DCR3_pos_S[e_sect - 1].fill(vDCR3pos.x(), vDCR3pos.y());
-          H_trig_DCR3_pos_S[6].fill(vDCR3pos.x(), vDCR3pos.y(), 0.166f);
-
-          int th_bin = (int) Math.floor((e_theta - 5.0f) / 2.0f);
-          if (th_bin > -1 && th_bin < 10) {
-            H_trig_phi_theta_S[e_sect - 1][th_bin].fill(Math.toDegrees(vDCR1pos.phi()));
-            H_trig_phi_theta_S[6][th_bin].fill(Math.toDegrees(vDCR1pos.phi()));
-          }
         }
       }
-      H_e_phi_mom.fill(e_mom, e_phi);
-      H_XY_ECal.fill(e_ecal_X, e_ecal_Y);
-      H_ESampl_ECal.fill(e_mom, e_ecal_E / e_mom);
       H_e_vz.fill(e_vz);
       if (e_sect == 1) {
         H_e_vz_S1.fill(e_vz);
@@ -3571,9 +2520,7 @@ public class GeneralMon {
           H_e_FMMvz_S6.fill(e_FMMvz[1]);
         }
       }
-      H_e_vz_phi.fill(e_phi, e_vz);
       H_e_vz_p.fill(e_mom, e_vz);
-      H_e_vz_theta.fill(e_theta, e_vz);
       H_e_vxy.fill(e_vx, e_vy);
       H_e_xB_Q2.fill(e_xB, e_Q2);
       H_e_W_Q2.fill(e_W, e_Q2);
@@ -3716,13 +2663,8 @@ public class GeneralMon {
           H_CVT_zt.fill(CVT_theta, CVT_vz);
           H_CVT_e_vz_diff.fill(e_vz - CVT_vz);
           H_CVT_e_phi_diff.fill(phiDiff);
-          H_CVT_corr_e_theta.fill(CVT_theta, e_theta);
           H_CVT_pathlength.fill(CVT_pathlength);
-          H_elast_e_p_th.fill(e_mom, e_theta);
-          H_elast_W_sect.fill(e_sect, e_W);
-          H_elast_W.fill(e_W);
           float CVT_emom = Ebeam / (1 + 2 * Ebeam / 0.93827f * (float) Math.pow(Math.sin(CVT_eth / (2 * 57.296)), 2));
-          H_CVT_corr_e_mom.fill(CVT_emom, e_mom);
         }
       }
     }
@@ -3732,21 +2674,10 @@ public class GeneralMon {
 
     ratio_to_trigger();
 
-    TDirectory verify = new TDirectory();
-    verify.mkdir("/roads");
-    verify.cd("/roads");
-    verify.addDataSet(H_positive_theta_mom, H_negative_theta_mom, H_electron_theta_mom);
-
-    if (runNum > 0) {
-      verify.writeFile(outputDir + "/verify_distributions_" + runNum + ".hipo");
-    } else {
-      verify.writeFile(outputDir + "/verify_distributions.hipo");
-    }
-
     TDirectory dirout = new TDirectory();
     dirout.mkdir("/elec/");
     dirout.cd("/elec/");
-    dirout.addDataSet(H_e_phi_mom, H_e_vz_phi, H_e_vz_theta, H_e_vz_p, H_XY_ECal, H_ESampl_ECal, H_e_HTCC_xy, H_e_HTCC_nphe, H_e_HTCC_nphe_txy, H_e_LTCC_xy, H_e_LTCC_nphe, H_e_TOF_xy);
+    dirout.addDataSet(H_e_vz_p, H_e_HTCC_xy, H_e_HTCC_nphe, H_e_HTCC_nphe_txy, H_e_LTCC_xy, H_e_LTCC_nphe, H_e_TOF_xy);
     dirout.addDataSet(H_e_vt1, H_e_vt2, H_e_vz, H_e_TOF_t_path, H_o_TOF, H_o_vt);
     dirout.addDataSet(H_e_vz_S1, H_e_vz_S2, H_e_vz_S3, H_e_vz_S4, H_e_vz_S5, H_e_vz_S6);
     dirout.addDataSet(H_e_xB, H_e_xB_Q2, H_e_W_Q2);
@@ -3758,24 +2689,12 @@ public class GeneralMon {
       dirout.addDataSet(H_trig_phi_mom_S[s]);
       dirout.addDataSet(H_trig_theta_phi_S[s]);
       dirout.addDataSet(H_trig_vz_mom_S[s]);
-      dirout.addDataSet(H_trig_vy_vz_S[s]);
-      dirout.addDataSet(H_trig_vz_theta_S[s]);
       dirout.addDataSet(H_trig_ECALsampl_S[s]);
       dirout.addDataSet(H_trig_PCAL_vt_S[s]);
       dirout.addDataSet(H_trig_ECIN_vt_S[s]);
       dirout.addDataSet(H_trig_ECOU_vt_S[s]);
-      dirout.addDataSet(H_trig_PCALECAL_S[s]);
-      dirout.addDataSet(H_trig_HTCCn_theta_S[s]);
       dirout.addDataSet(H_trig_LTCCn_theta_S[s]);
     }
-    for(int s=0;s<6;s++)for(int it=0;it<10;it++)dirout.addDataSet(H_trig_phi_theta_S[s][it]);
-    G_FCcur_evn.setName("G_FCcur_evn");
-    G_gatedFCcur_evn.setName("G_gatedFCcur_evn");
-    G_FC_live_ratio.setName("G_FC_live_ratio");
-    G_Clock_evn.setName("G_Clock_evn");
-    G_gatedClock_evn.setName("G_gatedClock_evn");
-    G_Clock_ratio.setName("G_Clock_ratio");
-    dirout.addDataSet(G_FCcur_evn,G_gatedFCcur_evn,G_FC_live_ratio,G_Clock_evn,G_gatedClock_evn,G_Clock_ratio);
     dirout.mkdir("/tof/");
     dirout.cd("/tof/");
     dirout.addDataSet(H_TOF_vt_S1m,H_TOF_vt_S2m,H_TOF_vt_S3m,H_TOF_vt_S4m,H_TOF_vt_S5m,H_TOF_vt_S6m);
