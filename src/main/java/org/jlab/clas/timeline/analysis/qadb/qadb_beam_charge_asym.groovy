@@ -108,67 +108,89 @@ class qadb_beam_charge_asym {
         g.setTitleX 'QA Bin'
         g
       }
-      def rn_asym_struck_qg = make_rn 'a1', 'STRUCK_gated',                'Running A_FC from STRUCK q_gated',   'A_FC'
-      def rn_asym_struck_qu = make_rn 'a2', 'STRUCK_ungated',              'Running A_FC from STRUCK q_ungated', 'A_FC'
-      def rn_struck_helP_qg = make_rn 'b1', 'STRUCK_helPositive_qGated',   'STRUCK helicity=+1 q_gated [nC]',    'q [nC]'
-      def rn_struck_helN_qg = make_rn 'c1', 'STRUCK_helNegative_qGated',   'STRUCK helicity=-1 q_gated [nC]',    'q [nC]'
-      def rn_struck_helP_qu = make_rn 'b2', 'STRUCK_helPositive_qUngated', 'STRUCK helicity=+1 q_ungated [nC]',  'q [nC]'
-      def rn_struck_helN_qu = make_rn 'c2', 'STRUCK_helNegative_qUngated', 'STRUCK helicity=-1 q_ungated [nC]',  'q [nC]'
-
-      // calculate an asymmetry
-      def calc_asym = { p, n -> Tools.safeRatio(p-n, p+n) }
+      def rn_asym_struck_qg = make_rn 'a1', 'STRUCK_gated',                'Running A_FC from STRUCK q_gated',      'A_FC'
+      def rn_asym_struck_qu = make_rn 'a2', 'STRUCK_ungated',              'Running A_FC from STRUCK q_ungated',    'A_FC'
+      def rn_struck_qg_helP = make_rn 'b1', 'STRUCK_helPositive_qGated',   'STRUCK helicity=+1 q_gated [nC]',       'q [nC]'
+      def rn_struck_qg_helN = make_rn 'c1', 'STRUCK_helNegative_qGated',   'STRUCK helicity=-1 q_gated [nC]',       'q [nC]'
+      def rn_struck_qu_helP = make_rn 'b2', 'STRUCK_helPositive_qUngated', 'STRUCK helicity=+1 q_ungated [nC]',     'q [nC]'
+      def rn_struck_qu_helN = make_rn 'c2', 'STRUCK_helNegative_qUngated', 'STRUCK helicity=-1 q_ungated [nC]',     'q [nC]'
+      def rn_struck_n_helP  = make_rn 'b3', 'STRUCK_helPositive_num',      'STRUCK helicity=+1 num. readouts',      'num readouts'
+      def rn_struck_n_helN  = make_rn 'c3', 'STRUCK_helNegative_num',      'STRUCK helicity=-1 num. readouts',      'num readouts'
+      def rn_struck_n_rat   = make_rn 'b4', 'STRUCK_num_rat',              'number of STRUCK readouts ratio N+/N-', 'N+/N-'
 
       // fill run graphs: loop over each QA bin's histograms (`Charge` objects), read the charge etc.
       run_data['histos'].each { binnum, histos ->
-        // fill charge graphs too, since we need them to get a run's total charge asymmetry
-        rn_struck_helP_qg.addPoint binnum, histos.getChargeGatedSTRUCK(1),    0, Math.sqrt(histos.getChargeGatedSTRUCK(1))
-        rn_struck_helN_qg.addPoint binnum, histos.getChargeGatedSTRUCK(-1),   0, Math.sqrt(histos.getChargeGatedSTRUCK(-1))
-        rn_struck_helP_qu.addPoint binnum, histos.getChargeUngatedSTRUCK(1),  0, Math.sqrt(histos.getChargeUngatedSTRUCK(1))
-        rn_struck_helN_qu.addPoint binnum, histos.getChargeUngatedSTRUCK(-1), 0, Math.sqrt(histos.getChargeUngatedSTRUCK(-1))
+        rn_struck_qg_helP.addPoint binnum, histos.getChargeGatedSTRUCK(1),    0, Math.sqrt(histos.getChargeGatedSTRUCK(1))
+        rn_struck_qg_helN.addPoint binnum, histos.getChargeGatedSTRUCK(-1),   0, Math.sqrt(histos.getChargeGatedSTRUCK(-1))
+        rn_struck_qu_helP.addPoint binnum, histos.getChargeUngatedSTRUCK(1),  0, Math.sqrt(histos.getChargeUngatedSTRUCK(1))
+        rn_struck_qu_helN.addPoint binnum, histos.getChargeUngatedSTRUCK(-1), 0, Math.sqrt(histos.getChargeUngatedSTRUCK(-1))
+        rn_struck_n_helP.addPoint  binnum, histos.getNumReadoutsSTRUCK(1),    0, Math.sqrt(histos.getNumReadoutsSTRUCK(1))
+        rn_struck_n_helN.addPoint  binnum, histos.getNumReadoutsSTRUCK(-1),   0, Math.sqrt(histos.getNumReadoutsSTRUCK(-1))
       }
 
-      // fill running asym run graphs
-      def fill_running_gr = { rnP, rnN, gr ->
-        def sumP = 0.0
-        def sumN = 0.0
-        if(rnP.getDataSize(0) != rnN.getDataSize(0)) {
-          System.err.println "ERROR: diffeent num points in `rnP` and `rnN`"
+      // calculate an asymmetry
+      // @param q_helP charge for helicity=+1
+      // @param q_helN charge for helicity=-1
+      // @param n_helP normalization for helicity=+1
+      // @param n_helN normalization for helicity=-1
+      def calc_asym = { q_helP, q_helN, n_helP, n_helN ->
+        def p = Tools.safeRatio q_helP, n_helP
+        def n = Tools.safeRatio q_helN, n_helN
+        Tools.safeRatio p - n, p + n
+      }
+
+      // fill asymmetry graphs
+      // @param rn_q_helP run graph for charge for helicity=+1
+      // @param rn_q_helN run graph for charge for helicity=-1
+      // @param rn_n_helP run graph for num readouts for helicity=+1
+      // @param rn_n_helN run graph for num readouts for helicity=-1
+      // @param rn_asym run graph for running asymmetry, to be filled
+      // @param tl_asym timeline graph for asymmetry, to be filled
+      def fill_asym_graphs = { rn_q_helP, rn_q_helN, rn_n_helP, rn_n_helN, rn_asym, tl_asym ->
+        def q_sum_helP = 0.0
+        def q_sum_helN = 0.0
+        def n_sum_helP = 0.0
+        def n_sum_helN = 0.0
+        def nbins = rn_q_helP.getDataSize 0
+        if(nbins != rn_q_helN.getDataSize(0) || nbins != rn_n_helP.getDataSize(0) || nbins != rn_n_helN.getDataSize(0)) {
+          System.err.println "ERROR: different num points in graphs for `fill_asym_graphs`"
           System.exit(100)
         }
-        rnP.getDataSize(0).times {
-          def binnum = rnP.getDataX it
-          sumP += rnP.getDataY it
-          sumN += rnN.getDataY it
+        nbins.times {
+          def binnum =  rn_q_helP.getDataX it
+          q_sum_helP += rn_q_helP.getDataY it
+          q_sum_helN += rn_q_helN.getDataY it
+          n_sum_helP += rn_n_helP.getDataY it
+          n_sum_helN += rn_n_helN.getDataY it
           if(binnum > 0) { // don't plot bin 0's point, which is usually way off; this is so the default zoom level is decent
-            gr.addPoint binnum, calc_asym(sumP, sumN), 0, 0
+            rn_asym.addPoint binnum, calc_asym(q_sum_helP, q_sum_helN, n_sum_helP, n_sum_helN), 0, 0
           }
         }
+        tl_asym.addPoint runnum, calc_asym(q_sum_helP, q_sum_helN, n_sum_helP, n_sum_helN), 0, 0
       }
-      fill_running_gr rn_struck_helP_qg, rn_struck_helN_qg, rn_asym_struck_qg
-      fill_running_gr rn_struck_helP_qu, rn_struck_helN_qu, rn_asym_struck_qu
+      fill_asym_graphs rn_struck_qg_helP, rn_struck_qg_helN, rn_struck_n_helP, rn_struck_n_helN, rn_asym_struck_qg, tl_asym_struck_qg
+      fill_asym_graphs rn_struck_qu_helP, rn_struck_qu_helN, rn_struck_n_helP, rn_struck_n_helN, rn_asym_struck_qu, tl_asym_struck_qu
 
-      // fill timeline graphs: sum over the charge run graphs to get the total charge for the run, then calculate the asymmetry from that
-      def add_tl_point = { rnP, rnN, tl ->
-        def sumP = 0.0
-        def sumN = 0.0
-        rnP.getDataSize(0).times{ sumP += rnP.getDataY(it) }
-        rnN.getDataSize(0).times{ sumN += rnN.getDataY(it) }
-        tl.addPoint runnum, calc_asym(sumP, sumN), 0, 0
+      // fill N+/N- graph
+      rn_struck_n_helP.getDataSize(0).times {
+        def binnum = rn_struck_n_helP.getDataX it
+        def n_helP = rn_struck_n_helP.getDataY it
+        def n_helN = rn_struck_n_helN.getDataY it
+        rn_struck_n_rat.addPoint binnum, Tools.safeRatio(n_helP, n_helN), 0, 0
       }
-      add_tl_point rn_struck_helP_qg, rn_struck_helN_qg, tl_asym_struck_qg
-      add_tl_point rn_struck_helP_qu, rn_struck_helN_qu, tl_asym_struck_qu
 
       // write run graphs for this run
       tdir.mkdir "/${runnum}"
       tdir.cd    "/${runnum}"
       tdir.addDataSet rn_asym_struck_qg
       tdir.addDataSet rn_asym_struck_qu
+      tdir.addDataSet rn_struck_n_rat
 
     } // end loop over runs
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    // loop over runs again, this time for the MYA EPICS data
+    // loop over runs, filling graphs for EPICS data
     epics_data.each{ runnum, vals ->
 
       // get HWP position
@@ -202,6 +224,7 @@ class qadb_beam_charge_asym {
       epics_hists.each{ name, hist -> tdir.addDataSet(hist) }
     }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     // write timeline graphs
     // charge per run
