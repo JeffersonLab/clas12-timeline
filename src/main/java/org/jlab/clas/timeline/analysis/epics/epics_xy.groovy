@@ -48,12 +48,11 @@ class epics_xy {
       out.mkdir("/$run")
       out.cd("/$run")
 
-      // weight each reading by elapsed time * beam intensity
+      // fill histograms, weighting by elapsed time * beam current
       def (hx, hy) = ['x','y'].collect{ax->
         def entries = vals.collectMany{[it[ax]]*(it.time*it.i/1000 as int)}.sort()
         EpicsTools.quantileHist("h$ax$run", "$ax for run $run;$ax", entries)
       }
-
       vals.each{
         hx.fill(it.x, it.time*it.i/1000)
         hy.fill(it.y, it.time*it.i/1000)
