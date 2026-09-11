@@ -10,6 +10,7 @@ class qadb {
 
   private def ana_qadb_charge = new qadb_charge()
   private def ana_qadb_yield = new qadb_yield()
+  private def ana_qadb_beam_charge_asym = new qadb_beam_charge_asym()
 
   // ----------------------------------------------------------------------------------
 
@@ -35,6 +36,7 @@ class qadb {
     if(qa_allowed) {
       ana_qadb_charge.processRun(dir, run, qa_map)
       ana_qadb_yield.processRun(dir, run, qa_map)
+      ana_qadb_beam_charge_asym.processRun(dir, run, qa_map)
     }
   }
 
@@ -44,6 +46,7 @@ class qadb {
     if(qa_allowed) {
       ana_qadb_charge.write(qa_map)
       ana_qadb_yield.write(qa_map)
+      ana_qadb_beam_charge_asym.write(qa_map)
     }
   }
 

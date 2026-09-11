@@ -1,13 +1,12 @@
 package org.jlab.clas.timeline.analysis
 
-import java.text.SimpleDateFormat
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.H1F
 import org.jlab.groot.data.GraphErrors
 import org.jlab.clas.timeline.fitter.MoreFitter
 
-
 class epics_hall_weather {
+
   def runlist = []
 
   def processRun(dir, run) {
@@ -24,56 +23,22 @@ class epics_hall_weather {
     ]
 
     def hallDUnitConversion = 4.015 // HallB pressure units = hallDUnitConversion * HallD pressure units
-
-    def MYQ = new MYQuery()
-    def ts = MYQ.getRunTimeStamps(runlist)
-
-    def epics = [:].withDefault{[:]}
-    def dateFormatStr = 'yyyy-MM-dd HH:mm:ss.SSS'
-
-    pvNames.each{ name, pv ->
-      MYQ.query(pv).each{
-        def val = it.v
-        if(name=='pressure_hall_D') val *= hallDUnitConversion
-        epics[new SimpleDateFormat(dateFormatStr).parse(it.d).getTime()][name] = val
-      }
-    }
-
-    println('dl finished')
-
-    def data = epics.collect{kk,vv->[ts:kk]+vv} + ts.collectMany{[[run:it[0], ts: (((long)it[1])*1000)], [run:it[0], ts: (((long)it[2])*1000)]]}
-    data.sort{it.ts}
-
-    println('data sorted')
-
-    def ts0, r0=null
-    def vals0 = pvNames.collectEntries{ name, pv -> [name, null] }
-    def rundata = [:].withDefault{[]}
-    data.each{
-      if(it.run!=null) {
-        r0 = r0 ? null : it.run
-      } else if(r0) {
-        rundata[r0].push(['time':it.ts-ts0] + vals0)
-      }
-      ts0 = it.ts
-      pvNames.each{ name, pv -> if(it[name]!=null) vals0[name] = it[name] }
+    def myq = new MYQuery(runlist)
+    def epics_data = EpicsTools.queryEpics(myq, pvNames) { name, val ->
+      name == 'pressure_hall_D' ? val * hallDUnitConversion : val
     }
 
     def out = new TDirectory()
 
     def timelineGraphs = pvNames.collectEntries{ name, pv -> [name, new GraphErrors(name)] }
 
-    rundata.each{run, vals->
+    epics_data.each{run, vals->
       out.mkdir("/$run")
       out.cd("/$run")
 
       def hists = pvNames.collectEntries{ name, pv ->
-        def entries = vals.collectMany{[it[name]]}.sort()
-        def nlen = entries.size()
-        def (nq1,nq2,nq3) = [nlen/4 as int, nlen/2 as int, nlen*3/4 as int]
-        def (q1,q2,q3) = [entries[nq1], entries[nq2], entries[nq3]]
-        def (xm,dx) = [q2, q3-q1]
-        [ name, new H1F("h$name$run","$name from PV $pv for run $run;$name", 200, xm-3*dx, xm+3*dx) ]
+        def entries = vals.collect{it[name]}.sort()
+        [ name, EpicsTools.quantileHist("h$name$run", "$name from PV $pv for run $run;$name", entries) ]
       }
 
       vals.each{

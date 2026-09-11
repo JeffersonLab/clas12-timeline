@@ -44,6 +44,7 @@ public class Charge {
   private H1F dsc2_charge_hist;
   private H1F struck_charge_hist;
   private H1F struck_clock_hist;
+  private H1F struck_numreadouts_hist;
 
   // ----------------------------------------------------------------------------------
 
@@ -75,6 +76,13 @@ public class Charge {
         STRUCKType.values().length,
         0,
         STRUCKType.values().length);
+    struck_numreadouts_hist = new H1F(
+        "struck_numreadouts_hist" + "_qa" + String.valueOf(bin_num),
+        "helicity",
+        "num readouts",
+        3,
+        -1.5,
+        1.5);
   }
 
   // ----------------------------------------------------------------------------------
@@ -148,6 +156,16 @@ public class Charge {
     };
   }
 
+  /**
+   * @param helicity the helicity
+   * @return number of STRUCK scaler readouts for a given helicity
+   */
+  public double getNumReadoutsSTRUCK(int helicity)
+  {
+    var binnum = struck_numreadouts_hist.getXaxis().getBin(helicity);
+    return struck_numreadouts_hist.getBinContent(binnum);
+  }
+
   /** @return mean livetime */
   public double getMeanLivetime()
   {
@@ -171,36 +189,51 @@ public class Charge {
 
   /**
    * process a single event, filling STRUCK histograms
+   * NOTE: in the source code, comments with the string 'CUT' indicate the cuts used for reading STRUCK scaler data
    * @param event the HIPO event object
    */
   public void processEvent(DataEvent event)
   {
-    // get the tag; when reading scalers, be sure to process only tag-1 events
+    // get the tag
     int tag = ((HipoDataEvent) event).getHipoEvent().getEventTag();
-    // fill STRUCK histograms
-    if(tag == 1 && event.hasBank("HEL::scaler")) {
+    // CUT: read tag-1 events only, since other tag events with scaler banks are duplicates of tag-1 events
+    if(tag != 1) return;
+    // CUT: must have `HEL::scaler` bank
+    if(event.hasBank("HEL::scaler")) {
       var hel_bank = event.getBank("HEL::scaler");
+      // loop over all rows of the bank (pileup?)
       for(int row = 0; row < hel_bank.rows(); row++) {
-        switch(hel_bank.getByte("helicity", row)) {
+        var fcup_gated    = hel_bank.getFloat("fcupgated",  row);
+        var fcup_ungated  = hel_bank.getFloat("fcup",       row);
+        var clock_gated   = hel_bank.getFloat("clockgated", row);
+        var clock_ungated = hel_bank.getFloat("clock",      row);
+        // CUT: avoid t-settle region
+        if(clock_ungated < 1000) continue;
+        // CUT: avoid rows with zero charge, which may be bogus; these are typically for `row>0`
+        if(Math.abs(fcup_gated)<1e-6 || Math.abs(fcup_ungated)<1e-6) continue;
+        // fill the STRUCK histograms
+        var helicity = hel_bank.getByte("helicity", row);
+        switch(helicity) {
           case -1 -> {
-            struck_charge_hist.incrementBinContent( STRUCKType.gated_hel_n.ordinal(),   hel_bank.getFloat("fcupgated",  row) );
-            struck_charge_hist.incrementBinContent( STRUCKType.ungated_hel_n.ordinal(), hel_bank.getFloat("fcup",       row) );
-            struck_clock_hist.incrementBinContent(  STRUCKType.gated_hel_n.ordinal(),   hel_bank.getFloat("clockgated", row) );
-            struck_clock_hist.incrementBinContent(  STRUCKType.ungated_hel_n.ordinal(), hel_bank.getFloat("clock",      row) );
+            struck_charge_hist.incrementBinContent( STRUCKType.gated_hel_n.ordinal(),   fcup_gated    );
+            struck_charge_hist.incrementBinContent( STRUCKType.ungated_hel_n.ordinal(), fcup_ungated  );
+            struck_clock_hist.incrementBinContent(  STRUCKType.gated_hel_n.ordinal(),   clock_gated   );
+            struck_clock_hist.incrementBinContent(  STRUCKType.ungated_hel_n.ordinal(), clock_ungated );
           }
           case 0 -> {
-            struck_charge_hist.incrementBinContent( STRUCKType.gated_hel_0.ordinal(),   hel_bank.getFloat("fcupgated",  row) );
-            struck_charge_hist.incrementBinContent( STRUCKType.ungated_hel_0.ordinal(), hel_bank.getFloat("fcup",       row) );
-            struck_clock_hist.incrementBinContent(  STRUCKType.gated_hel_0.ordinal(),   hel_bank.getFloat("clockgated", row) );
-            struck_clock_hist.incrementBinContent(  STRUCKType.ungated_hel_0.ordinal(), hel_bank.getFloat("clock",      row) );
+            struck_charge_hist.incrementBinContent( STRUCKType.gated_hel_0.ordinal(),   fcup_gated    );
+            struck_charge_hist.incrementBinContent( STRUCKType.ungated_hel_0.ordinal(), fcup_ungated  );
+            struck_clock_hist.incrementBinContent(  STRUCKType.gated_hel_0.ordinal(),   clock_gated   );
+            struck_clock_hist.incrementBinContent(  STRUCKType.ungated_hel_0.ordinal(), clock_ungated );
           }
           case 1 -> {
-            struck_charge_hist.incrementBinContent( STRUCKType.gated_hel_p.ordinal(),   hel_bank.getFloat("fcupgated",  row) );
-            struck_charge_hist.incrementBinContent( STRUCKType.ungated_hel_p.ordinal(), hel_bank.getFloat("fcup",       row) );
-            struck_clock_hist.incrementBinContent(  STRUCKType.gated_hel_p.ordinal(),   hel_bank.getFloat("clockgated", row) );
-            struck_clock_hist.incrementBinContent(  STRUCKType.ungated_hel_p.ordinal(), hel_bank.getFloat("clock",      row) );
+            struck_charge_hist.incrementBinContent( STRUCKType.gated_hel_p.ordinal(),   fcup_gated    );
+            struck_charge_hist.incrementBinContent( STRUCKType.ungated_hel_p.ordinal(), fcup_ungated  );
+            struck_clock_hist.incrementBinContent(  STRUCKType.gated_hel_p.ordinal(),   clock_gated   );
+            struck_clock_hist.incrementBinContent(  STRUCKType.ungated_hel_p.ordinal(), clock_ungated );
           }
         }
+        struck_numreadouts_hist.fill(helicity);
       }
     }
   }
@@ -218,6 +251,7 @@ public class Charge {
     tdir.addDataSet(dsc2_charge_hist);
     tdir.addDataSet(struck_charge_hist);
     tdir.addDataSet(struck_clock_hist);
+    tdir.addDataSet(struck_numreadouts_hist);
   }
 
   // ----------------------------------------------------------------------------------
@@ -228,9 +262,10 @@ public class Charge {
    */
   void readHistograms(TDirectory tdir, int bin_num)
   {
-    dsc2_charge_hist   = (H1F) tdir.getObject(TDIR + "/dsc2_charge_hist"   + "_qa" + String.valueOf(bin_num));
-    struck_charge_hist = (H1F) tdir.getObject(TDIR + "/struck_charge_hist" + "_qa" + String.valueOf(bin_num));
-    struck_clock_hist  = (H1F) tdir.getObject(TDIR + "/struck_clock_hist"  + "_qa" + String.valueOf(bin_num));
+    dsc2_charge_hist        = (H1F) tdir.getObject(TDIR + "/dsc2_charge_hist"        + "_qa" + String.valueOf(bin_num));
+    struck_charge_hist      = (H1F) tdir.getObject(TDIR + "/struck_charge_hist"      + "_qa" + String.valueOf(bin_num));
+    struck_clock_hist       = (H1F) tdir.getObject(TDIR + "/struck_clock_hist"       + "_qa" + String.valueOf(bin_num));
+    struck_numreadouts_hist = (H1F) tdir.getObject(TDIR + "/struck_numreadouts_hist" + "_qa" + String.valueOf(bin_num));
   }
 
   // ----------------------------------------------------------------------------------
