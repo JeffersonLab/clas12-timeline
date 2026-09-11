@@ -146,7 +146,7 @@ fi
 run_analysis_script="org.jlab.clas.timeline.analysis.run_analysis"
 
 # grep which exits zero when no match is found
-grep_zero() { grep $1 || true; }
+grep_zero() { grep -E "$1" || true; }
 
 # handle `--skip-mya`
 if ${modes['skip-mya']}; then
@@ -160,14 +160,15 @@ if [ ${#timelineList[@]} -eq 0 ]; then
   exit 100
 fi
 
-# list detector timelines, if requested
+# list detector timelines
+echo $sep
+echo "LIST OF TIMELINES"
+echo $sep
+echo ${timelineList[@]} | sed 's; ;\n;g'
 if ${modes['list']}; then
-  echo $sep
-  echo "LIST OF TIMELINES"
-  echo $sep
-  echo ${timelineList[@]} | sed 's; ;\n;g'
-  exit $?
+  exit 0
 fi
+echo $sep
 
 ##################################################################################
 
