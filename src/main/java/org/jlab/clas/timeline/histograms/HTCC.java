@@ -16,8 +16,8 @@ public class HTCC {
   public int runNumber;
   public String outputDir;
   int ring, sector, hs;
-  List<H1F> hiNphePMTOneHit;  // related timeline: ['htcc_nphe_ring_sector', 'htcc_nphe_sector']
-  List<H1F> hiTimePMTOneHit;  // related timeline: ['htcc_vtimediff', 'htcc_vtimediff_sector', 'htcc_vtimediff_sector_ring']
+  List<H1F> hiNphePMTOneHit = new ArrayList<H1F>();  // related timeline: ['htcc_nphe_ring_sector', 'htcc_nphe_sector']
+  List<H1F> hiTimePMTOneHit = new ArrayList<H1F>();  // related timeline: ['htcc_vtimediff', 'htcc_vtimediff_sector', 'htcc_vtimediff_sector_ring']
   H1F npheAll;                // related timeline: ['htcc_npheAll', 'htcc_nphe_ring_sector', 'htcc_nphe_sector']
   static int nBinsTime = 300;
   static double lowTime = -15; //Apr2023 changed limits from -500, 500 ns to -15 to 15 ns per D. Carman's request

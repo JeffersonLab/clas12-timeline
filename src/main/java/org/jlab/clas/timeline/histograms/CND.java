@@ -29,6 +29,7 @@ public class CND {
     outputDir = reqOutputDir;
 
     H_CND_time_z_charged = new H2F[3];
+    DiffZCND = new H2F[3];
     for(int iL=0;iL<3;iL++){
       H_CND_time_z_charged[iL] = new H2F(String.format("H_CND_time_z_charged_L%d",iL+1),"H_CND_time_z_charged",50,0,40,100,-3,3);
       H_CND_time_z_charged[iL].setTitle("CND vt vs z (negative tracks) (layer "+(iL+1)+")");
