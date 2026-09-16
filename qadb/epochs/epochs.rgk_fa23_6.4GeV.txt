@@ -7,9 +7,11 @@
 19215 19215 # lumi scan: 60 nA
 19216 19217 # lumi scan: 75 nA
 19218 19218 # lumi scan: 90 nA
-19219 19232 # production: mostly 40 nA
-19233 19236 # production after DC change
-19237 19244 # production: mostly 40 nA
+19219 19231 # production: mostly 40 nA
+19232 19232 # lumi scan: 60 nA
+19233 19234 # lumi scan: 75 nA
+19235 19235 # lumi scan: 90 nA
+19236 19244 # production: mostly 40 nA
 19245 19248 # production: 60 nA
 19249 19252 # 75-90 nA
 19253 19260 # trigger studies
