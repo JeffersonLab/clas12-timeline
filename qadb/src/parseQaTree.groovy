@@ -6,8 +6,9 @@ import groovy.json.JsonOutput
 import org.jlab.clas.timeline.util.Tools
 Tools T = new Tools()
 
-infile="qa/qaTree.json"
-outfile="qa/qaTree.json.table"
+def infile  = "qa/qaTree.json"
+def outfile = "qa/qaTree.json.table"
+def cnds    = ['user_comment', 'beam_current', 'beam_current_request', 'target']
 if(args.size()>=1) {
   infile = args[0]
   outfile = "${infile}.table"
@@ -18,13 +19,12 @@ def outfileF = new File(outfile)
 def outfileW = outfileF.newWriter(false)
 
 // Print out help message
-if(args.contains("-h") || args.contains("--help")) { 
-  System.err.println("Options:")
-  System.err.println(" -l/--list               : List available conditions from db")
-  System.err.println(" -cnds=cnd1,cnd2,...     : Set commands to output table (default: 'user_comment')")
-  System.err.println(" -addCnds=cnd1,cnd2,...  : Add commands to output table")
-  System.err.println(" -h/--help               : Print this message")
-  System.exit(101)
+if(args.contains("-h") || args.contains("--help")) {
+  System.out.println("Additional Options:")
+  System.out.println(" -cnds=cnd1,cnd2,...     : Set RCDB fields to include in output table")
+  System.out.println("                           default: '${cnds.join(',')}'")
+  System.out.println(" -addCnds=cnd1,cnd2,...  : Add RCDB fields to output table")
+  System.exit(0)
 }
 
 /* CCDB/RCDB Addresses for CLAS12 see https://indico.jlab.org/event/222/contributions/2343/attachments/1959/2468/clas12-dbases.pdf
@@ -40,10 +40,10 @@ if(address==null)
   throw new Exception("RCDB_CONNECTION not set")
 def db      = RCDB.createProvider(address)
 def success = false
-try { db.connect(); success = true; println("Connected to "+address) }
+try { db.connect(); success = true; System.out.println("Connected to "+address) }
 catch(Exception e) {
-  println("Unable to connect to rcdb provider "+address)
-  println("\nProceeding without db...")
+  System.err.println("Unable to connect to rcdb provider "+address)
+  System.err.println("\nProceeding without db...")
   success = false
 }
 
@@ -51,16 +51,15 @@ catch(Exception e) {
 if((args.contains("--list") || args.contains("-l")) && success) {
   Vector<ConditionType> cndTypes = db.getConditionTypes()
   HashMap<String, ConditionType> cndTypeByNames = db.getConditionTypeByNames()
-  println("Available conditions in db at "+address+":")
+  System.out.println("Available fields in RCDB at "+address+":")
   for(ConditionType cndType in cndTypes){
     String row = String.format("   %-30s %s", cndType.getName(), cndType.getValueType().toString())
-    println(row);
+    System.out.println(row);
   }
   System.exit(0)
 }
 
 // List of rcdb condition entries to add
-def cnds = ['user_comment']
 if(!success) { cnds = []; args = []} // set cnds and args to empty if no db connection
 
 // Add conditions from command line
@@ -84,7 +83,7 @@ for (arg in args) {
 // Check if conditions given are in db
 for (cnd in cnds) {
   if(!db.getConditionTypeByNames().keySet().contains(cnd)) {
-    println("Condition: "+cnd+" not found in db at "+address+"\nOmitting...")
+    System.err.println("WARNING: Condition: "+cnd+" not found in db at "+address+"\nOmitting...")
     cnds = cnds.minus([cnd])
   }
 }
@@ -103,7 +102,7 @@ qaTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
     entry = ""
     val = "String"
     try {val = condition.valueType.toString() }
-    catch (Exception e) {println(" *** WARNING *** Value type for entry: "+cnd+" undefined") }
+    catch (Exception e) { System.err.println(" *** WARNING *** Value type for entry: "+cnd+" undefined") }
     switch(val) {
       case "Double":  entry = condition.toDouble();  break
       case "String":  entry = condition.toString();  break
@@ -148,4 +147,4 @@ ${head.join("\n")}
 }
 
 outfileW.close()
-println("\nparsed $infile to $outfile")
+System.out.println("\nparsed $infile to $outfile")
