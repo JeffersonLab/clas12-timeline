@@ -15,9 +15,6 @@ if(args.size()>=1) {
   args = args.minus([args[0]]) // remove json file from args since no longer needed
 }
 
-def outfileF = new File(outfile)
-def outfileW = outfileF.newWriter(false)
-
 // Print out help message
 if(args.contains("-h") || args.contains("--help")) {
   System.out.println("Additional Options:")
@@ -87,6 +84,10 @@ for (cnd in cnds) {
     cnds = cnds.minus([cnd])
   }
 }
+
+// start the output file
+def outfileF = new File(outfile)
+def outfileW = outfileF.newWriter(false)
 
 def slurper = new JsonSlurper()
 def jsonFile = new File(infile)
