@@ -100,11 +100,17 @@ def slurper = new JsonSlurper()
 def jsonFile = new File(infile)
 def qaTree = slurper.parse(jsonFile)
 def defStr = []
+def sep = '----------------------------------------------------------------------------------'
 qaTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
   run, runTree ->
 
   // Loop condition list and append db entries
-  def head = ["RUN: $run"]
+  def runInt = run.toInteger()
+  def head = [
+    "RUN: $run",
+    "https://clas12mon.jlab.org/runs/summaries/?run=${runInt}&runmax=${runInt+100}&runmin=${runInt-100}",
+    sep,
+  ]
   for (cnd in cnds) {
     def condition = db.getCondition(Long.valueOf(run),cnd)
     entry = ""
@@ -120,10 +126,10 @@ qaTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
     }
     head += ["  ${cnd}:".padRight(30) + "${entry}"]
   }
+  head += [sep]
   outfileW << """
 ==================================================================================
 ${head.join("\n")}
-----------------------------------------------------------------------------------
 """
 
   runTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
