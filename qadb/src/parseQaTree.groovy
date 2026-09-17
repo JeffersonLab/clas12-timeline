@@ -8,7 +8,14 @@ Tools T = new Tools()
 
 def infile  = "qa/qaTree.json"
 def outfile = "qa/qaTree.json.table"
-def cnds    = ['user_comment', 'beam_current', 'beam_current_request', 'target']
+def cnds    = [
+  'user_comment',
+  'target',
+  'beam_current_request',
+  'beam_current',
+  'run_type',
+  'run_config',
+]
 if(args.size()>=1) {
   infile = args[0]
   outfile = "${infile}.table"
@@ -111,7 +118,7 @@ qaTree.sort{a,b -> a.key.toInteger() <=> b.key.toInteger() }.each{
       case "Boolean": entry = condition.toBoolean(); break
       default:        entry = condition.toString();  break
     }
-    head += ["  ${cnd}: ${entry}"]
+    head += ["  ${cnd}:".padRight(30) + "${entry}"]
   }
   outfileW << """
 ==================================================================================
