@@ -38,3 +38,13 @@ Overrides:
     detector: FD
     OutlierFD:
       IQR_cut_factor: 1.5
+  - epoch: 13
+    sectors: [ 1, 2, 3, 4, 5, 6 ]
+    detector: FD
+    OutlierFD:
+      IQR_cut_factor: 1.5
+  - epoch: 14
+    sectors: [ 1, 2, 3, 4, 5, 6 ]
+    detector: FD
+    OutlierFD:
+      IQR_cut_factor: 1.5
