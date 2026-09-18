@@ -32,19 +32,19 @@ Overrides:
     sectors: [ 1, 2, 3, 4, 5, 6 ]
     detector: FD
     OutlierFD:
-      IQR_cut_factor: 1.5
+      IQR_cut_factor: 1.0
   - epoch: 12
     sectors: [ 1, 2, 3, 4, 5, 6 ]
     detector: FD
     OutlierFD:
-      IQR_cut_factor: 1.5
+      IQR_cut_factor: 1.0
   - epoch: 13
     sectors: [ 1, 2, 3, 4, 5, 6 ]
     detector: FD
     OutlierFD:
-      IQR_cut_factor: 1.5
+      IQR_cut_factor: 1.0
   - epoch: 14
     sectors: [ 1, 2, 3, 4, 5, 6 ]
     detector: FD
     OutlierFD:
-      IQR_cut_factor: 1.5
+      IQR_cut_factor: 1.0
