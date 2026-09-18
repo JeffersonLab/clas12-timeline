@@ -161,7 +161,16 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] QA cut tuning 2: tune cut definitions and overrides</summary>
+<summary>- [ ] QA cut tuning 2: special runs should be in their own epochs</summary>
+
+- look for special runs; for example, use `cd qadb` then `./import.sh` to import the `outfiles/$dataset/timeline_physics_qa/outdat/qaTree.json` file and look at the resulting `qa/qaTree.json.table` file, which includes RCDB fields such as the shift expert's comments
+- special runs include:
+    - luminosity scans: one epoch for each beam current
+    - empty target runs
+</details>
+
+<details>
+<summary>- [ ] QA cut tuning 3: tune cut definitions and overrides</summary>
 
 - add the file `${dataset}.yaml` in the [`qadb/cutdefs`](/qadb/cutdefs) directory
     - you may copy one of the existing ones, most likely the default one
