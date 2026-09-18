@@ -14,4 +14,4 @@
     - be careful if your `qaTree.json` files have different/overlapping sets of runs
 - this script is "one-time-use", so you need to read it carefully before running it
 - the input file names should be `qaTree.json.old` and `qaTree.json.new`
-- the output will be `qaTree.json.melded`
+- run `./meld.sh`; the output will be `qaTree.json.melded`
