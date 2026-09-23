@@ -30,38 +30,41 @@ usageTerse() {
   NOTE: chefs typically run this program using the CLAS12 workflow
 
   $sep
-  USAGE: qtl histogram -d [DATASET_NAME] [RUN_DIRECTORY]
+  USAGE: qtl histogram -d [DATASET_NAME] [INPUT_DIR]...
   $sep
 
      -d [DATASET_NAME]   unique dataset name, defined by the user, used for organization
 
-     [RUN_DIRECTORY]     input data directory, with subdirectories organized by run,
+     [INPUT_DIR]...      input data directory; you may specify more than one
+                         - use with \`--dstdir\` if specifying DST files
+                         - use with \`--skimdir\` if specifying skim files (trains)
+                         - use \`--help\` for more details
                          **must be specified last**
 
-  After running this script, run either or both of the suggested 'sbatch' command(s);
+  After running this script, run either or both of the suggested \`sbatch\` command(s);
   one is for detector QA timelines and the other is for physics QA timelines.
   Output files will appear in ./outfiles/[DATASET_NAME]
 
-  For more options, run with '--help'
+  For more options, run with \`--help\`
   """ >&2
 }
 usageVerbose() {
   echo """
   $sep
-  USAGE: qtl histogram  [OPTIONS]...  [RUN_DIRECTORY]...
+  USAGE: qtl histogram  [OPTIONS]...  [INPUT_DIR]...
   $sep
 
   REQUIRED ARGUMENTS:
 
-    [RUN_DIRECTORY]...   One or more directories, each directory corresponds to
-                         one run and should contain reconstructed HIPO files
+    [INPUT_DIR]...       input data directory; you may specify more than one
                          - See \"INPUT FINDING OPTIONS\" below for more control,
                            so that you don't have to specify each run's directory
+                           - e.g., use with \`--dstdir\` if specifying DST files
+                           - e.g., use with \`--skimdir\` if specifying skim files (trains)
                          - A regexp or globbing (wildcards) can be used to
                            specify the list of directories as well, if your shell
                            supports it
-                         - for a directory of files, with one run per file (e.g.,
-                           SKIM files), use the option \`--skimdir\`
+                         **must be specified last**
 
   $sep
 
@@ -76,22 +79,22 @@ usageVerbose() {
      *** INPUT FINDING OPTIONS: control how the input HIPO files are found;
          choose only one:
 
-       --dstdir       assume each specified [RUN_DIRECTORY] contains
+       --dstdir       assume each specified [INPUT_DIR] contains
                       subdirectories named as just run numbers, e.g., like the DSTs
                       - it is not recommended to use wildcards for this option
                       - see also the \`--fast-ls\` option
                       - legacy option name \`--rundir\` is equivalent
                       **this is the DEFAULT option**
 
-       --skimdir      assume each specified [RUN_DIRECTORY] contains HIPO
+       --skimdir      assume each specified [INPUT_DIR] contains HIPO
                       files, with one run per file; e.g., a directory of SKIM files
                       - legacy option name \`--flatdir\` is equivalent
 
        --findhipo     use \`find\` to find all HIPO files in each
-                      [RUN_DIRECTORY]; this is useful if you have a
+                      [INPUT_DIR]; this is useful if you have a
                       directory tree, e.g., runs grouped by target
 
-       --eachdir      assume each specified [RUN_DIRECTORY] is a single
+       --eachdir      assume each specified [INPUT_DIR] is a single
                       run's directory full of HIPO files (e.g., DST files)
 
      *** CHECK OPTIONS: run additional checks
@@ -116,7 +119,7 @@ usageVerbose() {
                    printing the \`sbatch\` command
 
        --swifjob   run this on a workflow runner, where the input
-                   HIPO files are found in ./ and specifying [RUN_DIRECTORIES] is
+                   HIPO files are found in ./ and specifying [INPUT_DIR] is
                    not required; overrides some other settings; this is NOT meant
                    to be used interactively, but rather as a part of a workflow
 
@@ -216,10 +219,10 @@ rdirs=()
 if ${modes['swifjob']}; then
   rdirs=(.) # all input files reside in ./ on a workflow runner
 else
-  [ $# == 0 ] && printError "no run directories specified" && exit 100
+  [ $# == 0 ] && printError "no input directories specified" && exit 100
   rdirsArgs="$@"
   for topdir in ${rdirsArgs[@]}; do
-    [[ "$topdir" =~ ^- ]] && printError "option '$topdir' must be specified before run directories" && exit 100
+    [[ "$topdir" =~ ^- ]] && printError "option '$topdir' must be specified before input directories" && exit 100
   done
   if ${modes['dstdir']}; then
     for topdir in ${rdirsArgs[@]}; do
@@ -228,7 +231,7 @@ else
           rdirs+=($(echo "$topdir/$subdir " | sed 's;//;/;g'))
         done
       else
-        printError "run directory '$topdir' does not exist"
+        printError "input directory '$topdir' does not exist"
         exit 100
       fi
     done
@@ -241,7 +244,7 @@ else
       echo "finding .hipo files in $topdir ....."
       fileList=$(find -L $topdir -type f -name "*.hipo")
       if [ -z "$fileList" ]; then
-        printWarning "run directory '$topdir' has no HIPO files"
+        printWarning "input directory '$topdir' has no HIPO files"
       else
         rdirs+=($(echo $fileList | xargs dirname | sort -u))
       fi
@@ -251,8 +254,8 @@ else
     exit 100
   fi
 fi
-[ ${#rdirs[@]} -eq 0 ] && printError "no run directories found" && exit 100
-echo "done finding input run directories"
+[ ${#rdirs[@]} -eq 0 ] && printError "no input directories found" && exit 100
+echo "done finding input directories"
 
 # set and make output directory
 if ${modes['swifjob']}; then
@@ -290,7 +293,7 @@ OUTPUT_DIR   = $outputDir
 OPTIONS = {"""
 for key in "${!modes[@]}"; do printf "%20s => %s,\n" $key ${modes[$key]}; done
 echo """}
-RUN_DIRECTORIES = ["""
+INPUTS = ["""
 for rdir in ${rdirs[@]}; do echo "  $rdir,"; done
 echo """]
 $sep

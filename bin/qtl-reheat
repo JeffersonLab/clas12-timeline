@@ -21,7 +21,7 @@ coatjava_version=13.8.5 # 13.3.0: first version with rollover correction, used f
                         # 13.8.0: fix: avoid call to method that recalibrates already-calibrated dsc2
                         #         https://github.com/JeffersonLab/coatjava/pull/1153
 declare -A modes
-for key in submit series; do
+for key in submit series dstdir skimdir; do
   modes[$key]=false
 done
 
@@ -33,15 +33,18 @@ usage() {
   NOTE: chefs should not typically need to run this
 
   $sep
-  USAGE: qtl reheat [OPTIONS]
+  USAGE: qtl reheat [OPTIONS] [INPUT_DIR]...
   $sep
 
   REQUIRED OPTIONS:
-     -i [INPUT]        input: 1 HIPO file, or a directory of HIPO files
-                       - if a directory, all HIPO files within will be processed
-                       - if 1 file, it will just be processed now
      -o [OUTPUT_DIR]   output directory
      -m [METHOD]       which reheating method to use, one of:
+
+     [INPUT_DIR]...    input data directory; you may specify more than one
+                         - use with \`--dstdir\` if specifying DST files
+                         - use with \`--skimdir\` if specifying skim files (trains)
+                         - use \`--help\` for more details
+                         **must be specified last**
 $(for key in "${!REHEAT_METHODS[@]}"; do printf "%24s %-11s %-s\n" "" "$key" "${REHEAT_METHODS[$key]}"; done)
 
   OPTIONAL OPTIONS:
@@ -52,10 +55,26 @@ $(for key in "${!REHEAT_METHODS[@]}"; do printf "%24s %-11s %-s\n" "" "$key" "${
                        - absolute path to coatjava
                        default: $coatjava_version
 
+     *** EXECUTION CONTROL OPTIONS:
+
      --submit          submit the slurm jobs now
                        default: print the SLURM \`sbatch\` command
+
      --series          run all jobs locally, one at a time; rather
                        than running with slurm
+
+     *** INPUT FINDING OPTIONS:
+
+     --dstdir          assume each specified [INPUT_DIR] contains
+                       subdirectories named as just run numbers, e.g., like the DSTs
+                       - it is not recommended to use wildcards for this option
+                       - see also the \`--fast-ls\` option
+                       - legacy option name \`--rundir\` is equivalent
+
+     --skimdir         assume each specified [INPUT_DIR] contains HIPO
+                       files, with one run per file; e.g., a directory of SKIM files
+                       - legacy option name \`--flatdir\` is equivalent
+                       **this is the DEFAULT option**
   """ >&2
 }
 if [ $# -lt 1 ]; then
@@ -64,12 +83,10 @@ if [ $# -lt 1 ]; then
 fi
 
 # parse options
-inputObj=""
 outputDir=""
 mtd=""
-while getopts "i:o:m:d:c:h-:" opt; do
+while getopts "o:m:d:c:h-:" opt; do
   case $opt in
-    i) inputObj=$OPTARG ;;
     o) outputDir=$OPTARG ;;
     m)
       [ -z "${REHEAT_METHODS[$OPTARG]-}" ] && printError "unknown command '$OPTARG'" && exit 100
@@ -90,27 +107,61 @@ while getopts "i:o:m:d:c:h-:" opt; do
     *) exit 100 ;;
   esac
 done
+shift $((OPTIND - 1))
 
 # check required arguments
-[ -z "$inputObj" ] && printError "missing input argument" && exit 100
 [ -z "$outputDir" ] && printError "missing output directory argument" && exit 100
 [ -z "$mtd" ] && printError "missing method argument" && exit 100
 
-# get list of input files
-useSlurm=false
-if [[ "$inputObj" == *.hipo ]]; then # if `inputObj` is a single HIPO file
-  [ ! -f "$inputObj" ] && printError "input file '$inputObj' not found" && exit 100
-  inputFiles=("$inputObj")
-  useSlurm=false
-else # assume `inputObj` is a directory of HIPO files
-  [ ! -d "$inputObj" ] && printError "input directory '$inputObj' not found" && exit 100
-  inputFiles=($(find "$inputObj" -maxdepth 1 -name "*.hipo"))
-  [ ${#inputFiles[@]} -eq 0 ] && printError "no HIPO files found within input directory" && exit 100
-  useSlurm=true
+# set the input-finding method; use the DEFAULT one, if not set by user
+## count how many were set
+numTrueInputOpts=0
+for key in dstdir skimdir; do
+  if ${modes[$key]}; then
+    numTrueInputOpts=$((numTrueInputOpts+1))
+  fi
+done
+## set a DEFAULT one, if none are set, or complain if more than one
+if [ $numTrueInputOpts -eq 0 ]; then
+  modes['skimdir']=true
+elif [ $numTrueInputOpts -gt 1 ]; then
+  printError "more than one input-finding option set"
+  exit 100
 fi
-if ${modes['series']}; then # if using `--series`
-  useSlurm=false
+
+# parse input directories
+rdirs=()
+[ $# == 0 ] && printError "no input directories specified" && exit 100
+rdirsArgs="$@"
+for topdir in ${rdirsArgs[@]}; do
+  [[ "$topdir" =~ ^- ]] && printError "option '$topdir' must be specified before input directories" && exit 100
+done
+if ${modes['dstdir']}; then
+  for topdir in ${rdirsArgs[@]}; do
+    if [ -d $topdir ]; then
+      for subdir in $(ls $topdir | grep -E "[0-9]+"); do
+        rdirs+=($(echo "$topdir/$subdir " | sed 's;//;/;g'))
+      done
+    else
+      printError "input directory '$topdir' does not exist"
+      exit 100
+    fi
+  done
+elif ${modes['skimdir']}; then
+  for rdir in ${rdirsArgs[@]}; do
+    for hipofile in $(ls $(realpath $rdir)/*.hipo); do
+      rdirs+=($hipofile)
+    done
+  done
+else
+  printError "unknown input option"
+  exit 100
 fi
+[ ${#rdirs[@]} -eq 0 ] && printError "no input directories found" && exit 100
+echo "done finding input input directories:"
+echo "INPUTS = ["
+for rdir in ${rdirs[@]}; do echo "  $rdir,"; done
+echo "]"
 
 # make output directory
 mkdir -p $outputDir
@@ -123,18 +174,41 @@ mkdir -p $slurmDir/scripts
 jobList=$slurmDir/job.$jobName.list
 > $jobList
 
-# loop over input files, building the job list
-echo """
-Generating job scripts..."""
-for inputFile in ${inputFiles[@]}; do
+# loop over rdirs
+for rdir in ${rdirs[@]}; do
 
-  # set output name
-  inputBase=$(basename $inputFile .hipo)
-  outputFile=$outputDir/$inputBase.hipo
+  echo "processing '$rdir'..."
 
-  # start job script
-  jobScript=$slurmDir/scripts/$jobName.$inputBase.sh
-  cat > $jobScript << EOF
+  # get list of input files for this rdir
+  inputListFile=$slurmDir/files.reheat.$dataset.$runnum.inputs.list
+  if ${modes['skimdir']}; then
+    realpath $rdir > $inputListFile
+  else
+    rdir_mss=$(realpath $rdir | sed 's;^.*/cache/;/mss/;')
+    rdir_cache=$(realpath $rdir)
+    # `jasmine list-files` requires the stub files on `mss` to exist; if a cook is ongoing,
+    # it's possible the `/mss` directory won't be populated yet, although files are already on `/cache`; for that case,
+    # fall back to "slow" ls
+    jasmine list-files -display json -under $rdir_mss | jq -r '.[].mss' | xargs -n1 basename | sed "s;^;${rdir_cache}/;" > $inputListFile \
+      || { printWarning "falling back to slow ls..."; realpath $rdir/*.hipo > $inputListFile; }
+  fi
+
+  # loop over input files, building the job list
+  echo """
+  Generating job scripts..."""
+  while read inputFile; do
+    # set output name
+    inputBase=$(basename $inputFile .hipo)
+    if ${modes['skimdir']}; then
+      outputSubdir=$outputDir
+    elif ${modes['dstdir']}; then
+      outputSubdir=$(basename $(dirname $inputFile))
+    fi
+    outputFile=$outputSubdir/$inputBase.hipo
+
+    # start job script
+    jobScript=$slurmDir/scripts/$jobName.$inputBase.sh
+    cat > $jobScript << EOF
 #!/usr/bin/env bash
 set -eou pipefail
 # set env vars
@@ -144,16 +218,16 @@ echo "INPUT FILE:  $inputFile"
 echo "OUTPUT FILE: $outputFile"
 EOF
 
-  # handle coatjava
-  if [[ "$coatjava_version" == /* ]]; then
-    cat >> $jobScript << EOF
+    # handle coatjava
+    if [[ "$coatjava_version" == /* ]]; then
+      cat >> $jobScript << EOF
 # set coatjava environment
 export COATJAVA=$coatjava_version
 export CLAS12DIR=\$COATJAVA
 echo "COATJAVA:    \$COATJAVA"
 EOF
-  else
-    cat >> $jobScript << EOF
+    else
+      cat >> $jobScript << EOF
 # load coatjava module
 source /usr/share/Modules/init/bash
 module purge
@@ -162,15 +236,15 @@ module load clas12
 module switch coatjava/$coatjava_version
 echo "COATJAVA:    \$COATJAVA"
 EOF
-  fi
+    fi
 
-  # add main command to the job script
-  case $mtd in
+    # add main command to the job script
+    case $mtd in
 
-    rollover)
-      mkdir -p $outputDir/tmp
-      tmpFile=$outputDir/tmp/$inputBase.hipo
-      cat >> $jobScript << EOF
+      rollover)
+        mkdir -p $outputSubdir/tmp
+        tmpFile=$outputSubdir/tmp/$inputBase.hipo
+        cat >> $jobScript << EOF
 # remove output files, if they exist
 [ -f "$tmpFile" ] && echo "WARNING: clobbering $tmpFile" >&2 && rm -v $tmpFile
 [ -f "$outputFile" ] && echo "WARNING: clobbering $outputFile" >&2 && rm -v $outputFile
@@ -181,21 +255,23 @@ echo "TMP FILE:    $tmpFile"
 rm -v $tmpFile
 EOF
 
-  esac
+    esac
 
-  # finish the job script
-  cat >> $jobScript << EOF
+    # finish the job script
+    cat >> $jobScript << EOF
 # check output file
 $TIMELINESRC/libexec/hipo-check.sh $outputFile
 EOF
 
-  # grant permission and add it to the job list
-  chmod u+x $jobScript
-  echo $jobScript >> $jobList
+    # grant permission and add it to the job list
+    chmod u+x $jobScript
+    echo $jobScript >> $jobList
+  done < <(cat $inputListFile)
+
 done
 
 # run the job(s)
-if $useSlurm; then
+if ! ${modes['series']}; then
   # generate slurm descriptions and/or local scripts
   slurmScript=$(echo $jobList | sed 's;.list$;.slurm;')
   cat > $slurmScript << EOF
