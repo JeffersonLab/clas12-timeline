@@ -77,16 +77,16 @@ bin/qtl histogram -d rga_sp18_6.4GeV_outbending_lo_nSidis --check-cache --skimdi
 bin/qtl histogram -d rga_sp18_6.4GeV_inbending_lo_nSidis  --check-cache --skimdir --focus-physics /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/pass1/dst/train/nSidis
 ```
 
-2. run reheat: --- FIXME: update these commands!
+2. run reheat:
 ```bash
 # 10.6 GeV data
-bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_outbending_nSidis -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_outbending_nSidis -i /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/train/nSidis
-bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_inbending_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_inbending_nSidis  -i /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/dst/train/nSidis
+bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_outbending_nSidis -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_outbending_nSidis --skimdir /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus+1/pass1/dst/train/nSidis
+bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_inbending_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_inbending_nSidis  --skimdir /cache/clas12/rg-a/production/recon/spring2018/10.59gev/torus-1/pass1/dst/train/nSidis
 # 6.4 GeV data
-bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_6.4GeV_outbending_nSidis    -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_outbending_nSidis    -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis
-bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_6.4GeV_inbending_nSidis     -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_inbending_nSidis     -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-1/pass1/dst/train/nSidis
-bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_6.4GeV_outbending_lo_nSidis -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_outbending_lo_nSidis -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+0.75/pass1/dst/train/nSidis
-bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_6.4GeV_inbending_lo_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_inbending_lo_nSidis  -i /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/pass1/dst/train/nSidis
+bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_6.4GeV_outbending_nSidis    -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_outbending_nSidis    --skimdir /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+1/pass1/dst/train/nSidis
+bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_6.4GeV_inbending_nSidis     -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_inbending_nSidis     --skimdir /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-1/pass1/dst/train/nSidis
+bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_6.4GeV_outbending_lo_nSidis -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_outbending_lo_nSidis --skimdir /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus+0.75/pass1/dst/train/nSidis
+bin/qtl reheat -m rollover -c 13.3.0 -d rga_sp18_6.4GeV_inbending_lo_nSidis  -o /volatile/clas12/users/$LOGNAME/reheat/rga_sp18_6.4GeV_inbending_lo_nSidis  --skimdir /cache/clas12/rg-a/production/recon/spring2018/6.42gev/torus-0.75/pass1/dst/train/nSidis
 ```
 
 3. check the results on some runs; for example:
