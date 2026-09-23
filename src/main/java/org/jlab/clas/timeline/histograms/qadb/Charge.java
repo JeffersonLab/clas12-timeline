@@ -207,10 +207,10 @@ public class Charge {
         var fcup_ungated  = hel_bank.getFloat("fcup",       row);
         var clock_gated   = hel_bank.getFloat("clockgated", row);
         var clock_ungated = hel_bank.getFloat("clock",      row);
-        // CUT: avoid t-settle region
-        if(clock_ungated < 1000) continue;
-        // CUT: avoid rows with zero charge, which may be bogus; these are typically for `row>0`
-        if(Math.abs(fcup_gated)<1e-6 || Math.abs(fcup_ungated)<1e-6) continue;
+        // // CUT: avoid t-settle region
+        // if(clock_ungated < 1000) continue;
+        // // CUT: avoid rows with zero charge, which may be bogus; these are typically for `row>0`
+        // if(Math.abs(fcup_gated)<1e-6 || Math.abs(fcup_ungated)<1e-6) continue;
         // fill the STRUCK histograms
         var helicity = hel_bank.getByte("helicity", row);
         switch(helicity) {
