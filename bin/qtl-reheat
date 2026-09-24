@@ -175,12 +175,14 @@ jobList=$slurmDir/job.$jobName.list
 > $jobList
 
 # loop over rdirs
+echo """
+Generating job scripts..."""
 for rdir in ${rdirs[@]}; do
 
   echo "processing '$rdir'..."
 
   # get list of input files for this rdir
-  inputListFile=$slurmDir/files.reheat.$dataset.$runnum.inputs.list
+  inputListFile=$slurmDir/files.reheat.$dataset.$(basename $rdir .hipo).inputs.list
   if ${modes['skimdir']}; then
     realpath $rdir > $inputListFile
   else
@@ -194,15 +196,13 @@ for rdir in ${rdirs[@]}; do
   fi
 
   # loop over input files, building the job list
-  echo """
-  Generating job scripts..."""
   while read inputFile; do
     # set output name
     inputBase=$(basename $inputFile .hipo)
     if ${modes['skimdir']}; then
       outputSubdir=$outputDir
     elif ${modes['dstdir']}; then
-      outputSubdir=$(basename $(dirname $inputFile))
+      outputSubdir=$outputDir/$(basename $(dirname $inputFile))
     fi
     outputFile=$outputSubdir/$inputBase.hipo
 
