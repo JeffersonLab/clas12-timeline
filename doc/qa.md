@@ -24,7 +24,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 ### :ballot_box_with_check: Checklist
 
 <details>
-<summary>- [ ] start a new notes file for this dataset</summary>
+<summary>- 🔳 start a new notes file for this dataset</summary>
 
 - notes files are stored in the [`qadb/notes/` directory](/qadb/notes)
 - must contain _explicit_ commands used, for reproducibility purposes
@@ -35,7 +35,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] choose input data files</summary>
+<summary>- 🔳 choose input data files</summary>
 
 - decide whether to analyze full DSTs or specific train(s)
     - a train is preferred, in particular, a SIDIS-type train
@@ -50,7 +50,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] cross check run list from trains and from DSTs</summary>
+<summary>- 🔳 cross check run list from trains and from DSTs</summary>
 
 - use `qtl xtrain` to make sure the list of DST runs is consistent with the list of runs from a train
   - sometimes there are missing train files
@@ -58,7 +58,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] make sure all data are cached</summary>
+<summary>- 🔳 make sure all data are cached</summary>
 
 - all data files _must_ be on `/cache`
 - use `qtl histogram` with the `--check-cache` option (see [timeline-production procedure](procedure.md) for details of `qtl`)
@@ -71,7 +71,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] verify run-dependent settings are correct for these data</summary>
+<summary>- 🔳 verify run-dependent settings are correct for these data</summary>
 
 - the script [`monitorRead.groovy`](/qa-physics/monitorRead.groovy) contains some run-dependent settings
 - make sure they are correct for these data
@@ -84,7 +84,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] timeline production step 1: produce histogram files</summary>
+<summary>- 🔳 timeline production step 1: produce histogram files</summary>
 
 - this is "step 1" of the [timeline-production procedure](procedure.md)
     - see also other [notes files](/qadb/notes) for examples
@@ -99,7 +99,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] make sure the beam energy from step 1 was correct</summary>
+<summary>- 🔳 make sure the beam energy from step 1 was correct</summary>
 
 - _e.g._, run `grep -wh beamEnergy /farm_out/$LOGNAME/clas12-timeline-*.out | sort -u`
 - the beam energy that was used was also printed when you ran `qtl histogram`; it comes from RCDB
@@ -108,13 +108,13 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] make sure all data are still cached</summary>
+<summary>- 🔳 make sure all data are still cached</summary>
 
 - double check all data files are be on `/cache`, to confirm none were auto-deleted while running `qtl histogram`
 </details>
 
 <details>
-<summary>- [ ] do the data need to be reheated?</summary>
+<summary>- 🔳 do the data need to be reheated?</summary>
 
 - check the charge analysis plots, which were produced by `qtl histogram --check-charge`
     - you can download the `.png` files to make this easier; _e.g._, `tar` them with
@@ -129,7 +129,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] timeline production step 2: produce initial timelines</summary>
+<summary>- 🔳 timeline production step 2: produce initial timelines</summary>
 
 - this is "step 2" of the [timeline-production procedure](procedure.md)
     - see also other [notes files](/qadb/notes) for examples
@@ -139,7 +139,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] QA cut tuning 1: choose the epochs</summary>
+<summary>- 🔳 QA cut tuning 1: choose the epochs</summary>
 
 - the average normalized electron yields (N/F) will jump occasionally in a dataset; for example, we often have jumps when:
     - trigger configuration changes
@@ -161,7 +161,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] QA cut tuning 2: special runs should be in their own epochs</summary>
+<summary>- 🔳 QA cut tuning 2: special runs should be in their own epochs</summary>
 
 - look for special runs; for example, use `cd qadb` then `./import.sh` to import the `outfiles/$dataset/timeline_physics_qa/outdat/qaTree.json` file and look at the resulting `qa/qaTree.json.table` file, which includes RCDB fields such as the shift expert's comments
 - special runs include:
@@ -170,7 +170,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] QA cut tuning 3: tune cut definitions and overrides</summary>
+<summary>- 🔳 QA cut tuning 3: tune cut definitions and overrides</summary>
 
 - add the file `${dataset}.yaml` in the [`qadb/cutdefs`](/qadb/cutdefs) directory
     - you may copy one of the existing ones, most likely the default one
@@ -180,7 +180,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] start a pull request in the QADB repository</summary>
+<summary>- 🔳 start a pull request in the QADB repository</summary>
 
 - create a new `git` branch in [the QADB repository](https://github.com/JeffersonLab/clas12-qadb)
 - make a new QADB dataset directory in `qadb/pass[N]/`, where `[N]` is the pass number
@@ -198,7 +198,7 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] start a pull request in this timeline repository too</summary>
+<summary>- 🔳 start a pull request in this timeline repository too</summary>
 
 - since you should have added the following files, make a pull request here in this repository too:
     - notes files
@@ -207,14 +207,14 @@ If you are performing a manual QA as part of a cross check, skip to the next sec
 </details>
 
 <details>
-<summary>- [ ] double check one more time that all the runs were analyzed</summary>
+<summary>- 🔳 double check one more time that all the runs were analyzed</summary>
 
 - cross check QADB's runs with data on `/mss`
 - the QADB should print warnings if an analyzer tries to use the QADB on data that are not available in the QADB, but we do not want that to happen
 </details>
 
 <details>
-<summary>- [ ] send the QADB to the cross checker</summary>
+<summary>- 🔳 send the QADB to the cross checker</summary>
 
 - we require a cross check of the manual QA results, for all fully cooked datasets; the procedure
   is in the next section
@@ -238,7 +238,7 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 ### :ballot_box_with_check: Checklist
 
 <details>
-<summary>- [ ] import the initial QADB</summary>
+<summary>- 🔳 import the initial QADB</summary>
 
 - run `./import.sh` with the following arguments:
     - the dataset name can be any unique name, such as `rga_fa18_pass2`;
@@ -254,7 +254,7 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 </details>
 
 <details>
-<summary>- [ ] open the table file in another window or text editor</summary>
+<summary>- 🔳 open the table file in another window or text editor</summary>
 
 - the file `qa/qaTree.json.table` is a human-readable version of the QADB
 - open it in a separate window or text editor
@@ -264,7 +264,7 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 </details>
 
 <details>
-<summary>- [ ] open the QA timelines in your browser</summary>
+<summary>- 🔳 open the QA timelines in your browser</summary>
 
 - the QA timelines (produced by the above automatic QA procedure), should also be open on your computer
     - if you are a cross checker, you should have also been given a link to these timelines
@@ -281,7 +281,7 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 </details>
 
 <details>
-<summary>- [ ] scan the table file for non-standard running conditions</summary>
+<summary>- 🔳 scan the table file for non-standard running conditions</summary>
 
 - warning: this step takes a _significant_ amount of time and is rather _tedious_
     - you need attention to detail
@@ -333,7 +333,7 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 </details>
 
 <details>
-<summary>- [ ] scan the timelines for anything else you may have missed</summary>
+<summary>- 🔳 scan the timelines for anything else you may have missed</summary>
 
 - this step is much faster than scanning through the table file, but still requires careful attention to detail
 - this step shifts the focus to the _timeline_ plots, rather than the _table_ file, to see if anything slipped under the radar
@@ -363,7 +363,7 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 </details>
 
 <details>
-<summary>- [ ] if these data are a "Pass 2" or higher, cross check with the previous Pass's QADB</summary>
+<summary>- 🔳 if these data are a "Pass 2" or higher, cross check with the previous Pass's QADB</summary>
 
 - to remain unbiased, you should have _not_ looked at the previous Pass's QADB yet; in any case, cross check
   your new QADB with the old QADB, in case you missed anything
@@ -375,7 +375,7 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 </details>
 
 <details>
-<summary>- [ ] if the Run Group provides a table of runs and notes about them, cross check it with the QADB</summary>
+<summary>- 🔳 if the Run Group provides a table of runs and notes about them, cross check it with the QADB</summary>
 
 - some Run Groups produce a table (spreadsheet) of runs and notes about each of them
 - cross check the QADB, and make changes as necessary
@@ -385,13 +385,13 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 </details>
 
 <details>
-<summary>- [ ] make sure all special runs have the Misc bit, such as empty target runs</summary>
+<summary>- 🔳 make sure all special runs have the Misc bit, such as empty target runs</summary>
 
 - for example, see <https://clas12mon.jlab.org/rga/runs/table/>
 </details>
 
 <details>
-<summary>- [ ] backup your final version of the QADB</summary>
+<summary>- 🔳 backup your final version of the QADB</summary>
 
 - make sure your final `qa/qaTree.json` file is duplicated somewhere on another device
 - if you are the author of the QADB pull request (see last steps of the automatic QA checklist), this pull request is the
@@ -403,7 +403,7 @@ The [`qadb/` directory](/qadb) should be your current-working directory.
 After two people have independently finished all steps in the manual QA checklist, you are ready for the cross check.
 
 <details>
-<summary>- [ ] click here for the procedure</summary>
+<summary>- 🔳 click here for the procedure</summary>
 
 - use `import.sh` to import both versions of the `qaTree.json` file, using separate dataset names
 - open the two `qaTree.json.table` files in a text editor which shows their differences (_e.g._, `vimdiff`)
@@ -420,28 +420,28 @@ with the pull request you opened earlier.
 ### :ballot_box_with_check: Checklist
 
 <details>
-<summary>- [ ] timeline repository: review and merge the pull request in this timeline repository</summary>
+<summary>- 🔳 timeline repository: review and merge the pull request in this timeline repository</summary>
 
 - this is the pull request that contains the QA configuration files, such as notes, epochs lines, and cut configurations
 - don't forget to merge it, to preserve _how_ the QADB was produced
 </details>
 
 <details>
-<summary>- [ ] copy the final QA timelines to the Run Group's directory</summary>
+<summary>- 🔳 copy the final QA timelines to the Run Group's directory</summary>
 
 - they should be in the appropriate Run Group area on <https://clas12mon.jlab.org/>
 - you may need to ask the chef to do this
 </details>
 
 <details>
-<summary>- [ ] clas12-config repository: save the README.json file(s)</summary>
+<summary>- 🔳 clas12-config repository: save the README.json file(s)</summary>
 
 - put the dataset's `README.json` file(s) in the `clas12-config` repository's `wok/` directory
 - the directory structure mimics that on `/cache`
 </details>
 
 <details>
-<summary>- [ ] QADB repository: update the datasets tables in its documentation</summary>
+<summary>- 🔳 QADB repository: update the datasets tables in its documentation</summary>
 
 - link to the timelines
 - fill out all the other fields
@@ -449,13 +449,13 @@ with the pull request you opened earlier.
 </details>
 
 <details>
-<summary>- [ ] QADB repository: make sure the symbolic link in 'qadb/latest' points to the new QADB directory</summary>
+<summary>- 🔳 QADB repository: make sure the symbolic link in 'qadb/latest' points to the new QADB directory</summary>
 
 - you already did this, but check to make sure
 </details>
 
 <details>
-<summary>- [ ] QADB repository: review the QADB pull request, merge, tag a new version, and deploy</summary>
+<summary>- 🔳 QADB repository: review the QADB pull request, merge, tag a new version, and deploy</summary>
 
 - review the pull request
 - merge it
