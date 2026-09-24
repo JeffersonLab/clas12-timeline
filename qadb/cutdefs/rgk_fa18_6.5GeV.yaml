@@ -1,0 +1,12 @@
+OutlierFD:
+  IQR_cut_factor: 4.0
+OutlierFT:
+  IQR_cut_factor: 4.0
+LowLiveTime:
+  min_live_time: 0.9
+ChargeHigh:
+  IQR_cut_factor: 4.0
+PossiblyNoBeam:
+  max_num_events: 40000
+  max_num_electrons: 100
+  max_FC_charge: 20
