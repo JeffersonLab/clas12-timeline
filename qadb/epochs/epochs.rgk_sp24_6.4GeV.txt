@@ -1,0 +1,16 @@
+19308 19323 # alignment runs
+19324 19324 # 75 nA
+19325 19326 # 70.5 nA
+19327 19329 # 40 nA
+19330 19367 # production: 65 nA
+19382 19420 # production, N/q increased
+19421 19540 # production, N/q increased a bit in sectors 1 and 2
+19541 19550 # empty target
+19551 19603 # production
+19604 19604 # empty target
+19605 19605 # lumi scan: 5 nA
+19606 19606 # lumi scan: 15 nA
+19607 19607 # lumi scan: 30 nA
+19608 19608 # lumi scan: 45 nA
+19609 19628 # production
+19629 19659 # production, N/q increased
