@@ -203,14 +203,14 @@ public class Charge {
       var hel_bank = event.getBank("HEL::scaler");
       // loop over all rows of the bank (pileup?)
       for(int row = 0; row < hel_bank.rows(); row++) {
-        var fcup_gated    = hel_bank.getFloat("fcupgated",  row);
-        var fcup_ungated  = hel_bank.getFloat("fcup",       row);
         var clock_gated   = hel_bank.getFloat("clockgated", row);
         var clock_ungated = hel_bank.getFloat("clock",      row);
         // CUT: clock==-1 means missing readout
         if(clock_gated < 0 || clock_ungated < 0) continue;
         // fill the STRUCK histograms
-        var helicity = hel_bank.getByte("helicity", row);
+        var fcup_gated   = hel_bank.getFloat("fcupgated", row);
+        var fcup_ungated = hel_bank.getFloat("fcup",      row);
+        var helicity     = hel_bank.getByte("helicity",   row);
         switch(helicity) {
           case -1 -> {
             struck_charge_hist.incrementBinContent( STRUCKType.gated_hel_n.ordinal(),   fcup_gated    );
