@@ -3,6 +3,9 @@ import org.apache.groovy.dateutil.extensions.DateUtilExtensions
 
 class MYQuery {
 
+  // controls whether or not to actually query MYA; useful for the GitHub CI case where MYA is inaccessible
+  static boolean skipMYA = System.getenv('TIMELINE_SKIP_MYA') == 'true'
+
   // MYA URL
   private def dbURL = 'https://epicsweb.jlab.org/myquery/interval'
 
@@ -19,10 +22,11 @@ class MYQuery {
 
   // timestamps
   private def t0str, t1str
-
+  private def runTimeStamps
 
   // constructor
-  public MYQuery() {
+  public MYQuery(java.util.ArrayList runlist) {
+    setRunTimeStamps(runlist)
   }
 
   // check if an object is null or empty
@@ -31,25 +35,35 @@ class MYQuery {
       throw new Exception(msg)
   }
 
-  // get run start and stop times
-  public def getRunTimeStamps(java.util.ArrayList runlist) {
-
+  // set run start and stop times
+  private void setRunTimeStamps(java.util.ArrayList runlist) {
+    if(skipMYA) {
+      runTimeStamps = runlist.collect{[it, 0, 0]}
+      return
+    }
     // query RCDB
     def result = REST.get("https://clas12mon.jlab.org/rcdb/runs/time?runmin=${runlist.min()}&runmax=${runlist.max()}")
     checkObj(result, "ERROR: MYQuery failed to get time stamps from RCDB")
-    def resultSelected = result.findAll{it[0] in runlist}
-    checkObj(resultSelected, "ERROR: MYQuery failed to get time stamps from RCDB for specified runs")
-
+    runTimeStamps = result.findAll{it[0] in runlist}
+    checkObj(runTimeStamps, "ERROR: MYQuery failed to get time stamps from RCDB for specified runs")
     // re-format
-    def (t0,t1) = [resultSelected[0][1], resultSelected[-1][2]].collect{new Date(((long)it)*1000)}
+    def (t0,t1) = [runTimeStamps[0][1], runTimeStamps[-1][2]].collect{new Date(((long)it)*1000)}
     t1 = DateUtilExtensions.plus(t1, 1)
+    // set `t0str` and `t1str`
     (t0str, t1str) = [t0, t1].collect{DateUtilExtensions.format(it, "yyyy-MM-dd")}
+  }
 
-    return resultSelected
+  // get run start and stop times
+  public def getRunTimeStamps() {
+    return runTimeStamps
   }
 
   // query MYA database
   public def query(String pvName) {
+    if(skipMYA) {
+      System.out.println("used `--skip-mya` -> returning empty payload for MYA query of PV='$pvName'")
+      return []
+    }
     // try 'ops' deployment; if that fails, retry with 'history'
     def exceptionList = []
     try {
@@ -70,6 +84,7 @@ class MYQuery {
     exceptionList.each{it.printStackTrace()}
     throw new Exception("Cannot find PV='$pvName' in range '$t0str' to '$t1str' in MYA DB")
   }
+
   private def queryDeployment(String pvName, String deployment) {
 
     // build query URL
