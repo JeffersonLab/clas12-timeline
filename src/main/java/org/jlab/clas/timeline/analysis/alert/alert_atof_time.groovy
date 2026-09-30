@@ -14,9 +14,6 @@ def has_data = new AtomicBoolean(false)
   def processRun(dir, run) {
 
     data[run] = [run:run]
-    def trigger = dir.getObject('/TRIGGER/bits')
-    def reference_trigger_bit = 0
-    // data[run].put('bits',  trigger)
     (0..<11).collect{component->
       def h1 = dir.getObject(String.format('/ALERT/ATOF_Time_component%02d', component))
       if(h1!=null) {
