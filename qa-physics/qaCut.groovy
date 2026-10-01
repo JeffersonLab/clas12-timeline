@@ -176,7 +176,7 @@ inList.each { obj ->
     //ratioTree[sector][epoch].add(runnum) // useful for testing
   }
 }
-//println T.pPrint(ratioTree)
+//println Tools.prettyPrint(ratioTree)
 
 
 // subroutine for calculating median of a list
@@ -264,7 +264,7 @@ sectors.each { s ->
   }
 }
 //jPrint("cuts.${dataset}.json",cutTree) // output cutTree to JSON
-//println T.pPrint(cutTree)
+//println Tools.prettyPrint(cutTree)
 
 
 // vars and subroutines for splitting graphs into "good" and "bad",
@@ -924,7 +924,7 @@ outHipoEpochs.writeFile(outHipoName)
 
 
 // sort qaTree and output to json file
-//println T.pPrint(qaTree)
+//println Tools.prettyPrint(qaTree)
 qaTree.each { qaRun, qaRunTree -> qaRunTree.sort{it.key.toInteger()} }
 qaTree.sort()
 new File("${inDir}/outdat/qaTree${whichDet}.json").write(JsonOutput.toJson(qaTree))
