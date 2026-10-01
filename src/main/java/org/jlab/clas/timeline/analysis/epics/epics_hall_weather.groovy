@@ -24,7 +24,7 @@ class epics_hall_weather {
 
     def hallDUnitConversion = 4.015 // HallB pressure units = hallDUnitConversion * HallD pressure units
     def myq = new MYQuery(runlist)
-    def epics_data = EpicsTools.queryEpics(myq, pvNames) { name, val ->
+    def epics_data = EpicsTools.queryEpics(myq, pvNames, true) { name, val ->
       name == 'pressure_hall_D' ? val * hallDUnitConversion : val
     }
 

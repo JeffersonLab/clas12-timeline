@@ -49,6 +49,7 @@ class qadb_beam_charge_asym {
   def write(qa_map) {
 
     // PVs: obtained from `clas12-epics` -> `beam_charge_asym.stc`
+    // `pvNames` is a map of PV custom alias -> PV name from MYA/EPICS
     // FIXME: errors may be accessible from changing `q_asym` -> `d_asym`, but not sure if they're actually in MYA history
     def pvNames = [
       EPICS_SLM_qAsym:   'q_asym_3',
@@ -74,7 +75,7 @@ class qadb_beam_charge_asym {
 
     // query MYA for EPICS data
     def myq        = new MYQuery(runlist)
-    def epics_data = EpicsTools.queryEpics(myq, pvNames) { name, val -> val / 100.0 } // convert percent to decimal units
+    def epics_data = EpicsTools.queryEpics(myq, pvNames, false) { pv, val -> val / 100.0 } // convert percent to decimal units
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -111,20 +112,20 @@ class qadb_beam_charge_asym {
       def rn_asym_struck_qg = make_rn 'a1', 'STRUCK_gated',                'Running A_FC from STRUCK q_gated',      'A_FC'
       def rn_asym_struck_qu = make_rn 'a2', 'STRUCK_ungated',              'Running A_FC from STRUCK q_ungated',    'A_FC'
       def rn_struck_qg_helP = make_rn 'b1', 'STRUCK_helPositive_qGated',   'STRUCK helicity=+1 q_gated [nC]',       'q [nC]'
-      def rn_struck_qg_helN = make_rn 'c1', 'STRUCK_helNegative_qGated',   'STRUCK helicity=-1 q_gated [nC]',       'q [nC]'
       def rn_struck_qu_helP = make_rn 'b2', 'STRUCK_helPositive_qUngated', 'STRUCK helicity=+1 q_ungated [nC]',     'q [nC]'
-      def rn_struck_qu_helN = make_rn 'c2', 'STRUCK_helNegative_qUngated', 'STRUCK helicity=-1 q_ungated [nC]',     'q [nC]'
       def rn_struck_n_helP  = make_rn 'b3', 'STRUCK_helPositive_num',      'STRUCK helicity=+1 num. readouts',      'num readouts'
+      def rn_struck_qg_helN = make_rn 'c1', 'STRUCK_helNegative_qGated',   'STRUCK helicity=-1 q_gated [nC]',       'q [nC]'
+      def rn_struck_qu_helN = make_rn 'c2', 'STRUCK_helNegative_qUngated', 'STRUCK helicity=-1 q_ungated [nC]',     'q [nC]'
       def rn_struck_n_helN  = make_rn 'c3', 'STRUCK_helNegative_num',      'STRUCK helicity=-1 num. readouts',      'num readouts'
-      def rn_struck_n_rat   = make_rn 'b4', 'STRUCK_num_rat',              'number of STRUCK readouts ratio N+/N-', 'N+/N-'
+      def rn_struck_n_rat   = make_rn 'z',  'STRUCK_num_rat',              'number of STRUCK readouts ratio N+/N-', 'N+/N-'
 
       // fill run graphs: loop over each QA bin's histograms (`Charge` objects), read the charge etc.
       run_data['histos'].each { binnum, histos ->
         rn_struck_qg_helP.addPoint binnum, histos.getChargeGatedSTRUCK(1),    0, Math.sqrt(histos.getChargeGatedSTRUCK(1))
-        rn_struck_qg_helN.addPoint binnum, histos.getChargeGatedSTRUCK(-1),   0, Math.sqrt(histos.getChargeGatedSTRUCK(-1))
         rn_struck_qu_helP.addPoint binnum, histos.getChargeUngatedSTRUCK(1),  0, Math.sqrt(histos.getChargeUngatedSTRUCK(1))
-        rn_struck_qu_helN.addPoint binnum, histos.getChargeUngatedSTRUCK(-1), 0, Math.sqrt(histos.getChargeUngatedSTRUCK(-1))
         rn_struck_n_helP.addPoint  binnum, histos.getNumReadoutsSTRUCK(1),    0, Math.sqrt(histos.getNumReadoutsSTRUCK(1))
+        rn_struck_qg_helN.addPoint binnum, histos.getChargeGatedSTRUCK(-1),   0, Math.sqrt(histos.getChargeGatedSTRUCK(-1))
+        rn_struck_qu_helN.addPoint binnum, histos.getChargeUngatedSTRUCK(-1), 0, Math.sqrt(histos.getChargeUngatedSTRUCK(-1))
         rn_struck_n_helN.addPoint  binnum, histos.getNumReadoutsSTRUCK(-1),   0, Math.sqrt(histos.getNumReadoutsSTRUCK(-1))
       }
 
@@ -191,7 +192,7 @@ class qadb_beam_charge_asym {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     // loop over runs, filling graphs for EPICS data
-    epics_data.each{ runnum, vals ->
+    epics_data.each{ runnum, epics_vals ->
 
       // get HWP position
       def hwp_cond = rcdbProvider.getCondition(runnum, 'half_wave_plate') // 0=IN, 1=OUT
@@ -206,22 +207,45 @@ class qadb_beam_charge_asym {
       def hwp_corr       = { val -> val * (hwp==0 ? 1 : -1) } // HWP: 0=IN, 1=OUT
       def hwp_corr_title = '(HWP==IN ? +1 : -1)'
 
-      // fill histograms
-      def epics_hists = pvNames.collectEntries{ pv_title, pv_name ->
-        def entries = vals.collect{hwp_corr(it[pv_title])}.sort()
-        [ pv_title, EpicsTools.quantileHist("z_$pv_title$runnum", "$pv_title * $hwp_corr_title;$pv_title", entries) ]
+      // create graphs and histograms, one for each PV
+      def rn_epics_hists = pvNames.collectEntries{ pv, _ ->
+        [
+          pv,
+          EpicsTools.quantileHist(
+            "d__${pv}__${runnum}",
+            "$pv * $hwp_corr_title;$pv",
+            epics_vals.collect{hwp_corr(it[pv])}.sort()
+          )
+        ]
       }
-      vals.each{
-        epics_hists.each{ name, hist -> hist.fill(hwp_corr(it[name])) }
+      def rn_epics_graphs = pvNames.collectEntries{ pv, _ ->
+        def gr = new GraphErrors("e__${pv}__${runnum}")
+        gr.setTitle "$pv * $hwp_corr_title"
+        gr.setTitleY pv
+        gr.setTitleX 'timestamp since run start'
+        [pv, gr]
+      }
+
+      // fill them
+      epics_vals.each{
+        rn_epics_hists.each{ pv, hist ->
+          def pv_val = hwp_corr it[pv]
+          hist.fill(pv_val)
+        }
+        rn_epics_graphs.each{ pv, gr ->
+          def pv_val = hwp_corr it[pv]
+          gr.addPoint(it['timestamp'], pv_val, 0, 0)
+        }
       }
 
       // fill timeline graphs
-      tl_asym_epics_fc.addPoint  runnum, epics_hists['EPICS_FCUP_qAsym'].getMean(), 0, 0
-      tl_asym_epics_slm.addPoint runnum, epics_hists['EPICS_SLM_qAsym'].getMean(),  0, 0
+      tl_asym_epics_fc.addPoint  runnum, rn_epics_hists['EPICS_FCUP_qAsym'].getMean(), 0, 0
+      tl_asym_epics_slm.addPoint runnum, rn_epics_hists['EPICS_SLM_qAsym'].getMean(),  0, 0
 
       // write out
       tdir.cd("/$runnum")
-      epics_hists.each{ name, hist -> tdir.addDataSet(hist) }
+      rn_epics_hists.each{ pv, hist -> tdir.addDataSet(hist) }
+      rn_epics_graphs.each{ pv, gr -> tdir.addDataSet(gr) }
     }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

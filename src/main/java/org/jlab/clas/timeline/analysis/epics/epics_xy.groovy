@@ -38,7 +38,7 @@ class epics_xy {
 
     def myq = new MYQuery(runlist)
     myq.querySettings['l'] = "${1000*runlist.size()}" // downsample the payload, since it's too big for a full run period
-    def epics_data = EpicsTools.queryEpics myq, pvNames
+    def epics_data = EpicsTools.queryEpics myq, pvNames, true
 
     def out = new TDirectory()
 
