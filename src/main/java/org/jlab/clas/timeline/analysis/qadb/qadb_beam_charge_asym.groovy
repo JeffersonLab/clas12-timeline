@@ -214,7 +214,7 @@ class qadb_beam_charge_asym {
           EpicsTools.quantileHist(
             "d__${pv}__${runnum}",
             "$pv * $hwp_corr_title;$pv",
-            epics_vals.collect{hwp_corr(it[pv])}.sort()
+            epics_vals.findAll{it[pv]!=null}.collect{hwp_corr(it[pv])}.sort()
           )
         ]
       }
@@ -229,12 +229,16 @@ class qadb_beam_charge_asym {
       // fill them
       epics_vals.each{
         rn_epics_hists.each{ pv, hist ->
-          def pv_val = hwp_corr it[pv]
-          hist.fill(pv_val)
+          if(it[pv] != null) {
+            def pv_val = hwp_corr it[pv]
+            hist.fill(pv_val)
+          }
         }
         rn_epics_graphs.each{ pv, gr ->
-          def pv_val = hwp_corr it[pv]
-          gr.addPoint(it['timestamp'], pv_val, 0, 0)
+          if(it[pv] != null) {
+            def pv_val = hwp_corr it[pv]
+            gr.addPoint(it['timestamp'], pv_val, 0, 0)
+          }
         }
       }
 

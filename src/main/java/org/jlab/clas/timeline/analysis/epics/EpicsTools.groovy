@@ -16,7 +16,7 @@ class EpicsTools {
    * @param pv_names map of PV alias (a custom PV name, local to here) to actual PV name
    * @param carry_forward if true, use last-known PV value for each timestamp output, otherwise just use the current values and set the rest to be null
    * @param value_transform if defined, apply this transformation to the PV values; signature: {@code pvName, pvVal -> pvValTransformed}
-   * @return the MYA data
+   * @return the MYA data; see source-code comments below for the data structure description
    */
   static def queryEpics(MYQuery myq, Map pv_names, boolean carry_forward, Closure value_transform = null) {
 
@@ -75,11 +75,20 @@ class EpicsTools {
        the return value, `mya_data_result`, will look like:
        |
        |_ runnum 1
-       |  |__ 'time'      -> time since previous reading
-       |  |__ 'timestamp' -> time since run start
-       |  |__ PV alias 0  -> PV value
-       |  :
-       |  |__ PV alias N  -> PV value
+       |  |
+       |  |__ [ // lists of dicts, one for each timestamp together with PV vals
+       |        {
+       |          'time'      -> time since previous reading
+       |          'timestamp' -> time since run start
+       |          PV alias 0  -> PV value
+       |          :
+       |          PV alias N  -> PV value
+       |        },
+       |        {
+       |          'time' -> ... // same thing for the next timestamp
+       |        },
+       |        :
+       |      ]
        |
        |_ runnum 2 ...
 
@@ -136,7 +145,10 @@ class EpicsTools {
    */
   static H1F quantileHist(String name, String title, List entries) {
     // compute the median and IQR
-    def nlen            = entries.size()
+    def nlen = entries.size()
+    if(nlen==0) {
+      return new H1F(name, title, 2, -1, 1) // won't be filled, but create it anyway
+    }
     def (nq1, nq2, nq3) = [nlen/4 as int, nlen/2 as int, nlen*3/4 as int]
     def (q1, q2, q3)    = [entries[nq1], entries[nq2], entries[nq3]]
     def (med, iqr)      = [q2, q3-q1]
