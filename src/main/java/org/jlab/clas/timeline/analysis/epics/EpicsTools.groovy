@@ -16,7 +16,7 @@ class EpicsTools {
    * @param pv_names map of PV alias (a custom PV name, local to here) to actual PV name
    * @param carry_forward if true, use last-known PV value for each timestamp output, otherwise just use the current values and set the rest to be null
    * @param value_transform if defined, apply this transformation to the PV values; signature: {@code pvName, pvVal -> pvValTransformed}
-   * @return the MYA data; see source-code comments below for the data structure description
+   * @return the MYA data payload; see source-code comments below for the data structure description
    */
   static def queryEpics(MYQuery myq, Map pv_names, boolean carry_forward, Closure value_transform = null) {
 
@@ -72,7 +72,7 @@ class EpicsTools {
     // - if carry_forward == false, just take the current reading's values and let PVs that were not read out be written as 'null'
     // also tags each entry with elapsed 'time' since the previous reading and 'timestamp' since the beginning of the run
     /*
-       the return value, `mya_data_result`, will look like:
+       the return value, `mya_data_payload`, will look like:
        |
        |_ runnum 1
        |  |
@@ -96,7 +96,7 @@ class EpicsTools {
     def in_run = false
     def runnum, ts_runstart, ts_prev = null
     def vals0 = pv_names.collectEntries{ pv_alias, pv_name -> [pv_alias, null] }
-    def mya_data_result = [:].withDefault{[]}
+    def mya_data_payload = [:].withDefault{[]}
     mya_data_sorted.each{ timeread ->
       if(timeread.run != null) { // if timeread type 2 (run and timestamp)
         if(!in_run) { // is run-start -> set `runnum` to be the run number and `ts_runstart` to be the timestamp
@@ -111,8 +111,8 @@ class EpicsTools {
       } else if(in_run) { // if timeread type 1 (PV info) AND timestamp is between run-start and run-stop
         // either carry forward the last known reading for each PV, or just take the current reading's values
         def vals = carry_forward ? vals0 : pv_names.collectEntries{ pv_alias, pv_name -> [pv_alias, timeread[pv_alias]] }
-        // populate `mya_data_result`
-        mya_data_result[runnum].push(
+        // populate `mya_data_payload`
+        mya_data_payload[runnum].add(
           [
             'time':      timeread.ts - ts_prev,
             'timestamp': timeread.ts - ts_runstart,
@@ -122,7 +122,7 @@ class EpicsTools {
       }
       // time since previous reading
       ts_prev = timeread.ts
-      // populate `vals0` with the current PV vals, so that when we go to populate `mya_data_result`, the
+      // populate `vals0` with the current PV vals, so that when we go to populate `mya_data_payload`, the
       // PV values will be carried forward as the last-known values
       pv_names.each{ pv_alias, pv_name ->
         if(timeread[pv_alias]!=null) {
@@ -131,10 +131,25 @@ class EpicsTools {
       }
     }
     System.out.println('MYA data segmented')
-    // System.out.println Tools.prettyPrint('mya_data_result', mya_data_result)
-    mya_data_result
+    // System.out.println Tools.prettyPrint('mya_data_payload', mya_data_payload)
+    mya_data_payload
   }
 
+
+  /**
+   * Interleave 2 MYA data payloads (returned from {@link queryEpics}) together, sorting by their timestamps
+   * @param mya_data_1 the first payload
+   * @param mya_data_2 the second payload
+   * @return the interleaved payload
+   */
+  static def interleave(mya_data_1, mya_data_2) {
+    return mya_data_1.collectEntries{ runnum, epics_vals ->
+      [
+        runnum,
+        (epics_vals + mya_data_2[runnum]).sort{it.timestamp}
+      ]
+    }
+  }
 
   /**
    * Build a 1D histogram with a quantile-based range from a raw list of values.

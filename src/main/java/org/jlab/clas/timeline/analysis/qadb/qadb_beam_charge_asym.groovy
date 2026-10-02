@@ -73,9 +73,19 @@ class qadb_beam_charge_asym {
       System.exit(100)
     }
 
-    // query MYA for EPICS data
-    def myq        = new MYQuery(runlist)
-    def epics_data = EpicsTools.queryEpics(myq, pvNames, false) { pv, val -> val / 100.0 } // convert percent to decimal units
+    // query MYA for EPICS data; done in a closure to minimize duplicate heap allocations
+    def get_epics_data = {
+      // get BCA data
+      def bca_myq = new MYQuery(runlist)
+      def bca_data = EpicsTools.queryEpics(bca_myq, pvNames, false) { pv, val -> val / 100.0 } // convert percent to decimal units
+      // get BCM data separately
+      def bcm_myq = new MYQuery(runlist)
+      def bcm_data = EpicsTools.queryEpics bcm_myq, [beam_current: 'IPM2H01'], false
+      // interleave them
+      EpicsTools.interleave bca_data, bcm_data
+    }
+    def epics_data = get_epics_data()
+    System.out.println Tools.prettyPrint('epics_data', epics_data)
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -226,18 +236,42 @@ class qadb_beam_charge_asym {
         [pv, gr]
       }
 
-      // fill them
-      epics_vals.each{
-        rn_epics_hists.each{ pv, hist ->
-          if(it[pv] != null) {
-            def pv_val = hwp_corr it[pv]
-            hist.fill(pv_val)
+      // fill graphs
+      epics_vals.each{ vals ->
+        rn_epics_graphs.each{ pv, gr ->
+          if(vals[pv] != null) {
+            def pv_val = hwp_corr vals[pv]
+            gr.addPoint(vals['timestamp'], pv_val, 0, 0)
           }
         }
-        rn_epics_graphs.each{ pv, gr ->
-          if(it[pv] != null) {
-            def pv_val = hwp_corr it[pv]
-            gr.addPoint(it['timestamp'], pv_val, 0, 0)
+      }
+
+      // fill histograms
+      rn_epics_hists.each{ pv, hist ->
+        def curr_sum     = 0.0
+        def curr_count   = 0
+        def curr_ts_prev = null
+        def asym_ts_prev = null
+        // we gottta loop over `epics_vals` for each `pv`, so we can get the appropriate beam current averages
+        epics_vals.each{ vals ->
+          if(vals.beam_current != null) {
+            if(curr_ts_prev != null) {
+              def time_between = vals.timestamp - curr_ts_prev
+              curr_sum   += vals.beam_current * time_between
+              curr_count += time_between
+            }
+            curr_ts_prev = vals.timestamp
+          }
+          else if(vals[pv] != null) {
+            if(asym_ts_prev != null) {
+              def beam_current_ave = Tools.safeRatio curr_sum, curr_count
+              def time_between_reads = vals.timestamp - asym_ts_prev
+              def pv_val = hwp_corr vals[pv]
+              hist.fill pv_val, beam_current_ave * time_between_reads
+              curr_sum = 0.0
+              curr_count = 0
+            }
+            asym_ts_prev = vals.timestamp
           }
         }
       }
