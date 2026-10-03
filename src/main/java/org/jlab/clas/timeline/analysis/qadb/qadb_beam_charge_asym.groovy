@@ -49,15 +49,16 @@ class qadb_beam_charge_asym {
   def write(qa_map) {
 
     // PVs: obtained from `clas12-epics` -> `beam_charge_asym.stc`
-    // `pvNames` is a map of PV custom alias -> PV name from MYA/EPICS
+    // these are maps of PV custom alias -> PV name from MYA/EPICS
     // FIXME: errors may be accessible from changing `q_asym` -> `d_asym`, but not sure if they're actually in MYA history
-    def pvNames = [
+    def pv_names_asym = [
       EPICS_SLM_qAsym:   'q_asym_3',
       EPICS_FCUP_qAsym:  'q_asym_7',
       // EPICS_2C21A_qAsym: 'q_asym_16', // all zero, at least for RG-C
       // EPICS_2C24A_qAsym: 'q_asym_20', // all zero, at least for RG-C
       // EPICS_2H01_qAsym:  'q_asym_24', // all zero, at least for RG-C
     ]
+    def pv_names_curr = [beam_curr: 'IPM2H01']
 
     // connect to RCDB
     def rcdbURL = System.getenv('RCDB_CONNECTION')
@@ -76,13 +77,13 @@ class qadb_beam_charge_asym {
     // query MYA for EPICS data; done in a closure to minimize duplicate heap allocations
     def get_epics_data = {
       // get BCA data
-      def bca_myq = new MYQuery(runlist)
-      def bca_data = EpicsTools.queryEpics(bca_myq, pvNames, false) { pv, val -> val / 100.0 } // convert percent to decimal units
+      def myq_asym = new MYQuery(runlist)
+      def data_asym = EpicsTools.queryEpics(myq_asym, pv_names_asym, false) { pv, val -> val / 100.0 } // convert percent to decimal units
       // get BCM data separately
-      def bcm_myq = new MYQuery(runlist)
-      def bcm_data = EpicsTools.queryEpics bcm_myq, [beam_current: 'IPM2H01'], false
+      def myq_curr = new MYQuery(runlist)
+      def data_curr = EpicsTools.queryEpics myq_curr, pv_names_curr, false
       // interleave them
-      EpicsTools.interleave bca_data, bcm_data
+      EpicsTools.interleave data_asym, data_curr
     }
     def epics_data = get_epics_data()
     System.out.println Tools.prettyPrint('epics_data', epics_data)
@@ -218,7 +219,7 @@ class qadb_beam_charge_asym {
       def hwp_corr_title = '(HWP==IN ? +1 : -1)'
 
       // create graphs and histograms, one for each PV
-      def rn_epics_hists = pvNames.collectEntries{ pv, _ ->
+      def rn_epics_hists = pv_names_asym.collectEntries{ pv, _ ->
         [
           pv,
           EpicsTools.quantileHist(
@@ -228,12 +229,48 @@ class qadb_beam_charge_asym {
           )
         ]
       }
-      def rn_epics_graphs = pvNames.collectEntries{ pv, _ ->
+      def rn_epics_graphs = pv_names_asym.collectEntries{ pv, _ ->
         def gr = new GraphErrors("e__${pv}__${runnum}")
-        gr.setTitle "$pv * $hwp_corr_title"
+        gr.setTitle  "$pv * $hwp_corr_title"
         gr.setTitleY pv
         gr.setTitleX 'timestamp since run start'
         [pv, gr]
+      }
+      rn_curr_graph = new GraphErrors("f__beam_curr__${runnum}")
+      rn_curr_graph.setTitle  'beam current'
+      rn_curr_graph.setTitleY 'beam current [nA]'
+      rn_curr_graph.setTitleX 'timestamp since run start'
+
+      // fill histograms, weighting by charge obtained from <current> * delta_time
+      // - for a given PV and histogram entry:
+      //   - the <current> is the average of the beam-current readings, weighted by the time between each of those readings
+      //   - delta_time is the time between readings of this PV
+      rn_epics_hists.each{ pv, hist ->
+        def curr_sum   = 0.0
+        def curr_count = 0
+        def curr_ts0   = null
+        def asym_ts0   = null
+        epics_vals.each{ vals ->
+          if(vals.beam_curr != null) { // if it's a beam current reading
+            if(curr_ts0 != null) { // if we know the previous timestamp (i.e., skips first reading)
+              def delta_time =  vals.timestamp - curr_ts0      // time since last current reading
+              curr_sum       += vals.beam_curr * delta_time // sum, weighted by delta_time
+              curr_count     += delta_time
+            }
+            curr_ts0 = vals.timestamp
+          }
+          else if(vals[pv] != null) { // otherwise if it's a BCA reading that includes the current `pv`
+            if(asym_ts0 != null) { // if we know the previous timestamp (i.e., skips first reading)
+              def beam_curr_ave = Tools.safeRatio curr_sum, curr_count // average current, weighted by time between each current reading
+              def delta_time       = vals.timestamp - asym_ts0            // time since last asym `pv` reading
+              def pv_val           = hwp_corr vals[pv]                    // HWP correction
+              hist.fill pv_val, beam_curr_ave * delta_time             // fill histogram, weighting by charge
+              curr_sum   = 0.0 // reset the current sums
+              curr_count = 0
+            }
+            asym_ts0 = vals.timestamp
+          }
+        }
       }
 
       // fill graphs
@@ -241,38 +278,11 @@ class qadb_beam_charge_asym {
         rn_epics_graphs.each{ pv, gr ->
           if(vals[pv] != null) {
             def pv_val = hwp_corr vals[pv]
-            gr.addPoint(vals['timestamp'], pv_val, 0, 0)
+            gr.addPoint vals.timestamp, pv_val, 0, 0
           }
         }
-      }
-
-      // fill histograms
-      rn_epics_hists.each{ pv, hist ->
-        def curr_sum     = 0.0
-        def curr_count   = 0
-        def curr_ts_prev = null
-        def asym_ts_prev = null
-        // we gottta loop over `epics_vals` for each `pv`, so we can get the appropriate beam current averages
-        epics_vals.each{ vals ->
-          if(vals.beam_current != null) {
-            if(curr_ts_prev != null) {
-              def time_between = vals.timestamp - curr_ts_prev
-              curr_sum   += vals.beam_current * time_between
-              curr_count += time_between
-            }
-            curr_ts_prev = vals.timestamp
-          }
-          else if(vals[pv] != null) {
-            if(asym_ts_prev != null) {
-              def beam_current_ave = Tools.safeRatio curr_sum, curr_count
-              def time_between_reads = vals.timestamp - asym_ts_prev
-              def pv_val = hwp_corr vals[pv]
-              hist.fill pv_val, beam_current_ave * time_between_reads
-              curr_sum = 0.0
-              curr_count = 0
-            }
-            asym_ts_prev = vals.timestamp
-          }
+        if(vals.beam_curr != null) {
+          rn_curr_graph.addPoint vals.timestamp, vals.beam_curr, 0, 0
         }
       }
 
@@ -284,6 +294,7 @@ class qadb_beam_charge_asym {
       tdir.cd("/$runnum")
       rn_epics_hists.each{ pv, hist -> tdir.addDataSet(hist) }
       rn_epics_graphs.each{ pv, gr -> tdir.addDataSet(gr) }
+      tdir.addDataSet rn_curr_graph
     }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
