@@ -236,7 +236,7 @@ class qadb_beam_charge_asym {
         gr.setTitleX 'timestamp since run start'
         [pv, gr]
       }
-      rn_curr_graph = new GraphErrors("f__beam_curr__${runnum}")
+      def rn_curr_graph = new GraphErrors("f__beam_curr__${runnum}")
       rn_curr_graph.setTitle  'beam current'
       rn_curr_graph.setTitleY 'beam current [nA]'
       rn_curr_graph.setTitleX 'timestamp since run start'
