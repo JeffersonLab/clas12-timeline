@@ -215,7 +215,12 @@ class Tools {
   }
 
   // pretty printer
-  def pPrint = { str -> JsonOutput.prettyPrint(JsonOutput.toJson(str)) }
+  static def prettyPrint(obj) {
+    JsonOutput.prettyPrint(JsonOutput.toJson(obj))
+  }
+  static def prettyPrint(name, obj) {
+    name + ":::\n" + JsonOutput.prettyPrint(JsonOutput.toJson(obj))
+  }
 
   // print text output
   def printStatus = { str -> println "STATUS: $str" }
