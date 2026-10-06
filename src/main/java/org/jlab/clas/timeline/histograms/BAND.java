@@ -21,7 +21,11 @@ public class BAND{
   public int e_part_ind, e_sect, e_track_ind, pip_part_ind, pipm_part_ind, pip_sect, pim_sect;
   public float RFtime, e_mom, e_theta, e_phi, e_vx, e_vy, e_vz, e_ecal_X, e_ecal_Y, e_ecal_Z, e_ecal_E, e_track_chi2, e_vert_time, e_vert_time_RF, e_Q2, e_xB, e_W;
 
-  public H1F[] H_BAND_adcCor, H_BAND_meantimeadc, H_BAND_meantimetdc, H_BAND_lasertimeadc;
+  public H1F[] H_BAND_adcCor;        // related timeline: ['band_adccor']
+  public H1F[] H_BAND_meantimeadc;   // related timeline: ['band_meantimeadc']
+  public H1F[] H_BAND_meantimetdc;   // related timeline: ['band_meantimetdc']
+  public H1F[] H_BAND_lasertimeadc;  // related timeline: ['band_lasertime']
+
   public float speedoflight;
 
   public IndexedTable InverseTranslationTable;
