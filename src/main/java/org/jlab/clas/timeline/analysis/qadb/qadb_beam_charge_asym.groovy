@@ -124,11 +124,11 @@ class qadb_beam_charge_asym {
       def rn_asym_struck_qu = make_rn 'a2', 'STRUCK_ungated',              'Running A_FC from STRUCK q_ungated',    'A_FC'
       def rn_struck_qg_helP = make_rn 'b1', 'STRUCK_helPositive_qGated',   'STRUCK helicity=+1 q_gated [nC]',       'q [nC]'
       def rn_struck_qu_helP = make_rn 'b2', 'STRUCK_helPositive_qUngated', 'STRUCK helicity=+1 q_ungated [nC]',     'q [nC]'
-      def rn_struck_n_helP  = make_rn 'b3', 'STRUCK_helPositive_num',      'STRUCK helicity=+1 num. readouts',      'num readouts'
+      def rn_struck_n_helP  = make_rn 'y1', 'STRUCK_helPositive_num',      'STRUCK helicity=+1 num. readouts',      'num readouts'
       def rn_struck_qg_helN = make_rn 'c1', 'STRUCK_helNegative_qGated',   'STRUCK helicity=-1 q_gated [nC]',       'q [nC]'
       def rn_struck_qu_helN = make_rn 'c2', 'STRUCK_helNegative_qUngated', 'STRUCK helicity=-1 q_ungated [nC]',     'q [nC]'
-      def rn_struck_n_helN  = make_rn 'c3', 'STRUCK_helNegative_num',      'STRUCK helicity=-1 num. readouts',      'num readouts'
-      def rn_struck_n_rat   = make_rn 'z',  'STRUCK_num_rat',              'number of STRUCK readouts ratio N+/N-', 'N+/N-'
+      def rn_struck_n_helN  = make_rn 'y2', 'STRUCK_helNegative_num',      'STRUCK helicity=-1 num. readouts',      'num readouts'
+      def rn_struck_n_rat   = make_rn 'y3', 'STRUCK_num_rat',              'number of STRUCK readouts ratio N+/N-', 'N+/N-'
 
       // fill run graphs: loop over each QA bin's histograms (`Charge` objects), read the charge etc.
       run_data['histos'].each { binnum, histos ->
@@ -197,6 +197,8 @@ class qadb_beam_charge_asym {
       tdir.addDataSet rn_asym_struck_qg
       tdir.addDataSet rn_asym_struck_qu
       tdir.addDataSet rn_struck_n_rat
+      tdir.addDataSet rn_struck_n_helP
+      tdir.addDataSet rn_struck_n_helN
 
     } // end loop over runs
 
@@ -236,7 +238,7 @@ class qadb_beam_charge_asym {
         gr.setTitleX 'timestamp since run start'
         [pv, gr]
       }
-      def rn_curr_graph = new GraphErrors("f__beam_curr__${runnum}")
+      def rn_curr_graph = new GraphErrors("z__beam_curr__${runnum}")
       rn_curr_graph.setTitle  'beam current'
       rn_curr_graph.setTitleY 'beam current [nA]'
       rn_curr_graph.setTitleX 'timestamp since run start'
@@ -292,7 +294,6 @@ class qadb_beam_charge_asym {
 
       // write out
       tdir.cd("/$runnum")
-      rn_epics_hists.each{ pv, hist -> tdir.addDataSet(hist) }
       rn_epics_graphs.each{ pv, gr -> tdir.addDataSet(gr) }
       tdir.addDataSet rn_curr_graph
     }
