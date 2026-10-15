@@ -6,7 +6,7 @@ import org.jlab.io.base.DataEvent;
 import org.jlab.io.base.DataBank;
 
 /**
- * @author dilks
+ * @author Marco Filippini
  */
 public class Helicity {
 
