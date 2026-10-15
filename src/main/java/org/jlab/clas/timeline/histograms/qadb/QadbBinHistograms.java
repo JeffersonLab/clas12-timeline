@@ -12,6 +12,7 @@ public class QadbBinHistograms {
   public Charge charge;
   private Electron electron;
   private Yield yield;
+  private Helicity helicity;
 
   // ----------------------------------------------------------------------------------
 
@@ -24,6 +25,7 @@ public class QadbBinHistograms {
     charge = new Charge(bin_num);
     electron = new Electron();
     yield = new Yield(bin_num);
+    helicity = new Helicity(bin_num);
   }
 
   // ----------------------------------------------------------------------------------
@@ -37,6 +39,7 @@ public class QadbBinHistograms {
     charge.processEvent(event);
     electron.processEvent(event);
     yield.processEvent(event, electron);
+    helicity.processEvent(event);
   }
 
   // ----------------------------------------------------------------------------------
@@ -49,6 +52,7 @@ public class QadbBinHistograms {
   {
     charge.write(tdir);
     yield.write(tdir);
+    helicity.write(tdir);
   }
 
 }
