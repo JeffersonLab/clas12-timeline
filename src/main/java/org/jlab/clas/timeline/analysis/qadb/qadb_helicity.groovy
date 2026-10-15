@@ -63,6 +63,7 @@ class qadb_helicity {
     def tl_hel_positive  = make_tl('helicityPositive')
     def tl_hel_undefined = make_tl('helicityUndefined')
     def tl_hel_negative  = make_tl('helicityNegative')
+    def tl_hel_defined   = make_tl('helicityDefined')
 
     // Loop over runs.
     data_map.sort { it.key }.each { runnum, run_data ->
@@ -228,6 +229,13 @@ class qadb_helicity {
         0
       )
 
+      tl_hel_defined.addPoint(
+        runnum,
+        Tools.safeRatio(n_positive_run + n_negative_run, n_total_run),
+        0,
+        0
+      )
+
       // Write graphs for this run.
       tdir.mkdir("/${runnum}")
       tdir.cd("/${runnum}")
@@ -248,6 +256,7 @@ class qadb_helicity {
     tdir.addDataSet(tl_hel_positive)
     tdir.addDataSet(tl_hel_undefined)
     tdir.addDataSet(tl_hel_negative)
+    tdir.addDataSet(tl_hel_defined)
 
     // Write the output HIPO file.
     tdir.writeFile('qadb_helicity.hipo')
