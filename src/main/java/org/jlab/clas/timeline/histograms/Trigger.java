@@ -25,15 +25,23 @@ public class Trigger {
   }
 
   public void processEvent(DataEvent event){
-    DataBank ev   = event.getBank("REC::event");
-    int helicity  = ev.rows() > 0 ? ev.getByte("helicity",0) : 0;
+    if (!event.hasBank("RUN::config")) return;
+    // get helicity
+    int helicity = 0;
+    if (event.hasBank("REC::Event")) {
+      DataBank ev_bank = event.getBank("REC::Event");
+      helicity = ev_bank.rows() > 0 ? ev_bank.getByte("helicity",0) : 0;
+    }
+    // get trigger info
     DataBank bank = event.getBank("RUN::config");
     if (bank.rows()>0) {
+      // total number of triggers
       bits.fill(NBITS);
       switch(helicity) {
         case  1 -> bits_helP.fill(NBITS);
         case -1 -> bits_helN.fill(NBITS);
       }
+      // number of triggers for each bit
       long t = bank.getLong("trigger",0);
       for (int i=0; i<NBITS; ++i) {
         if ( 1 == ((t>>i)&1) ) {
@@ -52,6 +60,8 @@ public class Trigger {
     dir.mkdir(TDIR);
     dir.cd(TDIR);
     dir.addDataSet(bits);
+    dir.addDataSet(bits_helP);
+    dir.addDataSet(bits_helN);
     dir.writeFile(outputDir + String.format("/out_TRIGGER_%d.hipo",runNumber));
   }
 
