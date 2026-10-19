@@ -213,24 +213,22 @@ def find_input_files = { path, basename ->
   }
   result.sort()
 }
-def fnames = find_input_files(inputDirArg, inBasename)
+def inFiles   = find_input_files(inputDirArg, inBasename)
+def trigFiles = trigDirArg != null ? find_input_files(trigDirArg, 'out_TRIGGER') : null
 
 // start QADB
 if(timelineArg == 'qadb') {
-  engine.start(fnames)
-  if(trigDirArg != null) {
-    engine.trig_files = find_input_files(trigDirArg, 'out_TRIGGER')
-  }
+  engine.start(inFiles)
 }
 
 // loop over input HIPO histogram files
 def allow_timeline = false
-fnames.each{ fname ->
+inFiles.each{ inFile ->
   try{
-    println("debug: "+engine.getClass().getSimpleName()+" started $fname")
+    println("debug: "+engine.getClass().getSimpleName()+" started $inFile")
 
     // get run number from directory name
-    def run = Tools.getRunNumberForAnalysis fname
+    def run = Tools.getRunNumberForAnalysis inFile
 
     // exclude certain run ranges from certain timelines
     def allow_run = true
@@ -250,16 +248,26 @@ fnames.each{ fname ->
     if(allow_run) {
       allow_timeline = true // allow the timeline if at least one run is allowed
       TDirectory dir = new TDirectory()
-      dir.readFile(fname)
+      dir.readFile(inFile)
       engine.processRun(dir, run)
-      println("debug: "+engine.getClass().getSimpleName()+" finished $fname")
+      println("debug: "+engine.getClass().getSimpleName()+" finished $inFile")
     }
     else {
       println("debug: "+engine.getClass().getSimpleName()+" excludes run $run")
     }
 
+    // run trigger analysis, if the user asked for it; currently _only_ the `qadb` engine uses this
+    if(allow_run && trigDirArg != null && timelineArg == 'qadb') {
+      def trigFile = trigFiles.find{Tools.getRunNumberForAnalysis(it) == run} // find the 'out_TRIGGER' file for this run
+      if(trigFile != null) {
+        TDirectory dir = new TDirectory()
+        dir.readFile(trigFile)
+        engine.processTrig(dir, run)
+      }
+    }
+
   } catch(Exception ex) {
-    System.err.println("error: "+engine.getClass().getSimpleName()+" didn't process $fname, due to exception:")
+    System.err.println("error: "+engine.getClass().getSimpleName()+" didn't process $inFile, due to exception:")
     ex.printStackTrace()
     System.exit(100)
   }

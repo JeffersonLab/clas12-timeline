@@ -89,8 +89,8 @@ public class run_histograms {
     FT         ana_ft       = null;
     BAND       ana_band     = null;
     ALERT      ana_alert    = null;
-    helicity   ana_helicity = null;
-    trigger    ana_trigger  = null;
+    Helicity   ana_helicity = null;
+    Trigger    ana_trigger  = null;
 
     // instantiate histogramming classes
     if(enableHistosQadb) {
@@ -113,10 +113,10 @@ public class run_histograms {
       ana_ft       = new FT(runNum,outputDir,useTB);
       ana_band     = new BAND(runNum,outputDir,EB,useTB);
       ana_alert    = dataset == "rgl" ? new ALERT(runNum,outputDir,EB,useTB) : null;
-      ana_helicity = new helicity();
+      ana_helicity = new Helicity();
     }
     if(enableHistosTrig) {
-      ana_trigger = new trigger();
+      ana_trigger = new Trigger();
     }
 
     // fill QADB charge histograms

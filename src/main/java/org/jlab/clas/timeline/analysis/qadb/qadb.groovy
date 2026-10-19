@@ -8,8 +8,6 @@ class qadb {
   private def qa_map = [:]
   private boolean qa_allowed = false
 
-  public def trig_files = null
-
   private def ana_qadb_charge = new qadb_charge()
   private def ana_qadb_yield = new qadb_yield()
   private def ana_qadb_helicity = new qadb_helicity()
@@ -21,7 +19,7 @@ class qadb {
    * read the QADB binning scheme for all files
    * @param histo_files the list of HIPO files to be analyzed
    */
-  public def start(histo_files) {
+  public void start(histo_files) {
     if(histo_files.isEmpty()) {
       System.err.println "WARNING: `qadb.start` called with no input HIPO histogram files; no QADB timelines will be produced"
       return
@@ -35,7 +33,12 @@ class qadb {
 
   // ----------------------------------------------------------------------------------
 
-  public def processRun(dir, run) {
+  /**
+   * process a run's histograms
+   * @param dir the {@code TDirectory} to read
+   * @param run the run number
+   */
+  public void processRun(dir, run) {
     if(qa_allowed) {
       ana_qadb_charge.processRun(dir, run, qa_map)
       ana_qadb_yield.processRun(dir, run, qa_map)
@@ -46,12 +49,26 @@ class qadb {
 
   // ----------------------------------------------------------------------------------
 
-  public def write() {
+  /** analyse the histograms and write the output timeline file */
+  public void write() {
     if(qa_allowed) {
       ana_qadb_charge.write(qa_map)
       ana_qadb_yield.write(qa_map)
       ana_qadb_helicity.write(qa_map)
       ana_qadb_beam_charge_asym.write(qa_map)
+    }
+  }
+
+  // ----------------------------------------------------------------------------------
+
+  /**
+   * process a run's trigger-bit histograms
+   * @param dir the {@code TDirectory} to read
+   * @param run the run number
+   */
+  public void processTrig(dir, run) {
+    if(qa_allowed) {
+      ana_qadb_beam_charge_asym.processTrig(dir, run)
     }
   }
 

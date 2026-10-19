@@ -11,11 +11,13 @@ import org.jlab.clas.timeline.analysis.MYQuery
 import org.jlab.clas.timeline.analysis.EpicsTools
 import org.jlab.clas.timeline.util.Tools
 import org.jlab.clas.timeline.histograms.qadb.Charge
+import org.jlab.clas.timeline.histograms.Trigger
 
 class qadb_beam_charge_asym {
 
-  def runlist  = []
-  def data_map = new ConcurrentHashMap()
+  def runlist          = []
+  def data_map         = new ConcurrentHashMap()
+  def enable_trig_asym = false
 
   // ----------------------------------------------------------------------------------
 
@@ -42,6 +44,24 @@ class qadb_beam_charge_asym {
       histos.readHistograms(dir, qa_bin.getBinNum())
       data_map[runnum]['histos'][qa_bin.getBinNum()] = histos
     }
+  }
+
+  // ----------------------------------------------------------------------------------
+
+  // process trigger files (optional), appending to `data_map` like so:
+  /*
+     data_map
+     |_ runnum 1
+     |  |__ trig -> trigger-bit histograms for run 1
+     |_ runnum 2
+     |  |__ trig -> trigger-bit histograms for run 2
+     :
+  */
+  def processTrig(dir, runnum) {
+    def histos = new Trigger()
+    histos.readHistograms(dir)
+    data_map[runnum]['trig'] = histos
+    enable_trig_asym = true
   }
 
   // ----------------------------------------------------------------------------------
@@ -101,10 +121,23 @@ class qadb_beam_charge_asym {
       g.setTitleX 'Run Number'
       g
     }
-    def tl_asym_struck_qg = make_tl 'STRUCK_gated'
-    def tl_asym_struck_qu = make_tl 'STRUCK_ungated'
-    def tl_asym_epics_fc  = make_tl 'EPICS_FCUP'
-    def tl_asym_epics_slm = make_tl 'EPICS_SLM'
+    def tl_asym_struck_qg   = make_tl 'STRUCK_gated'
+    def tl_asym_struck_qu   = make_tl 'STRUCK_ungated'
+    def tl_asym_epics_fc    = make_tl 'EPICS_FCUP'
+    def tl_asym_epics_slm   = make_tl 'EPICS_SLM'
+    def tl_asym_trig_pulser = enable_trig_asym ? make_tl('TRIG_pulser') : null
+    def tl_asym_trig_FC     = enable_trig_asym ? make_tl('TRIG_FC')     : null
+
+    // helper function to calculate an asymmetry
+    // @param q_helP charge for helicity=+1
+    // @param q_helN charge for helicity=-1
+    // @param n_helP normalization for helicity=+1, if nonzero
+    // @param n_helN normalization for helicity=-1, if nonzero
+    def calc_asym = { q_helP, q_helN, n_helP=0, n_helN=0 ->
+      def p = n_helP > 0 ? q_helP / n_helP : q_helP
+      def n = n_helN > 0 ? q_helN / n_helN : q_helN
+      Tools.safeRatio p - n, p + n
+    }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -138,17 +171,6 @@ class qadb_beam_charge_asym {
         rn_struck_qg_helN.addPoint binnum, histos.getChargeGatedSTRUCK(-1),   0, Math.sqrt(histos.getChargeGatedSTRUCK(-1))
         rn_struck_qu_helN.addPoint binnum, histos.getChargeUngatedSTRUCK(-1), 0, Math.sqrt(histos.getChargeUngatedSTRUCK(-1))
         rn_struck_n_helN.addPoint  binnum, histos.getNumReadoutsSTRUCK(-1),   0, Math.sqrt(histos.getNumReadoutsSTRUCK(-1))
-      }
-
-      // calculate an asymmetry
-      // @param q_helP charge for helicity=+1
-      // @param q_helN charge for helicity=-1
-      // @param n_helP normalization for helicity=+1
-      // @param n_helN normalization for helicity=-1
-      def calc_asym = { q_helP, q_helN, n_helP, n_helN ->
-        def p = Tools.safeRatio q_helP, n_helP
-        def n = Tools.safeRatio q_helN, n_helN
-        Tools.safeRatio p - n, p + n
       }
 
       // fill asymmetry graphs
@@ -300,6 +322,26 @@ class qadb_beam_charge_asym {
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    // if there are trigger histograms, produce trigger-bit asymmetry timelines too
+    if(enable_trig_asym) {
+      data_map.sort{it.key}.each { runnum, run_data ->
+        if(run_data['trig'] != null) {
+          def ntrig = ['helP':[:], 'helN':[:]]
+          [
+            'helP': run_data.trig.bits_helP,
+            'helN': run_data.trig.bits_helN,
+          ].each { heli, histo ->
+            ntrig[heli]['pulser'] = histo.getBinContent 31
+            ntrig[heli]['fc']     = histo.getBinContent 39
+          }
+          tl_asym_trig_pulser.addPoint runnum, calc_asym(ntrig.helP.pulser, ntrig.helN.pulser), 0, 0
+          tl_asym_trig_fc.addPoint     runnum, calc_asym(ntrig.helP.fc,     ntrig.helN.fc),     0, 0
+        }
+      }
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     // write timeline graphs
     // charge per run
     tdir.mkdir '/timelines'
@@ -308,6 +350,10 @@ class qadb_beam_charge_asym {
     tdir.addDataSet tl_asym_struck_qu
     tdir.addDataSet tl_asym_epics_fc
     tdir.addDataSet tl_asym_epics_slm
+    if(enable_trig_asym) {
+      tdir.addDataSet tl_asym_trig_pulser
+      tdir.addDataSet tl_asym_trig_fc
+    }
 
     // write HIPO files
     tdir.writeFile 'qadb_beam_charge_asymmetry.hipo'
