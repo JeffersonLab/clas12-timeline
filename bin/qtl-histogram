@@ -292,7 +292,7 @@ modes['focus-all']=true
 for key in focus-detectors focus-physics focus-qadb focus-trig; do
   if ${modes[$key]}; then modes['focus-all']=false; fi
 done
-if ${modes['focus-qadb']}; then
+if ${modes['focus-qadb']} || ${modes['focus-trig']}; then
   modes['focus-detectors']=true; # the new QADB timelines are a part of the 'detector' timelines
 fi
 if ${modes['swifjob']} && ${modes['focus-all']}; then
