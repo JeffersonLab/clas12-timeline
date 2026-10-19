@@ -40,17 +40,13 @@ public class run_histograms {
     var dataset = RunDependentCut.findDataset(runNum);
 
     // handle `whichHistos`, to decide which histograms to activate
-    boolean enableHistosQadb = false;
-    boolean enableHistosDet  = false;
-    if(whichHistos.equals("all")) {
-      enableHistosQadb = true;
-      enableHistosDet  = true;
-    } else if(whichHistos.equals("qadb")) {
-      enableHistosQadb = true;
-    } else if(whichHistos.equals("det")) {
-      enableHistosDet = true;
-    } else {
-      throw new RuntimeException("unknown 'whichHistos' setting '" + whichHistos + "'");
+    final boolean enableHistosQadb, enableHistosDet, enableHistosTrig;
+    switch(whichHistos) {
+      case "all"  -> { enableHistosQadb = true;  enableHistosDet = true;  enableHistosTrig = true;  }
+      case "qadb" -> { enableHistosQadb = true;  enableHistosDet = false; enableHistosTrig = false; }
+      case "det"  -> { enableHistosQadb = false; enableHistosDet = true;  enableHistosTrig = true;  }
+      case "trig" -> { enableHistosQadb = false; enableHistosDet = false; enableHistosTrig = true;  }
+      default     -> throw new RuntimeException("unknown 'whichHistos' setting '" + whichHistos + "'");
     }
 
     // get list of input HIPO files
@@ -118,7 +114,9 @@ public class run_histograms {
       ana_band     = new BAND(runNum,outputDir,EB,useTB);
       ana_alert    = dataset == "rgl" ? new ALERT(runNum,outputDir,EB,useTB) : null;
       ana_helicity = new helicity();
-      ana_trigger  = new trigger();
+    }
+    if(enableHistosTrig) {
+      ana_trigger = new trigger();
     }
 
     // fill QADB charge histograms

@@ -179,12 +179,19 @@ if(args.any{it=="--timelines"}) {
   }
   System.exit(0)
 }
-if(args.length != 2) {
-  System.err.println "ARGUMENTS: [timeline] [input_dir]"
-  System.err.println "use --timelines for a list of available timelines"
+if(args.length < 2) {
+  System.err.println """ARGUMENTS: [timeline] [input_dir] [trig_dir(optional)]
+  [timeline]  the name of the timeline to produce
+  [input_dir]  the output dir from `qtl histogram`
+  [trig_dir]   OPTIONAL: if specified, read trigger histograms from this input directory
+               rather than from [input_dir]
+
+  NOTE: use --timelines for a list of available timelines"""
   System.exit(101)
 }
-def (timelineArg, inputDirArg) = args
+def timelineArg = args[0]
+def inputDirArg = args[1]
+def trigDirArg  = args.length > 2 ? args[2] : null
 
 // check the timeline argument
 def eng = engines.collectMany{key,engs->engs.collect{[key,it]}}
@@ -195,23 +202,30 @@ if(eng == null) {
 }
 
 // get list of input HIPO histogram files
-def (name,engine) = eng
-def inputDir = new File(inputDirArg)
-println([name,timelineArg,engine.getClass().getSimpleName(),inputDir])
-def fnames = []
-inputDir.traverse {
-  if(it.name.endsWith('.hipo') && it.name.contains(name))
-    fnames.add(it.absolutePath)
+def (inBasename,engine) = eng
+def find_input_files = { path, basename ->
+  def pathFile = new File(path)
+  System.out.println([basename, timelineArg, engine.getClass().getSimpleName(), pathFile])
+  def result = []
+  pathFile.traverse {
+    if(it.name.endsWith('.hipo') && it.name.contains(basename))
+      result.add(it.absolutePath)
+  }
+  result.sort()
 }
+def fnames = find_input_files(inputDirArg, inBasename)
 
 // start QADB
 if(timelineArg == 'qadb') {
-  engine.start(fnames.sort())
+  engine.start(fnames)
+  if(trigDirArg != null) {
+    engine.trig_files = find_input_files(trigDirArg, 'out_TRIGGER')
+  }
 }
 
 // loop over input HIPO histogram files
 def allow_timeline = false
-fnames.sort().each{ fname ->
+fnames.each{ fname ->
   try{
     println("debug: "+engine.getClass().getSimpleName()+" started $fname")
 

@@ -17,7 +17,27 @@ SLURM_LOG=/farm_out/%u/%x-%A_%a
 # default options
 dataset=test_v0
 declare -A modes
-for key in dstdir skimdir findhipo eachdir rundir flatdir single series submit check-cache check-charge fast-ls fast-runnum swifjob focus-detectors focus-physics focus-qadb help; do
+for key in \
+  dstdir \
+  skimdir \
+  findhipo \
+  eachdir \
+  rundir \
+  flatdir \
+  single \
+  series \
+  submit \
+  check-cache \
+  check-charge \
+  fast-ls \
+  fast-runnum \
+  swifjob \
+  focus-detectors \
+  focus-physics \
+  focus-qadb \
+  focus-trig \
+  help;
+do
   modes[$key]=false
 done
 outputDir=""
@@ -135,6 +155,8 @@ usageVerbose() {
        --focus-qadb        run histogramming for QADB timelines only
                            - these are the new, refactored physics timelines
                            - \`--focus-detectors\` will also produce these
+
+       --focus-trig        just produce trigger-bit histograms (for trigger trains only)
 
      *** MISCELLANEOUS OPTIONS
 
@@ -267,7 +289,7 @@ mkdir -p $outputDir
 
 # check focus options
 modes['focus-all']=true
-for key in focus-detectors focus-physics focus-qadb; do
+for key in focus-detectors focus-physics focus-qadb focus-trig; do
   if ${modes[$key]}; then modes['focus-all']=false; fi
 done
 if ${modes['focus-qadb']}; then
@@ -282,6 +304,8 @@ fi
 whichHistos=all
 if ${modes['focus-qadb']}; then
   whichHistos=qadb
+elif ${modes['focus-trig']}; then
+  whichHistos=trig
 fi
 
 # print arguments

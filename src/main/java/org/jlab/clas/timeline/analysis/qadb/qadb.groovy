@@ -8,6 +8,8 @@ class qadb {
   private def qa_map = [:]
   private boolean qa_allowed = false
 
+  public def trig_files = null
+
   private def ana_qadb_charge = new qadb_charge()
   private def ana_qadb_yield = new qadb_yield()
   private def ana_qadb_helicity = new qadb_helicity()
