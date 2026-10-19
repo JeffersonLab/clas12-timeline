@@ -282,6 +282,7 @@ inputDir=$(realpath $inputDir) # sanitize CLI argument's `intputDir`
 [ -z "$outputDir" ] && outputDir=$(pwd -P)/outfiles/$dataset # set default `outputDir`
 mkdir -p $outputDir
 outputDir=$(realpath $outputDir) # sanitize CLI argument's `outputDir`
+[ -n "$trigDir" ] && trigDir=$(realpath $trigDir)/timeline_detectors
 
 # set subdirectories
 finalDir=$outputDir/timeline_web
@@ -396,7 +397,7 @@ if $enableAna; then
     logFile=$logDir/$timelineObj
     echo ">>> producing timeline '$timelineObj' ..."
     run_analysis_args=($timelineObj $inputDir)
-    [ -n "$trigDir" ] && run_analysis_args+=$trigDir
+    [ -n "$trigDir" ] && run_analysis_args+=($trigDir)
     if ${modes['debug']}; then
       java $TIMELINE_JAVA_OPTS $run_analysis_script ${run_analysis_args[@]}
       echo "PREMATURE EXIT, since --debug option was used"

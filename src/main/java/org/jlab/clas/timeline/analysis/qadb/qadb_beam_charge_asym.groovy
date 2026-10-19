@@ -106,7 +106,7 @@ class qadb_beam_charge_asym {
       EpicsTools.interleave data_asym, data_curr
     }
     def epics_data = get_epics_data()
-    System.out.println Tools.prettyPrint('epics_data', epics_data)
+    // System.out.println Tools.prettyPrint('epics_data', epics_data)
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -126,7 +126,7 @@ class qadb_beam_charge_asym {
     def tl_asym_epics_fc    = make_tl 'EPICS_FCUP'
     def tl_asym_epics_slm   = make_tl 'EPICS_SLM'
     def tl_asym_trig_pulser = enable_trig_asym ? make_tl('TRIG_pulser') : null
-    def tl_asym_trig_FC     = enable_trig_asym ? make_tl('TRIG_FC')     : null
+    def tl_asym_trig_fc     = enable_trig_asym ? make_tl('TRIG_FC')     : null
 
     // helper function to calculate an asymmetry
     // @param q_helP charge for helicity=+1
