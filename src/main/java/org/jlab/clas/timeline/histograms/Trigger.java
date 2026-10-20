@@ -4,6 +4,7 @@ import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.base.DataBank;
+import org.jlab.io.hipo.HipoDataEvent;
 
 /**
  *
@@ -19,12 +20,13 @@ public class Trigger {
   public static final int NBITS   = 64;
 
   public Trigger() {
-    bits      = new H1F("bits",      "trigger bits",                NBITS+1, 0, NBITS+1);
-    bits_helP = new H1F("bits_helP", "trigger bits, helicity = +1", NBITS+1, 0, NBITS+1);
-    bits_helN = new H1F("bits_helN", "trigger bits, helicity = -1", NBITS+1, 0, NBITS+1);
+    bits      = new H1F("bits",      "trigger bits",                NBITS+1, -0.5, NBITS+0.5);
+    bits_helP = new H1F("bits_helP", "trigger bits, helicity = +1", NBITS+1, -0.5, NBITS+0.5);
+    bits_helN = new H1F("bits_helN", "trigger bits, helicity = -1", NBITS+1, -0.5, NBITS+0.5);
   }
 
   public void processEvent(DataEvent event){
+    if (((HipoDataEvent) event).getHipoEvent().getEventTag() != 0) return;
     if (!event.hasBank("RUN::config")) return;
     // get helicity
     int helicity = 0;
