@@ -84,8 +84,6 @@ def engines = [
     new rftime_diff_corrected(),
     new rftime_prot_FD(),
     new rftime_prot_CD(),
-    new epics_xy(),
-    new epics_hall_weather(),
   ],
   out_CND: [
     new cnd_MIPS_dE_dz(),
@@ -168,6 +166,8 @@ def engines = [
   ],
   out_QADB: [
     new qadb(),
+    new epics_xy(), // FIXME: move this back to where it was
+    new epics_hall_weather(), // FIXME: move this back to where it was
   ],
 ]
 
@@ -179,12 +179,19 @@ if(args.any{it=="--timelines"}) {
   }
   System.exit(0)
 }
-if(args.length != 2) {
-  System.err.println "ARGUMENTS: [timeline] [input_dir]"
-  System.err.println "use --timelines for a list of available timelines"
+if(args.length < 2) {
+  System.err.println """ARGUMENTS: [timeline] [input_dir] [trig_dir(optional)]
+  [timeline]  the name of the timeline to produce
+  [input_dir]  the output dir from `qtl histogram`
+  [trig_dir]   OPTIONAL: if specified, read trigger histograms from this input directory
+               rather than from [input_dir]
+
+  NOTE: use --timelines for a list of available timelines"""
   System.exit(101)
 }
-def (timelineArg, inputDirArg) = args
+def timelineArg = args[0]
+def inputDirArg = args[1]
+def trigDirArg  = args.length > 2 ? args[2] : null
 
 // check the timeline argument
 def eng = engines.collectMany{key,engs->engs.collect{[key,it]}}
@@ -195,28 +202,33 @@ if(eng == null) {
 }
 
 // get list of input HIPO histogram files
-def (name,engine) = eng
-def inputDir = new File(inputDirArg)
-println([name,timelineArg,engine.getClass().getSimpleName(),inputDir])
-def fnames = []
-inputDir.traverse {
-  if(it.name.endsWith('.hipo') && it.name.contains(name))
-    fnames.add(it.absolutePath)
+def (inBasename,engine) = eng
+def find_input_files = { path, basename ->
+  def pathFile = new File(path)
+  System.out.println([basename, timelineArg, engine.getClass().getSimpleName(), pathFile])
+  def result = []
+  pathFile.traverse {
+    if(it.name.endsWith('.hipo') && it.name.contains(basename))
+      result.add(it.absolutePath)
+  }
+  result.sort()
 }
+def inFiles   = find_input_files(inputDirArg, inBasename)
+def trigFiles = trigDirArg != null ? find_input_files(trigDirArg, 'out_TRIGGER') : null
 
 // start QADB
 if(timelineArg == 'qadb') {
-  engine.start(fnames.sort())
+  engine.start(inFiles)
 }
 
 // loop over input HIPO histogram files
 def allow_timeline = false
-fnames.sort().each{ fname ->
+inFiles.each{ inFile ->
   try{
-    println("debug: "+engine.getClass().getSimpleName()+" started $fname")
+    println("debug: "+engine.getClass().getSimpleName()+" started $inFile")
 
     // get run number from directory name
-    def run = Tools.getRunNumberForAnalysis fname
+    def run = Tools.getRunNumberForAnalysis inFile
 
     // exclude certain run ranges from certain timelines
     def allow_run = true
@@ -236,16 +248,26 @@ fnames.sort().each{ fname ->
     if(allow_run) {
       allow_timeline = true // allow the timeline if at least one run is allowed
       TDirectory dir = new TDirectory()
-      dir.readFile(fname)
+      dir.readFile(inFile)
       engine.processRun(dir, run)
-      println("debug: "+engine.getClass().getSimpleName()+" finished $fname")
+      println("debug: "+engine.getClass().getSimpleName()+" finished $inFile")
     }
     else {
       println("debug: "+engine.getClass().getSimpleName()+" excludes run $run")
     }
 
+    // run trigger analysis, if the user asked for it; currently _only_ the `qadb` engine uses this
+    if(allow_run && trigDirArg != null && timelineArg == 'qadb') {
+      def trigFile = trigFiles.find{Tools.getRunNumberForAnalysis(it) == run} // find the 'out_TRIGGER' file for this run
+      if(trigFile != null) {
+        TDirectory dir = new TDirectory()
+        dir.readFile(trigFile)
+        engine.processTrig(dir, run)
+      }
+    }
+
   } catch(Exception ex) {
-    System.err.println("error: "+engine.getClass().getSimpleName()+" didn't process $fname, due to exception:")
+    System.err.println("error: "+engine.getClass().getSimpleName()+" didn't process $inFile, due to exception:")
     ex.printStackTrace()
     System.exit(100)
   }
