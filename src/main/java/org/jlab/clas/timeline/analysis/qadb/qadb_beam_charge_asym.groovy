@@ -326,10 +326,12 @@ class qadb_beam_charge_asym {
     if(enable_trig_asym) {
       data_map.sort{it.key}.each { runnum, run_data ->
         if(run_data['trig'] != null) {
-          def TRIG_BIT = [ // trigger bit numbers
+          // trigger bit numbers we want
+          def TRIG_BIT = [
             'pulser': 31,
             'fc':     39,
           ]
+          // count number of triggers for each one we want
           def ntrig = ['helP':[:], 'helN':[:]]
           [
             'helP': run_data.trig.bits_helP,
@@ -337,8 +339,16 @@ class qadb_beam_charge_asym {
           ].each { heli, histo ->
             TRIG_BIT.each{ name, bit -> ntrig[heli][name] = histo.getBinContent(bit) }
           }
+          // System.out.println "$runnum" + Tools.prettyPrint(ntrig)
+          // fill the timeline
           tl_asym_trig_pulser.addPoint runnum, calc_asym(ntrig.helP.pulser, ntrig.helN.pulser), 0, 0
           tl_asym_trig_fc.addPoint     runnum, calc_asym(ntrig.helP.fc,     ntrig.helN.fc),     0, 0
+          // write the trigger-bit histos
+          tdir.cd("/$runnum")
+          run_data.trig.bits_helP.setName 't1' + run_data.trig.bits_helP.getName()
+          run_data.trig.bits_helN.setName 't2' + run_data.trig.bits_helN.getName()
+          tdir.addDataSet run_data.trig.bits_helP
+          tdir.addDataSet run_data.trig.bits_helN
         }
       }
     }
