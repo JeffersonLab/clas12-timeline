@@ -25,34 +25,34 @@ public class Trigger {
     bits_helN = new H1F("bits_helN", "trigger bits, helicity = -1", NBITS+1, -0.5, NBITS+0.5);
   }
 
-  public void processEvent(DataEvent event){
-    if (((HipoDataEvent) event).getHipoEvent().getEventTag() != 0) return;
-    if (!event.hasBank("RUN::config")) return;
-    // get helicity
-    int helicity = 0;
-    if (event.hasBank("REC::Event")) {
-      DataBank ev_bank = event.getBank("REC::Event");
-      helicity = ev_bank.rows() > 0 ? ev_bank.getByte("helicity",0) : 0;
+  private void fillHisto(H1F h, long t) {
+    // fill total number of triggers in the `NBITS`th bin
+    h.fill(NBITS);
+    // fill number of triggers for each trigger bit
+    for(int i=0; i<NBITS; ++i) {
+      if( 1 == ((t>>i)&1) )
+        h.fill(i);
     }
-    // get trigger info
-    DataBank bank = event.getBank("RUN::config");
-    if (bank.rows()>0) {
-      // total number of triggers
-      bits.fill(NBITS);
+  }
+
+  public void processEvent(DataEvent event){
+    if(!event.hasBank("RUN::config")) return;
+    DataBank b_conf = event.getBank("RUN::config");
+    // avoid duplicate tag-1 events
+    if (((HipoDataEvent) event).getHipoEvent().getEventTag() != 0) return;
+    // get delay-corrected helicity
+    int helicity = 0;
+    if(event.hasBank("HEL::online")) {
+      DataBank b_hel = event.getBank("HEL::online");
+      helicity = b_hel.rows() > 0 ? b_hel.getByte("helicity",0) : 0;
+    }
+    // fill histograms
+    if(b_conf.rows()>0) {
+      long t = b_conf.getLong("trigger",0);
+      fillHisto(bits, t);
       switch(helicity) {
-        case  1 -> bits_helP.fill(NBITS);
-        case -1 -> bits_helN.fill(NBITS);
-      }
-      // number of triggers for each bit
-      long t = bank.getLong("trigger",0);
-      for (int i=0; i<NBITS; ++i) {
-        if ( 1 == ((t>>i)&1) ) {
-          bits.fill(i);
-          switch(helicity) {
-            case  1 -> bits_helP.fill(i);
-            case -1 -> bits_helN.fill(i);
-          }
-        }
+        case  1 -> fillHisto(bits_helP, t);
+        case -1 -> fillHisto(bits_helN, t);
       }
     }
   }
