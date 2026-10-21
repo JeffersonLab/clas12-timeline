@@ -84,6 +84,8 @@ def engines = [
     new rftime_diff_corrected(),
     new rftime_prot_FD(),
     new rftime_prot_CD(),
+    new epics_xy(),
+    new epics_hall_weather(),
   ],
   out_CND: [
     new cnd_MIPS_dE_dz(),
@@ -166,8 +168,6 @@ def engines = [
   ],
   out_QADB: [
     new qadb(),
-    new epics_xy(), // FIXME: move this back to where it was
-    new epics_hall_weather(), // FIXME: move this back to where it was
   ],
 ]
 

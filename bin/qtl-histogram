@@ -61,8 +61,7 @@ usageTerse() {
                          - use \`--help\` for more details
                          **must be specified last**
 
-  After running this script, run either or both of the suggested \`sbatch\` command(s);
-  one is for detector QA timelines and the other is for physics QA timelines.
+  After running this script, run the suggested \`sbatch\` command(s) to submit jobs to Slurm.
   Output files will appear in ./outfiles/[DATASET_NAME]
 
   For more options, run with \`--help\`
