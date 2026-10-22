@@ -129,14 +129,22 @@ class qadb_beam_charge_asym {
     def tl_asym_trig_fc     = enable_trig_asym ? make_tl('TRIG_FC')     : null
 
     // helper function to calculate an asymmetry
-    // @param q_helP charge for helicity=+1
-    // @param q_helN charge for helicity=-1
-    // @param n_helP normalization for helicity=+1, if nonzero
-    // @param n_helN normalization for helicity=-1, if nonzero
-    def calc_asym = { q_helP, q_helN, n_helP=0, n_helN=0 ->
-      def p = n_helP > 0 ? q_helP / n_helP : q_helP
-      def n = n_helN > 0 ? q_helN / n_helN : q_helN
+    // @param q_helP charge (or yield) for helicity=+1
+    // @param q_helN charge (or yield) for helicity=-1
+    // @param n_helP normalization for helicity=+1
+    // @param n_helN normalization for helicity=-1
+    def calc_asym = { q_helP, q_helN, n_helP=1.0, n_helN=1.0 ->
+      def p = Tools.safeRatio q_helP, n_helP
+      def n = Tools.safeRatio q_helN, n_helN
       Tools.safeRatio p - n, p + n
+    }
+
+    // helper function for an error on raw asymmetries (e.g., trigger asymmetry)
+    // @param p yield for helicity=+1
+    // @param n yield for helicity=-1
+    def calc_raw_asym_err = { p, n ->
+      def t = p + n;
+      2.0 * Math.sqrt( (p*n) / (t*t*t) )
     }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -341,8 +349,8 @@ class qadb_beam_charge_asym {
           }
           // System.out.println "$runnum" + Tools.prettyPrint(ntrig)
           // fill the timeline
-          tl_asym_trig_pulser.addPoint runnum, calc_asym(ntrig.helP.pulser, ntrig.helN.pulser), 0, 0
-          tl_asym_trig_fc.addPoint     runnum, calc_asym(ntrig.helP.fc,     ntrig.helN.fc),     0, 0
+          tl_asym_trig_pulser.addPoint runnum, calc_asym(ntrig.helP.pulser, ntrig.helN.pulser), 0, calc_raw_asym_err(ntrig.helP.pulser, ntrig.helN.pulser)
+          tl_asym_trig_fc.addPoint     runnum, calc_asym(ntrig.helP.fc,     ntrig.helN.fc),     0, calc_raw_asym_err(ntrig.helP.fc,     ntrig.helN.fc)
           // write the trigger-bit histos
           tdir.cd("/$runnum")
           run_data.trig.bits_helP.setName 't1' + run_data.trig.bits_helP.getName()
