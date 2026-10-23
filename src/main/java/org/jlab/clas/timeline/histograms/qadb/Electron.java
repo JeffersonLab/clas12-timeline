@@ -1,9 +1,10 @@
 package org.jlab.clas.timeline.histograms.qadb;
 
-import org.jlab.io.base.DataEvent;
+import org.jlab.clas.physics.LorentzVector;
 import org.jlab.clas.physics.Particle;
-import org.jlab.detector.base.DetectorType;
 import org.jlab.clas.timeline.util.Tools;
+import org.jlab.detector.base.DetectorType;
+import org.jlab.io.base.DataEvent;
 
 /**
  * @author dilks
@@ -23,6 +24,8 @@ public class Electron {
   // constants
   public static final int PDG = 11;
   public static final int ECAL_ID = DetectorType.ECAL.getDetectorId();
+  public static final double PROTON_MASS = 0.9382720813; // GeV
+  public static final double DEFAULT_BEAM_ENERGY = 10.2; // GeV
 
   // private members
   private boolean  m_found;
@@ -30,12 +33,35 @@ public class Electron {
   private int      m_sec;
   private Det      m_det;
   private Particle m_par = new Particle(PDG, 0.0, 0.0, 0.0);
+  private final double m_beam_energy;
+
+  private double m_q2 = Double.NaN;
+  private double m_x  = Double.NaN;
+  private double m_w  = Double.NaN;
+  private double m_y  = Double.NaN;
 
   // ----------------------------------------------------------------------------------
 
-  /** constructor **/
+  /**
+   * Construct an electron selector using the historical default beam energy.
+   *
+   * @deprecated pass the run-dependent beam energy explicitly
+   */
+  @Deprecated
   public Electron()
   {
+    this(DEFAULT_BEAM_ENERGY);
+  }
+
+  /**
+   * @param beam_energy beam energy in GeV
+   */
+  public Electron(double beam_energy)
+  {
+    if(!Double.isFinite(beam_energy) || beam_energy <= 0.0) {
+      throw new IllegalArgumentException("beam energy must be finite and positive");
+    }
+    m_beam_energy = beam_energy;
   }
 
   // ----------------------------------------------------------------------------------
@@ -54,6 +80,18 @@ public class Electron {
 
   /** @returns the electron {@code Particle} */
   public Particle getParticle() { return m_par; }
+
+  /** @return Q^2 in GeV^2 */
+  public double getQ2() { return m_q2; }
+
+  /** @return Bjorken x */
+  public double getX() { return m_x; }
+
+  /** @return invariant mass W in GeV */
+  public double getW() { return m_w; }
+
+  /** @return inelasticity y */
+  public double getY() { return m_y; }
 
   /** @return the electron particle-bank name */
   public String getParticleBankName()
@@ -74,6 +112,10 @@ public class Electron {
   public void processEvent(DataEvent event)
   {
     // reset class members
+    m_q2 = Double.NaN;
+    m_x  = Double.NaN;
+    m_w  = Double.NaN;
+    m_y  = Double.NaN;
     m_found  = false;
     m_pindex = -1;
     m_sec    = -1;
@@ -152,6 +194,43 @@ public class Electron {
         }
       } // end loop over `REC::Particle`
     }
+
+    // The loop is complete and m_par contains the selected electron.
+    if(m_found) {
+      calculateKinematics(m_par);
+    }
+  }
+
+  /**
+   * Calculate inclusive kinematics from the scattered electron.
+   *
+   * Package-private visibility allows direct unit testing without
+   * exposing this method as part of the public API.
+   *
+   * @param electron scattered electron
+   */
+  void calculateKinematics(Particle electron)
+  {
+    LorentzVector beam = new LorentzVector(
+        0.0, 0.0, m_beam_energy, m_beam_energy);
+
+    LorentzVector q = new LorentzVector(0.0, 0.0, 0.0, 0.0);
+    q.add(beam);
+    q.sub(electron.vector());
+    double nu = q.e();
+
+    m_q2 = -q.mass2();
+    m_y  = nu / m_beam_energy;
+    m_x  = nu > 0.0
+        ? m_q2 / (2.0 * PROTON_MASS * nu)
+        : Double.NaN;
+
+    LorentzVector hadronic_system =
+        new LorentzVector(0.0, 0.0, 0.0, PROTON_MASS);
+    hadronic_system.add(q);
+
+    double w2 = hadronic_system.mass2();
+    m_w = w2 >= 0.0 ? Math.sqrt(w2) : Double.NaN;
   }
 
 }

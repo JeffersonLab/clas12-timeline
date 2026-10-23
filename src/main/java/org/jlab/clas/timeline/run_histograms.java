@@ -34,6 +34,7 @@ public class run_histograms {
     if(args.length>3)whichHistos=args[3];
     if(args.length>4)EB=Float.parseFloat(args[4]);
     if(args.length>5)if(Integer.parseInt(args[5])==0)useTB=false;
+    final double beamEnergy = EB;
     System.out.println("will process run number "+runNum+" from list "+filelist+", beam energy setting "+EB);
 
     // get the dataset which contains this run number
@@ -99,7 +100,10 @@ public class run_histograms {
     // instantiate histogramming classes
     if(enableHistosQadb) {
       try {
-        qa_seq = new QadbBinSequence<>(input_file_list, 2000, (bin_num) -> new QadbBinHistograms(bin_num));
+        qa_seq = new QadbBinSequence<>(
+            input_file_list,
+            2000,
+            (bin_num) -> new QadbBinHistograms(bin_num, beamEnergy));
       }
       catch (RuntimeException e) {
         System.err.println("WARNING: Failed to construct QadbBinSequence; reason: " + e.getMessage());
