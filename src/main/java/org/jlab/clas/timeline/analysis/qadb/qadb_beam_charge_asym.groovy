@@ -143,7 +143,7 @@ class qadb_beam_charge_asym {
     // @param p yield for helicity=+1
     // @param n yield for helicity=-1
     def calc_raw_asym_err = { p, n ->
-      def t = p + n;
+      def t = p + n
       2.0 * Math.sqrt( (p*n) / (t*t*t) )
     }
 
@@ -323,7 +323,7 @@ class qadb_beam_charge_asym {
       tl_asym_epics_slm.addPoint runnum, rn_epics_hists['EPICS_SLM_qAsym'].getMean(),  0, 0
 
       // write out
-      tdir.cd("/$runnum")
+      tdir.cd "/$runnum"
       rn_epics_graphs.each{ pv, gr -> tdir.addDataSet(gr) }
       tdir.addDataSet rn_curr_graph
     }
@@ -347,16 +347,9 @@ class qadb_beam_charge_asym {
           ].each { heli, histo ->
             TRIG_BIT.each{ name, bit -> ntrig[heli][name] = histo.getBinContent(bit) }
           }
-          // System.out.println "$runnum" + Tools.prettyPrint(ntrig)
           // fill the timeline
           tl_asym_trig_pulser.addPoint runnum, calc_asym(ntrig.helP.pulser, ntrig.helN.pulser), 0, calc_raw_asym_err(ntrig.helP.pulser, ntrig.helN.pulser)
           tl_asym_trig_fc.addPoint     runnum, calc_asym(ntrig.helP.fc,     ntrig.helN.fc),     0, calc_raw_asym_err(ntrig.helP.fc,     ntrig.helN.fc)
-          // write the trigger-bit histos
-          tdir.cd("/$runnum")
-          run_data.trig.bits_helP.setName 't1' + run_data.trig.bits_helP.getName()
-          run_data.trig.bits_helN.setName 't2' + run_data.trig.bits_helN.getName()
-          tdir.addDataSet run_data.trig.bits_helP
-          tdir.addDataSet run_data.trig.bits_helN
         }
       }
     }
