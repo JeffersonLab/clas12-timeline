@@ -11,7 +11,7 @@ import org.jlab.detector.helicity.DecoderBoardUtil;
  *
  * @author baltzell
  */
-public class helicity {
+public class Helicity {
 
   public static final byte DELAY_WINDOWS = 8;
   private static int nExceptions = 0; 
@@ -34,7 +34,7 @@ public class helicity {
   ArrayList<H1Fb> histos;
   H1F hboard;
 
-  public helicity() {
+  public Helicity() {
     histos = new ArrayList<>();
     histos.add(new H1Fb("onlineRaw","HEL::online","helicityRaw"));
     histos.add(new H1Fb("offlineRaw","REC::Event","helicityRaw"));
