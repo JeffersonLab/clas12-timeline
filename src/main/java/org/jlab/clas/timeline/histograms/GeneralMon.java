@@ -906,6 +906,74 @@ public class GeneralMon {
     return sectordc;
   }
 
+  public int makeMuonPairTrigPurity(DataBank bank, DataEvent event){
+    int[] sectorp;
+    int[] sectorn;
+    sectorn = new int[6];
+    sectorp = new int[6];
+    int tbit;
+
+    for (int k = 0; k < bank.rows(); k++) {
+      byte q = bank.getByte("charge", k);
+      int status = bank.getShort("status", k);
+      if (status < 0) {
+        status = -status;
+      }
+      boolean inDC = (status >= 2000 && status < 4000);//Only forward detectors; CND is >=4000
+      if (inDC && isDCmatch(event, k) > 0) {
+        int sect = isDCmatch(event, k);
+        float energy_pcal_E = 0;
+        float energy_ecal_E = 0;
+        if (userTimeBased && event.hasBank("REC::Calorimeter")) {
+          DataBank ECALbank = event.getBank("REC::Calorimeter");
+          for (int l = 0; l < ECALbank.rows(); l++) {
+            if (ECALbank.getShort("pindex", l) == k) {
+              if (ECALbank.getInt("layer", l) == 1) {
+                energy_pcal_E = ECALbank.getFloat("energy", l);
+              }
+              if (ECALbank.getInt("layer", l) == 4 || ECALbank.getInt("layer", l) == 7) {
+                energy_ecal_E += ECALbank.getFloat("energy", l);
+              }
+            }
+          }
+          if (energy_ecal_E >= 0. && energy_pcal_E >= 0.) {
+            if (q == 1) {
+              sectorp[sect - 1]++;
+            }
+            if (q == -1) {
+              sectorn[sect - 1]++;
+            }
+          }
+        }
+      }
+    }
+
+    for (int kk = 0; kk < 3; kk++) {
+      tbit = kk + 7;
+      if (RunDependentCut.runIsBefore(runNum, 6296, true)) {
+        if (trigger_bits[tbit]) {
+          if ((sectorp[kk] + sectorn[kk]) >= 1 && (sectorp[kk + 3] + sectorn[kk + 3]) >= 1) {
+            H_trig_sector_muon_rat.fill(kk + 1);
+
+          }
+        }
+      } else if (RunDependentCut.runIsInRange(runNum, 6296, 11000, false)) {
+        if (trigger_bits[tbit] || trigger_bits[tbit + 3]) {
+          if ((sectorp[kk] + sectorn[kk]) >= 1 && (sectorp[kk + 3] + sectorn[kk + 3]) >= 1) {
+            H_trig_sector_muon_rat.fill(kk + 1);
+
+          }
+        }
+      } else if (RunDependentCut.runIsAfter(runNum, 11000, true)) {
+        if (trigger_bits[tbit] || trigger_bits[tbit + 3]) {
+          if ((sectorp[kk] >= 1 && (sectorn[kk + 3]) >= 1) || (sectorn[kk] >= 1 && (sectorp[kk + 3]) >= 1)) {
+            H_trig_sector_muon_rat.fill(kk + 1);
+          }
+        }
+      }
+    }
+    return 1;
+  }
 
 
   public void getTBTrack(DataBank bank){
@@ -1192,6 +1260,7 @@ public class GeneralMon {
     if(trackBank!=null&&trackDetBank!=null)getTrigTBTrack(trackDetBank,trackBank);
     if(partBank!=null)makeTrigOthers(partBank,event);
     if(partBank!=null && scintillBank!=null) makeRFHistograms(partBank, scintillBank);
+    if(partBank!=null)makeMuonPairTrigPurity(partBank,event);
 
     if(event.hasBank("BST::adc")) {
       DataBank bstHitBank = event.getBank("BST::adc");
@@ -1243,6 +1312,9 @@ public class GeneralMon {
     }
     if (cherenkovBank != null && TrajBank != null) {
       fillTraj_HTCC(TrajBank, cherenkovBank);
+    }
+    if (scintillBank != null && partBank != null) {
+      getElecEBTOF(scintillBank, partBank);
     }
     if (trackDetBank != null) {
       getTBTrack(trackDetBank);
