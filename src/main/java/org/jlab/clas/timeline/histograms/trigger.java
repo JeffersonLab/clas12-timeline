@@ -11,8 +11,8 @@ import org.jlab.io.base.DataBank;
  */
 public class trigger {
 
-  H1F bits;
-
+  H1F bits;  // related timeline: ['trigger']
+  
   public trigger() {
     bits = new H1F("bits",65,0,65);
     bits.getDataX(0);
