@@ -1,5 +1,7 @@
 # Run Group C, Summer 2022, Pass 1
 
+FIXME: add BCA timeline guidance
+
 This is the first QA to use the time bins and the prescaling.
 
 ## Produce prescaled trains
