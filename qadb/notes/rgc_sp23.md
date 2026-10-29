@@ -1,5 +1,7 @@
 # Run Group C, Spring 2023, Pass 1
 
+FIXME: add BCA timeline guidance
+
 ## Run monitoring
 
 > [!IMPORTANT]

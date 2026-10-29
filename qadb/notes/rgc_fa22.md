@@ -1,5 +1,7 @@
 # Run Group C, Fall 2022, Pass 1
 
+FIXME: add BCA timeline guidance
+
 ## Run monitoring
 
 > [!IMPORTANT]
