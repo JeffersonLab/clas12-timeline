@@ -193,9 +193,9 @@ class qadb_kinematics {
     }
 
     mean_directory.writeFile(
-        new File(output_dir, 'qadb_kinematics_mean.hipo').getPath())
+        new File(output_dir, 'qadb_inclusive_kinematics_mean.hipo').getPath())
 
     rms_directory.writeFile(
-        new File(output_dir, 'qadb_kinematics_rms.hipo').getPath())
+        new File(output_dir, 'qadb_inclusive_kinematics_rms.hipo').getPath())
   }
 }
