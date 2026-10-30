@@ -26,15 +26,13 @@ public class run_histograms {
     String outputDir = "plots";
     String filelist = "list_of_files.txt";
     String whichHistos = "all";
-    float EB = 10.2f;
+    final float EB = args.length>4 ? Float.parseFloat(args[4]) : 10.2f;
     boolean useTB=true;
     if(args.length>0)runNum=Integer.parseInt(args[0]);
     if(args.length>1)outputDir=args[1];
     if(args.length>2)filelist=args[2];
     if(args.length>3)whichHistos=args[3];
-    if(args.length>4)EB=Float.parseFloat(args[4]);
     if(args.length>5)if(Integer.parseInt(args[5])==0)useTB=false;
-    final double beamEnergy = EB;
     System.out.println("will process run number "+runNum+" from list "+filelist+", beam energy setting "+EB);
 
     // get the dataset which contains this run number
@@ -103,7 +101,7 @@ public class run_histograms {
         qa_seq = new QadbBinSequence<>(
             input_file_list,
             2000,
-            (bin_num) -> new QadbBinHistograms(bin_num, beamEnergy));
+            (bin_num) -> new QadbBinHistograms(bin_num, EB));
       }
       catch (RuntimeException e) {
         System.err.println("WARNING: Failed to construct QadbBinSequence; reason: " + e.getMessage());

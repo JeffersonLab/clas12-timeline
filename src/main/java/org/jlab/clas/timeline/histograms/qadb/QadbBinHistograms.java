@@ -11,23 +11,11 @@ public class QadbBinHistograms {
   // histogram class instances
   public Charge charge;
   private Electron electron;
-  private Kinematics kinematics;
+  private InclusiveKinematics inclusiveKinematics;
   private Yield yield;
   private Helicity helicity;
 
   // ----------------------------------------------------------------------------------
-
-  /**
-   * Construct QADB histograms using the historical default beam energy.
-   *
-   * @param bin_num QADB bin number
-   * @deprecated pass the run-dependent beam energy explicitly
-   */
-  @Deprecated
-  public QadbBinHistograms(int bin_num)
-  {
-    this(bin_num, Electron.DEFAULT_BEAM_ENERGY);
-  }
 
   /**
    * Constructor.
@@ -39,7 +27,7 @@ public class QadbBinHistograms {
   {
     charge = new Charge(bin_num);
     electron = new Electron(beam_energy);
-    kinematics = new Kinematics(bin_num);
+    inclusiveKinematics = new InclusiveKinematics(bin_num);
     yield = new Yield(bin_num);
     helicity = new Helicity(bin_num);
   }
@@ -55,7 +43,7 @@ public class QadbBinHistograms {
   {
     charge.processEvent(event);
     electron.processEvent(event);
-    kinematics.processEvent(electron);
+    inclusiveKinematics.processEvent(electron);
     yield.processEvent(event, electron);
     helicity.processEvent(event);
   }
@@ -71,7 +59,7 @@ public class QadbBinHistograms {
   {
     charge.write(tdir);
     yield.write(tdir);
-    kinematics.write(tdir);
+    inclusiveKinematics.write(tdir);
     helicity.write(tdir);
   }
 }

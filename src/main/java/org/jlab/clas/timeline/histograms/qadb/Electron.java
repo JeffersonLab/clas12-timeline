@@ -42,17 +42,6 @@ public class Electron {
   // ----------------------------------------------------------------------------------
 
   /**
-   * Construct an electron selector using the historical default beam energy.
-   *
-   * @deprecated pass the run-dependent beam energy explicitly
-   */
-  @Deprecated
-  public Electron()
-  {
-    this(DEFAULT_BEAM_ENERGY);
-  }
-
-  /**
    * @param beam_energy beam energy in GeV
    */
   public Electron(double beam_energy)

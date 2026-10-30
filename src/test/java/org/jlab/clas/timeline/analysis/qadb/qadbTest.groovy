@@ -32,19 +32,22 @@ class qadbTest {
   }
 
   @Test
-  void delegatesProcessingAndWritingToKinematicsAnalysis()
+  void delegatesProcessingAndWritingToInclusiveKinematicsAnalysis()
   {
     def coordinator = new qadb()
 
     def charge = new RecordingAnalysis()
     def yieldAnalysis = new RecordingAnalysis()
     def helicity = new RecordingAnalysis()
-    def kinematics = new RecordingAnalysis()
+    def inclusiveKinematics = new RecordingAnalysis()
 
     setPrivateField(coordinator, 'ana_qadb_charge', charge)
     setPrivateField(coordinator, 'ana_qadb_yield', yieldAnalysis)
     setPrivateField(coordinator, 'ana_qadb_helicity', helicity)
-    setPrivateField(coordinator, 'ana_qadb_kinematics', kinematics)
+    setPrivateField(
+        coordinator,
+        'ana_qadb_inclusive_kinematics',
+        inclusiveKinematics)
 
     setPrivateField(coordinator, 'qa_allowed', true)
     setPrivateField(coordinator, 'qa_map', [42: []])
@@ -52,7 +55,7 @@ class qadbTest {
     coordinator.processRun(new Object(), 42)
     coordinator.write()
 
-    assertEquals(1, kinematics.processRunCalls)
-    assertEquals(1, kinematics.writeCalls)
+    assertEquals(1, inclusiveKinematics.processRunCalls)
+    assertEquals(1, inclusiveKinematics.writeCalls)
   }
 }

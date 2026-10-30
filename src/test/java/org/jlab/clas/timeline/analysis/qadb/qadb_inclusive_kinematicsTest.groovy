@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.jlab.groot.data.TDirectory
 
-import org.jlab.clas.timeline.histograms.qadb.Kinematics
+import org.jlab.clas.timeline.histograms.qadb.InclusiveKinematics
 
-class qadb_kinematicsTest {
+class qadb_inclusive_kinematicsTest {
 
   private static class TestQaBin {
     int binNum
@@ -28,7 +28,7 @@ class qadb_kinematicsTest {
   {
     def directory = new TDirectory()
 
-    def written = new Kinematics(2)
+    def written = new InclusiveKinematics(2)
     written.q2_hist.fill(3.05)
     written.x_hist.fill(0.35)
     written.w_hist.fill(2.50)
@@ -39,7 +39,7 @@ class qadb_kinematicsTest {
       42: [new TestQaBin(binNum: 2)]
     ]
 
-    def analysis = new qadb_kinematics()
+    def analysis = new qadb_inclusive_kinematics()
     analysis.processRun(directory, 42, qa_map)
 
     def read = analysis.data_map[42]['histos'][2]
@@ -56,14 +56,14 @@ class qadb_kinematicsTest {
   {
     def directory = new TDirectory()
 
-    def first = new Kinematics(1)
+    def first = new InclusiveKinematics(1)
     first.q2_hist.fill(1.02)
     first.x_hist.fill(0.205)
     first.w_hist.fill(0.99)
     first.y_hist.fill(0.205)
     first.write(directory)
 
-    def second = new Kinematics(2)
+    def second = new InclusiveKinematics(2)
     second.q2_hist.fill(3.06)
     second.x_hist.fill(0.605)
     second.w_hist.fill(3.03)
@@ -77,7 +77,7 @@ class qadb_kinematicsTest {
       ]
     ]
 
-    def analysis = new qadb_kinematics()
+    def analysis = new qadb_inclusive_kinematics()
     analysis.processRun(directory, 42, qa_map)
 
     def statistics = analysis.calculateRunStatistics(42)
@@ -100,7 +100,7 @@ class qadb_kinematicsTest {
   {
     def directory = new TDirectory()
 
-    def written = new Kinematics(1)
+    def written = new InclusiveKinematics(1)
 
     written.q2_hist.fill(1.02)
     written.q2_hist.fill(3.06)
@@ -120,17 +120,17 @@ class qadb_kinematicsTest {
       42: [new TestQaBin(binNum: 1)]
     ]
 
-    def analysis = new qadb_kinematics()
+    def analysis = new qadb_inclusive_kinematics()
     analysis.processRun(directory, 42, qa_map)
-    analysis.write(qa_map, tempDir.toString())
+    analysis.writeToDirectory(qa_map, tempDir.toFile())
 
     def meanDirectory = new TDirectory()
     meanDirectory.readFile(
-        tempDir.resolve('qadb_kinematics_mean.hipo').toString())
+        tempDir.resolve('qadb_inclusive_kinematics_mean.hipo').toString())
 
     def rmsDirectory = new TDirectory()
     rmsDirectory.readFile(
-        tempDir.resolve('qadb_kinematics_rms.hipo').toString())
+        tempDir.resolve('qadb_inclusive_kinematics_rms.hipo').toString())
 
     def expected = [
       q2: [mean: 2.04,  rms: 1.02],
@@ -174,7 +174,7 @@ class qadb_kinematicsTest {
       42: [new TestQaBin(binNum: 1)]
     ]
 
-    def analysis = new qadb_kinematics()
+    def analysis = new qadb_inclusive_kinematics()
     analysis.processRun(legacyDirectory, 42, qa_map)
 
     assertTrue(analysis.data_map[42]['histos'].isEmpty())
@@ -183,15 +183,15 @@ class qadb_kinematicsTest {
      * Missing kinematics must not prevent the other QADB
      * analyses from completing.
      */
-    analysis.write(qa_map, tempDir.toString())
+    analysis.writeToDirectory(qa_map, tempDir.toFile())
 
     def meanDirectory = new TDirectory()
     meanDirectory.readFile(
-        tempDir.resolve('qadb_kinematics_mean.hipo').toString())
+        tempDir.resolve('qadb_inclusive_kinematics_mean.hipo').toString())
 
     def rmsDirectory = new TDirectory()
     rmsDirectory.readFile(
-        tempDir.resolve('qadb_kinematics_rms.hipo').toString())
+        tempDir.resolve('qadb_inclusive_kinematics_rms.hipo').toString())
 
     assertEquals(
         0,
@@ -215,24 +215,24 @@ class qadb_kinematicsTest {
     /*
      * Histograms exist, but no selected electron has filled them.
      */
-    def emptyHistograms = new Kinematics(1)
+    def emptyHistograms = new InclusiveKinematics(1)
     emptyHistograms.write(directory)
 
     def qa_map = [
       42: [new TestQaBin(binNum: 1)]
     ]
 
-    def analysis = new qadb_kinematics()
+    def analysis = new qadb_inclusive_kinematics()
     analysis.processRun(directory, 42, qa_map)
-    analysis.write(qa_map, tempDir.toString())
+    analysis.writeToDirectory(qa_map, tempDir.toFile())
 
     def meanDirectory = new TDirectory()
     meanDirectory.readFile(
-        tempDir.resolve('qadb_kinematics_mean.hipo').toString())
+        tempDir.resolve('qadb_inclusive_kinematics_mean.hipo').toString())
 
     def rmsDirectory = new TDirectory()
     rmsDirectory.readFile(
-        tempDir.resolve('qadb_kinematics_rms.hipo').toString())
+        tempDir.resolve('qadb_inclusive_kinematics_rms.hipo').toString())
 
     ['q2', 'x', 'w', 'y'].each { variable ->
       def meanGraph = meanDirectory.getObject(

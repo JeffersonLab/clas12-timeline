@@ -9,10 +9,10 @@ import org.jlab.groot.data.TDirectory;
 /**
  * Histograms for inclusive electron kinematics.
  */
-public class Kinematics {
+public class InclusiveKinematics {
 
   /** TDirectory path */
-  public static final String TDIR = "/QADB/kinematics";
+  public static final String TDIR = "/QADB/inclusive_kinematics";
 
   // histograms
   public H1F q2_hist;
@@ -23,7 +23,7 @@ public class Kinematics {
   /**
    * @param bin_num QADB bin number
    */
-  public Kinematics(int bin_num)
+  public InclusiveKinematics(int bin_num)
   {
     String suffix = "_qa" + String.valueOf(bin_num);
 
@@ -98,46 +98,38 @@ public class Kinematics {
   }
 
   /**
-   * Check whether all kinematic histograms exist.
-   *
-   * @param tdir input TDirectory
-   * @param bin_num QADB bin number
-   * @return true if all required histograms exist
-   */
-  public boolean hasHistograms(TDirectory tdir, int bin_num)
-  {
-    Directory<?> qadb_directory = (Directory<?>)
-        tdir.getDirectoryMap().get("QADB");
-
-    if(qadb_directory == null) {
-      return false;
-    }
-
-    Directory<?> kinematics_directory = (Directory<?>)
-        qadb_directory.getDirectoryMap().get("kinematics");
-
-    if(kinematics_directory == null) {
-      return false;
-    }
-
-    String suffix = "_qa" + String.valueOf(bin_num);
-    Map<String, ?> objects = kinematics_directory.getObjectMap();
-
-    return objects.containsKey("q2_hist" + suffix)
-        && objects.containsKey("x_hist" + suffix)
-        && objects.containsKey("w_hist" + suffix)
-        && objects.containsKey("y_hist" + suffix);
-  }
-
-  /**
    * Read the kinematic histograms from a TDirectory.
    *
    * @param tdir input TDirectory
    * @param bin_num QADB bin number
+   * @return true if all required histograms were read
    */
-  public void readHistograms(TDirectory tdir, int bin_num)
+  public boolean readHistograms(TDirectory tdir, int bin_num)
   {
     String suffix = "_qa" + String.valueOf(bin_num);
+    Directory<?> directory = tdir;
+
+    for(String name : TDIR.split("/")) {
+      if(name.isEmpty()) {
+        continue;
+      }
+
+      directory = (Directory<?>) directory.getDirectoryMap().get(name);
+
+      if(directory == null) {
+        return false;
+      }
+    }
+
+    Map<String, ?> objects = directory.getObjectMap();
+
+    if(!objects.containsKey("q2_hist" + suffix)
+        || !objects.containsKey("x_hist" + suffix)
+        || !objects.containsKey("w_hist" + suffix)
+        || !objects.containsKey("y_hist" + suffix))
+    {
+      return false;
+    }
 
     q2_hist = (H1F) tdir.getObject(
         TDIR + "/q2_hist" + suffix);
@@ -150,5 +142,7 @@ public class Kinematics {
 
     y_hist = (H1F) tdir.getObject(
         TDIR + "/y_hist" + suffix);
+
+    return true;
   }
 }

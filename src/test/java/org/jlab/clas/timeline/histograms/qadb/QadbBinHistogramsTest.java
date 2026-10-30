@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 public class QadbBinHistogramsTest {
 
   @Test
-  public void writeIncludesKinematicsHistograms()
+  public void writeIncludesInclusiveKinematicsHistograms()
   {
     QadbBinHistograms histograms =
         new QadbBinHistograms(2, 6.4);
@@ -17,19 +17,12 @@ public class QadbBinHistogramsTest {
     histograms.write(directory);
 
     assertNotNull(directory.getObject(
-        "/QADB/kinematics/q2_hist_qa2"));
+        "/QADB/inclusive_kinematics/q2_hist_qa2"));
     assertNotNull(directory.getObject(
-        "/QADB/kinematics/x_hist_qa2"));
+        "/QADB/inclusive_kinematics/x_hist_qa2"));
     assertNotNull(directory.getObject(
-        "/QADB/kinematics/w_hist_qa2"));
+        "/QADB/inclusive_kinematics/w_hist_qa2"));
     assertNotNull(directory.getObject(
-        "/QADB/kinematics/y_hist_qa2"));
-  }
-
-  @Test
-  @SuppressWarnings("deprecation")
-  public void legacyConstructorRemainsAvailable()
-  {
-    assertNotNull(new QadbBinHistograms(2));
+        "/QADB/inclusive_kinematics/y_hist_qa2"));
   }
 }

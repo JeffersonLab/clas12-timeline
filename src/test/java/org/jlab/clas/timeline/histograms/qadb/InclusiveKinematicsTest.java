@@ -2,11 +2,13 @@ package org.jlab.clas.timeline.histograms.qadb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.jlab.groot.data.TDirectory;
 import org.junit.jupiter.api.Test;
 
-public class KinematicsTest {
+public class InclusiveKinematicsTest {
 
   private static class TestElectron extends Electron {
 
@@ -34,7 +36,7 @@ public class KinematicsTest {
   @Test
   public void processEventFillsAllKinematicHistograms()
   {
-    Kinematics kinematics = new Kinematics(0);
+    InclusiveKinematics kinematics = new InclusiveKinematics(0);
     kinematics.processEvent(new TestElectron());
 
     assertEquals(1, kinematics.q2_hist.getEntries());
@@ -70,37 +72,45 @@ public class KinematicsTest {
   @Test
   public void writeStoresAllHistograms()
   {
-    Kinematics kinematics = new Kinematics(3);
+    InclusiveKinematics kinematics = new InclusiveKinematics(3);
     TDirectory directory = new TDirectory();
 
     kinematics.write(directory);
 
     assertNotNull(directory.getObject(
-        "/QADB/kinematics/q2_hist_qa3"));
+        "/QADB/inclusive_kinematics/q2_hist_qa3"));
     assertNotNull(directory.getObject(
-        "/QADB/kinematics/x_hist_qa3"));
+        "/QADB/inclusive_kinematics/x_hist_qa3"));
     assertNotNull(directory.getObject(
-        "/QADB/kinematics/w_hist_qa3"));
+        "/QADB/inclusive_kinematics/w_hist_qa3"));
     assertNotNull(directory.getObject(
-        "/QADB/kinematics/y_hist_qa3"));
+        "/QADB/inclusive_kinematics/y_hist_qa3"));
   }
 
   @Test
   public void readHistogramsRestoresStoredHistograms()
   {
-    Kinematics written = new Kinematics(4);
+    InclusiveKinematics written = new InclusiveKinematics(4);
     written.processEvent(new TestElectron());
 
     TDirectory directory = new TDirectory();
     written.write(directory);
 
-    Kinematics read = new Kinematics(4);
-    read.readHistograms(directory, 4);
+    InclusiveKinematics read = new InclusiveKinematics(4);
+    assertTrue(read.readHistograms(directory, 4));
 
     assertEquals(1, read.q2_hist.getEntries());
     assertEquals(1, read.x_hist.getEntries());
     assertEquals(1, read.w_hist.getEntries());
     assertEquals(1, read.y_hist.getEntries());
+  }
+
+  @Test
+  public void readHistogramsReturnsFalseWhenDirectoryIsMissing()
+  {
+    InclusiveKinematics kinematics = new InclusiveKinematics(4);
+
+    assertFalse(kinematics.readHistograms(new TDirectory(), 4));
   }
 
   @Test
@@ -123,7 +133,7 @@ public class KinematicsTest {
       public double getY() { return Double.NEGATIVE_INFINITY; }
     };
 
-    Kinematics kinematics = new Kinematics(0);
+    InclusiveKinematics kinematics = new InclusiveKinematics(0);
     kinematics.processEvent(electron);
 
     /*

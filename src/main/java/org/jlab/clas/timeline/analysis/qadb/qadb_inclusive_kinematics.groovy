@@ -1,13 +1,15 @@
 package org.jlab.clas.timeline.analysis.qadb
 
+import groovy.transform.PackageScope
+
 import java.util.concurrent.ConcurrentHashMap
 
 import org.jlab.groot.data.GraphErrors
 import org.jlab.groot.data.TDirectory
 
-import org.jlab.clas.timeline.histograms.qadb.Kinematics
+import org.jlab.clas.timeline.histograms.qadb.InclusiveKinematics
 
-class qadb_kinematics {
+class qadb_inclusive_kinematics {
 
   def data_map = new ConcurrentHashMap()
 
@@ -24,10 +26,9 @@ class qadb_kinematics {
 
     qa_map[runnum].each { qa_bin ->
       def binnum = qa_bin.getBinNum()
-      def histos = new Kinematics(binnum)
+      def histos = new InclusiveKinematics(binnum)
 
-      if(histos.hasHistograms(dir, binnum)) {
-        histos.readHistograms(dir, binnum)
+      if(histos.readHistograms(dir, binnum)) {
         data_map[runnum]['histos'][binnum] = histos
       }
       else {
@@ -37,7 +38,7 @@ class qadb_kinematics {
 
     if(!missing_bins.isEmpty()) {
       System.err.println(
-          "WARNING: Skipping missing kinematic histograms " +
+          "WARNING: Skipping missing inclusive kinematic histograms " +
           "for run ${runnum}, QA bins ${missing_bins}")
     }
   }
@@ -53,21 +54,24 @@ class qadb_kinematics {
           "No kinematic histograms found for run ${runnum}")
     }
 
-    def iterator = histograms.iterator()
-    def first = iterator.next()
+    def q2
+    def x
+    def w
+    def y
 
-    def q2 = first.q2_hist.histClone("q2_run${runnum}")
-    def x = first.x_hist.histClone("x_run${runnum}")
-    def w = first.w_hist.histClone("w_run${runnum}")
-    def y = first.y_hist.histClone("y_run${runnum}")
-
-    while(iterator.hasNext()) {
-      def next = iterator.next()
-
-      q2.add(next.q2_hist)
-      x.add(next.x_hist)
-      w.add(next.w_hist)
-      y.add(next.y_hist)
+    histograms.each { histos ->
+      if(q2 == null) {
+        q2 = histos.q2_hist.histClone("q2_run${runnum}")
+        x = histos.x_hist.histClone("x_run${runnum}")
+        w = histos.w_hist.histClone("w_run${runnum}")
+        y = histos.y_hist.histClone("y_run${runnum}")
+      }
+      else {
+        q2.add(histos.q2_hist)
+        x.add(histos.x_hist)
+        w.add(histos.w_hist)
+        y.add(histos.y_hist)
+      }
     }
 
     return [
@@ -81,6 +85,12 @@ class qadb_kinematics {
   // ----------------------------------------------------------------------------------
 
   def write(qa_map)
+  {
+    writeToDirectory(qa_map, new File('.'))
+  }
+
+  @PackageScope
+  def writeToDirectory(qa_map, File output_dir)
   {
     TDirectory mean_directory = new TDirectory()
     TDirectory rms_directory = new TDirectory()
