@@ -25,7 +25,6 @@ public class Electron {
   public static final int PDG = 11;
   public static final int ECAL_ID = DetectorType.ECAL.getDetectorId();
   public static final double PROTON_MASS = 0.9382720813; // GeV
-  public static final double DEFAULT_BEAM_ENERGY = 10.2; // GeV
 
   // private members
   private boolean  m_found;
