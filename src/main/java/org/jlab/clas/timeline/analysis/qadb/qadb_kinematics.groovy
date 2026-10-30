@@ -80,7 +80,7 @@ class qadb_kinematics {
 
   // ----------------------------------------------------------------------------------
 
-  def write(qa_map, output_dir = '.')
+  def write(qa_map)
   {
     TDirectory mean_directory = new TDirectory()
     TDirectory rms_directory = new TDirectory()
