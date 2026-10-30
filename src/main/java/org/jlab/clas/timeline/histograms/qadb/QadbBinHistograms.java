@@ -11,19 +11,23 @@ public class QadbBinHistograms {
   // histogram class instances
   public Charge charge;
   private Electron electron;
+  private InclusiveKinematics inclusiveKinematics;
   private Yield yield;
   private Helicity helicity;
 
   // ----------------------------------------------------------------------------------
 
   /**
-   * constructor
+   * Constructor.
+   *
    * @param bin_num QADB bin number
-   **/
-  public QadbBinHistograms(int bin_num)
+   * @param beam_energy beam energy in GeV
+   */
+  public QadbBinHistograms(int bin_num, double beam_energy)
   {
     charge = new Charge(bin_num);
-    electron = new Electron();
+    electron = new Electron(beam_energy);
+    inclusiveKinematics = new InclusiveKinematics(bin_num);
     yield = new Yield(bin_num);
     helicity = new Helicity(bin_num);
   }
@@ -31,13 +35,15 @@ public class QadbBinHistograms {
   // ----------------------------------------------------------------------------------
 
   /**
-   * process a single event
+   * Process a single event.
+   *
    * @param event the HIPO event object
    */
   public void processEvent(DataEvent event)
   {
     charge.processEvent(event);
     electron.processEvent(event);
+    inclusiveKinematics.processEvent(electron);
     yield.processEvent(event, electron);
     helicity.processEvent(event);
   }
@@ -45,14 +51,15 @@ public class QadbBinHistograms {
   // ----------------------------------------------------------------------------------
 
   /**
-   * write to a HIPO file
+   * Write to a HIPO file.
+   *
    * @param tdir the output {@code TDirectory}
    */
   public void write(TDirectory tdir)
   {
     charge.write(tdir);
     yield.write(tdir);
+    inclusiveKinematics.write(tdir);
     helicity.write(tdir);
   }
-
 }
