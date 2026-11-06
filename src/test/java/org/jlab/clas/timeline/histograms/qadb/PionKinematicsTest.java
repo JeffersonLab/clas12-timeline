@@ -14,6 +14,7 @@ import org.jlab.clas.physics.Particle;
 import org.jlab.clas.physics.Vector3;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.TDirectory;
+import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.junit.jupiter.api.Test;
 
@@ -92,6 +93,45 @@ public class PionKinematicsTest {
     for(String variable : new String[] {"p", "pT", "z", "theta", "phiH"}) {
       assertEquals(expected, kinematics.getHistogram(pid, variable).getEntries());
     }
+  }
+
+  private static DataEvent eventWithPionCandidates()
+  {
+    int[] pids = {211, -211, 321};
+    float[][] momenta = {
+      {0.3f, 0.4f, 1.2f},
+      {0.3f, -0.4f, 1.2f},
+      {0.3f, 0.4f, 1.2f}
+    };
+
+    DataBank bank = (DataBank) Proxy.newProxyInstance(
+        DataBank.class.getClassLoader(),
+        new Class<?>[] {DataBank.class},
+        (proxy, method, arguments) -> switch(method.getName()) {
+          case "rows" -> pids.length;
+          case "getInt" -> pids[(int) arguments[1]];
+          case "getFloat" -> {
+            String column = (String) arguments[0];
+            int row = (int) arguments[1];
+            yield switch(column) {
+              case "px" -> momenta[row][0];
+              case "py" -> momenta[row][1];
+              case "pz" -> momenta[row][2];
+              case "vx", "vy", "vz" -> 0.0f;
+              default -> throw new UnsupportedOperationException(column);
+            };
+          }
+          default -> throw new UnsupportedOperationException(method.getName());
+        });
+
+    return (DataEvent) Proxy.newProxyInstance(
+        DataEvent.class.getClassLoader(),
+        new Class<?>[] {DataEvent.class},
+        (proxy, method, arguments) -> switch(method.getName()) {
+          case "hasBank" -> "REC::Particle".equals(arguments[0]);
+          case "getBank" -> bank;
+          default -> throw new UnsupportedOperationException(method.getName());
+        });
   }
 
   @Test
@@ -336,6 +376,17 @@ public class PionKinematicsTest {
 
     assertAllEntries(kinematics, 211, 0);
     assertAllEntries(kinematics, -211, 0);
+  }
+
+  @Test
+  public void processEventReadsBothPionChargesFromParticleBank()
+  {
+    PionKinematics kinematics = new PionKinematics(0, 6.4);
+
+    kinematics.processEvent(eventWithPionCandidates(), acceptedElectron());
+
+    assertAllEntries(kinematics, 211, 1);
+    assertAllEntries(kinematics, -211, 1);
   }
 
   @Test
