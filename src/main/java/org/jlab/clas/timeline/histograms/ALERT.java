@@ -6,35 +6,31 @@ import org.jlab.groot.data.H1F;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.groot.data.TDirectory;
-import org.jlab.utils.groups.IndexedTable;
-import org.jlab.detector.calib.utils.ConstantsManager;
 /**
  *
  * @author sangbaek
  */
+
+// Issue 510: Removed unused histograms to save only called by timeline step.
+// For the full version, please refer to the previous version, such as e1b4bf2d0f70ade26bf70f67bab26554a62e6511.
+
 public class ALERT {
 
   boolean userTimeBased;
-  public int runNum, triggerPID;
-  public long trigger_word;
+  public int runNum;
   public String outputDir;
 
-  public boolean hasRF;
-  public double startTime, rfTime;
-
-  public double rfPeriod;
-  public int rf_large_integer;
-
   //Hodoscope
-  public H1F[] ATOF_Time, ATOF_Time_sl, ATOF_z, ATOF_z_sl, ATOF_z_c4, ATOF_z_c4_sl;
-  public H1F[] AHDC_RESIDUAL, AHDC_RESIDUAL_LR;//AHDC-related-histograms
-  private H1F bits;
-
-  public IndexedTable rfTable;
-
-  public ConstantsManager ccdb;
-  // private int[] layer_wires             = {47,  56,  56,  72,  72,  87,  87,  99};
-  private int[] layer_wires_cumulative  = {0, 47, 103, 159, 231, 303, 390, 477, 576};
+  public H1F[] ATOF_Time;         // related timeline: ['alert_atof_time']
+  public H1F[] ATOF_Time_sl;      // related timeline: ['alert_atof_time_sl']
+  public H1F[] ATOF_z;            // related timeline: ['alert_atof_z']
+  public H1F[] ATOF_z_sl;         // related timeline: ['alert_atof_z_sl']
+  public H1F[] ATOF_z_c4;         // related timeline: ['alert_atof_z_c4']
+  public H1F[] ATOF_z_c4_sl;      // related timeline: ['alert_atof_z_c4_sl']
+  public H1F[] AHDC_RESIDUAL;     // related timeline: ['alert_ahdc_residual_LR_layer', 'alert_ahdc_residual_layer', 'alert_ahdc_residual_layer_wire']
+  public H1F[] AHDC_RESIDUAL_LR;  // related timeline: ['alert_ahdc_residual_LR_layer_wire']
+  
+  private int[] layer_wires_cumulative  = {0, 47, 103, 159, 231, 303, 390, 477, 576};// private int[] layer_wires = {47,  56,  56,  72,  72,  87,  87,  99};
   private int[] layer_encoding          = {11, 21, 22, 31, 32, 41, 42, 51};
   private Integer[] boxed_encoding = Arrays.stream(layer_encoding).boxed().toArray(Integer[]::new);
 
@@ -42,20 +38,6 @@ public class ALERT {
     runNum = reqrunNum;
     outputDir = reqOutputDir;
     userTimeBased = reqTimeBased;
-
-    startTime = -1000;
-    rfTime = -1000;
-    triggerPID = 0;
-
-    rfPeriod = 4.008;
-    ccdb = new ConstantsManager();
-    ccdb.init(Arrays.asList(new String[]{"/daq/tt/fthodo", "/calibration/eb/rf/config"}));
-    rfTable = ccdb.getConstants(runNum, "/calibration/eb/rf/config");
-    if (rfTable.hasEntry(1, 1, 1)) {
-      System.out.println(String.format("RF period from ccdb for run %d: %f", runNum, rfTable.getDoubleValue("clock", 1, 1, 1)));
-      rfPeriod = rfTable.getDoubleValue("clock", 1, 1, 1);
-    }
-    rf_large_integer = 1000;
 
     ATOF_Time = new H1F[11];// ATOF Time Histograms
     ATOF_Time_sl = new H1F[660];// ATOF Time Histograms
@@ -70,39 +52,37 @@ public class ALERT {
       ATOF_Time[component].setTitleY("Counts");
       ATOF_Time[component].setFillColor(4);
     }
-      ATOF_z[0]= new H1F(String.format("ATOF_z_combined"), String.format("ATOF z"), 300,-300,300);
-      ATOF_z[0].setTitleX("ATOF z (mm)");
-      ATOF_z[0].setTitleY("Counts");
-      ATOF_z[0].setFillColor(4);
-      ATOF_z_c4[0]= new H1F(String.format("ATOF_z_combined_c4"), String.format("ATOF z with c4"), 80,-200,200);
-      ATOF_z_c4[0].setTitleX("ATOF z (mm)");
-      ATOF_z_c4[0].setTitleY("Counts");
-      ATOF_z_c4[0].setFillColor(4);
+    ATOF_z[0]= new H1F(String.format("ATOF_z_combined"), String.format("ATOF z"), 300,-300,300);
+    ATOF_z[0].setTitleX("ATOF z (mm)");
+    ATOF_z[0].setTitleY("Counts");
+    ATOF_z[0].setFillColor(4);
+    ATOF_z_c4[0]= new H1F(String.format("ATOF_z_combined_c4"), String.format("ATOF z with c4"), 80,-200,200);
+    ATOF_z_c4[0].setTitleX("ATOF z (mm)");
+    ATOF_z_c4[0].setTitleY("Counts");
+    ATOF_z_c4[0].setFillColor(4);
+
     for(int sector=0;sector<15;sector++){
-          for(int layer=0;layer<4;layer++){
-              int gsector=sector*4+layer;
-              ATOF_z_sl[gsector] = new H1F(String.format("ATOF_z_sector%02d_layer%02d", sector,layer), String.format("ATOF z sector%02d layer %2d", sector,layer), 300,-300,300);
-              ATOF_z_sl[gsector].setTitleX("ATOF z (mm)");
-              ATOF_z_sl[gsector].setTitleY("Counts");
-              ATOF_z_sl[gsector].setFillColor(4);
+      for(int layer=0;layer<4;layer++){
+        int gsector=sector*4+layer;
+        ATOF_z_sl[gsector] = new H1F(String.format("ATOF_z_sector%02d_layer%02d", sector,layer), String.format("ATOF z sector%02d layer %2d", sector,layer), 300,-300,300);
+        ATOF_z_sl[gsector].setTitleX("ATOF z (mm)");
+        ATOF_z_sl[gsector].setTitleY("Counts");
+        ATOF_z_sl[gsector].setFillColor(4);
 
-              ATOF_z_c4_sl[gsector] = new H1F(String.format("ATOF_z_c4_sector%02d_layer%02d", sector,layer), String.format("ATOF z with C4 sector%02d layer %2d", sector,layer), 80,-200,200);
-              ATOF_z_c4_sl[gsector].setTitleX("ATOF z (mm)");
-              ATOF_z_c4_sl[gsector].setTitleY("Counts");
-              ATOF_z_c4_sl[gsector].setFillColor(4);
-              
-              for (int component = 0; component < 11; component++) {
-                  int gcomponent = gsector*11+component;
-                  ATOF_Time_sl[gcomponent] = new H1F(String.format("ATOF_Time_sector%02d_layer%02d_component%02d",sector,layer, component), String.format("ATOF Time sector%02d layer%02d component%02d", sector,layer,component), 100, -5, 5);
-                  ATOF_Time_sl[gcomponent].setTitleX("ATOF Time (ns)");
-                  ATOF_Time_sl[gcomponent].setTitleY("Counts");
-                  ATOF_Time_sl[gcomponent].setFillColor(4);
-              }
-
-
-          }
+        ATOF_z_c4_sl[gsector] = new H1F(String.format("ATOF_z_c4_sector%02d_layer%02d", sector,layer), String.format("ATOF z with C4 sector%02d layer %2d", sector,layer), 80,-200,200);
+        ATOF_z_c4_sl[gsector].setTitleX("ATOF z (mm)");
+        ATOF_z_c4_sl[gsector].setTitleY("Counts");
+        ATOF_z_c4_sl[gsector].setFillColor(4);
+        
+        for (int component = 0; component < 11; component++) {
+          int gcomponent = gsector*11+component;
+          ATOF_Time_sl[gcomponent] = new H1F(String.format("ATOF_Time_sector%02d_layer%02d_component%02d",sector,layer, component), String.format("ATOF Time sector%02d layer%02d component%02d", sector,layer,component), 100, -5, 5);
+          ATOF_Time_sl[gcomponent].setTitleX("ATOF Time (ns)");
+          ATOF_Time_sl[gcomponent].setTitleY("Counts");
+          ATOF_Time_sl[gcomponent].setFillColor(4);
+        }
+      }
     }
-
 
     //AHDC ADC Histograms
     AHDC_RESIDUAL = new H1F[576];
@@ -128,14 +108,6 @@ public class ALERT {
       AHDC_RESIDUAL_LR[index].setTitleY("Counts");
       AHDC_RESIDUAL_LR[index].setFillColor(4);
     }
-
-    // Trigger bits
-    bits = new H1F("bits", "bits",65,0,65);
-    bits.getDataX(0);
-    bits.getEntries();
-    bits.getMaximumBin();
-    bits.getAxis().getNBins();
-
   }
 
   public void fillAHDC_hits(DataBank ahdc_kftrack, DataBank ahdc_hits) {
@@ -247,22 +219,10 @@ public class ALERT {
 
   public void processEvent(DataEvent event) {
 
-    DataBank recBankEB = null;
-    DataBank recEvenEB = null;
-    DataBank runConfig = null;
     DataBank atof_hits = null;
     DataBank ahdc_kftrack = null;
     DataBank ahdc_hits = null;
 
-    if (event.hasBank("REC::Particle")) {
-      recBankEB = event.getBank("REC::Particle");
-    }
-    if (event.hasBank("REC::Event")) {
-      recEvenEB = event.getBank("REC::Event");
-    }
-    if (event.hasBank("RUN::config")) {
-      runConfig = event.getBank("RUN::config");
-    }
     if (event.hasBank("ATOF::hits")) {
       atof_hits = event.getBank("ATOF::hits");
     }
@@ -271,26 +231,6 @@ public class ALERT {
     }
     if (event.hasBank("AHDC::hits")){
       ahdc_hits = event.getBank("AHDC::hits");
-    }
-
-    if (runConfig!= null){
-      trigger_word = runConfig.getLong("trigger", 0);
-      bits.fill(64);
-      for (int i=0; i<64; ++i){
-        if ( 1 == ((trigger_word>>i)&1) ) {
-          bits.fill(i);
-        }
-      }
-    }
-
-    if (recEvenEB != null) {
-      startTime = recEvenEB.getFloat("startTime", 0);
-      rfTime = recEvenEB.getFloat("RFTime", 0);
-    }
-
-    //Get trigger particle
-    if (recBankEB != null) {
-      triggerPID = recBankEB.getInt("pid", 0);
     }
 
     if (atof_hits != null) {
@@ -323,11 +263,7 @@ public class ALERT {
       dirout.addDataSet(AHDC_RESIDUAL[index], AHDC_RESIDUAL_LR[index]);
     }
 
-    dirout.mkdir("/TRIGGER/");
-    dirout.cd("/TRIGGER/");
-    dirout.addDataSet(bits);
     if(runNum>0) dirout.writeFile(outputDir+"/out_ALERT_"+runNum+".hipo");
     else         dirout.writeFile(outputDir+"/out_ALERT.hipo");
   }
-
 }
