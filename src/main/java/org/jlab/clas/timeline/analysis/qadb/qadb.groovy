@@ -10,6 +10,9 @@ class qadb {
 
   private def ana_qadb_charge = new qadb_charge()
   private def ana_qadb_yield = new qadb_yield()
+  private def ana_qadb_helicity = new qadb_helicity()
+  private def ana_qadb_inclusive_kinematics =
+      new qadb_inclusive_kinematics()
 
   // ----------------------------------------------------------------------------------
 
@@ -35,6 +38,8 @@ class qadb {
     if(qa_allowed) {
       ana_qadb_charge.processRun(dir, run, qa_map)
       ana_qadb_yield.processRun(dir, run, qa_map)
+      ana_qadb_helicity.processRun(dir, run, qa_map)
+      ana_qadb_inclusive_kinematics.processRun(dir, run, qa_map)
     }
   }
 
@@ -44,6 +49,8 @@ class qadb {
     if(qa_allowed) {
       ana_qadb_charge.write(qa_map)
       ana_qadb_yield.write(qa_map)
+      ana_qadb_helicity.write(qa_map)
+      ana_qadb_inclusive_kinematics.write(qa_map)
     }
   }
 
