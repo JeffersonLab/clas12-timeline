@@ -54,6 +54,10 @@ public class CND {
 
   public void FillCND(DataBank CNDbank, DataBank CVTbank, DataBank PARTbank){
 
+    int[] InClusters = new int[CNDbank.rows()];
+    for(int i=0; i<InClusters.length; i++){
+      InClusters[i]=0;
+    }
 
     int[] Tracks = new int[CVTbank.rows()];
     for(int i=0; i<Tracks.length; i++){
@@ -70,6 +74,15 @@ public class CND {
       float time = CNDbank.getFloat("time",iCND);
       int sector = CNDbank.getInt("sector",iCND);
       int comp = CNDbank.getInt("component",iCND);
+
+      if(layer>0 && layer<4 && trkID==-1 ){
+        float z0 = CVTbank.getFloat("z0", trkID) / 10.0f;
+        if(InClusters[iCND]!=0) break;
+        InClusters[iCND]=1;
+        for(int jCND=0;jCND<CNDbank.rows();jCND++){
+          if(jCND!=iCND && sector==CNDbank.getInt("sector",jCND)) InClusters[jCND]=1;
+        }
+      }
 
       if(layer>0 && layer<4 && trkID>-1 && STT>-999){
         float tz = CNDbank.getFloat("tz",iCND);
