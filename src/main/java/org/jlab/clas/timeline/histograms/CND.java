@@ -76,7 +76,6 @@ public class CND {
       int comp = CNDbank.getInt("component",iCND);
 
       if(layer>0 && layer<4 && trkID==-1 ){
-        float z0 = CVTbank.getFloat("z0", trkID) / 10.0f;
         if(InClusters[iCND]!=0) break;
         for(int jCND=0;jCND<CNDbank.rows();jCND++){
           if(jCND!=iCND && sector==CNDbank.getInt("sector",jCND)) InClusters[jCND]=1;
