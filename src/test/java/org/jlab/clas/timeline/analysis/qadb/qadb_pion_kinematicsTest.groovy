@@ -7,10 +7,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 import java.nio.file.Path
 
 import org.jlab.groot.data.TDirectory
+import org.jlab.io.hipo.HipoDataEvent
+import org.jlab.jnp.hipo4.data.Event
+import org.jlab.jnp.hipo4.data.Schema
+import org.jlab.jnp.hipo4.data.SchemaFactory
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
+import org.jlab.clas.timeline.histograms.qadb.Electron
 import org.jlab.clas.timeline.histograms.qadb.PionKinematics
+import org.jlab.clas.timeline.histograms.qadb.QadbBinHistograms
 
 class qadb_pion_kinematicsTest {
 
@@ -31,6 +37,59 @@ class qadb_pion_kinematicsTest {
     values.each { variable, value ->
       histograms.getHistogram(pid, variable).fill(value)
     }
+  }
+
+  private static HipoDataEvent acceptedContainerEvent()
+  {
+    def particleSchema = new Schema.SchemaBuilder(
+        'REC::Particle', 1200, 1)
+        .addEntry('pid', 'I', '')
+        .addEntry('status', 'S', '')
+        .addEntry('chi2pid', 'F', '')
+        .addEntry('px', 'F', '')
+        .addEntry('py', 'F', '')
+        .addEntry('pz', 'F', '')
+        .addEntry('vx', 'F', '')
+        .addEntry('vy', 'F', '')
+        .addEntry('vz', 'F', '')
+        .build()
+    def calorimeterSchema = new Schema.SchemaBuilder(
+        'REC::Calorimeter', 1201, 1)
+        .addEntry('pindex', 'S', '')
+        .addEntry('detector', 'B', '')
+        .addEntry('sector', 'B', '')
+        .build()
+
+    def factory = new SchemaFactory()
+    factory.addSchema(particleSchema)
+    factory.addSchema(calorimeterSchema)
+
+    def event = new HipoDataEvent(new Event(), factory)
+    def particles = event.createBank('REC::Particle', 3)
+    def particleData = [
+      [pid: Electron.PDG, px: 1.02606043f, py: 0.0f, pz: 2.81907786f],
+      [pid: PionKinematics.PIP, px: 0.3f, py: 0.4f, pz: 1.2f],
+      [pid: PionKinematics.PIM, px: 0.3f, py: -0.4f, pz: 1.2f]
+    ]
+
+    particleData.eachWithIndex { particle, row ->
+      particles.setInt('pid', row, particle.pid)
+      particles.setShort('status', row, (short) (row == 0 ? -2000 : 2000))
+      particles.setFloat('chi2pid', row, 0.0f)
+      particles.setFloat('px', row, particle.px)
+      particles.setFloat('py', row, particle.py)
+      particles.setFloat('pz', row, particle.pz)
+      particles.setFloat('vx', row, 0.0f)
+      particles.setFloat('vy', row, 0.0f)
+      particles.setFloat('vz', row, 0.0f)
+    }
+
+    def calorimeter = event.createBank('REC::Calorimeter', 1)
+    calorimeter.setShort('pindex', 0, (short) 0)
+    calorimeter.setByte('detector', 0, (byte) Electron.ECAL_ID)
+    calorimeter.setByte('sector', 0, (byte) 1)
+    event.appendBanks(particles, calorimeter)
+    event
   }
 
   @Test
@@ -138,6 +197,38 @@ class qadb_pion_kinematicsTest {
             1.0e-9)
       }
     }
+  }
+
+  @Test
+  void containerEventSurvivesDiskRoundTripAndTimelineAggregation(
+      @TempDir Path tempDir)
+  {
+    def container = new QadbBinHistograms(7, 6.4)
+    container.processEvent(acceptedContainerEvent())
+
+    def written = new TDirectory()
+    container.write(written)
+    def persistedFile = tempDir.resolve('out_QADB_42.hipo')
+    written.writeFile(persistedFile.toString())
+
+    def restored = new TDirectory()
+    restored.readFile(persistedFile.toString())
+
+    def qaMap = [42: [new TestQaBin(binNum: 7)]]
+    def analysis = new qadb_pion_kinematics()
+    analysis.processRun(restored, 42, qaMap)
+
+    def statistics = analysis.calculateRunStatistics(42)
+    assertEquals(1.0, statistics.pip.p.hist.integral(), 0.0)
+    assertEquals(1.0, statistics.pim.p.hist.integral(), 0.0)
+
+    analysis.writeToDirectory(qaMap, tempDir.toFile())
+    def timeline = new TDirectory()
+    timeline.readFile(
+        tempDir.resolve('qadb_piPlus_kinematics_mean.hipo').toString())
+
+    assertEquals(1, timeline.getObject('/timelines/p_mean').getDataSize(0))
+    assertEquals(42.0, timeline.getObject('/timelines/p_mean').getDataX(0), 0.0)
   }
 
   @Test

@@ -236,6 +236,31 @@ public class PionKinematicsTest {
   }
 
   @Test
+  public void calculatesKnownKinematicsNumericallyForBothPionCharges()
+  {
+    PionKinematics kinematics = new PionKinematics(0, 6.4);
+
+    var plus = kinematics.calculateKinematics(
+        new Particle(211, 0.3, 0.4, 1.2, 0.0, 0.0, 0.0),
+        acceptedElectron());
+    var minus = kinematics.calculateKinematics(
+        new Particle(-211, 0.3, -0.4, 1.2, 0.0, 0.0, 0.0),
+        acceptedElectron());
+
+    assertEquals(1.3, plus.p(), 1.0e-8);
+    assertEquals(0.5, plus.pT(), 1.0e-8);
+    assertEquals(0.4038242566, plus.z(), 1.0e-8);
+    assertEquals(0.3947911197, plus.theta(), 1.0e-8);
+    assertEquals(0.5682910885, plus.phiH(), 1.0e-8);
+
+    assertEquals(1.3, minus.p(), 1.0e-8);
+    assertEquals(0.5, minus.pT(), 1.0e-8);
+    assertEquals(0.4038242566, minus.z(), 1.0e-8);
+    assertEquals(0.3947911197, minus.theta(), 1.0e-8);
+    assertEquals(-0.5682910885, minus.phiH(), 1.0e-8);
+  }
+
+  @Test
   public void countsMultipleAcceptedCandidatesIndependently()
   {
     PionKinematics kinematics = new PionKinematics(0, 6.4);

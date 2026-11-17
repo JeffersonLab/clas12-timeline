@@ -17,6 +17,14 @@ import org.jlab.io.base.DataEvent;
  */
 public class PionKinematics {
 
+  /** Calculated pion observables before histogram acceptance cuts. */
+  record KinematicValues(
+      double p,
+      double pT,
+      double z,
+      double theta,
+      double phiH) {}
+
   /** TDirectory path. */
   public static final String TDIR = "/QADB/pion_kinematics";
 
@@ -168,6 +176,38 @@ public class PionKinematics {
       return;
     }
 
+    KinematicValues values = calculateKinematics(pion, electron);
+
+    if(!(values.z() > 0.3 && values.z() < 1.0)
+        || !Double.isFinite(values.p())
+        || !Double.isFinite(values.pT())
+        || !Double.isFinite(values.z())
+        || !Double.isFinite(values.theta())
+        || !Double.isFinite(values.phiH()))
+    {
+      return;
+    }
+
+    getHistogram(pion.pid(), "p").fill(values.p());
+    getHistogram(pion.pid(), "pT").fill(values.pT());
+    getHistogram(pion.pid(), "z").fill(values.z());
+    getHistogram(pion.pid(), "theta").fill(values.theta());
+    getHistogram(pion.pid(), "phiH").fill(values.phiH());
+  }
+
+  /**
+   * Calculate pion observables without applying histogram acceptance cuts.
+   *
+   * Package-private visibility keeps the numerical physics contract directly
+   * testable without exposing it as public API.
+   *
+   * @param pion pion candidate
+   * @param electron selected scattered electron
+   * @return calculated pion observables
+   */
+  KinematicValues calculateKinematics(Particle pion, Electron electron)
+  {
+
     LorentzVector beam = new LorentzVector(
         0.0, 0.0, m_beam_energy, m_beam_energy);
     LorentzVector q = new LorentzVector(beam);
@@ -188,21 +228,7 @@ public class PionKinematics {
         q.vect(),
         pion_vector.vect());
 
-    if(!(z > 0.3 && z < 1.0)
-        || !Double.isFinite(p)
-        || !Double.isFinite(pT)
-        || !Double.isFinite(z)
-        || !Double.isFinite(theta)
-        || !Double.isFinite(phiH))
-    {
-      return;
-    }
-
-    getHistogram(pion.pid(), "p").fill(p);
-    getHistogram(pion.pid(), "pT").fill(pT);
-    getHistogram(pion.pid(), "z").fill(z);
-    getHistogram(pion.pid(), "theta").fill(theta);
-    getHistogram(pion.pid(), "phiH").fill(phiH);
+    return new KinematicValues(p, pT, z, theta, phiH);
   }
 
   private static double lorentzDot(
