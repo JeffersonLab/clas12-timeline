@@ -17,7 +17,7 @@ class trigger {
         TDirectory out = new TDirectory()
         out.mkdir('/timelines')
         for (int i=0; i<64; ++i) {
-            def gr = new GraphErrors("bit$i")
+            def gr = new GraphErrors("bit${i<10?'0':''}$i")
             gr.setTitle("Trigger Bit $i")
             gr.setTitleY("Event Fraction")
             gr.setTitleX("Run Number")
@@ -25,7 +25,7 @@ class trigger {
                 out.mkdir('/'+it.run)
                 out.cd('/'+it.run)
                 out.addDataSet(it["Bits"])
-                gr.addPoint(it.run, it["Bits"].getDataX(i) / it["Bits"].getDataX(64), 0, 0);
+                gr.addPoint(it.run, it["Bits"].getDataY(i) / it["Bits"].getDataY(64), 0, 0);
             }
             out.cd('/timelines')
             out.addDataSet(gr)
