@@ -35,12 +35,12 @@ public class helicity {
   H1F hboard;
 
   public helicity() {
-    histos = new ArrayList<>();
+    histos = new ArrayList<>(); // related timeline: ['helicity']
     histos.add(new H1Fb("onlineRaw","HEL::online","helicityRaw"));
     histos.add(new H1Fb("offlineRaw","REC::Event","helicityRaw"));
     histos.add(new H1Fb("online","HEL::online","helicity"));
     histos.add(new H1Fb("offline","REC::Event","helicity"));
-    hboard = histos.get(0).histClone("boardRaw");
+    hboard = histos.get(0).histClone("boardRaw"); // related timeline: ['helicity']
   }
 
   public void processEvent(DataEvent event){
