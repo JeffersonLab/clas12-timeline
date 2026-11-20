@@ -40,6 +40,7 @@ class qadbTest {
     def yieldAnalysis = new RecordingAnalysis()
     def helicity = new RecordingAnalysis()
     def inclusiveKinematics = new RecordingAnalysis()
+    def pionKinematics = new RecordingAnalysis()
 
     setPrivateField(coordinator, 'ana_qadb_charge', charge)
     setPrivateField(coordinator, 'ana_qadb_yield', yieldAnalysis)
@@ -48,6 +49,10 @@ class qadbTest {
         coordinator,
         'ana_qadb_inclusive_kinematics',
         inclusiveKinematics)
+    setPrivateField(
+        coordinator,
+        'ana_qadb_pion_kinematics',
+        pionKinematics)
 
     setPrivateField(coordinator, 'qa_allowed', true)
     setPrivateField(coordinator, 'qa_map', [42: []])
@@ -57,5 +62,7 @@ class qadbTest {
 
     assertEquals(1, inclusiveKinematics.processRunCalls)
     assertEquals(1, inclusiveKinematics.writeCalls)
+    assertEquals(1, pionKinematics.processRunCalls)
+    assertEquals(1, pionKinematics.writeCalls)
   }
 }

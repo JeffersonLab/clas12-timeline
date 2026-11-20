@@ -12,6 +12,7 @@ public class QadbBinHistograms {
   public Charge charge;
   private Electron electron;
   private InclusiveKinematics inclusiveKinematics;
+  private PionKinematics pionKinematics;
   private Yield yield;
   private Helicity helicity;
 
@@ -28,6 +29,7 @@ public class QadbBinHistograms {
     charge = new Charge(bin_num);
     electron = new Electron(beam_energy);
     inclusiveKinematics = new InclusiveKinematics(bin_num);
+    pionKinematics = new PionKinematics(bin_num, beam_energy);
     yield = new Yield(bin_num);
     helicity = new Helicity(bin_num);
   }
@@ -43,6 +45,7 @@ public class QadbBinHistograms {
   {
     charge.processEvent(event);
     electron.processEvent(event);
+    pionKinematics.processEvent(event, electron);
     inclusiveKinematics.processEvent(electron);
     yield.processEvent(event, electron);
     helicity.processEvent(event);
@@ -60,6 +63,7 @@ public class QadbBinHistograms {
     charge.write(tdir);
     yield.write(tdir);
     inclusiveKinematics.write(tdir);
+    pionKinematics.write(tdir);
     helicity.write(tdir);
   }
 }

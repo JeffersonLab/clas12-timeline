@@ -25,4 +25,22 @@ public class QadbBinHistogramsTest {
     assertNotNull(directory.getObject(
         "/QADB/inclusive_kinematics/y_hist_qa2"));
   }
+
+  @Test
+  public void writeIncludesPionKinematicsHistograms()
+  {
+    QadbBinHistograms histograms =
+        new QadbBinHistograms(2, 6.4);
+
+    TDirectory directory = new TDirectory();
+    histograms.write(directory);
+
+    for(String particle : new String[] {"pip", "pim"}) {
+      for(String variable : new String[] {"p", "pT", "z", "theta", "phiH"}) {
+        assertNotNull(directory.getObject(
+            "/QADB/pion_kinematics/"
+                + particle + "_" + variable + "_hist_qa2"));
+      }
+    }
+  }
 }
